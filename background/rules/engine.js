@@ -63,11 +63,6 @@ function matches(rule, rec, details) {
   return hit ? hit : null;
 }
 
-/** Vrai si l expression d URL de la regle est ecrite mais illisible. */
-export function regleIllisible(rule) {
-  return urlRegex(rule) === false;
-}
-
 /** Remplace $1..$9 par les groupes captures dans l URL de redirection. */
 function expand(template, groups) {
   return String(template || '').replace(/\$([1-9])/g, (whole, index) => {
