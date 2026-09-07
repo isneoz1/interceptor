@@ -12,7 +12,8 @@ import { decoderProtobuf, decoderMsgpack, decoderCbor, essayerFormats } from '..
 import { lireDer, pemVersOctets, resumerCertificat } from '../lib/asn1.js';
 import { essayerJeux, reparerMojibake, traceDeMojibake, jeuxDisponibles, decoderAvec } from '../lib/charsets.js';
 import { reconnaitreSignature } from '../lib/ref-mime.js';
-import { decoderTramesWs, decoderTramesH2, PREFACE_H2 } from '../lib/trames.js';
+import { decoderTramesWs, decoderTramesH2, PREFACE_H2, entetesDeTrame } from '../lib/trames.js';
+import { TableDynamique } from '../lib/hpack.js';
 
 /** Le texte de travail vu comme des octets : hexadecimal d abord, sinon base64. */
 function octetsDuTexte(entree) {
@@ -223,6 +224,9 @@ function ecrireTramesWs(box, trames, poser) {
 
 function ecrireTramesH2(box, trames) {
   box.appendChild(sec('Trames HTTP/2', trames.length + ' ' + t('trame(s) lue(s)')));
+  /* Une seule table dynamique pour tout le lot : HPACK apprend d une trame a
+     l autre, et un index appris plus tot ne se resout pas sans elle. */
+  const tableHpack = new TableDynamique();
   if (trames[0] && trames[0].preface) {
     box.appendChild(el('p', { class: 'note', text:
       t('Preface de connexion HTTP/2 reconnue en tete des octets.') }));
@@ -240,6 +244,32 @@ function ecrireTramesH2(box, trames) {
     add(carte, kv('Bit reserve', tr.reserve ? '1 — ' + t('doit etre a zero') : null));
     add(carte, kv('Charge utile complete', tr.complete ? t('oui') : t('non')));
     for (const [cle, valeur] of tr.details) add(carte, kv(cle, valeur));
+
+    /* Le bloc d en-tetes est compresse : sans HPACK il resterait illisible.
+       On le decode ici, table dynamique comprise. */
+    const lus = entetesDeTrame(tr, tableHpack);
+    if (lus) {
+      if (lus.erreur) {
+        carte.appendChild(el('p', { class: 'note warn',
+          text: t('Bloc HPACK illisible : ') + lus.erreur }));
+      } else {
+        carte.appendChild(sec('En-tetes decodes (HPACK)',
+          lus.entetes.length + ' ' + t('en-tete(s)')));
+        for (const h of lus.entetes) {
+          const ligne = kv(h.nom, h.valeur, { copy: true, always: true });
+          if (ligne) ligne.title = t(h.forme) + (h.index ? '  ·  index ' + h.index : '')
+            + (h.huffman ? '  ·  Huffman' : '');
+          add(carte, ligne);
+        }
+        add(carte, kv('Table dynamique', lus.tailleTable + ' / ' + lus.tailleMaxTable + ' '
+          + t('octets'), { always: true }));
+        if (!lus.complet) {
+          carte.appendChild(el('p', { class: 'note', text:
+            t('END_HEADERS absent : le bloc se poursuit dans une trame CONTINUATION.') }));
+        }
+      }
+    }
+
     if (tr.chargeHex) add(carte, kv('Charge utile (hex)', tr.chargeHex, { copy: true }));
     box.appendChild(carte);
   }

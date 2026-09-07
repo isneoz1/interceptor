@@ -9,6 +9,7 @@
  */
 import { hexVersOctets, octetsVersHex, octetsVersTexte, texteVersOctets } from './bytes.js';
 import { decrireErreurH2 } from './ref-reseau.js';
+import { decoderBlocHpack } from './hpack.js';
 
 /* ------------------------------- WebSocket -------------------------------- */
 export const OPCODES_WS = {
@@ -214,12 +215,53 @@ function detailsH2(typeNom, drapeaux, c, flux) {
            ['poids', String(c[4] + 1)]);
   } else if (typeNom === 'DATA' || typeNom === 'HEADERS') {
     if (drapeaux & 0x8 && c.length) d.push(['remplissage', c[0] + ' octets']);
-    if (typeNom === 'HEADERS') d.push(['bloc d en-tetes', 'compresse HPACK (RFC 7541), non decompresse ici']);
   }
   if (flux === 0 && (typeNom === 'DATA' || typeNom === 'HEADERS')) {
     d.push(['remarque', 'flux 0 interdit pour ce type : erreur de protocole']);
   }
   return d;
+}
+
+/**
+ * Le fragment d en-tetes d une trame, degage de son remplissage et de sa
+ * priorite (RFC 9113 sections 6.2, 6.6 et 6.10). Rend null quand le type ne
+ * transporte pas d en-tetes.
+ */
+export function fragmentEntetes(typeNom, drapeaux, charge) {
+  if (!['HEADERS', 'PUSH_PROMISE', 'CONTINUATION'].includes(typeNom)) return null;
+  let debut = 0;
+  let fin = charge.length;
+  if (typeNom !== 'CONTINUATION' && (drapeaux & 0x8)) {   // PADDED
+    if (!charge.length) return null;
+    fin -= charge[0];
+    debut += 1;
+  }
+  if (typeNom === 'HEADERS' && (drapeaux & 0x20)) debut += 5;   // PRIORITY
+  if (typeNom === 'PUSH_PROMISE') debut += 4;                   // flux promis
+  if (fin < debut) return null;
+  return charge.slice(debut, fin);
+}
+
+/**
+ * Decode le bloc d en-tetes d une trame. `table` conserve la table dynamique
+ * entre les trames d une meme connexion : sans elle, un index appris plus tot
+ * ne se resout pas. Rend null quand il n y a rien a decoder, et une erreur
+ * lisible plutot qu une exception quand le bloc est incomplet.
+ */
+export function entetesDeTrame(trame, table) {
+  const fragment = fragmentEntetes(trame.typeNom, trame.drapeaux, trame.chargeUtile);
+  if (!fragment || !fragment.length) return null;
+  try {
+    const lu = decoderBlocHpack(fragment, table);
+    return {
+      entetes: lu.entetes,
+      tailleTable: lu.tailleTable,
+      tailleMaxTable: lu.tailleMaxTable,
+      complet: !!(trame.drapeaux & 0x4) || trame.typeNom === 'CONTINUATION'
+    };
+  } catch (e) {
+    return { erreur: String(e && e.message || e), entetes: [] };
+  }
 }
 
 /** Decode toutes les trames consecutives ; un reliquat plus court qu un

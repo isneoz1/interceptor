@@ -52,6 +52,16 @@ First public release.
   the resulting sentence never matched a dictionary key. They are now templates plus values,
   the same convention the analyser already used for its evidence.
 
+### Added after the first release
+
+- **HPACK header decompression (RFC 7541).** An HTTP/2 HEADERS frame carries a
+  compressed block, and the frame decoder used to stop at its edge with "compressed
+  HPACK, not decompressed here". It now reads the block through: prefixed integers
+  (section 5.1), literal strings with Huffman coding (section 5.2 and Appendix B),
+  the 61-entry static table, and a dynamic table carried across the frames of a
+  connection. Verified against every complete example in Appendix C, and against the
+  published Huffman encoding of `www.example.com`.
+
 ### Internal
 
 - Six finished modules were reachable from no import — 886 lines of RFC-accurate code that
@@ -60,7 +70,7 @@ First public release.
   decoding into the Request tab, RFC 3986 canonical URLs and homograph detection into the
   URL panel, reverse DNS names into the Address panel, WebSocket and HTTP/2 frame decoding
   into the Binary panel, and TLS / QUIC / HTTP-3 / DNS tables into the Reference panel.
-- Test suite added: 645 assertions across five suites, running under Node with no browser
+- Test suite added: 680 assertions across five suites, running under Node with no browser
   and no dependencies, validated against published RFC vectors. `build.ps1` already required
   these suites but the directory was absent, so packaging failed wherever Node was
   installed.

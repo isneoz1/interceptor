@@ -9,8 +9,10 @@
  */
 import { egal, memeListe, verifier, leve, bilan } from './harnais.mjs';
 
-import { decoderTrameWs, decoderTramesWs, encoderTrameWs, decoderTrameH2, decoderTramesH2, PREFACE_H2 }
-  from '../ui/lib/trames.js';
+import { decoderTrameWs, decoderTramesWs, encoderTrameWs, decoderTrameH2, decoderTramesH2, PREFACE_H2,
+  fragmentEntetes, entetesDeTrame } from '../ui/lib/trames.js';
+import { decoderBlocHpack, TableDynamique, TABLE_STATIQUE, encoderEntier,
+  encoderHuffman, decoderHuffman } from '../ui/lib/hpack.js';
 import { analyserCsp, DIRECTIVES_CSP } from '../ui/lib/csp.js';
 import { analyserFraicheur, analyserCacheControl, entetesVersObjet, resumerFraicheur }
   from '../ui/lib/cache-http.js';
@@ -71,6 +73,98 @@ verifier('GOAWAY expose le dernier flux traite',
 
 egal('preface HTTP/2 connue', PREFACE_H2.startsWith('PRI * HTTP/2.0'), true);
 verifier('trames HTTP/2 enchainees', decoderTramesH2('000000040100000000000000040100000000').length === 2);
+
+/* ------------------------- HPACK (RFC 7541) ------------------------------- */
+/* Les exemples complets de l annexe C. Ils couvrent les entiers, les chaines
+   litterales, le codage de Huffman, la table statique et la table dynamique. */
+const paires = r => r.entetes.map(e => e.nom + ': ' + e.valeur);
+
+/* C.1 : entiers a prefixe. */
+egal('C.1.1 entier 10 sur 5 bits', octetsVersHex(encoderEntier(10, 5)), '0a');
+egal('C.1.2 entier 1337 sur 5 bits', octetsVersHex(encoderEntier(1337, 5)), '1f9a0a');
+egal('C.1.3 entier 42 sur 8 bits', octetsVersHex(encoderEntier(42, 8)), '2a');
+
+/* C.2 : les quatre formes de representation. */
+memeListe('C.2.1 litteral avec indexation',
+  paires(decoderBlocHpack('400a637573746f6d2d6b65790d637573746f6d2d686561646572')),
+  ['custom-key: custom-header']);
+memeListe('C.2.2 litteral sans indexation',
+  paires(decoderBlocHpack('040c2f73616d706c652f70617468')), [':path: /sample/path']);
+memeListe('C.2.3 litteral jamais indexe',
+  paires(decoderBlocHpack('100870617373776f726406736563726574')), ['password: secret']);
+memeListe('C.2.4 en-tete entierement indexe', paires(decoderBlocHpack('82')), [':method: GET']);
+
+/* C.3 : deux requetes d une meme connexion, la seconde s appuyant sur la
+   table dynamique remplie par la premiere. */
+const tableC3 = new TableDynamique();
+memeListe('C.3.1 premiere requete',
+  paires(decoderBlocHpack('828684410f7777772e6578616d706c652e636f6d', tableC3)),
+  [':method: GET', ':scheme: http', ':path: /', ':authority: www.example.com']);
+memeListe('C.3.2 seconde requete, index appris de la premiere',
+  paires(decoderBlocHpack('828684be58086e6f2d6361636865', tableC3)),
+  [':method: GET', ':scheme: http', ':path: /', ':authority: www.example.com',
+    'cache-control: no-cache']);
+
+/* C.4 : les memes requetes, chaines codees en Huffman. */
+memeListe('C.4.1 requete en Huffman',
+  paires(decoderBlocHpack('828684418cf1e3c2e5f23a6ba0ab90f4ff', new TableDynamique())),
+  [':method: GET', ':scheme: http', ':path: /', ':authority: www.example.com']);
+
+/* C.6 : reponse en Huffman avec une table de 256 octets, qui force l eviction. */
+memeListe('C.6.1 reponse en Huffman',
+  paires(decoderBlocHpack('488264025885aec3771a4b6196d07abe941054d444a82005'
+    + '95040b8166e082a62d1bff6e919d29ad171863c78f0b97c8e9ae82ae43d3',
+  new TableDynamique(256))),
+  [':status: 302', 'cache-control: private', 'date: Mon, 21 Oct 2013 20:13:21 GMT',
+    'location: https://www.example.com']);
+
+/* Huffman : la table publiee doit produire exactement la sortie de la RFC. */
+egal('Huffman de www.example.com (annexe C.4.1)',
+  octetsVersHex(encoderHuffman(new TextEncoder().encode('www.example.com'))),
+  'f1e3c2e5f23a6ba0ab90f4ff');
+egal('Huffman aller-retour',
+  new TextDecoder().decode(decoderHuffman(encoderHuffman(new TextEncoder().encode('INTERCEPTOR')))),
+  'INTERCEPTOR');
+
+/* Table statique : 61 entrees, bornes comprises. */
+egal('table statique complete', TABLE_STATIQUE.length, 61);
+egal('premiere entree statique', TABLE_STATIQUE[0][0], ':authority');
+egal('derniere entree statique', TABLE_STATIQUE[60][0], 'www-authenticate');
+leve('index 0 refuse', () => new TableDynamique().lire(0));
+leve('index hors table refuse', () => new TableDynamique().lire(999));
+
+/* Table dynamique : cout d une entree et eviction (RFC 7541 section 4.1). */
+const td = new TableDynamique(4096);
+egal('cout d une entree', TableDynamique.coutDe('a', 'b'), 34);
+td.ajouter('x', 'y');
+egal('taille apres une entree', td.taille, 34);
+const petite = new TableDynamique(40);
+petite.ajouter('aaaa', 'bbbb');       // 40 octets exactement
+egal('une entree qui rentre juste', petite.entrees.length, 1);
+petite.ajouter('cccc', 'dddd');       // force l eviction de la precedente
+egal('l entree la plus ancienne est evincee', petite.entrees.length, 1);
+egal('c est bien la nouvelle qui reste', petite.entrees[0][0], 'cccc');
+const minuscule = new TableDynamique(10);
+minuscule.ajouter('nom', 'valeur');   // plus grande que la table entiere
+egal('une entree trop grande vide la table sans y entrer', minuscule.entrees.length, 0);
+
+/* Extraction du fragment : remplissage et priorite doivent etre retires. */
+const brut = new Uint8Array([0x82]);
+memeListe('fragment sans drapeau', Array.from(fragmentEntetes('HEADERS', 0, brut)), [0x82]);
+memeListe('fragment avec PADDED',
+  Array.from(fragmentEntetes('HEADERS', 0x8, new Uint8Array([2, 0x82, 0, 0]))), [0x82]);
+memeListe('fragment avec PRIORITY',
+  Array.from(fragmentEntetes('HEADERS', 0x20, new Uint8Array([0, 0, 0, 1, 16, 0x82]))), [0x82]);
+egal('un type sans en-tetes ne rend rien', fragmentEntetes('DATA', 0, brut), null);
+
+/* Une trame HEADERS complete, decodee de bout en bout. */
+const trameH = decoderTrameH2('000011' + '01' + '04' + '00000001'
+  + '828684418cf1e3c2e5f23a6ba0ab90f4ff');
+egal('trame HEADERS reconnue', trameH.typeNom, 'HEADERS');
+const lusH = entetesDeTrame(trameH, new TableDynamique());
+memeListe('en-tetes lus dans la trame', lusH.entetes.map(h => h.nom),
+  [':method', ':scheme', ':path', ':authority']);
+verifier('bloc signale complet grace a END_HEADERS', lusH.complet === true);
 
 /* ------------------------------ CSP (niveau 3) ---------------------------- */
 const csp = analyserCsp("default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.exemple.fr");

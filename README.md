@@ -14,7 +14,7 @@ Created by **D4RK**
 ![Manifest V2](https://img.shields.io/badge/Manifest-V2-444?style=flat)
 [![MIT licence](https://img.shields.io/badge/Licence-MIT-00DDFF?style=flat)](LICENSE)
 ![No dependencies](https://img.shields.io/badge/Dependencies-none-2ea043?style=flat)
-![645 assertions](https://img.shields.io/badge/Assertions-645-2ea043?style=flat)
+![680 assertions](https://img.shields.io/badge/Assertions-680-2ea043?style=flat)
 ![English and French](https://img.shields.io/badge/UI-EN%20%2F%20FR-444?style=flat)
 
 [**Install**](#3-installation) · [**Screenshots**](#2-screenshots) · [**How it works**](#4-how-it-works-the-capture-layers) · [**Changelog**](CHANGELOG.md) · [**Security**](SECURITY.md)
@@ -78,7 +78,7 @@ specific points:
 happens inside your Firefox, on your machine.
 
 **By the numbers**: 144 JavaScript modules, ~28,000 lines, zero external dependencies,
-645 automated assertions, English and French interface.
+680 automated assertions, English and French interface.
 
 ---
 
@@ -477,7 +477,7 @@ own secret and tracker patterns in the settings.
 | **Digests** | MD5, SHA-1, SHA-2, SHA-3, SHAKE, BLAKE2b/2s, CRC (20 standard variants), Adler-32, FNV-1a, MurmurHash3, xxHash32, HMAC |
 | **Measures** | Length, bytes, Shannon entropy, character distribution |
 | **Hexadecimal** | Hex dump with ASCII column |
-| **Binary** | Protocol Buffers, MessagePack, CBOR, ASN.1/DER and X.509 certificates, character sets and mojibake repair, **WebSocket and HTTP/2 frames decoded byte by byte** |
+| **Binary** | Protocol Buffers, MessagePack, CBOR, ASN.1/DER and X.509 certificates, character sets and mojibake repair, **WebSocket and HTTP/2 frames decoded byte by byte, including full HPACK header decompression** (RFC 7541: static table, dynamic table, Huffman) |
 | **Code** | Call-code generation in 39 formats (see [section 14](#14-import-and-export)), readability and deobfuscation |
 | **OTP codes** | HOTP and TOTP (RFC 4226 / 6238), neighbouring windows, `otpauth://` links |
 | **Identify** | Recognising an unknown value: format, likely encoding, candidate digest |
@@ -716,7 +716,7 @@ ui/                        The interface — one page for all four surfaces
 ├── console/               One view per file, plus the detail panel
 └── lib/                   Codecs, digests, network, reference tables, i18n
 
-tests/                     645 assertions, no browser required
+tests/                     680 assertions, no browser required
 tools/captures.mjs         Generates the documentation screenshots
 build.ps1                  Verification and .xpi packaging
 ```
@@ -761,7 +761,7 @@ French at the flip of a setting.
 npm test
 ```
 
-645 assertions, with no browser and no dependencies. The kernel and interface modules are
+680 assertions, with no browser and no dependencies. The kernel and interface modules are
 written for Firefox; `tests/harnais.mjs` supplies the minimum WebExtension API and DOM they
 need to import and run under Node. **The logic under test is exactly the logic that runs in
 the browser, with no rewriting.**
@@ -769,12 +769,12 @@ the browser, with no rewriting.**
 | Suite | Assertions | What it covers |
 |---|---|---|
 | `core.test.mjs` | 173 | URL normalisation, correlation signatures, the store, the rule engine (both ways: what matches **and** what must not), the security analyser rule by rule, HAR export, curl import, all 39 code generators |
-| `avance.test.mjs` | 133 | WebSocket and HTTP/2 frames, CSP, RFC 9111 freshness, multipart, canonical URLs and homographs, protocol tables, binary structures, rare digests, generators |
-| `ui-load.test.mjs` | 126 | Actual loading of the 101 interface modules, complete module graph (no dead import, no file outside the graph), consistency with the HTML pages and the manifest, and **full translation coverage** — every displayed string must have a dictionary entry |
+| `avance.test.mjs` | 164 | WebSocket and HTTP/2 frames, CSP, RFC 9111 freshness, multipart, canonical URLs and homographs, protocol tables, binary structures, rare digests, generators |
+| `ui-load.test.mjs` | 127 | Actual loading of the 101 interface modules, complete module graph (no dead import, no file outside the graph), consistency with the HTML pages and the manifest, and **full translation coverage** — every displayed string must have a dictionary entry |
 | `detail-coverage.test.mjs` | 120 | Each of a record's 60 fields is displayed, each tab has a render function, each searchable field exists |
 | `outils.test.mjs` | 96 | The toolbox, against published vectors |
 
-Expected values come from published sources: RFC vectors (4226, 6238, 6455, 4231, 9113,
+Expected values come from published sources: RFC vectors (4226, 6238, 6455, 4231, 7541, 9113,
 3986, 7578, 9111), standard check values (all 20 CRC variants are verified against their
 published check value for `123456789`), FIPS 202 for SHA-3, RFC 7693 for BLAKE2, RFC 9562
 for UUIDs.
@@ -812,7 +812,7 @@ the file. It contains internal errors and the command log — not your traffic.
 Before opening a pull request:
 
 ```bash
-npm test              # all 645 assertions must pass
+npm test              # all 680 assertions must pass
 .\build.ps1 -Verify   # the build must be green
 ```
 

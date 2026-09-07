@@ -167,6 +167,20 @@ export const EN_ANALYSE = {
   '16 bits': '16 bits',
   '64 bits': '64 bits',
 
+  /* --------------------------- HPACK (RFC 7541) --------------------------- */
+  'En-tetes decodes (HPACK)': 'Decoded headers (HPACK)',
+  'en-tete(s)': 'header(s)',
+  'Table dynamique': 'Dynamic table',
+  'Bloc HPACK illisible : ': 'Unreadable HPACK block: ',
+  'END_HEADERS absent : le bloc se poursuit dans une trame CONTINUATION.':
+    'END_HEADERS absent: the block continues in a CONTINUATION frame.',
+  /* Formes de representation, affichees au survol de chaque en-tete. */
+  'indexe': 'indexed',
+  'litteral indexe': 'literal, indexed',
+  'litteral sans indexation': 'literal, not indexed',
+  'litteral jamais indexe': 'literal, never indexed',
+  'taille de table': 'table size update',
+
   /* Remarques produites par le decodeur (ui/lib/trames.js). */
   'bit RSV a 1 : reserve a une extension negociee (permessage-deflate par exemple)':
     'RSV bit set: reserved for a negotiated extension (permessage-deflate for instance)',
