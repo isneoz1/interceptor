@@ -1,0 +1,6 @@
+# The repository is LF everywhere: that is what Firefox and Node read.
+* text=auto eol=lf
+
+# Binaries: never converted.
+*.png binary
+*.xpi binary

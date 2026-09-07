@@ -1,0 +1,621 @@
+/* ============================================================
+   INTERCEPTOR — console (cree par D4RK)
+
+   Meme page pour l onglet plein ecran, le panneau lateral et la page
+   d options : la mise en page suit la largeur disponible.
+
+   Mise en page : une barre superieure fine, une colonne de navigation
+   discrete, et tout l espace restant pour les donnees. Les separations
+   sont des filets d un pixel, jamais des ombres.
+   ============================================================ */
+
+html, body { height: 100%; }
+body { display: flex; flex-direction: column; overflow: hidden; }
+
+/* ================================ En-tete ================================
+   Trois zones : identite a gauche, recherche au centre, actions a droite.
+   L en-tete ne porte aucune couleur : c est un cadre, pas un contenu. */
+.top {
+  display: flex; align-items: center; gap: 10px;
+  height: 52px; padding: 0 14px; flex-shrink: 0;
+  background: var(--elev);
+  border-bottom: 1px solid var(--line);
+}
+
+.brand { display: flex; align-items: center; gap: 9px; flex-shrink: 0; }
+.brand .mark { width: 24px; height: 24px; }
+.brand .title { display: flex; align-items: baseline; gap: 7px; }
+.brand .title strong {
+  font: 600 14px/1 var(--sans); letter-spacing: -.01em; color: var(--text);
+}
+.brand .title span {
+  font: 400 11px/1 var(--sans); color: var(--mute);
+}
+
+.top .grow { flex: 1 1 auto; min-width: 120px; display: flex; align-items: center; gap: 6px; }
+#q { flex: 1; min-width: 0; height: 30px; }
+.top .actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; margin: 0; }
+
+/* Separateur vertical de la barre : isole le groupe d icones de droite. */
+.top .actions .sep {
+  width: 1px; height: 20px; background: var(--line); margin: 0 3px; flex-shrink: 0;
+}
+
+/* Etat de capture : une pastille et un mot. Vert quand ca tourne, ambre
+   en pause. Aucune animation quand rien ne se passe. */
+.capture {
+  display: inline-flex; align-items: center; gap: 7px; height: 30px; padding: 0 12px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--r);
+  color: var(--text); font: 500 12px/1 var(--sans); flex-shrink: 0;
+  transition: background var(--speed), border-color var(--speed);
+}
+.capture:hover { background: var(--surface-2); border-color: var(--surface-3); }
+.capture .dot {
+  width: 7px; height: 7px; border-radius: 50%; background: var(--green); flex-shrink: 0;
+  animation: beat 2s ease-in-out infinite;
+}
+@keyframes beat { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
+.capture.paused .dot { background: var(--amber); animation: none; }
+
+/* Debit : une barre par seconde, mesures reelles uniquement. */
+.spark {
+  display: flex; align-items: flex-end; gap: 1px; height: 26px; width: 84px;
+  padding: 4px 6px; flex-shrink: 0;
+  background: var(--code-bg); border: 1px solid var(--line); border-radius: var(--r);
+}
+.spark i {
+  flex: 1; min-width: 1px; background: var(--accent); border-radius: 1px;
+  opacity: .8; transition: height .2s linear;
+}
+.spark i.zero { background: var(--surface-3); opacity: 1; }
+
+/* ================================ Corps ================================== */
+.shell { flex: 1; min-height: 0; display: flex; }
+
+.side {
+  width: 196px; flex-shrink: 0; padding: 10px 8px; overflow: auto;
+  background: var(--elev); border-right: 1px solid var(--line);
+  display: flex; flex-direction: column; gap: 1px;
+}
+.side .group {
+  margin: 16px 0 5px; padding: 0 10px;
+  font: 600 10.5px/1 var(--sans); letter-spacing: .04em; color: var(--mute);
+}
+.side .group:first-child { margin-top: 2px; }
+
+.navbtn {
+  position: relative;
+  display: flex; align-items: center; gap: 10px; width: 100%;
+  padding: 7px 10px; background: none; border: 0; border-radius: var(--r);
+  color: var(--dim); font: 400 12.5px/1.35 var(--sans); text-align: left;
+  transition: background var(--speed), color var(--speed);
+}
+.navbtn .ico {
+  width: 15px; text-align: center; font: 400 12px/1 var(--mono);
+  color: var(--mute); flex-shrink: 0; transition: color var(--speed);
+}
+.navbtn .badge {
+  margin-left: auto; padding: 1px 6px; border-radius: 999px;
+  background: var(--surface-2); color: var(--mute);
+  font: 500 10.5px/1.6 var(--mono); font-variant-numeric: tabular-nums;
+}
+.navbtn .badge.hot { background: var(--red-soft); color: var(--red); }
+.navbtn:hover { background: var(--surface); color: var(--text); }
+.navbtn:hover .ico { color: var(--dim); }
+.navbtn.on { background: var(--surface-2); color: var(--text); font-weight: 500; }
+.navbtn.on .ico { color: var(--accent); }
+.navbtn.on::before {
+  content: ''; position: absolute; left: 0; top: 7px; bottom: 7px; width: 2px;
+  border-radius: 0 2px 2px 0; background: var(--accent);
+}
+
+.main { flex: 1; min-width: 0; min-height: 0; display: flex; flex-direction: column; }
+.view { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.pane { flex: 1; min-height: 0; overflow: auto; padding: 20px 24px 48px; }
+.pane.narrow { max-width: 900px; }
+
+/* ============================== Barre d outils =========================== */
+.toolbar {
+  display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+  padding: 9px 14px; flex-shrink: 0; border-bottom: 1px solid var(--line-soft);
+}
+.toolbar .sep { width: 1px; height: 18px; background: var(--line); margin: 0 3px; }
+.toolbar .count {
+  margin-left: auto; color: var(--mute);
+  font: 400 11.5px/1 var(--mono); font-variant-numeric: tabular-nums;
+}
+.facets { display: flex; gap: 6px; flex-wrap: wrap; padding: 0 14px 10px; flex-shrink: 0; }
+
+/* ============================ Tableau virtuel ============================
+   C est la surface la plus dense de l application : monospace, chiffres
+   alignes, une seule ligne de separation, aucun effet au survol autre
+   qu un fond a peine plus clair. */
+.split { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.tablewrap {
+  flex: 1; min-height: 0; overflow: auto; position: relative;
+  overscroll-behavior: contain; scrollbar-gutter: stable;
+}
+/* Pendant un defilement rapide, on fige survol et transitions des lignes :
+   le texte reste net, aucune trainee sous le curseur. */
+.tablewrap.defile .trow { transition: none; }
+.tablewrap.defile .trow:hover { background: transparent; }
+.table { width: 100%; }
+
+.thead, .trow {
+  display: grid; grid-template-columns: var(--cols);
+  align-items: center; gap: 0;
+}
+.thead {
+  position: sticky; top: 0; z-index: 3;
+  background: var(--elev);
+  border-bottom: 1px solid var(--line);
+}
+.thead > div {
+  position: relative;
+  padding: 8px 10px; cursor: pointer; user-select: none;
+  font: 500 10.5px/1.2 var(--sans); letter-spacing: .04em;
+  color: var(--mute); border-right: 1px solid var(--line-soft);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  transition: color var(--speed), background var(--speed);
+}
+.thead > div:hover { color: var(--text); background: var(--surface); }
+.thead > div.sorted { color: var(--accent); }
+.thead > div.num, .trow > .num { text-align: right; }
+
+.trow {
+  height: var(--row-h);
+  border-bottom: 1px solid var(--line-soft);
+  cursor: pointer; font: 400 var(--fs-row)/1 var(--mono);
+  transition: background var(--speed);
+}
+.trow:hover { background: var(--surface); }
+.trow.sel { background: var(--accent-weak); box-shadow: inset 2px 0 0 var(--accent); }
+.trow.flagged { box-shadow: inset 2px 0 0 var(--amber); }
+.trow.sel.flagged { background: var(--accent-weak); box-shadow: inset 2px 0 0 var(--accent); }
+
+/* Marquage manuel : un simple lisere a gauche. Le fond reste intact pour
+   que le texte garde son contraste. */
+.trow.mark-rouge  { box-shadow: inset 2px 0 0 var(--mk-rouge); }
+.trow.mark-orange { box-shadow: inset 2px 0 0 var(--mk-orange); }
+.trow.mark-jaune  { box-shadow: inset 2px 0 0 var(--mk-jaune); }
+.trow.mark-vert   { box-shadow: inset 2px 0 0 var(--mk-vert); }
+.trow.mark-bleu   { box-shadow: inset 2px 0 0 var(--mk-bleu); }
+.trow.mark-violet { box-shadow: inset 2px 0 0 var(--mk-violet); }
+
+.pastille {
+  width: 8px; height: 8px; margin: 0 auto; border-radius: 50%;
+  border: 1px solid var(--surface-3); background: transparent;
+}
+.pastille.c-rouge  { background: var(--mk-rouge);  border-color: var(--mk-rouge); }
+.pastille.c-orange { background: var(--mk-orange); border-color: var(--mk-orange); }
+.pastille.c-jaune  { background: var(--mk-jaune);  border-color: var(--mk-jaune); }
+.pastille.c-vert   { background: var(--mk-vert);   border-color: var(--mk-vert); }
+.pastille.c-bleu   { background: var(--mk-bleu);   border-color: var(--mk-bleu); }
+.pastille.c-violet { background: var(--mk-violet); border-color: var(--mk-violet); }
+
+.trow > div {
+  padding: 0 10px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+  line-height: var(--row-h);
+}
+.trow > .num { font-variant-numeric: tabular-nums; }
+.trow .risk-bar { padding: 0; }
+.trow .risk-bar i {
+  display: block; width: 3px; height: calc(var(--row-h) - 10px); margin: 5px 0 0 5px;
+  border-radius: 2px; background: transparent;
+}
+.trow .risk-bar i.critical { background: var(--red); }
+.trow .risk-bar i.high { background: var(--accent); }
+.trow .risk-bar i.medium { background: var(--amber); }
+.trow .risk-bar i.low { background: var(--violet); }
+.trow .star { color: var(--surface-3); text-align: center; padding: 0; }
+.trow .star.on { color: var(--amber); }
+.trow .dim { color: var(--mute); }
+.trow .layers { color: var(--mute); font-size: .92em; }
+
+/* =============================== Detail ================================== */
+.resizer {
+  height: 6px; flex-shrink: 0; cursor: row-resize; position: relative;
+  background: var(--elev); border-top: 1px solid var(--line);
+}
+.resizer::after {
+  content: ''; position: absolute; left: 50%; top: 2px; width: 36px; height: 2px;
+  transform: translateX(-50%); border-radius: 2px; background: var(--surface-3);
+}
+.resizer:hover::after { background: var(--accent); }
+
+.detail {
+  height: 46%; min-height: 150px; flex-shrink: 0;
+  display: flex; flex-direction: column; background: var(--elev);
+  border-top: 1px solid var(--line);
+}
+.detail[hidden] { display: none; }
+.detail-head {
+  display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+  padding: 9px 14px; flex-shrink: 0; border-bottom: 1px solid var(--line-soft);
+}
+.detail-head .who {
+  flex: 1; min-width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font: 400 12px/1.35 var(--mono); color: var(--text);
+}
+.detail-head .who span { color: var(--mute); }
+
+.dtabs {
+  display: flex; gap: 2px; overflow-x: auto; flex-shrink: 0;
+  padding: 0 12px; border-bottom: 1px solid var(--line-soft);
+}
+.dtab {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 9px 11px; background: none; border: 0; border-bottom: 2px solid transparent;
+  color: var(--mute); font: 400 12px/1.2 var(--sans); white-space: nowrap;
+  transition: color var(--speed), border-color var(--speed);
+}
+/* Beaucoup d onglets (boite a outils) : ils passent a la ligne plutot que de
+   disparaitre derriere un defilement horizontal. */
+.dtabs.wrap { flex-wrap: wrap; overflow-x: visible; }
+
+.dtab:hover { color: var(--text); }
+.dtab.on { color: var(--text); border-bottom-color: var(--accent); font-weight: 500; }
+.dtab .n {
+  padding: 0 6px; border-radius: 999px;
+  background: var(--surface-2); color: var(--mute);
+  font: 500 10.5px/1.7 var(--mono);
+}
+.dtab.on .n { background: var(--accent-weak); color: var(--accent); }
+
+/* Bascule a deux etats (boite a outils, panneau Code) : un vrai choix visible,
+   plus marque qu un onglet, pour qu on sache toujours quelle action est active. */
+.seg {
+  display: inline-flex; gap: 0; margin: 4px 0 12px;
+  border: 1px solid var(--line); border-radius: 8px; overflow: hidden;
+}
+.segbtn {
+  padding: calc(8px * var(--scale)) calc(16px * var(--scale)); background: var(--surface); border: 0;
+  color: var(--mute); font: 500 calc(12.5px * var(--scale))/1.2 var(--sans); cursor: pointer;
+  transition: background var(--speed), color var(--speed);
+}
+.segbtn + .segbtn { border-left: 1px solid var(--line); }
+.segbtn:hover { color: var(--text); }
+.segbtn.on { background: var(--accent); color: var(--on-accent); font-weight: 600; }
+
+/* Un code OTP se lit d un coup d oeil : grand, espace, en chiffres a chasse
+   fixe. Selecteur assez precis pour l emporter sur « .find h4 ». */
+.find .otp-code {
+  margin: 4px 0 2px; font: 700 clamp(1.7rem, 1.1rem + 2vw, 2.6rem)/1.05 var(--mono);
+  letter-spacing: 0.16em; color: var(--accent);
+  white-space: nowrap; overflow-x: auto;
+}
+.actions.wrap { flex-wrap: wrap; }
+
+/* Un champ qui prend toute la largeur, hors d une rangee d actions. */
+.field.bloc { display: block; width: 100%; margin: 4px 0 6px; }
+
+/* Etiquette suivie de son controle sur une meme ligne (panneaux Code et OTP). */
+.inline {
+  display: inline-flex; align-items: center; gap: 7px; cursor: default;
+}
+.inline > span { color: var(--mute); font: 400 calc(12px * var(--scale))/1.4 var(--sans); }
+.inline input[type="checkbox"] { cursor: pointer; }
+
+.dbody { flex: 1; min-height: 0; overflow: auto; padding: 16px 18px 32px; }
+
+/* Trame WebSocket ou message SSE : sens, heure, contenu. */
+.frame {
+  display: grid; grid-template-columns: 112px 1fr; gap: 12px; padding: 6px 0;
+  border-bottom: 1px solid var(--line-soft); font: 400 11.5px/1.6 var(--mono);
+}
+.frame b { font: 500 11px/1.7 var(--mono); }
+.frame.send b { color: var(--accent); }
+.frame.recv b { color: var(--blue); }
+.frame span { color: var(--dim); word-break: break-word; }
+.frame.full span { max-height: none; }
+
+.bars {
+  display: grid; grid-template-columns: 124px 1fr 84px; gap: 7px 12px;
+  align-items: center; font: 400 11.5px/1.5 var(--sans);
+}
+.bars .track { height: 8px; background: var(--surface-2); border-radius: 4px; overflow: hidden; }
+.bars .fill { height: 100%; background: var(--accent); border-radius: 4px; }
+.bars .val {
+  text-align: right; color: var(--dim);
+  font-family: var(--mono); font-variant-numeric: tabular-nums;
+}
+
+.tree { font: 400 12px/1.75 var(--mono); }
+.tree details { margin-left: 14px; border-left: 1px solid var(--line-soft); padding-left: 10px; }
+.tree summary { cursor: pointer; color: var(--dim); }
+.tree summary:hover { color: var(--text); }
+.tree .k { color: var(--blue); }
+.tree .v { color: var(--text); word-break: break-word; }
+.tree .t { color: var(--mute); }
+.tree .row { margin-left: 14px; display: flex; gap: 9px; }
+
+.preview-img {
+  max-width: 100%; max-height: 360px; margin-top: 12px;
+  border: 1px solid var(--line); border-radius: var(--r); background: var(--surface-2);
+}
+
+/* ================================ Journaux =============================== */
+.log {
+  display: grid; grid-template-columns: 96px 148px 1fr; gap: 12px;
+  padding: 6px 0; border-bottom: 1px solid var(--line-soft);
+  font: 400 11.5px/1.6 var(--mono);
+}
+.log:hover { background: var(--surface); }
+.log b { color: var(--text); font-weight: 500; }
+.log .ts { color: var(--mute); font-variant-numeric: tabular-nums; }
+.log span { color: var(--dim); word-break: break-word; }
+
+/* ================================ Reglages ===============================
+   Une option par ligne : intitule lisible a gauche, controle a droite,
+   explication sous l intitule. C est la forme la plus rapide a parcourir. */
+.opt {
+  display: flex; align-items: center; justify-content: space-between; gap: 20px;
+  padding: 11px 0; border-bottom: 1px solid var(--line-soft);
+}
+.opt .lbl { flex: 1; font: 400 12.5px/1.5 var(--sans); color: var(--text); }
+.opt .lbl i {
+  display: block; margin-top: 3px; font-style: normal;
+  font: 400 11.5px/1.6 var(--sans); color: var(--mute); max-width: 74ch;
+}
+.opt .ctl { flex-shrink: 0; display: flex; align-items: center; gap: 7px; }
+.opt input[type="number"] { width: 130px; text-align: right; }
+.opt select { min-width: 180px; }
+
+.actions { display: flex; gap: 8px; flex-wrap: wrap; margin: 14px 0 8px; align-items: center; }
+.checks {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 6px 16px; margin: 12px 0 16px;
+}
+.checks label {
+  display: flex; align-items: center; gap: 8px;
+  font: 400 12px/1.6 var(--sans); color: var(--dim);
+}
+.checks label:hover { color: var(--text); }
+
+/* Tuiles de chiffres : le nombre domine, l etiquette s efface. */
+.tiles {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(178px, 1fr));
+  gap: 10px; margin-bottom: 14px;
+}
+.tile {
+  padding: 14px 16px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg);
+  transition: border-color var(--speed), background var(--speed);
+}
+.tile:hover { border-color: var(--surface-3); }
+.tile b {
+  display: block; font: 500 24px/1.1 var(--mono); color: var(--text);
+  font-variant-numeric: tabular-nums; letter-spacing: -.02em;
+}
+.tile label {
+  display: block; margin-top: 7px; color: var(--mute);
+  font: 400 11.5px/1.4 var(--sans);
+}
+.tile.alert b { color: var(--amber); }
+.tile.alert.hot b { color: var(--red); }
+.tile.ok b { color: var(--green); }
+
+.cols2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px 30px; }
+
+/* ============================== Diagrammes =============================== */
+.chart {
+  display: grid; grid-template-columns: minmax(120px, 220px) 1fr 92px;
+  gap: 6px 14px; align-items: center; font: 400 12px/1.6 var(--sans);
+}
+.chart .lab { color: var(--dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.chart .track { height: 8px; background: var(--surface-2); border-radius: 4px; overflow: hidden; }
+.chart .fill { height: 100%; border-radius: 4px; background: var(--accent); }
+.chart .fill.s-2 { background: var(--green); }
+.chart .fill.s-3 { background: var(--blue); }
+.chart .fill.s-4 { background: var(--amber); }
+.chart .fill.s-5, .chart .fill.s-err { background: var(--red); }
+.chart .val {
+  text-align: right; color: var(--mute);
+  font-family: var(--mono); font-variant-numeric: tabular-nums;
+}
+
+/* ============================= Regles (editeur) ========================== */
+.rule {
+  margin-bottom: 12px; padding: 15px 16px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg);
+}
+.rule.off { opacity: .6; }
+.rule.on { border-color: var(--accent-line); }
+.rule-head { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; margin-bottom: 13px; }
+.rule-head .name { flex: 1; min-width: 150px; }
+.rule-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px 16px;
+}
+.rule-grid label, .hops label {
+  display: flex; flex-direction: column; gap: 6px;
+  font: 500 11.5px/1.3 var(--sans); color: var(--mute);
+}
+.hops { margin-top: 14px; }
+.hop { display: flex; gap: 7px; align-items: center; margin-bottom: 7px; }
+.hop select { width: 116px; }
+.hop input { flex: 1; min-width: 96px; }
+
+/* ================================ Tutoriel =============================== */
+.tuto-steps { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 18px; }
+.tuto-dot {
+  display: flex; align-items: center; gap: 7px; padding: 6px 12px;
+  border: 1px solid var(--line); border-radius: 999px;
+  background: var(--surface); color: var(--mute);
+  font: 400 11.5px/1.35 var(--sans);
+  transition: color var(--speed), border-color var(--speed), background var(--speed);
+}
+.tuto-dot:hover { color: var(--text); border-color: var(--surface-3); }
+.tuto-dot.done { color: var(--green); border-color: rgba(63,185,80,.35); background: var(--green-soft); }
+.tuto-dot.on { color: var(--accent); border-color: var(--accent-line); background: var(--accent-weak); }
+
+.lesson {
+  padding: 26px 28px; margin-bottom: 16px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg);
+}
+.lesson h3 { margin: 0 0 6px; font: 600 20px/1.3 var(--sans); letter-spacing: -.02em; color: var(--text); }
+.lesson .goal { margin: 0 0 18px; font: 400 12px/1.5 var(--sans); color: var(--accent); }
+.lesson p { margin: 0 0 13px; font: 400 13.5px/1.75 var(--sans); color: var(--dim); max-width: 74ch; }
+.lesson ol, .lesson ul { margin: 0 0 15px; padding-left: 22px; }
+.lesson li { margin-bottom: 8px; font: 400 13.5px/1.7 var(--sans); color: var(--dim); }
+.lesson li b { color: var(--text); font-weight: 500; }
+.lesson kbd {
+  display: inline-block; padding: 2px 7px; margin: 0 2px;
+  background: var(--surface-2); border: 1px solid var(--line);
+  border-bottom-width: 2px; border-radius: var(--r-sm);
+  font: 500 11.5px/1.5 var(--mono); color: var(--text);
+}
+.lesson code {
+  padding: 2px 6px; background: var(--code-bg); border: 1px solid var(--line-soft);
+  border-radius: var(--r-sm); font: 400 12px/1.5 var(--mono); color: var(--dim);
+}
+
+.check {
+  display: flex; align-items: flex-start; gap: 10px; padding: 11px 13px; margin-bottom: 8px;
+  background: var(--code-bg); border: 1px solid var(--line-soft); border-radius: var(--r);
+  font: 400 12.5px/1.65 var(--sans); color: var(--dim);
+}
+.check .mark { flex-shrink: 0; font: 400 13px/1.4 var(--mono); color: var(--mute); }
+.check.ok { border-color: rgba(63,185,80,.35); background: var(--green-soft); color: var(--text); }
+.check.ok .mark { color: var(--green); }
+
+.tuto-nav { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 20px; }
+.tuto-nav .grow { flex: 1; }
+.progress { height: 4px; border-radius: 2px; background: var(--surface-2); overflow: hidden; margin-bottom: 20px; }
+.progress i { display: block; height: 100%; background: var(--accent); transition: width .3s ease; }
+
+/* ================================= Aide ================================== */
+.help h2 { margin: 30px 0 12px; font: 600 15px/1.35 var(--sans); letter-spacing: -.01em; color: var(--text); }
+.help h2:first-child { margin-top: 0; }
+.help p { margin: 0 0 12px; font: 400 13px/1.75 var(--sans); color: var(--dim); max-width: 80ch; }
+.help ul { margin: 0 0 14px; padding-left: 22px; }
+.help li { margin-bottom: 7px; font: 400 13px/1.7 var(--sans); color: var(--dim); }
+.help code {
+  padding: 2px 6px; background: var(--surface-2); border-radius: var(--r-sm);
+  font: 400 12px/1.5 var(--mono); color: var(--dim);
+}
+.help table { width: 100%; border-collapse: collapse; margin-bottom: 18px; }
+.help th, .help td {
+  padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--line-soft);
+  font: 400 12px/1.6 var(--sans);
+}
+.help tr:hover td { background: var(--surface); }
+.help th { color: var(--mute); font: 500 11.5px/1.5 var(--sans); }
+.help td:first-child { color: var(--text); font-family: var(--mono); white-space: nowrap; }
+
+/* =============================== Comparaison ============================= */
+.diff { display: grid; grid-template-columns: 1fr 1fr; gap: 0 20px; }
+.diff-col h4 {
+  margin: 0 0 12px; padding-bottom: 8px; border-bottom: 1px solid var(--line-soft);
+  font: 600 12.5px/1.4 var(--sans); color: var(--text);
+}
+.dline {
+  display: grid; grid-template-columns: 16px 1fr; gap: 8px; padding: 3px 7px;
+  font: 400 11.5px/1.6 var(--mono); border-radius: var(--r-sm); word-break: break-word;
+}
+.dline .sign { color: var(--mute); }
+.dline.add { background: var(--green-soft); }
+.dline.add .sign { color: var(--green); }
+.dline.del { background: var(--red-soft); }
+.dline.del .sign { color: var(--red); }
+.dline.mod { background: var(--amber-soft); }
+.dline.mod .sign { color: var(--amber); }
+.dline.same { color: var(--mute); }
+
+/* =============================== Pied ==================================== */
+.bottom {
+  display: flex; align-items: center; gap: 18px; flex-wrap: wrap; flex-shrink: 0;
+  padding: 7px 14px; border-top: 1px solid var(--line);
+  background: var(--elev); font: 400 11.5px/1.7 var(--sans); color: var(--mute);
+}
+.bottom b {
+  color: var(--text); font-weight: 500;
+  font-family: var(--mono); font-variant-numeric: tabular-nums;
+}
+.bottom .ok { color: var(--green); }
+.bottom .ko { color: var(--red); }
+.bottom .right { margin-left: auto; }
+
+/* ============================ Menu contextuel ============================= */
+.ctxmenu {
+  position: fixed; z-index: 80; min-width: 240px; padding: 5px;
+  background: var(--elev); border: 1px solid var(--line); border-radius: var(--r-lg);
+  box-shadow: var(--shadow);
+}
+.ctxmenu button {
+  display: flex; align-items: center; gap: 9px; width: 100%; text-align: left;
+  padding: 7px 10px; background: none; border: 0; border-radius: var(--r-sm);
+  font: 400 12px/1.4 var(--sans); color: var(--dim);
+}
+.ctxmenu button:hover { background: var(--surface-2); color: var(--text); }
+.ctxmenu button.danger:hover { background: var(--red-soft); color: var(--red); }
+.ctxmenu hr { margin: 5px 4px; border: 0; border-top: 1px solid var(--line-soft); }
+.ctxmenu .head {
+  padding: 8px 10px 5px; color: var(--mute);
+  font: 500 11px/1.3 var(--mono);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+/* ============================== Cascade ================================== */
+.trow .wf { padding: 0 8px; }
+.trow .wf i {
+  display: block; height: 6px; margin-top: calc((var(--row-h) - 6px) / 2);
+  border-radius: 3px; background: var(--accent); min-width: 2px; opacity: .85;
+}
+.trow .wf i.wait { background: var(--surface-3); opacity: 1; }
+
+/* ============================ Aide clavier =============================== */
+.overlay {
+  position: fixed; inset: 0; z-index: 95; display: grid; place-items: center;
+  background: rgba(0, 0, 0, .6); backdrop-filter: blur(3px);
+}
+.overlay[hidden] { display: none; }
+.overlay .sheet {
+  width: min(660px, 92vw); max-height: 84vh; overflow: auto; padding: 26px 28px;
+  background: var(--elev); border: 1px solid var(--line); border-radius: var(--r-lg);
+  box-shadow: var(--shadow);
+}
+.overlay h3 { margin: 0 0 18px; font: 600 16px/1.3 var(--sans); letter-spacing: -.01em; color: var(--text); }
+.overlay .keys { display: grid; grid-template-columns: 176px 1fr; gap: 9px 18px; align-items: baseline; }
+.overlay .keys b { font: 400 12px/1.6 var(--mono); color: var(--accent); }
+.overlay .keys span { font: 400 12.5px/1.6 var(--sans); color: var(--dim); }
+
+/* ========================= Redimension des colonnes ====================== */
+.grip {
+  position: absolute; right: 0; top: 0; bottom: 0; width: 7px;
+  cursor: col-resize; border-right: 2px solid transparent;
+}
+.grip:hover { border-right-color: var(--accent); }
+
+/* ============================= Adaptations =============================== */
+@media (max-width: 1120px) {
+  .side { width: calc(50px * var(--scale)); padding: 10px 6px; }
+  .side .navbtn { justify-content: center; padding: 9px 0; }
+  .side .navbtn span.lbl, .side .group { display: none; }
+  .side .navbtn .badge { display: none; }
+  .diff { grid-template-columns: 1fr; }
+}
+@media (max-width: 860px) {
+  .spark { display: none; }
+}
+@media (max-width: 620px) {
+  /* Sous cette largeur, le detail occupe presque tout : une colonne de
+     tableau de 200 px et un detail de 40 % ne servent ni l un ni l autre. */
+  .detail { height: 62%; }
+  .facets { padding-bottom: 6px; }
+}
+@media (max-width: 760px) {
+  .top { height: auto; flex-wrap: wrap; gap: 7px; padding: 8px 10px; }
+  .top .grow { order: 3; flex-basis: 100%; }
+  .brand .title span { display: none; }
+  .pane { padding: 15px 13px 40px; }
+  .detail { height: 56%; }
+}
+
+/* ===================== Confort de lecture et redimension ================== */
+.trow { font-size: calc(var(--fs-row) * var(--scale)); }
+.log, .frame, .chart, .bars { font-size: calc(11.5px * var(--scale)); }
+.tree { font-size: calc(12px * var(--scale)); }
+.opt .lbl { font-size: calc(12.5px * var(--scale)); }
+.help p, .help li, .lesson p, .lesson li { font-size: calc(13px * var(--scale)); }
+.help td, .help th { font-size: calc(12px * var(--scale)); }

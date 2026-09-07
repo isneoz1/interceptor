@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>INTERCEPTOR</title>
+<link rel="stylesheet" href="theme.css">
+<link rel="stylesheet" href="popup.css">
+</head>
+<body>
+
+<header class="head">
+  <img class="mark" src="../icons/icon.svg" alt="" width="22" height="22">
+  <div class="title">
+    <strong>INTERCEPTOR</strong>
+    <span>by D4RK</span>
+  </div>
+  <button id="capture" class="capture" type="button"><span class="dot"></span><span id="capture-label">Capture</span></button>
+</header>
+
+<div class="tiles">
+  <div class="tile"><b id="s-total">0</b><label id="s-total-label">requetes</label></div>
+  <div class="tile"><b id="s-rate">0</b><label>req/s</label></div>
+  <div class="tile"><b id="s-merged">0</b><label>fusions</label></div>
+  <div class="tile alert"><b id="s-alerts">0</b><label>alertes</label></div>
+</div>
+
+<div class="tools">
+  <input id="q" type="search" placeholder="Filtrer…  method:POST  status:5xx" autocomplete="off" spellcheck="false">
+  <select id="scope" title="Perimetre">
+    <option value="tab">Cet onglet</option>
+    <option value="all">Tout Firefox</option>
+  </select>
+</div>
+
+<ul class="list" id="list"></ul>
+
+<div class="quick" id="quick"></div>
+
+<footer class="foot">
+  <button id="console" class="btn accent" type="button" title="Ouvrir la console complete dans un onglet">Console complete</button>
+  <button id="sidebar" class="btn" type="button" title="Ouvrir le panneau lateral">Panneau</button>
+  <div class="menu-wrap"><button id="export" class="btn" type="button">Exporter</button></div>
+  <button id="clear" class="btn danger" type="button">Vider</button>
+</footer>
+
+<div class="toast" id="toast" hidden></div>
+<script type="module" src="popup.js"></script>
+</body>
+</html>

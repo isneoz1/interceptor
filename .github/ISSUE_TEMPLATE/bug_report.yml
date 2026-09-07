@@ -1,0 +1,72 @@
+name: Bug report
+description: Something INTERCEPTOR does wrong, or fails to do
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time. The single most useful thing you can attach is the
+        **diagnostics export**: open the console, go to **System → Internal log**, and click
+        **Export**. It contains INTERCEPTOR's own errors and command log — **not your
+        captured traffic**.
+
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you saw, and what you expected instead.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open the console with Alt+Shift+I
+        2. Visit …
+        3. …
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: INTERCEPTOR version
+      description: Shown in Settings, or the release you downloaded.
+      placeholder: "3.0.0"
+    validations:
+      required: true
+
+  - type: input
+    id: firefox
+    attributes:
+      label: Firefox version and OS
+      placeholder: "Firefox 133, Windows 11"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: install
+    attributes:
+      label: How is it installed?
+      options:
+        - Temporary load (about:debugging)
+        - Unsigned .xpi
+        - Built from source
+    validations:
+      required: true
+
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Diagnostics export
+      description: Attach the JSON file from System → Internal log → Export, if you can.
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I checked the **System state** view to see whether the relevant capture layer is actually active.
+        - label: I searched existing issues.

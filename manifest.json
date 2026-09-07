@@ -1,0 +1,110 @@
+{
+  "manifest_version": 2,
+  "name": "INTERCEPTOR",
+  "short_name": "INTERCEPTOR",
+  "version": "3.0.0",
+  "author": "D4RK",
+  "description": "INTERCEPTOR par D4RK. Poste de supervision reseau complet pour Firefox, en francais et en anglais : console plein ecran, panneau lateral et popup, tutoriel guide, synthese chiffree, comparaison de requetes, regles d interception et rejeu. Interception totale et temps reel de toutes les requetes du navigateur : webRequest complet, corps de reponse (StreamFilter), fetch/XHR/WebSocket/SSE/Beacon/WebRTC, TLS, cookies, navigation. Zero doublon. Cree par D4RK.",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "interceptor@d4rk",
+      "strict_min_version": "115.0"
+    }
+  },
+  "permissions": [
+    "<all_urls>",
+    "webRequest",
+    "webRequestBlocking",
+    "webNavigation",
+    "cookies",
+    "tabs",
+    "dns",
+    "storage",
+    "unlimitedStorage",
+    "downloads",
+    "clipboardWrite",
+    "contextMenus"
+  ],
+  "optional_permissions": [
+    "proxy",
+    "notifications"
+  ],
+  "content_security_policy": "script-src 'self'; object-src 'none'; child-src 'none'; frame-src 'none'",
+  "background": {
+    "page": "background/background.html",
+    "persistent": true
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "content/bridge.js"
+      ],
+      "run_at": "document_start",
+      "all_frames": true,
+      "match_about_blank": true
+    }
+  ],
+  "web_accessible_resources": [
+    "content/hooks.js"
+  ],
+  "browser_action": {
+    "default_title": "INTERCEPTOR — by D4RK",
+    "default_popup": "ui/popup.html",
+    "default_icon": {
+      "16": "icons/icon.svg",
+      "32": "icons/icon.svg",
+      "48": "icons/icon.svg",
+      "128": "icons/icon.svg"
+    }
+  },
+  "sidebar_action": {
+    "default_title": "INTERCEPTOR",
+    "default_panel": "ui/console.html",
+    "default_icon": {
+      "16": "icons/icon.svg",
+      "32": "icons/icon.svg"
+    },
+    "open_at_install": false
+  },
+  "options_ui": {
+    "page": "ui/console.html",
+    "open_in_tab": true
+  },
+  "commands": {
+    "_execute_browser_action": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+Y"
+      },
+      "description": "Ouvrir la fenetre INTERCEPTOR"
+    },
+    "_execute_sidebar_action": {
+      "suggested_key": {
+        "default": "Alt+Shift+S"
+      },
+      "description": "Ouvrir INTERCEPTOR dans le panneau lateral"
+    },
+    "open-console": {
+      "suggested_key": {
+        "default": "Alt+Shift+I"
+      },
+      "description": "Ouvrir la console complete dans un onglet"
+    },
+    "toggle-capture": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+U"
+      },
+      "description": "Basculer capture / pause"
+    }
+  },
+  "icons": {
+    "16": "icons/icon.svg",
+    "32": "icons/icon.svg",
+    "48": "icons/icon.svg",
+    "96": "icons/icon.svg",
+    "128": "icons/icon.svg"
+  },
+  "incognito": "spanning"
+}
