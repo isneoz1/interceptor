@@ -1,0 +1,14 @@
+{
+  "name": "interceptor",
+  "version": "3.0.0",
+  "description": "Poste de supervision reseau pour Firefox : capture totale, analyse et rejeu du trafic. Cree par D4RK.",
+  "author": "D4RK",
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/core.test.mjs && node tests/detail-coverage.test.mjs && node tests/ui-load.test.mjs && node tests/outils.test.mjs && node tests/avance.test.mjs",
+    "build": "pwsh -NoProfile -File ./build.ps1",
+    "verify": "pwsh -NoProfile -File ./build.ps1 -Verify"
+  }
+}

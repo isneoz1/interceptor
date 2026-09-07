@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>INTERCEPTOR — console</title>
+<link rel="stylesheet" href="theme.css">
+<link rel="stylesheet" href="console.css">
+</head>
+<body>
+
+<header class="top">
+  <div class="brand">
+    <img class="mark" src="../icons/icon.svg" alt="" width="24" height="24">
+    <div class="title">
+      <strong>INTERCEPTOR</strong>
+      <span>by D4RK</span>
+    </div>
+  </div>
+
+  <button id="capture" class="capture" type="button" title="Capture active — cliquer pour mettre en pause">
+    <span class="dot"></span><span id="capture-label">Capture</span>
+  </button>
+
+  <div class="spark" id="spark" title="Requetes par seconde — 30 dernieres secondes"></div>
+
+  <div class="grow">
+    <input id="q" type="search" autocomplete="off" spellcheck="false"
+           placeholder="Filtrer :  method:POST   status:5xx   host:api.   size:>100000   -image   /regex/">
+    <div class="menu-wrap"><button id="q-saved" class="btn sm ghost ico-only" type="button" title="Filtres enregistres et recherches recentes" aria-label="Filtres enregistres">★</button></div>
+    <button id="q-help" class="btn sm ghost ico-only" type="button" title="Aide sur la recherche" aria-label="Aide sur la recherche">?</button>
+    <label class="chip" title="Cherche aussi dans les corps, les entetes, les trames et les piles">
+      <input type="checkbox" id="deep"><span id="deep-label">corps</span>
+    </label>
+  </div>
+
+  <div class="actions">
+    <select id="scope" title="Perimetre observe"></select>
+    <div class="menu-wrap"><button id="export" class="btn" type="button">Exporter</button></div>
+    <div class="menu-wrap"><button id="more" class="btn" type="button">Actions</button></div>
+    <button id="clear" class="btn danger" type="button" title="Vider toute la capture">Vider</button>
+    <span class="sep"></span>
+    <div class="menu-wrap"><button id="dock" class="btn sm ghost ico-only" type="button" title="Emplacement de la console" aria-label="Emplacement">⧉</button></div>
+    <button id="lang" class="btn sm ghost" type="button" title="Francais / Anglais" aria-label="Langue">FR</button>
+    <button id="prefs" class="btn sm ghost ico-only" type="button" title="Reglages" aria-label="Reglages">⚙</button>
+  </div>
+</header>
+
+<div class="shell">
+  <nav class="side" id="side" aria-label="Navigation principale"></nav>
+
+  <main class="main" role="main">
+    <section id="view-requests" class="view">
+      <div class="toolbar">
+        <div class="menu-wrap"><button id="columns" class="btn sm" type="button">Colonnes</button></div>
+        <div class="menu-wrap"><button id="sort" class="btn sm" type="button">Tri</button></div>
+        <button id="follow" class="btn sm" type="button" title="Suivre le flux en direct">Suivre</button>
+        <span class="sep"></span>
+        <button id="sel-all" class="btn sm ghost" type="button">Tout selectionner</button>
+        <button id="sel-none" class="btn sm ghost" type="button">Deselectionner</button>
+        <button id="sel-delete" class="btn sm ghost" type="button">Supprimer</button>
+        <button id="compare" class="btn sm ghost" type="button" title="Comparer exactement deux lignes selectionnees">Comparer</button>
+        <span class="count" id="count">0</span>
+      </div>
+      <div class="facets" id="facets"></div>
+
+      <div class="split">
+        <div class="tablewrap" id="tablewrap" role="region" aria-label="Tableau des requetes" tabindex="0">
+          <div class="table" id="table">
+            <div class="thead" id="thead"></div>
+            <div class="tbody" id="tbody"></div>
+          </div>
+        </div>
+        <div class="resizer" id="resizer" hidden></div>
+        <section class="detail" id="detail" hidden>
+          <div class="detail-head">
+            <div class="who" id="detail-who"></div>
+            <button class="btn sm" id="d-prev" type="button" title="Ligne precedente">↑</button>
+            <button class="btn sm" id="d-next" type="button" title="Ligne suivante">↓</button>
+            <button class="btn sm" id="d-flag" type="button" title="Epingler">★</button>
+            <button class="btn sm" id="d-open" type="button" title="Ouvrir l URL dans un onglet">Ouvrir</button>
+            <button class="btn sm" id="d-block" type="button" title="Creer une regle de blocage">Bloquer</button>
+            <div class="menu-wrap"><button class="btn sm" id="d-copy" type="button">Copier</button></div>
+            <button class="btn sm ghost" id="d-close" type="button" title="Fermer le detail">✕</button>
+          </div>
+          <div class="dtabs" id="dtabs" role="tablist" aria-label="Onglets du detail"></div>
+          <div class="dbody" id="dbody"></div>
+        </section>
+      </div>
+    </section>
+
+    <section id="view-alerts" class="view" hidden></section>
+    <section id="view-summary" class="view" hidden></section>
+    <section id="view-compare" class="view" hidden></section>
+    <section id="view-streams" class="view" hidden></section>
+    <section id="view-cookies" class="view" hidden></section>
+    <section id="view-navigation" class="view" hidden></section>
+    <section id="view-context" class="view" hidden></section>
+    <section id="view-tools" class="view" hidden></section>
+    <section id="view-sitemap" class="view" hidden></section>
+    <section id="view-stats" class="view" hidden></section>
+    <section id="view-debug" class="view" hidden></section>
+    <section id="view-intercept" class="view" hidden></section>
+    <section id="view-rules" class="view" hidden></section>
+    <section id="view-settings" class="view" hidden></section>
+    <section id="view-tutorial" class="view" hidden></section>
+    <section id="view-help" class="view" hidden></section>
+  </main>
+</div>
+
+<footer class="bottom" id="foot" aria-live="off"></footer>
+
+<div class="overlay" id="keys" hidden role="dialog" aria-modal="true" aria-label="Raccourcis clavier">
+  <div class="sheet">
+    <h3>Raccourcis clavier</h3>
+    <div class="keys" id="keys-list"></div>
+    <div class="actions"><button class="btn" id="keys-close" type="button">Fermer</button></div>
+  </div>
+</div>
+
+<div class="toast" id="toast" hidden role="status" aria-live="polite"></div>
+<script type="module" src="console.js"></script>
+</body>
+</html>

@@ -1,0 +1,18 @@
+# Paquets construits
+dist/
+*.xpi
+*.zip
+
+# Node
+node_modules/
+npm-debug.log*
+
+# Systeme
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Editeurs
+.vscode/
+.idea/
+*.swp

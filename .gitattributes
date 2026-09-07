@@ -1,0 +1,6 @@
+# Le depot est en LF partout : c est ce que Firefox et Node lisent.
+* text=auto eol=lf
+
+# Binaires : jamais de conversion.
+*.png binary
+*.xpi binary

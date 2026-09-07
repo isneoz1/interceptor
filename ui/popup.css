@@ -1,0 +1,96 @@
+/* ============================================================
+   INTERCEPTOR — fenetre compacte (cree par D4RK)
+   Poste de veille rapide : etat, dernieres requetes, acces direct
+   a la console complete. Le socle visuel vient de theme.css.
+   ============================================================ */
+
+body {
+  width: 420px; height: 600px;
+  display: flex; flex-direction: column; overflow: hidden;
+}
+
+/* -------------------------------- En-tete -------------------------------- */
+.head {
+  display: flex; align-items: center; gap: 9px; flex-shrink: 0;
+  padding: 10px 12px;
+  background: var(--elev); border-bottom: 1px solid var(--line);
+}
+.mark { width: 22px; height: 22px; flex-shrink: 0; }
+.title { flex: 1; display: flex; align-items: baseline; gap: 6px; min-width: 0; }
+.title strong { font: 600 13px/1 var(--sans); letter-spacing: -.01em; color: var(--text); }
+.title span { font: 400 10.5px/1 var(--sans); color: var(--mute); }
+
+.capture {
+  display: inline-flex; align-items: center; gap: 6px; height: 26px; padding: 0 10px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--r);
+  color: var(--text); font: 500 11.5px/1 var(--sans); flex-shrink: 0;
+}
+.capture:hover { background: var(--surface-2); }
+.capture .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
+.capture.paused .dot { background: var(--amber); }
+
+/* --------------------------------- Chiffres ------------------------------- */
+.tiles {
+  display: grid; grid-template-columns: repeat(4, 1fr); flex-shrink: 0;
+  border-bottom: 1px solid var(--line);
+}
+.tile {
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  padding: 9px 3px; border-right: 1px solid var(--line-soft);
+  background: none; border-radius: 0;
+}
+.tile:last-child { border-right: 0; }
+.tile:hover { background: var(--surface); }
+.tile b {
+  font: 500 16px/1 var(--mono); color: var(--text); font-variant-numeric: tabular-nums;
+}
+.tile label { font: 400 10px/1 var(--sans); color: var(--mute); }
+.tile.alert b { color: var(--amber); }
+.tile.alert.hot b { color: var(--red); }
+
+.tools { display: flex; gap: 6px; align-items: center; padding: 9px 12px 7px; flex-shrink: 0; }
+#q { flex: 1; min-width: 0; }
+#scope { width: 120px; }
+
+/* ------------------------------ Dernieres lignes -------------------------- */
+.list {
+  flex: 1; min-height: 0; margin: 0; padding: 0; list-style: none;
+  overflow-y: auto; border-top: 1px solid var(--line-soft);
+}
+.row {
+  display: grid; grid-template-columns: 3px 40px 34px 1fr 48px;
+  align-items: center; gap: 8px;
+  padding: 5px 10px 5px 0; border-bottom: 1px solid var(--line-soft); cursor: pointer;
+}
+.row:hover { background: var(--surface); }
+.row .risk { width: 3px; height: 26px; border-radius: 0 2px 2px 0; background: transparent; }
+.row .risk.critical { background: var(--red); }
+.row .risk.high { background: var(--accent); }
+.row .risk.medium { background: var(--amber); }
+.row .risk.low { background: var(--violet); }
+.row .meth { font: 500 10.5px/1 var(--mono); }
+.row .st {
+  font: 500 11px/1 var(--mono); text-align: right; font-variant-numeric: tabular-nums;
+}
+.row .u { min-width: 0; font: 400 11px/1.35 var(--mono); }
+.row .u .h { display: block; color: var(--mute); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.row .u .p { display: block; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.row .sz { font: 400 10px/1.4 var(--mono); color: var(--mute); text-align: right; }
+.row .sz i { display: block; font-style: normal; color: var(--mute); opacity: .7; }
+
+/* --------------------------------- Pieds ---------------------------------- */
+.quick {
+  display: flex; gap: 5px; flex-wrap: wrap; padding: 8px 12px; flex-shrink: 0;
+  border-top: 1px solid var(--line-soft);
+}
+.quick .chip { cursor: pointer; }
+
+.foot {
+  display: flex; gap: 6px; align-items: center; padding: 9px 12px; flex-shrink: 0;
+  border-top: 1px solid var(--line); background: var(--elev);
+}
+.foot .btn { flex: 1; }
+.foot .menu-wrap { flex: 1; display: flex; }
+.foot .menu-wrap .btn { width: 100%; }
+
+.toast { bottom: 56px; }
