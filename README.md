@@ -14,7 +14,7 @@ Created by **D4RK**
 ![Manifest V2](https://img.shields.io/badge/Manifest-V2-444?style=flat)
 [![MIT licence](https://img.shields.io/badge/Licence-MIT-00DDFF?style=flat)](LICENSE)
 ![No dependencies](https://img.shields.io/badge/Dependencies-none-2ea043?style=flat)
-![707 assertions](https://img.shields.io/badge/Assertions-707-2ea043?style=flat)
+![734 assertions](https://img.shields.io/badge/Assertions-734-2ea043?style=flat)
 ![English and French](https://img.shields.io/badge/UI-EN%20%2F%20FR-444?style=flat)
 
 [**Install**](#3-installation) · [**Screenshots**](#2-screenshots) · [**How it works**](#4-how-it-works-the-capture-layers) · [**Changelog**](CHANGELOG.md) · [**Security**](SECURITY.md)
@@ -78,7 +78,7 @@ specific points:
 happens inside your Firefox, on your machine.
 
 **By the numbers**: 144 JavaScript modules, ~28,000 lines, zero external dependencies,
-707 automated assertions, English and French interface.
+734 automated assertions, English and French interface.
 
 ---
 
@@ -134,7 +134,7 @@ What exists on the visited sites, host by host, reconstructed from observed traf
 
 ### The toolbox
 
-128 transformations across 23 families: decode, hash, measure, inspect — everything is
+132 transformations across 23 families: decode, hash, measure, inspect — everything is
 computed locally, nothing leaves the machine.
 
 ![Toolbox](docs/images/console-outils.png)
@@ -465,16 +465,16 @@ own secret and tracker patterns in the settings.
 
 ## 11. The toolbox: 23 families
 
-128 transformations, 23 families, **all computed locally**. A row's context menu, and the
+132 transformations, 23 families, **all computed locally**. A row's context menu, and the
 "Toolbox" buttons in the detail panel, send a value straight into it.
 
 | Family | Contents |
 |---|---|
-| **Transform** | The full catalogue of 128 transformations, grouped: bases, text, web, casing, Unicode normalisation, lines… |
+| **Transform** | The full catalogue of 132 transformations, grouped: bases, text, web, casing, Unicode normalisation, lines… |
 | **Keys and trials** | XOR (including single-byte key search), Vigenère, Caesar across all 26 shifts |
 | **Encryption** | AES-GCM / CBC / CTR, PBKDF2 derivation, RSA and ECDSA signing and verification |
-| **JWT** | Header and payload decoding, labels for standard claims, signature verification with a key |
-| **Digests** | MD5, SHA-1, SHA-2, SHA-3, SHAKE, BLAKE2b/2s, CRC (20 standard variants), Adler-32, FNV-1a, MurmurHash3, xxHash32, HMAC |
+| **JWT** | Header and payload decoding, labels for standard claims, signature verification with a key, **JWK thumbprint (RFC 7638)** |
+| **Digests** | MD5, SHA-1, SHA-2, SHA-3, Keccak, SHAKE, BLAKE2b/2s, RIPEMD-160, SM3, MD4, NTLM, CRC (20 standard variants), Adler-32, FNV-1a, MurmurHash3, xxHash32, **xxHash64**, **SipHash-2-4**, HMAC |
 | **Measures** | Length, bytes, Shannon entropy, character distribution |
 | **Hexadecimal** | Hex dump with ASCII column |
 | **Binary** | Protocol Buffers, MessagePack, CBOR, ASN.1/DER and X.509 certificates, character sets and mojibake repair, **WebSocket and HTTP/2 frames decoded byte by byte, including full HPACK header decompression** (RFC 7541: static table, dynamic table, Huffman) |
@@ -716,7 +716,7 @@ ui/                        The interface — one page for all four surfaces
 ├── console/               One view per file, plus the detail panel
 └── lib/                   Codecs, digests, network, reference tables, i18n
 
-tests/                     707 assertions, no browser required
+tests/                     734 assertions, no browser required
 tools/captures.mjs         Generates the documentation screenshots
 build.ps1                  Verification and .xpi packaging
 ```
@@ -761,7 +761,7 @@ French at the flip of a setting.
 npm test
 ```
 
-707 assertions, with no browser and no dependencies. The kernel and interface modules are
+734 assertions, with no browser and no dependencies. The kernel and interface modules are
 written for Firefox; `tests/harnais.mjs` supplies the minimum WebExtension API and DOM they
 need to import and run under Node. **The logic under test is exactly the logic that runs in
 the browser, with no rewriting.**
@@ -769,13 +769,13 @@ the browser, with no rewriting.**
 | Suite | Assertions | What it covers |
 |---|---|---|
 | `core.test.mjs` | 173 | URL normalisation, correlation signatures, the store, the rule engine (both ways: what matches **and** what must not), the security analyser rule by rule, HAR export, curl import, all 39 code generators |
-| `avance.test.mjs` | 190 | WebSocket and HTTP/2 frames, CSP, RFC 9111 freshness, multipart, canonical URLs and homographs, protocol tables, binary structures, rare digests, generators |
-| `ui-load.test.mjs` | 128 | Actual loading of the 101 interface modules, complete module graph (no dead import, no file outside the graph), consistency with the HTML pages and the manifest, and **full translation coverage** — every displayed string must have a dictionary entry |
+| `avance.test.mjs` | 216 | WebSocket and HTTP/2 frames, CSP, RFC 9111 freshness, multipart, canonical URLs and homographs, protocol tables, binary structures, rare digests, generators |
+| `ui-load.test.mjs` | 129 | Actual loading of the 101 interface modules, complete module graph (no dead import, no file outside the graph), consistency with the HTML pages and the manifest, and **full translation coverage** — every displayed string must have a dictionary entry |
 | `detail-coverage.test.mjs` | 120 | Each of a record's 60 fields is displayed, each tab has a render function, each searchable field exists |
 | `outils.test.mjs` | 96 | The toolbox, against published vectors |
 
 Expected values come from published sources: RFC vectors (4226, 6238, 6455, 4231, 7541, 9113,
-3986, 7578, 9111, 8187, 2231, 2047, 6266), standard check values (all 20 CRC variants are verified against their
+3986, 7578, 9111, 8187, 2231, 2047, 6266, 7638, and ZeroMQ RFC 32), standard check values (all 20 CRC variants are verified against their
 published check value for `123456789`), FIPS 202 for SHA-3, RFC 7693 for BLAKE2, RFC 9562
 for UUIDs.
 
@@ -812,7 +812,7 @@ the file. It contains internal errors and the command log — not your traffic.
 Before opening a pull request:
 
 ```bash
-npm test              # all 707 assertions must pass
+npm test              # all 734 assertions must pass
 .\build.ps1 -Verify   # the build must be green
 ```
 

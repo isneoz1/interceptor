@@ -71,6 +71,14 @@ First public release.
   Path traversal, control characters and bidirectional marks in a proposed filename
   are reported. Three matching transformations were added to the toolbox.
 
+- **Transport encodings and 64-bit digests.** Z85 (ZeroMQ RFC 32) and uuencode
+  (POSIX) join the alphabet family; SipHash-2-4 and xxHash64 join the digests;
+  the JWT panel gains the JWK thumbprint of RFC 7638. Z85 matches the vector
+  published in the ZeroMQ specification, SipHash matches the five reference
+  vectors of its own implementation, xxHash64 matches the documented value for
+  the empty input, and the thumbprint matches the example in RFC 7638 section 3.1.
+  132 transformations in total.
+
 ### Internal
 
 - Six finished modules were reachable from no import — 886 lines of RFC-accurate code that
@@ -79,7 +87,7 @@ First public release.
   decoding into the Request tab, RFC 3986 canonical URLs and homograph detection into the
   URL panel, reverse DNS names into the Address panel, WebSocket and HTTP/2 frame decoding
   into the Binary panel, and TLS / QUIC / HTTP-3 / DNS tables into the Reference panel.
-- Test suite added: 707 assertions across five suites, running under Node with no browser
+- Test suite added: 734 assertions across five suites, running under Node with no browser
   and no dependencies, validated against published RFC vectors. `build.ps1` already required
   these suites but the directory was absent, so packaging failed wherever Node was
   installed.

@@ -53,6 +53,7 @@ import { reparerMojibake } from './charsets.js';
 import { baconChiffrer, baconDechiffrer } from './codecs-text.js';
 import { decoderValeurEtendue, encoderValeurEtendue, decoderMotsCodes }
   from './entetes-parametres.js';
+import { z85Encoder, z85Decoder, uuencode, uudecode } from './codecs-transport.js';
 
 /* Raccourcis d ecriture : e = encodage, d = decodage, a = asynchrone. */
 const e = (cle, groupe, libelle, fn) => ({ cle, groupe, libelle, fn, decode: false, asynchrone: false });
@@ -158,6 +159,16 @@ export const TRANSFORMATIONS = [
   e('ext-value-enc', 'Web', 'Valeur etendue RFC 8187 — encoder',
     v => encoderValeurEtendue(v)),
   d('mot-code-dec', 'Web', 'Mot code RFC 2047 (=?jeu?B?...?=) — decoder', decoderMotsCodes),
+
+  /* Encodages de transport binaire. */
+  e('z85-enc', 'Autres alphabets', 'Z85 (ZeroMQ) — encoder',
+    v => z85Encoder(new TextEncoder().encode(v))),
+  d('z85-dec', 'Autres alphabets', 'Z85 (ZeroMQ) — decoder',
+    v => new TextDecoder().decode(z85Decoder(v))),
+  e('uu-enc', 'Autres alphabets', 'uuencode — encoder',
+    v => uuencode(new TextEncoder().encode(v))),
+  d('uu-dec', 'Autres alphabets', 'uuencode — decoder',
+    v => new TextDecoder().decode(uudecode(v).octets)),
 
   /* ------------------------------- Domaines ------------------------------- */
   e('puny-enc', 'Domaines', 'Punycode — encoder', punycodeEncoder),

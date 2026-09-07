@@ -137,3 +137,45 @@ export function cleAttendue(algorithme) {
   if (alg.toLowerCase() === 'none') return 'aucune : ce jeton n est pas signe';
   return 'algorithme non verifiable par une extension';
 }
+
+/* -------------------- Empreinte de cle JWK (RFC 7638) --------------------- */
+/* Deux JWK qui designent la meme cle peuvent s ecrire differemment : ordre des
+ * membres, champs facultatifs presents ou non. L empreinte les ramene a une
+ * valeur unique, en ne retenant que les membres requis, tries, sans espace.
+ * C est ce qui permet de dire « ce jeton a bien ete signe par cette cle-la ».
+ */
+
+/* Membres requis par type de cle, dans l ordre lexicographique impose. */
+const MEMBRES_REQUIS = {
+  EC: ['crv', 'kty', 'x', 'y'],
+  RSA: ['e', 'kty', 'n'],
+  oct: ['k', 'kty'],
+  OKP: ['crv', 'kty', 'x']
+};
+
+/** La forme canonique d une JWK, telle que la RFC 7638 la definit. */
+export function jwkCanonique(cle) {
+  const objet = typeof cle === 'string' ? JSON.parse(cle) : cle;
+  const type = objet && objet.kty;
+  const requis = MEMBRES_REQUIS[type];
+  if (!requis) throw new Error('type de cle inconnu ou absent (kty) : ' + String(type));
+  const retenus = {};
+  for (const membre of requis) {
+    if (objet[membre] === undefined) throw new Error('membre requis absent pour ' + type + ' : ' + membre);
+    retenus[membre] = objet[membre];
+  }
+  // JSON.stringify conserve l ordre d insertion : les membres sont deja tries.
+  return JSON.stringify(retenus);
+}
+
+/**
+ * Empreinte d une JWK : SHA-256 de la forme canonique, en base64url.
+ * @param algorithme  'SHA-256' par defaut, comme dans la RFC.
+ */
+export async function empreinteJwk(cle, algorithme = 'SHA-256') {
+  const canonique = jwkCanonique(cle);
+  const condense = await crypto.subtle.digest(algorithme, new TextEncoder().encode(canonique));
+  let binaire = '';
+  for (const octet of new Uint8Array(condense)) binaire += String.fromCharCode(octet);
+  return btoa(binaire).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}

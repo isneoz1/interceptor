@@ -205,3 +205,142 @@ export function xxhash32(texte, graine = 0) {
   const octets = texteVersOctets(texte);
   return xxhash32Octets(new Uint8Array(octets), graine).toString(16).padStart(8, '0');
 }
+
+
+/* ---------------------------- Hachages 64 bits ---------------------------- */
+/* JavaScript n a pas d entier 64 bits natif : ces deux fonctions travaillent
+   en BigInt, masque a 64 bits apres chaque operation. Plus lentes, mais
+   exactes — et c est l exactitude qu on vient chercher ici. */
+const M64 = (1n << 64n) - 1n;
+const rotl64 = (x, n) => ((x << BigInt(n)) | (x >> BigInt(64 - n))) & M64;
+const u64le = (o, i) => {
+  let v = 0n;
+  for (let j = 7; j >= 0; j--) v = (v << 8n) | BigInt(o[i + j]);
+  return v;
+};
+
+/**
+ * SipHash-2-4 (Aumasson et Bernstein, 2012). Fonction a cle, concue pour les
+ * tables de hachage exposees a des entrees choisies par un tiers ; on la
+ * croise dans les en-tetes de nombreux protocoles.
+ *
+ * @param octets  message
+ * @param cle     16 octets exactement
+ * @returns BigInt sur 64 bits
+ */
+export function siphash24Octets(octets, cle) {
+  const o = octets instanceof Uint8Array ? octets : new Uint8Array(octets);
+  const k = cle instanceof Uint8Array ? cle : new Uint8Array(cle);
+  if (k.length !== 16) throw new Error('SipHash : cle de 16 octets attendue (recu ' + k.length + ')');
+
+  const k0 = u64le(k, 0);
+  const k1 = u64le(k, 8);
+  let v0 = k0 ^ 0x736f6d6570736575n;
+  let v1 = k1 ^ 0x646f72616e646f6dn;
+  let v2 = k0 ^ 0x6c7967656e657261n;
+  let v3 = k1 ^ 0x7465646279746573n;
+
+  const tour = () => {
+    v0 = (v0 + v1) & M64; v1 = rotl64(v1, 13); v1 ^= v0; v0 = rotl64(v0, 32);
+    v2 = (v2 + v3) & M64; v3 = rotl64(v3, 16); v3 ^= v2;
+    v0 = (v0 + v3) & M64; v3 = rotl64(v3, 21); v3 ^= v0;
+    v2 = (v2 + v1) & M64; v1 = rotl64(v1, 17); v1 ^= v2; v2 = rotl64(v2, 32);
+  };
+
+  const blocs = Math.floor(o.length / 8) * 8;
+  for (let i = 0; i < blocs; i += 8) {
+    const m = u64le(o, i);
+    v3 ^= m; tour(); tour(); v0 ^= m;
+  }
+
+  /* Dernier bloc : le reste, puis la longueur du message sur l octet de tete. */
+  let dernier = BigInt(o.length & 0xff) << 56n;
+  for (let i = blocs; i < o.length; i++) dernier |= BigInt(o[i]) << BigInt(8 * (i - blocs));
+  v3 ^= dernier; tour(); tour(); v0 ^= dernier;
+
+  v2 ^= 0xffn;
+  tour(); tour(); tour(); tour();
+  return (v0 ^ v1 ^ v2 ^ v3) & M64;
+}
+
+/** SipHash-2-4 d un texte, cle en hexadecimal ou en octets, sortie hex. */
+export function siphash24(texte, cle) {
+  const k = typeof cle === 'string'
+    ? new Uint8Array((cle.replace(/[^0-9a-fA-F]/g, '').match(/../g) || []).map(x => parseInt(x, 16)))
+    : cle;
+  return siphash24Octets(texteVersOctets(texte), k).toString(16).padStart(16, '0');
+}
+
+/* Constantes publiees de xxHash (Yann Collet). */
+const XP1 = 11400714785074694791n;
+const XP2 = 14029467366897019727n;
+const XP3 = 1609587929392839161n;
+const XP4 = 9650029242287828579n;
+const XP5 = 2870177450012600261n;
+
+function rondeXxh(acc, valeur) {
+  acc = (acc + valeur * XP2) & M64;
+  acc = rotl64(acc, 31);
+  return (acc * XP1) & M64;
+}
+function fusionXxh(acc, valeur) {
+  acc ^= rondeXxh(0n, valeur);
+  acc = (acc * XP1) & M64;
+  return (acc + XP4) & M64;
+}
+
+/** xxHash64, graine comprise. Rend un BigInt sur 64 bits. */
+export function xxhash64Octets(octets, graine = 0n) {
+  const o = octets instanceof Uint8Array ? octets : new Uint8Array(octets);
+  const g = BigInt(graine) & M64;
+  let h;
+  let i = 0;
+
+  if (o.length >= 32) {
+    let a = (g + XP1 + XP2) & M64;
+    let b = (g + XP2) & M64;
+    let c = g;
+    let d = (g - XP1) & M64;
+    for (; i + 32 <= o.length; i += 32) {
+      a = rondeXxh(a, u64le(o, i));
+      b = rondeXxh(b, u64le(o, i + 8));
+      c = rondeXxh(c, u64le(o, i + 16));
+      d = rondeXxh(d, u64le(o, i + 24));
+    }
+    h = (rotl64(a, 1) + rotl64(b, 7) + rotl64(c, 12) + rotl64(d, 18)) & M64;
+    h = fusionXxh(h, a);
+    h = fusionXxh(h, b);
+    h = fusionXxh(h, c);
+    h = fusionXxh(h, d);
+  } else {
+    h = (g + XP5) & M64;
+  }
+
+  h = (h + BigInt(o.length)) & M64;
+
+  for (; i + 8 <= o.length; i += 8) {
+    h ^= rondeXxh(0n, u64le(o, i));
+    h = (rotl64(h, 27) * XP1 + XP4) & M64;
+  }
+  if (i + 4 <= o.length) {
+    let v = 0n;
+    for (let j = 3; j >= 0; j--) v = (v << 8n) | BigInt(o[i + j]);
+    h ^= (v * XP1) & M64;
+    h = (rotl64(h, 23) * XP2 + XP3) & M64;
+    i += 4;
+  }
+  for (; i < o.length; i++) {
+    h ^= (BigInt(o[i]) * XP5) & M64;
+    h = (rotl64(h, 11) * XP1) & M64;
+  }
+
+  h ^= h >> 33n; h = (h * XP2) & M64;
+  h ^= h >> 29n; h = (h * XP3) & M64;
+  h ^= h >> 32n;
+  return h;
+}
+
+/** xxHash64 d un texte, en hexadecimal sur seize chiffres. */
+export function xxhash64(texte, graine = 0) {
+  return xxhash64Octets(texteVersOctets(texte), BigInt(graine)).toString(16).padStart(16, '0');
+}

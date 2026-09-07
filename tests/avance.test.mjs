@@ -28,7 +28,10 @@ import { decoderValeurEtendue, encoderValeurEtendue, decoderMotsCodes,
   from '../ui/lib/entetes-parametres.js';
 import { sha3, shake } from '../ui/lib/sha3.js';
 import { blake2b512, blake2s256 } from '../ui/lib/blake2.js';
-import { crc, crcParNom, CRC_VARIANTES, murmur3, xxhash32 } from '../ui/lib/sommes.js';
+import { crc, crcParNom, CRC_VARIANTES, murmur3, xxhash32, xxhash64, siphash24Octets }
+  from '../ui/lib/sommes.js';
+import { z85Encoder, z85Decoder, uuencode, uudecode } from '../ui/lib/codecs-transport.js';
+import { empreinteJwk, jwkCanonique } from '../ui/lib/jwt.js';
 import { luhn, chercherJson } from '../ui/lib/motifs.js';
 import { uuidV4, uuidV5, ulid, forceMotDePasse, ESPACES_UUID } from '../ui/lib/generateurs.js';
 import { entropie, analyserChaineRequete, analyserCookies } from '../ui/lib/inspect.js';
@@ -402,6 +405,73 @@ for (const variante of CRC_VARIANTES) {
   egal('valeur de controle de ' + variante.nom, crc('123456789', variante.nom), attendu);
 }
 egal('variante CRC retrouvee par son nom', crcParNom('CRC-32/ISO-HDLC').largeur, 32);
+
+/* ------------------- Encodages de transport binaire ----------------------- */
+/* ZeroMQ RFC 32 : le vecteur publie dans la specification elle-meme. */
+egal('Z85 du vecteur de la RFC 32',
+  z85Encoder(new Uint8Array([0x86, 0x4F, 0xD2, 0x6F, 0xB5, 0x59, 0xF7, 0x5B])), 'HelloWorld');
+egal('Z85 relu', octetsVersHex(z85Decoder('HelloWorld')), '864fd26fb559f75b');
+leve('Z85 refuse une longueur non multiple de 4', () => z85Encoder(new Uint8Array(3)));
+leve('Z85 refuse une longueur non multiple de 5', () => z85Decoder('abcd'));
+leve('Z85 refuse un caractere hors alphabet', () => z85Decoder('Hello"orld'));
+
+/* uuencode : « Cat » donne la ligne canonique #0V%T. */
+verifier('uuencode produit la ligne attendue',
+  uuencode(new TextEncoder().encode('Cat'), 'cat.txt').includes('#0V%T'));
+verifier('uuencode ecrit son en-tete',
+  uuencode(new TextEncoder().encode('Cat'), 'cat.txt').startsWith('begin 644 cat.txt'));
+const uuLu = uudecode(uuencode(new TextEncoder().encode('Cat'), 'cat.txt'));
+egal('uudecode rend le contenu', new TextDecoder().decode(uuLu.octets), 'Cat');
+egal('uudecode rend le nom', uuLu.nom, 'cat.txt');
+const uuLong = 'INTERCEPTOR '.repeat(20);
+egal('uuencode sur plusieurs lignes',
+  new TextDecoder().decode(uudecode(uuencode(new TextEncoder().encode(uuLong))).octets), uuLong);
+leve('uudecode refuse un texte quelconque', () => uudecode('ceci n est pas du uuencode'));
+
+/* ---------------------------- Hachages 64 bits ---------------------------- */
+/* SipHash-2-4 : les vecteurs de l implementation de reference, cle 00..0f et
+   message forme des n premiers octets croissants. */
+const cleSip = new Uint8Array(16);
+for (let i = 0; i < 16; i++) cleSip[i] = i;
+const SIP_ATTENDUS = ['726fdb47dd0e0e31', '74f839c593dc67fd', '0d6c8009d9a94f5a',
+  '85676696d7fb7e2d', 'cf2794e0277187b7'];
+for (let n = 0; n < SIP_ATTENDUS.length; n++) {
+  const message = new Uint8Array(n);
+  for (let i = 0; i < n; i++) message[i] = i;
+  egal('SipHash-2-4 sur ' + n + ' octet(s)',
+    siphash24Octets(message, cleSip).toString(16).padStart(16, '0'), SIP_ATTENDUS[n]);
+}
+leve('SipHash refuse une cle de mauvaise taille',
+  () => siphash24Octets(new Uint8Array(0), new Uint8Array(8)));
+
+/* xxHash64 : valeur publiee pour l entree vide avec la graine 0. */
+egal('xxHash64 de la chaine vide', xxhash64(''), 'ef46db3751d8e999');
+verifier('xxHash64 change avec la graine', xxhash64('', 1) !== xxhash64('', 0));
+verifier('xxHash64 rend seize chiffres hexadecimaux',
+  /^[0-9a-f]{16}$/.test(xxhash64('INTERCEPTOR par D4RK, poste de supervision reseau')));
+
+/* ----------------------- Empreinte de cle JWK (RFC 7638) ------------------ */
+/* La cle et l empreinte de la section 3.1 de la RFC. */
+const jwkRfc = {
+  kty: 'RSA',
+  n: '0vx7agoebGcQSuuPiLJXZptN9nndrQmbXEps2aiAFbWhM78LhWx4cbbfAAtVT86zwu1RK7aPFFxuh'
+    + 'DR1L6tSoc_BJECPebWKRXjBZCiFV4n3oknjhMstn64tZ_2W-5JsGY4Hc5n9yBXArwl93lqt7_RN5w'
+    + '6Cf0h4QyQ5v-65YGjQR0_FDW2QvzqY368QQMicAtaSqzs8KJZgnYb9c7d0zgdAZHzu6qMQvRL5haj'
+    + 'rn1n91CbOpbISD08qNLyrdkt-bFTWhAI4vMQFh6WeZu0fM4lFd2NcRwr3XPksINHaQ-G_xBniIqbw'
+    + '0Ls1jF44-csFCur-kEgU8awapJzKnqDKgw',
+  e: 'AQAB',
+  alg: 'RS256',
+  kid: '2011-04-29'
+};
+egal('empreinte JWK de la RFC 7638', await empreinteJwk(jwkRfc),
+  'NzbLsXh8uDCcd-6MNwXF4W_7noWXFZAfHkxZsRGC9Xs');
+verifier('forme canonique : membres requis, tries, sans espace',
+  jwkCanonique(jwkRfc).startsWith('{"e":"AQAB","kty":"RSA","n":"'));
+verifier('les membres facultatifs sont ecartes', !jwkCanonique(jwkRfc).includes('kid'));
+leve('type de cle inconnu refuse', () => jwkCanonique({ kty: 'INCONNU' }));
+leve('membre requis absent refuse', () => jwkCanonique({ kty: 'RSA', e: 'AQAB' }));
+egal('empreinte d une cle symetrique', jwkCanonique({ kty: 'oct', k: 'AAA', autre: 1 }),
+  '{"k":"AAA","kty":"oct"}');
 
 /* --------------------------------- Motifs --------------------------------- */
 /* Numero de test Visa publie : 4111 1111 1111 1111 passe la cle de Luhn. */
