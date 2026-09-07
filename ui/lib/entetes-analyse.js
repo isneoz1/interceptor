@@ -6,6 +6,7 @@
  * qui est reellement risque — jamais un avis de style.
  */
 import { base64VersOctets, octetsVersTexte } from './bytes.js';
+import { analyserContentDisposition } from './entetes-parametres.js';
 
 const partie = (cle, valeur, note) => ({ cle, valeur: valeur == null ? '' : String(valeur), note: note || '' });
 
@@ -184,6 +185,32 @@ function valeurParametree(valeur) {
   return { parties, risques: [] };
 }
 
+/* Un Content-Disposition porte souvent son nom de fichier sous forme etendue
+   (`filename*=UTF-8''...`), decoupee en morceaux, ou herite d un mot code du
+   courriel. Rendre la valeur brute laisserait le nom reel illisible. */
+function contentDisposition(valeur) {
+  let lu;
+  try { lu = analyserContentDisposition(valeur); }
+  catch { return valeurParametree(valeur); }
+
+  const parties = [partie('Valeur', lu.disposition)];
+  for (const p of lu.parametres) {
+    const affiche = p.valeurDecodee || p.valeur;
+    const notes = [];
+    if (p.etendu) notes.push('valeur etendue RFC 8187, jeu ' + (p.jeu || 'utf-8'));
+    if (p.langue) notes.push('langue ' + p.langue);
+    if (p.morceaux > 1) notes.push(p.morceaux + ' morceaux rassembles');
+    if (p.motCode) notes.push('mot code RFC 2047 decode');
+    parties.push(partie(p.nom, affiche, notes.join(', ')));
+    if (p.etendu && affiche !== p.brut) parties.push(partie(p.nom + ' (brut)', p.brut));
+  }
+  const risques = lu.risques.map(texte => ({ ou: 'filename', texte }));
+  for (const p of lu.parametres) {
+    for (const remarque of p.remarques) risques.push({ ou: p.nom, texte: remarque });
+  }
+  return { parties, risques };
+}
+
 /* ------------------------------- Autorisation ----------------------------- */
 function autorisation(valeur) {
   const brut = String(valeur).trim();
@@ -237,7 +264,7 @@ const ANALYSEURS = {
   'accept-encoding': listePonderee,
   'te': listePonderee,
   'content-type': valeurParametree,
-  'content-disposition': valeurParametree,
+  'content-disposition': contentDisposition,
   'alt-svc': valeurParametree,
   'permissions-policy': v => ({
     parties: String(v).split(',').map(x => {

@@ -51,6 +51,8 @@ import { protobufVersJson, msgpackVersJson, cborVersJson } from './binaires.js';
 import { derVersJson, certificatVersJson } from './asn1.js';
 import { reparerMojibake } from './charsets.js';
 import { baconChiffrer, baconDechiffrer } from './codecs-text.js';
+import { decoderValeurEtendue, encoderValeurEtendue, decoderMotsCodes }
+  from './entetes-parametres.js';
 
 /* Raccourcis d ecriture : e = encodage, d = decodage, a = asynchrone. */
 const e = (cle, groupe, libelle, fn) => ({ cle, groupe, libelle, fn, decode: false, asynchrone: false });
@@ -149,6 +151,13 @@ export const TRANSFORMATIONS = [
   e('basic-enc', 'Web', 'Authentification Basic — encoder', basicEncoder),
   d('basic-dec', 'Web', 'Authentification Basic — decoder', basicDecoder),
   d('chunked-dec', 'Web', 'Transfert par morceaux — recomposer', chunkedDecoder),
+  /* Parametres d en-tete : ce qui rend un `filename*` ou un `=?UTF-8?B?...?=`
+     illisible tant qu on ne le decode pas. */
+  d('ext-value-dec', 'Web', 'Valeur etendue RFC 8187 — decoder',
+    v => decoderValeurEtendue(v).texte),
+  e('ext-value-enc', 'Web', 'Valeur etendue RFC 8187 — encoder',
+    v => encoderValeurEtendue(v)),
+  d('mot-code-dec', 'Web', 'Mot code RFC 2047 (=?jeu?B?...?=) — decoder', decoderMotsCodes),
 
   /* ------------------------------- Domaines ------------------------------- */
   e('puny-enc', 'Domaines', 'Punycode — encoder', punycodeEncoder),

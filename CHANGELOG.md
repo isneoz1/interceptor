@@ -62,6 +62,15 @@ First public release.
   connection. Verified against every complete example in Appendix C, and against the
   published Huffman encoding of `www.example.com`.
 
+- **Header parameter encodings (RFC 8187, 2231, 2047, 6266).** A real
+  `Content-Disposition` rarely says `filename=report.pdf`; it says
+  `filename*=UTF-8''%e2%82%ac%20rates`, sometimes split across `name*0`/`name*1`
+  continuations, sometimes carrying an email-style `=?UTF-8?B?...?=` word. All three
+  are now decoded, the extended form takes priority over the plain one as RFC 6266
+  requires, and the header analyser shows the real filename instead of the raw value.
+  Path traversal, control characters and bidirectional marks in a proposed filename
+  are reported. Three matching transformations were added to the toolbox.
+
 ### Internal
 
 - Six finished modules were reachable from no import — 886 lines of RFC-accurate code that
@@ -70,7 +79,7 @@ First public release.
   decoding into the Request tab, RFC 3986 canonical URLs and homograph detection into the
   URL panel, reverse DNS names into the Address panel, WebSocket and HTTP/2 frame decoding
   into the Binary panel, and TLS / QUIC / HTTP-3 / DNS tables into the Reference panel.
-- Test suite added: 680 assertions across five suites, running under Node with no browser
+- Test suite added: 707 assertions across five suites, running under Node with no browser
   and no dependencies, validated against published RFC vectors. `build.ps1` already required
   these suites but the directory was absent, so packaging failed wherever Node was
   installed.

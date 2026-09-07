@@ -23,6 +23,9 @@ import { decrireAlerteTls, decrireErreurH3, decrireErreurQuic, decrireTypeDns, d
 import { decoderProtobuf, decoderMsgpack, decoderCbor, essayerFormats } from '../ui/lib/binaires.js';
 import { lireDer, pemVersOctets, nomOid } from '../ui/lib/asn1.js';
 import { analyserEntete, analyserBloc, ENTETES_ANALYSABLES } from '../ui/lib/entetes-analyse.js';
+import { decoderValeurEtendue, encoderValeurEtendue, decoderMotsCodes,
+  contientMotCode, decouperParametres, analyserValeurParametree, analyserContentDisposition }
+  from '../ui/lib/entetes-parametres.js';
 import { sha3, shake } from '../ui/lib/sha3.js';
 import { blake2b512, blake2s256 } from '../ui/lib/blake2.js';
 import { crc, crcParNom, CRC_VARIANTES, murmur3, xxhash32 } from '../ui/lib/sommes.js';
@@ -305,6 +308,73 @@ const der = lireDer(hexVersOctets('3003020101'));
 verifier('SEQUENCE DER reconnue', /SEQUENCE/i.test(JSON.stringify(der)));
 verifier('OID 2.5.4.3 reconnu comme nom commun', /CN/.test(nomOid('2.5.4.3')));
 leve('PEM invalide refuse', () => pemVersOctets('pas un bloc PEM'));
+
+/* ---------- Parametres d en-tete : RFC 8187, 2231, 2047, 6266 ------------- */
+/* Chaque attendu vient d un exemple publie dans la RFC correspondante. */
+
+/* RFC 8187 section 3.2.2, les deux exemples. */
+egal('RFC 8187 ex.1', decoderValeurEtendue("us-ascii'en'This%20is%20%2A%2A%2Afun%2A%2A%2A").texte,
+  'This is ***fun***');
+egal('RFC 8187 ex.2', decoderValeurEtendue("UTF-8''%c2%a3%20and%20%e2%82%ac%20rates").texte,
+  '£ and € rates');
+egal('langue lue dans la valeur etendue', decoderValeurEtendue("us-ascii'en'x").langue, 'en');
+leve('valeur etendue sans apostrophes refusee', () => decoderValeurEtendue('rapport.pdf'));
+
+egal('valeur etendue ecrite puis relue',
+  decoderValeurEtendue(encoderValeurEtendue('€ rates')).texte, '€ rates');
+egal('encodage conforme a la RFC 8187', encoderValeurEtendue('€ rates'),
+  "UTF-8''%E2%82%AC%20rates");
+
+/* RFC 6266 section 5 : la forme etendue l emporte sur la forme simple. */
+egal('RFC 6266 filename etendu',
+  analyserContentDisposition("attachment; filename*=UTF-8''%e2%82%ac%20rates").nomFichier,
+  '€ rates');
+egal('RFC 6266 forme etendue prioritaire',
+  analyserContentDisposition('attachment; filename="EURO rates"; '
+    + "filename*=utf-8''%e2%82%ac%20rates").nomFichier, '€ rates');
+egal('nom de fichier simple',
+  analyserContentDisposition('attachment; filename="rapport.pdf"').nomFichier, 'rapport.pdf');
+egal('disposition lue',
+  analyserContentDisposition('inline; filename="a.txt"').disposition, 'inline');
+
+/* RFC 2231 section 4 : parametre decoupe en trois morceaux. */
+const continu = analyserValeurParametree("application/x-stuff; "
+  + "title*0*=us-ascii'en'This%20is%20even%20more%20; "
+  + "title*1*=%2A%2A%2Afun%2A%2A%2A%20; title*2=\"isn't it!\"");
+const titre = continu.parametres.find(p => p.nom === 'title');
+egal('RFC 2231 morceaux rassembles', titre.valeur, "This is even more ***fun*** isn't it!");
+egal('nombre de morceaux', titre.morceaux, 3);
+egal('type de tete conserve', continu.tete, 'application/x-stuff');
+
+/* RFC 2047 section 8 : les mots codes publies. */
+egal('RFC 2047 forme Q', decoderMotsCodes('=?ISO-8859-1?Q?Keith_Moore?='), 'Keith Moore');
+egal('RFC 2047 forme Q avec accent', decoderMotsCodes('=?ISO-8859-1?Q?Andr=E9?='), 'André');
+egal('RFC 2047 forme B',
+  decoderMotsCodes('=?ISO-8859-1?B?SWYgeW91IGNhbiByZWFkIHRoaXMgeW8=?='),
+  'If you can read this yo');
+egal('texte sans mot code inchange', decoderMotsCodes('rapport.pdf'), 'rapport.pdf');
+egal('mot code illisible rendu tel quel',
+  decoderMotsCodes('=?INCONNU-42?Q?x?='), '=?INCONNU-42?Q?x?=');
+verifier('mot code detecte', contientMotCode('=?UTF-8?B?YQ==?=') === true);
+verifier('absence de mot code detectee', contientMotCode('rapport.pdf') === false);
+
+/* Le decoupage doit respecter les guillemets. */
+egal('point-virgule entre guillemets',
+  decouperParametres('form-data; name="a;b"; filename="x.txt"').parametres[0].valeur, 'a;b');
+egal('antislash entre guillemets',
+  decouperParametres('form-data; name="a\\"b"').parametres[0].valeur, 'a"b');
+
+/* Ce qui merite d etre regarde dans un nom de fichier propose. */
+const piege = analyserContentDisposition('attachment; filename="../../etc/passwd"');
+verifier('remontee d arborescence signalee', piege.risques.some(r => /remonte/.test(r)));
+verifier('separateur de chemin signale', piege.risques.some(r => /separateur/.test(r)));
+egal('un nom ordinaire ne declenche rien',
+  analyserContentDisposition('attachment; filename="rapport.pdf"').risques.length, 0);
+
+/* L analyseur d en-tetes doit rendre le nom decode, pas la valeur brute. */
+const cdAnalyse = analyserEntete('Content-Disposition', "attachment; filename*=UTF-8''%e2%82%ac%20rates");
+verifier('Content-Disposition decode dans l analyseur',
+  cdAnalyse.parties.some(p => p.valeur === '€ rates'));
 
 /* ------------------------------- En-tetes --------------------------------- */
 const setCookie = analyserEntete('Set-Cookie', 'a=1; Path=/; Secure; SameSite=None');
