@@ -3,7 +3,7 @@
   "default_locale": "en",
   "name": "__MSG_extensionName__",
   "short_name": "INTERCEPTOR",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "author": "NeoZ",
   "homepage_url": "https://github.com/isneoz1/interceptor",
   "description": "__MSG_extensionDescription__",
