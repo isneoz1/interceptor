@@ -19,6 +19,10 @@ Created by **NeoZ**
 
 [**Install**](#3-installation) · [**Screenshots**](#2-screenshots) · [**How it works**](#4-how-it-works-the-capture-layers) · [**Changelog**](CHANGELOG.md) · [**Security**](SECURITY.md)
 
+<img src="docs/images/console-requetes.png" alt="The INTERCEPTOR console: every request the browser made, one row each, with the detail panel open" width="100%">
+
+<sub>The real console, not a mockup - every screenshot in this README is rendered from the actual kernel by <code>node tools/captures.mjs</code>.</sub>
+
 </div>
 
 > Firefox's own network panel shows you *that* a request happened.
@@ -26,7 +30,7 @@ Created by **NeoZ**
 > JavaScript stack that triggered it, the TLS suite that carried it, the exact reason a
 > cookie will be rejected — and lets you block it, rewrite it, or send it again.
 >
-> Seven capture layers, zero duplicated rows, no telemetry, no dependencies, and an analyser
+> Eight capture layers, zero duplicated rows, no telemetry, no dependencies, and an analyser
 > that refuses to report anything it cannot prove.
 
 ---
@@ -69,7 +73,7 @@ specific points:
 
 | | What INTERCEPTOR does |
 |---|---|
-| **It misses nothing** | Seven capture layers run in parallel: `webRequest`, response bodies via `StreamFilter`, page probes (`fetch`, `XHR`, WebSocket, SSE, Beacon, WebRTC), `PerformanceObserver`, TLS, cookies, navigation. What one layer misses, another sees. |
+| **It misses nothing** | Eight capture layers run in parallel: `webRequest`, response bodies via `StreamFilter`, TLS via `securityInfo`, DNS resolution, navigation, cookies, page probes (`fetch`, `XHR`, WebSocket, SSE, Beacon, WebRTC, `PerformanceObserver`), and an optional passive proxy. What one layer misses, another sees. |
 | **It never counts twice** | A correlator pairs observations coming from different layers. One real request produces **one** row, even when five layers saw it. Two identical polling `GET`s stay two separate rows. |
 | **It explains** | 62 status codes, 129 headers, 70 media types, 83 ports, 31 TLS cipher suites, TLS alerts, QUIC and HTTP/3 errors, DNS record types — all described in the tool, offline. |
 | **It never guesses** | The security analyser only reports what is **provable** from what was captured. Every finding carries its evidence. A missing hardening header is not a vulnerability, so it is not reported. |
@@ -720,6 +724,8 @@ ui/                        The interface — one page for all four surfaces
 
 tests/                     892 assertions, no browser required
 tools/captures.mjs         Generates the documentation screenshots
+tools/banniere.mjs         Generates the social preview card (docs/images)
+tools/apercu-icone.mjs     Renders the icon at the sizes Firefox actually uses
 build.ps1                  Verification and .xpi packaging
 ```
 

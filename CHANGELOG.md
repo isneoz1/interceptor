@@ -4,16 +4,54 @@ All notable changes to this project are documented here.
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning follows
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- **New icon.** The previous one was Mozilla's Firefox Developer Edition logo. The file is
+  MPL-2.0, but the Firefox logo is a registered trademark of the Mozilla Foundation, and a
+  third-party add-on carrying it implies an endorsement that does not exist - which is a
+  rejection ground on addons.mozilla.org. The replacement is an original drawing under the
+  same MIT licence as the rest of the repository: three traffic rows of unequal width,
+  crossed by the vertical interception bar, with the green capture indicator from the
+  console header. `node tools/apercu-icone.mjs` renders it at the sizes Firefox actually
+  uses, on light and dark backgrounds, because an icon is judged at 16 px in a toolbar.
+
+### Fixed
+
+- **The settings page was half French in English mode.** Its text lives in a table and is
+  rendered through `t(group.note)` and `t(field[3])`; the coverage test only ever read
+  literal `t('...')` calls, so 73 visible strings had no dictionary entry and silently fell
+  back to French. All translated, and the test now imports the tables themselves.
+- **Two settings texts bypassed the dictionary entirely.** The quick-profile summary
+  concatenated names and descriptions straight into the DOM, and the language hint
+  interpolated a computed number into its own string, which no key can ever match. The
+  latter is now a template filled in by `tp()` after translation.
+- **Figures that had drifted**, each recounted against the code: 144 -> 154 modules,
+  ~28,000 -> ~30,800 lines, 101 -> 113 interface modules, five -> six view families,
+  seven -> eight capture layers, 883 -> 892 assertions. And one that was wrong rather than
+  stale: "six layers see the same request", repeated in seven places, when only three can
+  produce a record for one real request - `webRequest`, the page probes and
+  `PerformanceObserver`. `tls` and `proxy` only tag a record that already exists.
+
+### Added
+
+- `tools/banniere.mjs` renders the social preview card GitHub serves to X, Reddit, Discord
+  and LinkedIn, built from the real console screenshot rather than a mockup.
+- The test suite now recounts every figure the README quotes, and `build.ps1` refuses to
+  package when the assertion badge disagrees with what the five suites actually report. The
+  count had been wrong three times before this.
+
 ## [3.0.0] — 2026-09-07
 
 First public release.
 
 ### Added
 
-- **Seven capture layers** running in parallel: `webRequest` (9 events), response bodies via
-  `StreamFilter`, page probes (`fetch`, `XHR`, WebSocket, SSE, Beacon, WebRTC, Service
-  Workers, JS stacks), `PerformanceObserver`, TLS via `securityInfo`, DNS resolution, cookie
-  mutations, navigation context, and an optional passive proxy layer.
+- **Eight capture layers** running in parallel: `webRequest` (9 events), response bodies via
+  `StreamFilter`, TLS via `securityInfo`, DNS resolution, navigation context, cookie
+  mutations, page probes (`fetch`, `XHR`, WebSocket, SSE, Beacon, WebRTC, Service Workers,
+  JS stacks, `PerformanceObserver`), and an optional passive proxy layer.
 - **Anti-duplicate correlator**: one real request produces one row, whichever layers saw it.
   Observations with no parent are promoted to their own row rather than dropped.
 - **17 views** across traffic, logs, tools, traffic control, system and learning.
