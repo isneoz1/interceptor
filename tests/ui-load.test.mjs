@@ -288,4 +288,89 @@ verifier('les traductions identiques a leur cle restent rares',
   identiques.length < Object.keys(EN).length * 0.2,
   identiques.length + ' entrees identiques sur ' + Object.keys(EN).length);
 
+/* Les chaines qui vivent dans une table, pas dans l appel.
+   `settings.js` fait t(groupe.note) et t(champ[3]) : le controle par lecture
+   du source ne voit rien de ce texte. On importe donc les tables elles-memes.
+   C est ce trou qui laissait soixante-treize phrases de reglages s afficher
+   en francais alors que l interface etait en anglais. */
+const { GROUPS, PROFILES } = await import('../ui/console/settings-groups.js');
+const { TRANSFORMATIONS } = await import('../ui/lib/catalogue.js');
+
+const donneesSansEntree = new Map();
+function exigerTraduction(ou, valeur) {
+  if (typeof valeur !== 'string') return;
+  const texte = valeur.trim();
+  if (!texte || !/[a-zA-Z]/.test(texte)) return;
+  if (SANS_TRADUCTION.has(texte) || EN[texte] !== undefined) return;
+  if (!donneesSansEntree.has(texte)) donneesSansEntree.set(texte, ou);
+}
+
+for (const profil of PROFILES) { exigerTraduction('profil', profil[0]); exigerTraduction('profil', profil[1]); }
+for (const groupe of GROUPS) {
+  exigerTraduction('titre de section', groupe.title);
+  exigerTraduction('note de section', groupe.note);
+  for (const champ of groupe.fields || []) {
+    exigerTraduction('libelle de champ', champ[1]);
+    exigerTraduction('aide de champ', champ[3]);
+  }
+}
+for (const tr of TRANSFORMATIONS) exigerTraduction('libelle de transformation', tr.libelle);
+
+for (const [texte, ou] of donneesSansEntree) {
+  verifier('la chaine de donnees ' + JSON.stringify(texte.slice(0, 60)) + ' a une traduction',
+    false, ou);
+}
+egal('aucune chaine de donnees sans traduction anglaise', donneesSansEntree.size, 0);
+verifier('les tables de donnees verifiees ne sont pas vides',
+  GROUPS.length > 5 && PROFILES.length > 2 && TRANSFORMATIONS.length > 100,
+  GROUPS.length + ' sections, ' + PROFILES.length + ' profils, ' +
+  TRANSFORMATIONS.length + ' transformations');
+
+/* ------------------ 9. Les chiffres annonces par le README ---------------- */
+/* Le README avancait 144 modules quand il y en avait 153, et 101 modules
+   d interface pour 113. Aucun de ces chiffres n etait faux le jour ou il a
+   ete ecrit : ils ont derive en silence. On les recompte donc ici. */
+const readme = fs.readFileSync(path.join(racine, 'README.md'), 'utf8');
+
+function chiffreAnnonce(motif) {
+  const m = readme.match(motif);
+  return m ? Number(m[1]) : null;
+}
+
+function compterJs(depuis) {
+  let n = 0;
+  const parcourir = dir => {
+    for (const nom of fs.readdirSync(dir)) {
+      if (nom === '.git' || nom === 'dist' || nom === 'node_modules') continue;
+      const p = path.join(dir, nom);
+      if (fs.statSync(p).isDirectory()) parcourir(p);
+      else if (nom.endsWith('.js')) n++;
+    }
+  };
+  parcourir(depuis);
+  return n;
+}
+
+const { GENERATOR_LABELS } = await import('../background/export/codegen.js');
+const { newRecord } = await import('../background/core/store.js');
+const sourceConsole = fs.readFileSync(path.join(racine, 'ui/console.js'), 'utf8');
+const blocVues = sourceConsole.slice(sourceConsole.indexOf('const VIEWS = {'));
+const nombreDeVues = (blocVues.match(/^  [a-z]+:\s*\{/gm) || []).length;
+
+const ANNONCES = [
+  ['modules JavaScript', /([0-9]+) JavaScript modules/, compterJs(racine)],
+  ['modules d interface', /([0-9]+) interface modules/, compterJs(path.join(racine, 'ui'))],
+  ['transformations', /([0-9]+) transformations/, TRANSFORMATIONS.length],
+  ['generateurs de code', /([0-9]+) code generators/, GENERATOR_LABELS.length],
+  ['champs d un enregistrement', /([0-9]+) fields/, Object.keys(newRecord()).length],
+  ['vues', /([0-9]+) views/, nombreDeVues]
+];
+
+for (const [quoi, motif, reel] of ANNONCES) {
+  const annonce = chiffreAnnonce(motif);
+  verifier('le README annonce le bon nombre de ' + quoi, annonce === reel,
+    annonce === null ? 'aucun chiffre trouve dans le README'
+                     : 'README ' + annonce + ', reel ' + reel);
+}
+
 bilan('Chargement de l interface');

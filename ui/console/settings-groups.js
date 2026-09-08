@@ -75,7 +75,7 @@ export const GROUPS = [
   },
   {
     title: 'Correlation anti-doublon',
-    note: 'Six couches observent la meme requete. La correlation garantit une ligne unique. La desactiver fait apparaitre une ligne par couche.',
+    note: 'Trois couches peuvent rapporter la meme requete : webRequest, les sondes de page et PerformanceObserver. La correlation garantit une ligne unique. La desactiver fait apparaitre une ligne par couche.',
     fields: [
       ['dedupEnabled', 'Correlation active', 'bool'],
       ['dedupWindowMs', 'Fenetre de correlation (ms)', 'number', 'Au-dela, une observation orpheline devient sa propre ligne.'],

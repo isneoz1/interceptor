@@ -192,38 +192,47 @@ Write-Host "  surfaces : popup, panneau lateral, console plein ecran, page d opt
 # Les tests du noyau tournent sans navigateur : on les lance si Node est present.
 $node = Get-Command node -ErrorAction SilentlyContinue
 if ($node) {
-  Write-Host "`nTests du noyau :" -ForegroundColor DarkGray
-  & node 'tests/core.test.mjs'
-  if ($LASTEXITCODE -ne 0) {
-    Write-Host "Les tests du noyau echouent : construction interrompue." -ForegroundColor Red
-    exit 1
+  # Chaque suite garde son propre message d echec : savoir laquelle a lache
+  # vaut mieux qu un « les tests echouent ». On retient au passage le nombre
+  # d assertions annonce, pour le confronter ensuite au README.
+  $suites = @(
+    @{ titre = 'Tests du noyau';             fichier = 'tests/core.test.mjs';
+       echec = 'Les tests du noyau echouent' },
+    @{ titre = 'Exhaustivite de l affichage'; fichier = 'tests/detail-coverage.test.mjs';
+       echec = 'Un champ capture n est pas affiche' },
+    @{ titre = 'Chargement de l interface';   fichier = 'tests/ui-load.test.mjs';
+       echec = 'Un module d interface ne se charge pas' },
+    @{ titre = 'Boite a outils';              fichier = 'tests/outils.test.mjs';
+       echec = 'Un outil ne rend pas la valeur attendue' },
+    @{ titre = 'Outils avances';              fichier = 'tests/avance.test.mjs';
+       echec = 'Un outil avance ne rend pas la valeur attendue' }
+  )
+
+  $totalAssertions = 0
+  foreach ($suite in $suites) {
+    Write-Host "`n$($suite.titre) :" -ForegroundColor DarkGray
+    $sortie = & node $suite.fichier 2>&1
+    $sortie | ForEach-Object { Write-Host $_ }
+    if ($LASTEXITCODE -ne 0) {
+      Write-Host "$($suite.echec) : construction interrompue." -ForegroundColor Red
+      exit 1
+    }
+    foreach ($ligne in $sortie) {
+      if ("$ligne" -match '([0-9]+) verifications') { $totalAssertions += [int]$Matches[1] }
+    }
   }
 
-  Write-Host "`nExhaustivite de l affichage :" -ForegroundColor DarkGray
-  & node 'tests/detail-coverage.test.mjs'
-  if ($LASTEXITCODE -ne 0) {
-    Write-Host "Un champ capture n est pas affiche : construction interrompue." -ForegroundColor Red
-    exit 1
-  }
-
-  Write-Host "`nChargement de l interface :" -ForegroundColor DarkGray
-  & node 'tests/ui-load.test.mjs'
-  if ($LASTEXITCODE -ne 0) {
-    Write-Host "Un module d interface ne se charge pas : construction interrompue." -ForegroundColor Red
-    exit 1
-  }
-
-  Write-Host "`nBoite a outils :" -ForegroundColor DarkGray
-  & node 'tests/outils.test.mjs'
-  if ($LASTEXITCODE -ne 0) {
-    Write-Host "Un outil ne rend pas la valeur attendue : construction interrompue." -ForegroundColor Red
-    exit 1
-  }
-  Write-Host "`nOutils avances :" -ForegroundColor DarkGray
-  & node 'tests/avance.test.mjs'
-  if ($LASTEXITCODE -ne 0) {
-    Write-Host "Un outil avance ne rend pas la valeur attendue : construction interrompue." -ForegroundColor Red
-    exit 1
+  # Le compte se cite dans le README, le badge et le changelog. Un chiffre que
+  # personne ne recompte finit toujours par mentir : on le recompte ici.
+  $readme = Get-Content -Raw -Path 'README.md'
+  if ($readme -match 'Assertions-([0-9]+)-') {
+    $annonce = [int]$Matches[1]
+    if ($annonce -ne $totalAssertions) {
+      Write-Host "Le README annonce $annonce assertions, la suite en compte $totalAssertions." -ForegroundColor Red
+      Write-Host "Mettez le chiffre a jour (badge, README, CHANGELOG, gabarit de PR)." -ForegroundColor Red
+      exit 1
+    }
+    Write-Host "`n  $totalAssertions assertions, conformes au README" -ForegroundColor DarkGray
   }
 } else {
   Write-Host "  (Node absent : tests du noyau ignores)" -ForegroundColor DarkGray

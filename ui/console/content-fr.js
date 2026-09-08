@@ -21,7 +21,7 @@ export const LESSONS = [
     goal: 'Comprendre ce que fait INTERCEPTOR',
     body: [
       { p: 'INTERCEPTOR observe tout ce que Firefox envoie et recoit : pages, images, appels d API, WebSocket, cookies, certificats. Il demarre seul et n a besoin d aucun reglage pour fonctionner.' },
-      { p: 'Six couches de capture regardent le trafic en meme temps, et un correlateur les recolle : une vraie requete donne toujours une seule ligne, jamais deux.' },
+      { p: 'Plusieurs couches de capture regardent le trafic en meme temps, et un correlateur les recolle : une vraie requete donne toujours une seule ligne, jamais deux.' },
       { ul: [
         'La **console** (cette page) est le poste de travail complet.',
         'Le **panneau lateral** suit le trafic pendant que vous naviguez : Alt+Shift+S.',

@@ -5,6 +5,7 @@
  */
 import { EN_MENUS } from './dict-en-menus.js';
 import { EN_TOOLS } from './dict-en-tools.js';
+import { EN_REGLAGES } from './dict-en-reglages.js';
 
 export const EN = {
   /* ------------------------------ Navigation ----------------------------- */
@@ -389,5 +390,6 @@ export const EN = {
   /* Menus Exporter, Copier et generateurs de code : voir dict-en-menus.js.
      Boite a outils, Cible et Diagnostic interne : voir dict-en-tools.js. */
   ...EN_MENUS,
-  ...EN_TOOLS
+  ...EN_TOOLS,
+  ...EN_REGLAGES
 };

@@ -189,6 +189,17 @@ export const EN_OUTILS = {
   'Bacon — encoder': 'Bacon — encode',
   'Bacon — decoder': 'Bacon — decode',
 
+  /* ------------------- Parametres d entete et transports ------------------ */
+  'Valeur etendue RFC 8187 — decoder': 'RFC 8187 extended value — decode',
+  'Valeur etendue RFC 8187 — encoder': 'RFC 8187 extended value — encode',
+  'Mot code RFC 2047 (=?jeu?B?...?=) — decoder': 'RFC 2047 encoded word (=?charset?B?...?=) — decode',
+  'Z85 (ZeroMQ) — encoder': 'Z85 (ZeroMQ) — encode',
+  'Z85 (ZeroMQ) — decoder': 'Z85 (ZeroMQ) — decode',
+  'uuencode — encoder': 'uuencode — encode',
+  'uuencode — decoder': 'uuencode — decode',
+  'Serialisation PHP vers JSON': 'PHP serialisation to JSON',
+  'JSON vers serialisation PHP': 'JSON to PHP serialisation',
+
   /* --------------------------------- Divers ------------------------------- */
   'Quoted-printable — encoder': 'Quoted-printable — encode',
   'Quoted-printable — decoder': 'Quoted-printable — decode'

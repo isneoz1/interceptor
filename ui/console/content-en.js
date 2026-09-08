@@ -107,7 +107,7 @@ export const HELP_SECTIONS = [
   },
   {
     h: 'What is captured',
-    p: ['Six layers watch the traffic in parallel, then a correlator merges them.'],
+    p: ['Several layers watch the traffic in parallel, then a correlator merges them.'],
     table: [
       ['webRequest', 'The 9 network lifecycle events, on every URL.'],
       ['StreamFilter', 'Full response bodies. The stream is rewritten byte for byte to the page: capturing cannot break a site.'],
@@ -124,7 +124,7 @@ export const HELP_SECTIONS = [
   {
     h: 'Why there are never duplicates',
     p: [
-      'Six layers see the same request. Without correlation, one row per layer would appear.',
+      'Three layers can see the same request: webRequest, the page probes and PerformanceObserver. Without correlation, one row per layer would appear.',
       'webRequest is authoritative: its requestId is unique, redirects included. An observation from another layer joins a row only if that layer has not already contributed to it. An observation that finds no home becomes its own row: nothing is ever lost.',
       'The Layers column shows who fed each row: WR webRequest, JS page probes, PF performance, TLS, PX proxy.'
     ]
@@ -202,7 +202,7 @@ export const LESSONS = {
     goal: 'Understand what INTERCEPTOR does',
     body: [
       { p: 'INTERCEPTOR watches everything Firefox sends and receives: pages, images, API calls, WebSockets, cookies, certificates. It starts on its own and needs no configuration.' },
-      { p: 'Six capture layers watch the traffic at once, and a correlator glues them back together: one real request always yields one row, never two.' },
+      { p: 'Several capture layers watch the traffic at once, and a correlator glues them back together: one real request always yields one row, never two.' },
       { ul: [
         'The **console** (this page) is the full workbench.',
         'The **sidebar panel** follows traffic while you browse: Alt+Shift+S.',

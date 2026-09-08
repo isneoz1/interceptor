@@ -109,7 +109,7 @@ const SECTIONS = [
   },
   {
     h: 'Ce qui est capture',
-    p: ['Six couches observent le trafic en parallele, puis un correlateur les fusionne.'],
+    p: ['Plusieurs couches observent le trafic en parallele, puis un correlateur les fusionne.'],
     table: [
       ['webRequest', 'Les 9 evenements du cycle de vie reseau, sur toutes les URL.'],
       ['StreamFilter', 'Le corps integral des reponses. Le flux est reecrit a l identique vers la page : la capture ne peut pas casser un site.'],
@@ -126,7 +126,7 @@ const SECTIONS = [
   {
     h: 'Pourquoi il n y a jamais de doublon',
     p: [
-      'Six couches voient la meme requete. Sans correlation, une ligne apparaitrait par couche.',
+      'Trois couches peuvent voir la meme requete : webRequest, les sondes de page et PerformanceObserver. Sans correlation, une ligne apparaitrait par couche.',
       'webRequest fait autorite : son requestId est unique, redirections comprises. Une observation venue ' +
       'd une autre couche ne rejoint une ligne que si cette couche n y a pas deja contribue. Une observation ' +
       'qui ne trouve pas sa place devient sa propre ligne : rien n est jamais perdu.',
