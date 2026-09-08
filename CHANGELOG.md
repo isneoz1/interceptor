@@ -114,6 +114,15 @@ First public release.
   packed 32-bit MS-DOS date used in ZIP archives, whose fields are juxtaposed bits
   rather than a count and whose resolution is two seconds.
 
+- **A neon visual direction, with readability enforced rather than assumed.** Deep
+  indigo surfaces, a violet accent, neon state colours, rounded cards with a glow on
+  their border. The glow stays on edges and never sits behind text, where it would
+  blur it. Every colour pair declared in the theme is now measured against the WCAG
+  2.1 contrast formula by `tests/contraste.mjs`, and the build stops if one falls
+  below the reading threshold: 39 pairs per theme, all passing, the tightest at 4.53
+  against a threshold of 3. The high-contrast setting switches gradients and glows
+  off entirely rather than dimming them, and reduced-motion removes the hover lift.
+
 ### Fixed after the first release
 
 - **The table jumped while scrolling with the wheel.** The two spacers that hold the
@@ -136,6 +145,9 @@ First public release.
   `ui/lib/liste-progressive.js`: the first batch is immediate, the next arrive as you
   approach the bottom, and nothing is capped. Measured on four thousand findings: 150
   cards drawn at once, the rest following the scroll.
+- **Two colour pairs in the light theme were below the reading threshold** and had
+  been since the first release: white on the accent button (4.03) and amber on a light
+  surface (4.43). Both corrected, both now measured by the test.
 - **Nine translation keys were defined twice**, the later one silently overriding the
   earlier. Two were user-visible mistakes: the `Duration` column showed *Lifetime*, and
   *Active interception* stayed in French. All duplicates are gone, and a test now fails
@@ -149,7 +161,7 @@ First public release.
   decoding into the Request tab, RFC 3986 canonical URLs and homograph detection into the
   URL panel, reverse DNS names into the Address panel, WebSocket and HTTP/2 frame decoding
   into the Binary panel, and TLS / QUIC / HTTP-3 / DNS tables into the Reference panel.
-- Test suite added: 874 assertions across five suites, running under Node with no browser
+- Test suite added: 883 assertions across five suites, running under Node with no browser
   and no dependencies, validated against published RFC vectors. `build.ps1` already required
   these suites but the directory was absent, so packaging failed wherever Node was
   installed.

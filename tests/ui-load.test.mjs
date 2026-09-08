@@ -12,7 +12,7 @@
 import fs from 'fs';
 import path from 'path';
 import url from 'url';
-import { installerTout, egal, verifier, bilan } from './harnais.mjs';
+import { installerTout, egal, proche, verifier, bilan } from './harnais.mjs';
 
 installerTout();
 
@@ -128,7 +128,37 @@ for (const ressource of manifest.web_accessible_resources || []) {
 }
 verifier('la version du manifest est renseignee', /^\d+\.\d+\.\d+$/.test(manifest.version));
 
-/* --------------------- 5. Invariante du defilement ----------------------- */
+/* ------------------- 5. Lisibilite : contraste mesure -------------------- */
+/* Une interface sombre a neons est vite jolie et illisible. Chaque paire
+   couleur / fond declaree dans le theme est mesuree selon la formule du
+   WCAG 2.1 : la construction s arrete si l une passe sous le seuil. */
+const { mesurerTheme, contraste, lireCouleur, aplatir, luminance } =
+  await import('./contraste.mjs');
+
+const themes = mesurerTheme(path.join(racine, 'ui/theme.css'));
+for (const [nom, paires] of Object.entries(themes)) {
+  verifier('le theme ' + nom + ' declare assez de paires a controler', paires.length >= 30,
+    paires.length + ' paires');
+  for (const p of paires) {
+    if (p.ratio >= p.seuil) continue;
+    verifier('theme ' + nom + ' : ' + p.quoi, false,
+      'contraste ' + p.ratio.toFixed(2) + ', seuil ' + p.seuil);
+  }
+  const sousLeSeuil = paires.filter(p => p.ratio < p.seuil).length;
+  egal('theme ' + nom + ' : aucune paire sous le seuil de lecture', sousLeSeuil, 0);
+}
+
+/* La formule elle-meme, verifiee sur les deux extremes connus : le noir sur
+   blanc vaut 21, une couleur sur elle-meme vaut 1. */
+proche('contraste du noir sur blanc', contraste('#000000', '#FFFFFF'), 21, 0.01);
+proche('contraste d une couleur sur elle-meme', contraste('#8A7BFF', '#8A7BFF'), 1, 0.001);
+proche('luminance du blanc', luminance(lireCouleur('#FFFFFF')), 1, 0.001);
+proche('luminance du noir', luminance(lireCouleur('#000000')), 0, 0.001);
+/* Une couleur translucide posee sur un fond doit donner le melange exact. */
+const melange = aplatir(lireCouleur('rgba(255, 255, 255, .5)'), lireCouleur('#000000'));
+proche('aplatissement d une couleur a demi transparente', melange.r, 127.5, 0.01);
+
+/* --------------------- 6. Invariante du defilement ----------------------- */
 /* Le tableau ne dessine que les lignes visibles ; deux cales tiennent la place
    des autres. Si leur somme avec les lignes dessinees ne vaut pas exactement la
    hauteur totale, `scrollHeight` change a chaque image et le defilement saute.
@@ -185,7 +215,7 @@ verifier('deux fenetres differentes sont distinguees',
   memeFenetre({ premiere: 3, derniere: 9 }, { premiere: 4, derniere: 9 }) === false);
 verifier('une fenetre absente n est jamais identique', memeFenetre(null, { premiere: 0, derniere: 0 }) === false);
 
-/* --------------------- 6. Couverture de la traduction -------------------- */
+/* --------------------- 7. Couverture de la traduction -------------------- */
 /* Le francais est la langue source : la cle de traduction EST le texte
    francais. Une chaine passee a `t`, `kv`, `sec` ou `button` sans entree au
    dictionnaire reste donc en francais quand l interface est en anglais — sans

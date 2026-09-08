@@ -14,7 +14,7 @@ Created by **D4RK**
 ![Manifest V2](https://img.shields.io/badge/Manifest-V2-444?style=flat)
 [![MIT licence](https://img.shields.io/badge/Licence-MIT-00DDFF?style=flat)](LICENSE)
 ![No dependencies](https://img.shields.io/badge/Dependencies-none-2ea043?style=flat)
-![874 assertions](https://img.shields.io/badge/Assertions-874-2ea043?style=flat)
+![883 assertions](https://img.shields.io/badge/Assertions-883-2ea043?style=flat)
 ![English and French](https://img.shields.io/badge/UI-EN%20%2F%20FR-444?style=flat)
 
 [**Install**](#3-installation) · [**Screenshots**](#2-screenshots) · [**How it works**](#4-how-it-works-the-capture-layers) · [**Changelog**](CHANGELOG.md) · [**Security**](SECURITY.md)
@@ -78,7 +78,7 @@ specific points:
 happens inside your Firefox, on your machine.
 
 **By the numbers**: 144 JavaScript modules, ~28,000 lines, zero external dependencies,
-874 automated assertions, English and French interface.
+883 automated assertions, English and French interface.
 
 ---
 
@@ -716,7 +716,7 @@ ui/                        The interface — one page for all four surfaces
 ├── console/               One view per file, plus the detail panel
 └── lib/                   Codecs, digests, network, reference tables, i18n
 
-tests/                     874 assertions, no browser required
+tests/                     883 assertions, no browser required
 tools/captures.mjs         Generates the documentation screenshots
 build.ps1                  Verification and .xpi packaging
 ```
@@ -728,6 +728,9 @@ build.ps1                  Verification and .xpi packaging
 - **No unprovable finding.** Each one carries its evidence.
 - **Nothing is ever lost.** An observation without a parent becomes its own row.
 - **Short, cohesive files.** 200 to 400 lines typically.
+- **Every colour pair is measured.** The dark neon theme is verified against WCAG 2.1
+  contrast thresholds by a test; the build stops if any text falls below the reading
+  threshold. A dark neon interface is easy to make pretty and unreadable.
 - **Nothing is capped for display.** Long lists render in batches rather than being truncated.
 - **Comments explain *why*,** not *what*.
 
@@ -762,7 +765,7 @@ French at the flip of a setting.
 npm test
 ```
 
-874 assertions, with no browser and no dependencies. The kernel and interface modules are
+883 assertions, with no browser and no dependencies. The kernel and interface modules are
 written for Firefox; `tests/harnais.mjs` supplies the minimum WebExtension API and DOM they
 need to import and run under Node. **The logic under test is exactly the logic that runs in
 the browser, with no rewriting.**
@@ -771,7 +774,7 @@ the browser, with no rewriting.**
 |---|---|---|
 | `core.test.mjs` | 173 | URL normalisation, correlation signatures, the store, the rule engine (both ways: what matches **and** what must not), the security analyser rule by rule, HAR export, curl import, all 39 code generators |
 | `avance.test.mjs` | 321 | WebSocket and HTTP/2 frames, CSP, RFC 9111 freshness, multipart, canonical URLs and homographs, protocol tables, binary structures, rare digests, generators |
-| `ui-load.test.mjs` | 152 | Actual loading of the 101 interface modules, complete module graph (no dead import, no file outside the graph), consistency with the HTML pages and the manifest, and **full translation coverage** — every displayed string must have a dictionary entry |
+| `ui-load.test.mjs` | 161 | Actual loading of the 101 interface modules, complete module graph (no dead import, no file outside the graph), consistency with the HTML pages and the manifest, **full translation coverage** — every displayed string must have a dictionary entry — and **measured contrast**: every colour pair in both themes is checked against the WCAG 2.1 thresholds |
 | `detail-coverage.test.mjs` | 120 | Each of a record's 60 fields is displayed, each tab has a render function, each searchable field exists |
 | `outils.test.mjs` | 108 | The toolbox, against published vectors |
 
@@ -813,7 +816,7 @@ the file. It contains internal errors and the command log — not your traffic.
 Before opening a pull request:
 
 ```bash
-npm test              # all 874 assertions must pass
+npm test              # all 883 assertions must pass
 .\build.ps1 -Verify   # the build must be green
 ```
 

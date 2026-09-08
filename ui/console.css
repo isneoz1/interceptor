@@ -656,3 +656,125 @@ body { display: flex; flex-direction: column; overflow: hidden; }
 }
 /* Sous une fenetre etroite, le nom de la famille passe au-dessus de ses outils. */
 :root[data-largeur='etroite'] .famille { grid-template-columns: 1fr; gap: calc(2px * var(--scale)); }
+
+/* ============================================================
+   Habillage neon — INTERCEPTOR (by D4RK)
+
+   La lueur habille les BORDS des surfaces, jamais le fond d un texte :
+   un halo derriere des caracteres les rend flous, et la lisibilite prime
+   sur l effet. Les couleurs viennent toutes de theme.css, dont chaque
+   paire est mesuree par tests/contraste.mjs.
+   ============================================================ */
+
+/* Cartes et tuiles : degrade tres discret, bord fin, ombre teintee. */
+.tile,
+.find,
+.rule,
+.familles,
+.chart,
+.empty {
+  background-image: var(--degrade-carte);
+  border-radius: var(--r-lg);
+}
+
+.tile {
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-sm);
+  transition: border-color var(--speed), box-shadow var(--speed), transform var(--speed);
+}
+.tile:hover {
+  border-color: var(--accent-line);
+  box-shadow: var(--lueur);
+  transform: translateY(-1px);
+}
+.tile.alert { border-color: rgba(255, 201, 60, .30); }
+.tile.alert.hot { border-color: rgba(255, 107, 133, .40); }
+.tile.ok { border-color: rgba(61, 245, 165, .30); }
+
+/* Les cartes d alerte gardent leur barre de gravite, plus lisible qu une
+   teinte de fond : la couleur reste au bord, le texte sur du sombre. */
+.find {
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+/* En-tete et colonne laterale : un liseré lumineux au lieu d un trait mat. */
+header.top {
+  background-image: linear-gradient(180deg, rgba(138, 123, 255, .10), transparent 70%);
+  border-bottom: 1px solid var(--line);
+  box-shadow: 0 1px 0 rgba(138, 123, 255, .18);
+}
+.side {
+  background-image: linear-gradient(180deg, rgba(138, 123, 255, .06), transparent 40%);
+}
+
+/* Element de navigation actif : barre lumineuse a gauche, fond a peine teinte.
+   Le texte passe en pleine clarte, jamais en couleur sur couleur. */
+.navbtn.on {
+  background: var(--accent-weak);
+  box-shadow: inset 3px 0 0 var(--accent), var(--lueur-faible);
+  border-radius: var(--r);
+}
+.navbtn { border-radius: var(--r); }
+
+/* Boutons : l accent devient un degrade, avec sa lueur au survol. */
+.btn.accent {
+  background-image: linear-gradient(135deg, var(--accent), #5FD6FF);
+  border-color: transparent;
+}
+.btn.accent:hover { box-shadow: var(--lueur); }
+.btn { border-radius: var(--r); }
+
+/* Ligne selectionnee du tableau : liseré lumineux, fond discret. Le texte
+   d une ligne doit rester aussi lisible que celui des autres. */
+.trow.sel { box-shadow: inset 3px 0 0 var(--accent), 0 0 18px -8px rgba(138, 123, 255, .55); }
+
+/* Champs de saisie : bord qui s allume a la mise au point. */
+.field:focus,
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--accent-line);
+  box-shadow: 0 0 0 3px var(--accent-weak);
+  outline: none;
+}
+
+/* Barres de progression et diagrammes : degrade au lieu d un aplat. */
+.track .fill { background-image: linear-gradient(90deg, var(--accent), #5FD6FF); }
+
+/* Le panneau de detail se detache du tableau par une lueur haute. */
+#detail { box-shadow: 0 -1px 0 rgba(138, 123, 255, .20), var(--shadow); }
+
+/* Les titres de section portent un filet lumineux court, pas un fond. */
+.sec { border-bottom: 1px solid var(--line-soft); }
+.sec > span { position: relative; }
+.sec > span::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: calc(-4px * var(--scale));
+  width: calc(22px * var(--scale));
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--accent), transparent);
+}
+
+/* Contraste renforce : on eteint degrades et lueurs plutot que de les
+   attenuer. Le reglage sert a lire, pas a decorer. */
+body[data-contrast="fort"] .tile,
+body[data-contrast="fort"] .find,
+body[data-contrast="fort"] .rule,
+body[data-contrast="fort"] .familles,
+body[data-contrast="fort"] .chart,
+body[data-contrast="fort"] .empty,
+body[data-contrast="fort"] header.top,
+body[data-contrast="fort"] .side { background-image: none; }
+body[data-contrast="fort"] .tile:hover,
+body[data-contrast="fort"] .btn.accent:hover { box-shadow: none; }
+body[data-contrast="fort"] .sec > span::after { display: none; }
+
+/* Mouvement reduit : plus aucune transition ni deplacement au survol. */
+@media (prefers-reduced-motion: reduce) {
+  .tile { transition: none; }
+  .tile:hover { transform: none; }
+}
