@@ -19,8 +19,6 @@ export const EN_PANNEAUX = {
   'les vingt-cinq decalages': 'all twenty-five shifts',
   'Vigenere': 'Vigenere',
   'cle en lettres': 'key in letters',
-  'Chiffrer': 'Encipher',
-  'Dechiffrer': 'Decipher',
 
   /* ------------------------------ Identifier ------------------------------ */
   'ce que la forme du texte laisse deviner': 'what the shape of the text suggests',
@@ -211,7 +209,6 @@ export const EN_PANNEAUX = {
   'Adresses au total': 'Addresses in total',
   'Adresses utilisables': 'Usable addresses',
   'Valeur entiere': 'Integer value',
-  'Binaire': 'Binary',
   'Ecriture longue': 'Long form',
   'Premiere adresse': 'First address',
   'Derniere adresse': 'Last address',
@@ -249,7 +246,6 @@ export const EN_PANNEAUX = {
     'Put a value into the working text to convert it: number, ISO date, HTTP date or duration.',
   'Chaque origine possible est montree. Seules celles qui tombent entre 1970 et 2200 sont retenues.':
     'Every possible epoch is shown. Only those landing between 1970 and 2200 are kept.',
-  'Heure locale': 'Local time',
   'Toutes les ecritures': 'Every notation',
   'Ecart avec maintenant': 'Gap from now',
   'Ecart : ': 'Gap: ',

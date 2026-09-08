@@ -14,7 +14,7 @@ Created by **D4RK**
 ![Manifest V2](https://img.shields.io/badge/Manifest-V2-444?style=flat)
 [![MIT licence](https://img.shields.io/badge/Licence-MIT-00DDFF?style=flat)](LICENSE)
 ![No dependencies](https://img.shields.io/badge/Dependencies-none-2ea043?style=flat)
-![734 assertions](https://img.shields.io/badge/Assertions-734-2ea043?style=flat)
+![784 assertions](https://img.shields.io/badge/Assertions-784-2ea043?style=flat)
 ![English and French](https://img.shields.io/badge/UI-EN%20%2F%20FR-444?style=flat)
 
 [**Install**](#3-installation) · [**Screenshots**](#2-screenshots) · [**How it works**](#4-how-it-works-the-capture-layers) · [**Changelog**](CHANGELOG.md) · [**Security**](SECURITY.md)
@@ -78,7 +78,7 @@ specific points:
 happens inside your Firefox, on your machine.
 
 **By the numbers**: 144 JavaScript modules, ~28,000 lines, zero external dependencies,
-734 automated assertions, English and French interface.
+784 automated assertions, English and French interface.
 
 ---
 
@@ -310,7 +310,7 @@ advanced views and keeps only the essentials.
 
 | View | What it shows |
 |---|---|
-| **Requests** | All traffic, request by request. Configurable columns, sorting on any column, quick facets (API, pages, resources, streams, errors, alerts, third-party, slow…), multiple selection, per-row context menu, free-text annotation and colour marking. The table is virtualised: only visible rows are drawn. |
+| **Requests** | All traffic, request by request. The table is virtualised with an exact-height invariant, so `scrollHeight` never shifts while you scroll and the wheel stays smooth at any zoom level. Configurable columns, sorting on any column, quick facets (API, pages, resources, streams, errors, alerts, third-party, slow…), multiple selection, per-row context menu, free-text annotation and colour marking. The table is virtualised: only visible rows are drawn. |
 | **Security** | The analyser's findings, grouped by severity, each with its evidence and a link to the request. The report can be exported as Markdown. |
 | **Summary** | The overall figures: requests, domains, volumes received and sent, median duration, errors, third-party share, encrypted share, cache, frames, cookies. Then the breakdowns: statuses, resource types, domains by volume and by count, real protocols, content types, capture layers. |
 | **Sites and paths** | The tree of what exists on each visited host, reconstructed from traffic. Useful to see an application's real surface. |
@@ -484,7 +484,7 @@ own secret and tracker patterns in the settings.
 | **Timestamps** | Unix in seconds / milliseconds / microseconds / nanoseconds, Apple/Cocoa, ISO week, durations |
 | **Numbers** | Conversion between bases 2 to 36, boundary values, Luhn |
 | **Structures** | JSON, XML, YAML: navigable tree, JSONPath paths, CSS and XPath selectors |
-| **Headers** | A pasted header block is split line by line, each value broken down, each point worth a look flagged. `Content-Disposition` filenames are decoded through **RFC 8187** extended values, **RFC 2231** continuations and **RFC 2047** encoded-words, so the real filename is shown rather than `UTF-8''%e2%82%ac%20rates` |
+| **Headers** | A pasted header block is split line by line, each value broken down, each point worth a look flagged. `Content-Disposition` filenames are decoded through **RFC 8187** extended values, **RFC 2231** continuations and **RFC 2047** encoded-words, so the real filename is shown rather than `UTF-8''%e2%82%ac%20rates`. Modern headers written as **RFC 8941 structured fields** (`Priority`, `Accept-CH`, `Cache-Status`, `Content-Digest`, `Signature-Input`) are parsed into their real types: `42` is an integer, `"42"` is a string, `:YQ==:` is a byte sequence |
 | **Search** | Ready-made patterns: tokens, keys, addresses, identifiers |
 | **Regular expression** | Test bench with capture groups and replacement |
 | **Compare** | Line-by-line and word-by-word diff, Levenshtein distance, similarity |
@@ -716,7 +716,7 @@ ui/                        The interface — one page for all four surfaces
 ├── console/               One view per file, plus the detail panel
 └── lib/                   Codecs, digests, network, reference tables, i18n
 
-tests/                     734 assertions, no browser required
+tests/                     784 assertions, no browser required
 tools/captures.mjs         Generates the documentation screenshots
 build.ps1                  Verification and .xpi packaging
 ```
@@ -761,7 +761,7 @@ French at the flip of a setting.
 npm test
 ```
 
-734 assertions, with no browser and no dependencies. The kernel and interface modules are
+784 assertions, with no browser and no dependencies. The kernel and interface modules are
 written for Firefox; `tests/harnais.mjs` supplies the minimum WebExtension API and DOM they
 need to import and run under Node. **The logic under test is exactly the logic that runs in
 the browser, with no rewriting.**
@@ -769,13 +769,13 @@ the browser, with no rewriting.**
 | Suite | Assertions | What it covers |
 |---|---|---|
 | `core.test.mjs` | 173 | URL normalisation, correlation signatures, the store, the rule engine (both ways: what matches **and** what must not), the security analyser rule by rule, HAR export, curl import, all 39 code generators |
-| `avance.test.mjs` | 216 | WebSocket and HTTP/2 frames, CSP, RFC 9111 freshness, multipart, canonical URLs and homographs, protocol tables, binary structures, rare digests, generators |
-| `ui-load.test.mjs` | 129 | Actual loading of the 101 interface modules, complete module graph (no dead import, no file outside the graph), consistency with the HTML pages and the manifest, and **full translation coverage** — every displayed string must have a dictionary entry |
+| `avance.test.mjs` | 246 | WebSocket and HTTP/2 frames, CSP, RFC 9111 freshness, multipart, canonical URLs and homographs, protocol tables, binary structures, rare digests, generators |
+| `ui-load.test.mjs` | 149 | Actual loading of the 101 interface modules, complete module graph (no dead import, no file outside the graph), consistency with the HTML pages and the manifest, and **full translation coverage** — every displayed string must have a dictionary entry |
 | `detail-coverage.test.mjs` | 120 | Each of a record's 60 fields is displayed, each tab has a render function, each searchable field exists |
 | `outils.test.mjs` | 96 | The toolbox, against published vectors |
 
 Expected values come from published sources: RFC vectors (4226, 6238, 6455, 4231, 7541, 9113,
-3986, 7578, 9111, 8187, 2231, 2047, 6266, 7638, and ZeroMQ RFC 32), standard check values (all 20 CRC variants are verified against their
+3986, 7578, 9111, 8187, 2231, 2047, 6266, 7638, 8941, and ZeroMQ RFC 32), standard check values (all 20 CRC variants are verified against their
 published check value for `123456789`), FIPS 202 for SHA-3, RFC 7693 for BLAKE2, RFC 9562
 for UUIDs.
 
@@ -812,7 +812,7 @@ the file. It contains internal errors and the command log — not your traffic.
 Before opening a pull request:
 
 ```bash
-npm test              # all 734 assertions must pass
+npm test              # all 784 assertions must pass
 .\build.ps1 -Verify   # the build must be green
 ```
 

@@ -134,7 +134,6 @@ export const EN_ANALYSE = {
 
   /* ------------------------ Trames WebSocket et HTTP/2 -------------------- */
   'Trames WebSocket et HTTP/2': 'WebSocket and HTTP/2 frames',
-  'Trames WebSocket': 'WebSocket frames',
   'Trames HTTP/2': 'HTTP/2 frames',
   'trame(s) lue(s)': 'frame(s) read',
   'Opcode': 'Opcode',
@@ -166,6 +165,19 @@ export const EN_ANALYSE = {
   '7 bits': '7 bits',
   '16 bits': '16 bits',
   '64 bits': '64 bits',
+
+  /* -------------------- Champs structures (RFC 8941) ---------------------- */
+  'Forme': 'Form',
+  'liste': 'list',
+  'dictionnaire': 'dictionary',
+  'article': 'item',
+  'liste interne': 'inner list',
+  'entier': 'integer',
+  'decimal': 'decimal',
+  'chaine': 'string',
+  'jeton': 'token',
+  'suite d octets': 'byte sequence',
+  'booleen': 'boolean',
 
   /* --------------------------- HPACK (RFC 7541) --------------------------- */
   'En-tetes decodes (HPACK)': 'Decoded headers (HPACK)',
@@ -248,6 +260,5 @@ export const EN_ANALYSE = {
 
   /* ------------------------------ Divers ---------------------------------- */
   'alerte(s)': 'finding(s)',
-  'Fenetre': 'Window',
-  'Reconnaitre': 'Detect'
+  'Fenetre': 'Window'
 };

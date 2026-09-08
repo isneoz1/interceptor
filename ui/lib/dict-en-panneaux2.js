@@ -7,10 +7,8 @@
 export const EN_PANNEAUX2 = {
   /* ------------------------- Onglets ajoutes ------------------------------ */
   'Chiffrement': 'Encryption',
-  'Binaire': 'Binary',
   'Entetes': 'Headers',
   'Chercher': 'Find',
-  'Comparer': 'Compare',
 
   /* ------------------------------ Chiffrement ----------------------------- */
   'AES': 'AES',
@@ -92,7 +90,6 @@ export const EN_PANNEAUX2 = {
     'Paste a PEM block (-----BEGIN CERTIFICATE-----) or DER in base64.',
   'Bloc illisible : ': 'Block cannot be read: ',
   'Bloc': 'Block',
-  'Taille': 'Size',
   'Certificat': 'Certificate',
   'Sujet': 'Subject',
   'Emetteur': 'Issuer',
@@ -109,7 +106,6 @@ export const EN_PANNEAUX2 = {
   'Usages de la cle': 'Key usages',
   'Usages etendus': 'Extended usages',
   'usage': 'usage',
-  'Extensions': 'Extensions',
   'critique': 'critical',
   'Ce bloc n est pas un certificat : ': 'This block is not a certificate: ',
   'Voir la structure ASN.1': 'Show the ASN.1 structure',
@@ -156,7 +152,6 @@ export const EN_PANNEAUX2 = {
   'position ': 'position ',
   'A gauche': 'On the left',
   'A droite': 'On the right',
-  'Contexte': 'Context',
   'Ligne a ligne': 'Line by line',
   'lignes': 'lines',
   'Affichage limite a 600 lignes ; le format unifie ci-dessous les porte toutes.':

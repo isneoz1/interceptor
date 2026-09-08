@@ -68,9 +68,6 @@ export const EN_TOOLS = {
   'Tout essayer': 'Try everything',
   'Resultat': 'Result',
   'Resultats lisibles': 'Readable results',
-  'Copier le resultat': 'Copy result',
-  'Reprendre comme entree': 'Use as input',
-  'Echec : ': 'Failed: ',
   'Aucun decodage ne rend un resultat lisible : le texte est probablement deja en clair.':
     'No decoding yields a readable result: the text is probably already plain.',
   'Choisissez une transformation, ou « Tout essayer » pour laisser INTERCEPTOR reconnaitre l encodage.':
@@ -89,7 +86,6 @@ export const EN_TOOLS = {
   'Entete': 'Header',
   'Charge utile': 'Payload',
   'Charge utile brute': 'Raw payload',
-  'Algorithme': 'Algorithm',
   'Emis le': 'Issued at',
   'Valide a partir de': 'Valid from',
   'Expire le': 'Expires at',
@@ -106,7 +102,6 @@ export const EN_TOOLS = {
   'Mesures': 'Measurements',
   'Caracteres': 'Characters',
   'Octets (UTF-8)': 'Bytes (UTF-8)',
-  'Lignes': 'Lines',
   'Mots': 'Words',
   'Entropie': 'Entropy',
   'Entropie par octet': 'Entropy per byte',
@@ -123,7 +118,6 @@ export const EN_TOOLS = {
     'Very repetitive: few distinct characters.',
 
   /* ------------------------------ Hexadecimal ----------------------------- */
-  'Hexadecimal': 'Hexadecimal',
   'Vidage hexadecimal': 'Hex dump',
   'Copier le vidage': 'Copy dump',
   'Texte de travail vide.': 'Working text is empty.',
@@ -151,7 +145,6 @@ export const EN_TOOLS = {
   /* ------------------------------- Structures ----------------------------- */
   'Structures': 'Structures',
   'Parametres d URL': 'URL parameters',
-  'Entetes': 'Headers',
   'Aucun couple cle=valeur reconnu.': 'No key=value pair recognised.',
   'Aucun cookie reconnu.': 'No cookie recognised.',
   'Aucune ligne « Nom: valeur » reconnue.': 'No "Name: value" line recognised.',
@@ -216,7 +209,6 @@ export const EN_TOOLS = {
   /* --------------------------- Interception ------------------------------ */
   'Interception': 'Interception',
   'Interception en direct': 'Live interception',
-  'Interception active': 'Interception active',
   'Demarrer l interception': 'Start interception',
   'Arreter l interception': 'Stop interception',
   'Requetes suspendues': 'Held requests',
@@ -235,7 +227,6 @@ export const EN_TOOLS = {
   'Requete sortante': 'Outgoing request',
   'Reponse entrante': 'Incoming response',
   'onglet': 'tab',
-  'URL': 'URL',
   'Ligne': 'Row',
   'Echeance de securite (ms)': 'Safety timeout (ms)',
   'Filtre (expression reguliere) — vide = toutes les requetes':

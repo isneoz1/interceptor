@@ -11,8 +11,18 @@ import { t } from '../lib/i18n.js';
 import { state, cmd, toast, dropdown, visibleRecords, scopeCount, saveConfig } from '../app.js';
 import { openRowMenu, closeContextMenu, grip } from './rowmenu.js';
 import { hauteurLigne as mesureLigne, invaliderHauteur, recalerHauteur } from './rowsize.js';
+import { fenetreVirtuelle, memeFenetre } from '../lib/fenetre-virtuelle.js';
 
 const OVERSCAN = 12;
+
+/* Derniere fenetre reellement dessinee. Pendant un defilement fluide, elle ne
+   change pas a chaque image : la redessiner soixante fois par seconde pour un
+   resultat identique coutait cher et faisait scintiller le tableau.
+   Ce raccourci ne sert QU AU defilement : tout autre appel redessine, pour
+   qu aucun changement de contenu ne puisse rester invisible. */
+let derniereFenetre = null;
+/* Garde-fou : le recalage de hauteur ne peut declencher qu un seul redessin. */
+let recalage = false;
 
 const FACETS = [
   { key: 'xhr',    label: 'API',        test: r => r.type === 'xmlhttprequest' || r.type === 'fetch' },
@@ -76,7 +86,7 @@ export function init(deps) {
     clearTimeout(finDefile);
     finDefile = setTimeout(() => wrap.classList.remove('defile'), 90);
     if (scrollFrame) return;
-    scrollFrame = requestAnimationFrame(() => { scrollFrame = null; renderRows(); });
+    scrollFrame = requestAnimationFrame(() => { scrollFrame = null; renderRows(true); });
   }, { passive: true });
 
   $('#tbody').addEventListener('click', onRowClick);
@@ -251,13 +261,21 @@ export function render() {
   renderRows();
 }
 
-export function renderRows() {
+/**
+ * Redessine la fenetre visible du tableau.
+ *
+ * @param depuisDefilement  vrai quand l appel vient du defilement. Dans ce cas
+ *   seulement, un rendu identique au precedent est evite. Partout ailleurs le
+ *   contenu a pu changer : on redessine sans condition.
+ */
+export function renderRows(depuisDefilement = false) {
   const wrap = $('#tablewrap');
   const body = $('#tbody');
   const H = rowHeight();
   const total = rows.length;
 
   if (!total) {
+    derniereFenetre = null;
     clear(body);
     body.style.paddingTop = '0px';
     body.style.paddingBottom = '0px';
@@ -270,15 +288,16 @@ export function renderRows() {
     return;
   }
 
-  const viewport = wrap.clientHeight || 400;
-  const visible = Math.ceil(viewport / H) + OVERSCAN * 2;
-  // La position de defilement peut depasser le contenu juste apres un filtrage
-  // ou une suppression : on la borne pour ne jamais afficher une page vide.
-  const maxFirst = Math.max(0, total - Math.ceil(viewport / H));
-  const first = Math.min(maxFirst, Math.max(0, Math.floor(wrap.scrollTop / H) - OVERSCAN));
-  const last = Math.min(total, first + visible);
-
   const columns = activeColumns();
+  const fenetre = fenetreVirtuelle(wrap.scrollTop, wrap.clientHeight, H, total, OVERSCAN);
+  const first = fenetre.premiere;
+  const last = fenetre.derniere;
+
+  /* Defilement seul : si la fenetre n a pas bouge, le tableau affiche deja
+     exactement ce qu il faut. */
+  if (depuisDefilement && memeFenetre(derniereFenetre, fenetre)) return;
+  derniereFenetre = fenetre;
+
   // Reperes de la cascade : premiere requete affichee et duree totale couverte.
   const firstTime = rows.length ? Math.min(rows[0].startTime, rows[rows.length - 1].startTime) : 0;
   const lastTime = rows.reduce((m, r) => Math.max(m, (r.startTime || 0) + (r.duration || 0)), firstTime);
@@ -303,11 +322,27 @@ export function renderRows() {
   }
 
   clear(body);
-  // Cales arrondies au pixel : des bords nets, jamais de texte flou.
-  body.style.paddingTop = Math.round(first * H) + 'px';
-  body.style.paddingBottom = Math.round(Math.max(0, total - last) * H) + 'px';
+  /* Cales exactes, jamais arrondies chacune de son cote : leur somme avec les
+     lignes dessinees vaut toujours `total * H`, donc `scrollHeight` ne bouge
+     pas d une image a l autre. C est ce qui rend le defilement a la molette
+     stable au lieu de sauter d un pixel a chaque cran. */
+  body.style.paddingTop = fenetre.haut + 'px';
+  body.style.paddingBottom = fenetre.bas + 'px';
   body.appendChild(out);
-  recalerHauteur(body);   // cale la hauteur sur une vraie ligne pour le prochain rendu
+
+  /* La hauteur reelle d une ligne ne se connait qu une fois dessinee. Si elle
+     a change (mise a l echelle, densite), les cales qu on vient de poser sont
+     calculees sur l ancienne : on redessine une fois, tout de suite, plutot
+     que de laisser le contenu sauter au prochain defilement. */
+  const avant = H;
+  recalerHauteur(body);
+  if (!recalage && Math.abs(rowHeight() - avant) > 0.5) {
+    recalage = true;
+    derniereFenetre = null;
+    try { renderRows(); } finally { recalage = false; }
+    return;
+  }
+
   if (follow) wrap.scrollTop = wrap.scrollHeight;
 }
 

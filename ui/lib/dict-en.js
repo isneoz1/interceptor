@@ -107,7 +107,6 @@ export const EN = {
   'Niveau de risque': 'Risk level',
 
   /* --------------------------- Onglets du detail ------------------------- */
-  'Resume': 'Overview',
   'En-tetes': 'Headers',
   'Requete': 'Request',
   'Reponse': 'Response',
@@ -334,7 +333,6 @@ export const EN = {
   'Statuts': 'Statuses',
   'Types de ressource': 'Resource types',
   'Protocoles observes': 'Observed protocols',
-  'Couches de capture': 'Capture layers',
   'Domaines par volume recu': 'Domains by received volume',
   'Domaines par nombre de requetes': 'Domains by request count',
   'Types de contenu': 'Content types',

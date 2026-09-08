@@ -24,7 +24,6 @@ export const EN_CODE = {
   'Ce qui a ete fait': 'What was done',
   'Code brouille': 'Obfuscated code',
   'Code lisible': 'Readable code',
-  'caracteres': 'characters',
   'Copier le resultat': 'Copy the result',
   'Reprendre comme entree': 'Reuse as input',
   'Resultat vide': 'Empty result',
@@ -57,7 +56,6 @@ export const EN_CODE = {
   'secret (base32, ex. JBSWY3DPEHPK3PXP)': 'secret (base32, e.g. JBSWY3DPEHPK3PXP)',
   'Format du secret': 'Secret format',
   'Algorithme': 'Algorithm',
-  'Chiffres': 'Digits',
   'Pas (s)': 'Step (s)',
   'Code TOTP maintenant': 'TOTP code now',
   'Fenetres voisines': 'Neighbouring windows',
@@ -122,7 +120,6 @@ export const EN_CODE = {
 
   /* ------------------------ Emplacement de la console -------------------- */
   'Console': 'Console',
-  'Fenetre': 'Window',
   'Ouvrir la console': 'Open the console',
   'Position de la fenetre detachee': 'Detached window position',
   'Onglet complet': 'Full tab',
@@ -130,8 +127,6 @@ export const EN_CODE = {
   'Panneau lateral': 'Side panel',
   'Fenetre compacte au clic': 'Compact window on click',
   'Fenetre compacte': 'Compact window',
-  'A droite': 'On the right',
-  'A gauche': 'On the left',
   'En haut': 'At the top',
   'En bas': 'At the bottom',
   'Au centre': 'Centred',

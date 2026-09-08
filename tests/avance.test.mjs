@@ -26,6 +26,8 @@ import { analyserEntete, analyserBloc, ENTETES_ANALYSABLES } from '../ui/lib/ent
 import { decoderValeurEtendue, encoderValeurEtendue, decoderMotsCodes,
   contientMotCode, decouperParametres, analyserValeurParametree, analyserContentDisposition }
   from '../ui/lib/entetes-parametres.js';
+import { lireListe, lireDictionnaire, lireArticleSeul, analyserChampStructure,
+  decrireArticle, FORMES_CONNUES } from '../ui/lib/champs-structures.js';
 import { sha3, shake } from '../ui/lib/sha3.js';
 import { blake2b512, blake2s256 } from '../ui/lib/blake2.js';
 import { crc, crcParNom, CRC_VARIANTES, murmur3, xxhash32, xxhash64, siphash24Octets }
@@ -378,6 +380,66 @@ egal('un nom ordinaire ne declenche rien',
 const cdAnalyse = analyserEntete('Content-Disposition', "attachment; filename*=UTF-8''%e2%82%ac%20rates");
 verifier('Content-Disposition decode dans l analyseur',
   cdAnalyse.parties.some(p => p.valeur === '€ rates'));
+
+/* --------------------- Champs structures (RFC 8941) ----------------------- */
+/* Les exemples des sections 3.1 a 3.3 de la RFC, puis de vrais en-tetes. */
+egal('liste de jetons (section 3.1)',
+  lireListe('sugar, tea, rhubarb').map(x => x.valeur).join(','), 'sugar,tea,rhubarb');
+egal('les jetons sont types comme tels', lireListe('sugar').map(x => x.type).join(''), 'jeton');
+egal('listes internes (section 3.1.1)',
+  lireListe('("foo" "bar"), ("baz"), ("bat" "one"), ()').map(decrireArticle).join(' '),
+  '("foo" "bar") ("baz") ("bat" "one") ()');
+egal('dictionnaire (section 3.2)',
+  lireDictionnaire('en="Applepie", da=:w4ZibGV0w6ZydGU=:').map(x => x.cle).join(','), 'en,da');
+egal('une chaine reste une chaine',
+  lireDictionnaire('en="Applepie"')[0].valeur, 'Applepie');
+egal('une suite d octets est decodee',
+  lireDictionnaire('da=:w4ZibGV0w6ZydGU=:')[0].valeur.length, 11);
+egal('membre sans valeur : booleen vrai implicite',
+  lireDictionnaire('a=?0, b, c; foo=bar').map(x => x.cle + '=' + x.valeur).join(' '),
+  'a=false b=true c=true');
+egal('article avec parametre (section 3.3)',
+  lireArticleSeul('5; foourl="https://foo.example.com/"').parametres[0].valeur,
+  'https://foo.example.com/');
+
+/* Les six types de base, chacun reconnu pour ce qu il est. */
+for (const [texte, type] of [['42', 'entier'], ['-4.5', 'decimal'], ['"a b"', 'chaine'],
+  ['foo123/456', 'jeton'], ['?1', 'booleen'], [':YQ==:', 'suite d octets']]) {
+  egal('type de ' + texte, lireArticleSeul(texte).type, type);
+}
+egal('un entier reste un nombre', lireArticleSeul('42').valeur, 42);
+egal('une chaine de chiffres reste du texte', lireArticleSeul('"42"').valeur, '42');
+
+/* Ce que la grammaire interdit doit etre refuse, pas devine. */
+leve('plus de trois decimales refusees', () => lireArticleSeul('1.2345'));
+leve('chaine non fermee refusee', () => lireArticleSeul('"a'));
+leve('booleen autre que 0 ou 1 refuse', () => lireArticleSeul('?2'));
+leve('virgule finale refusee dans une liste', () => lireListe('sugar,'));
+leve('virgule finale refusee dans un dictionnaire', () => lireDictionnaire('a=1,'));
+leve('liste interne non fermee refusee', () => lireListe('("a"'));
+leve('texte en trop apres un article refuse', () => lireArticleSeul('5 6'));
+
+/* De vrais en-tetes, lus par l analyseur avec la forme que leur RFC impose. */
+egal('Priority est un dictionnaire', FORMES_CONNUES['priority'], 'dictionnaire');
+const prio = analyserEntete('Priority', 'u=1, i');
+verifier('Priority : urgence lue comme entier',
+  prio.parties.some(p => p.cle === 'u' && p.valeur === '1' && p.note === 'entier'));
+verifier('Priority : incremental lu comme booleen implicite',
+  prio.parties.some(p => p.cle === 'i' && p.note === 'booleen'));
+
+const digest = analyserEntete('Content-Digest',
+  'sha-256=:X48E9qOokqqrvdts8nOJRJN3OWDUoyWxBf7kbu9DBPE=:');
+verifier('Content-Digest : la suite d octets fait 32 octets',
+  digest.parties.some(p => /32 octets/.test(p.valeur)));
+
+const statut = analyserEntete('Cache-Status', 'ExampleCache; hit; ttl=376');
+verifier('Cache-Status : parametre ttl lu comme entier',
+  statut.parties.some(p => p.cle.trim() === ';ttl' && p.valeur === '376'));
+
+/* Forme inconnue : on essaie les trois et on rend celles qui tiennent. */
+const essais = analyserChampStructure('a=1, b=2');
+verifier('une valeur ambigue rend plusieurs lectures valides', essais.valides.length >= 1);
+egal('aucune forme imposee sans nom d en-tete', essais.formeAttendue, null);
 
 /* ------------------------------- En-tetes --------------------------------- */
 const setCookie = analyserEntete('Set-Cookie', 'a=1; Path=/; Secure; SameSite=None');

@@ -7,6 +7,8 @@
  */
 import { base64VersOctets, octetsVersTexte } from './bytes.js';
 import { analyserContentDisposition } from './entetes-parametres.js';
+import { analyserChampStructure, decrireArticle, FORMES_CONNUES }
+  from './champs-structures.js';
 
 const partie = (cle, valeur, note) => ({ cle, valeur: valeur == null ? '' : String(valeur), note: note || '' });
 
@@ -211,6 +213,42 @@ function contentDisposition(valeur) {
   return { parties, risques };
 }
 
+/* ---------------------- Champs structures (RFC 8941) ---------------------- */
+/* Les en-tetes HTTP recents partagent une grammaire commune : liste,
+   dictionnaire ou article, batis sur six types de base. Rendre la valeur brute
+   perdrait la seule information qui compte — `42` n est pas `"42"`. */
+function champStructure(valeur, nomEntete) {
+  let lu;
+  try { lu = analyserChampStructure(valeur, nomEntete); }
+  catch { return { parties: [partie('Valeur', String(valeur))], risques: [] }; }
+
+  const retenue = lu.valides[0];
+  if (!retenue) {
+    return {
+      parties: [partie('Valeur', String(valeur))],
+      risques: [{ ou: nomEntete, texte: 'valeur illisible comme champ structure : '
+        + (lu.lectures[0] && lu.lectures[0].erreur || 'forme inconnue') }]
+    };
+  }
+
+  const parties = [partie('Forme', retenue.forme)];
+  if (retenue.article) {
+    parties.push(partie('Valeur', decrireArticle(retenue.article), retenue.article.type));
+    for (const p of retenue.article.parametres || []) {
+      parties.push(partie('  ;' + p.cle, decrireArticle(p), p.type));
+    }
+  } else {
+    for (const membre of retenue.membres) {
+      const nom = membre.cle !== undefined ? membre.cle : '·';
+      parties.push(partie(nom, decrireArticle(membre), membre.type));
+      for (const p of membre.parametres || []) {
+        parties.push(partie('  ;' + p.cle, decrireArticle(p), p.type));
+      }
+    }
+  }
+  return { parties, risques: [] };
+}
+
 /* ------------------------------- Autorisation ----------------------------- */
 function autorisation(valeur) {
   const brut = String(valeur).trim();
@@ -265,6 +303,17 @@ const ANALYSEURS = {
   'te': listePonderee,
   'content-type': valeurParametree,
   'content-disposition': contentDisposition,
+  /* Un en-tete par entree : la table des formes vit dans champs-structures.js,
+     et chacun y est declare avec la forme que sa specification impose. */
+  'priority': (v, n) => champStructure(v, n || 'priority'),
+  'accept-ch': (v, n) => champStructure(v, n || 'accept-ch'),
+  'cache-status': (v, n) => champStructure(v, n || 'cache-status'),
+  'proxy-status': (v, n) => champStructure(v, n || 'proxy-status'),
+  'content-digest': (v, n) => champStructure(v, n || 'content-digest'),
+  'repr-digest': (v, n) => champStructure(v, n || 'repr-digest'),
+  'signature': (v, n) => champStructure(v, n || 'signature'),
+  'signature-input': (v, n) => champStructure(v, n || 'signature-input'),
+  'cdn-cache-control': (v, n) => champStructure(v, n || 'cdn-cache-control'),
   'alt-svc': valeurParametree,
   'permissions-policy': v => ({
     parties: String(v).split(',').map(x => {
@@ -332,7 +381,8 @@ export function analyserEntete(nom, valeur) {
   if (!analyseur) {
     return { nom: cle, valeur: String(contenu), parties: [], risques: [], sansAnalyse: true };
   }
-  const resultat = analyseur(String(contenu));
+  // Le nom est passe : les champs structures en deduisent la forme attendue.
+  const resultat = analyseur(String(contenu), cle.toLowerCase());
   return { nom: cle, valeur: String(contenu), parties: resultat.parties, risques: resultat.risques };
 }
 

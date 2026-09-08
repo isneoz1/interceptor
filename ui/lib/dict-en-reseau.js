@@ -161,12 +161,8 @@ export const EN_RESEAU = {
   'trois parties : voir l onglet JWT pour le decoder':
     'three parts: see the JWT tab to decode it',
   'Delai': 'Delay',
-  'Duree': 'Lifetime',
   'Jeton': 'Token',
-  'Forme': 'Shape',
   'Identifiant': 'Username',
-  'Schema': 'Scheme',
-  'Contenu': 'Content',
   'Portion': 'Portion',
   'Demande': 'Request',
   'present': 'present',

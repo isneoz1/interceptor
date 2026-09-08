@@ -128,7 +128,64 @@ for (const ressource of manifest.web_accessible_resources || []) {
 }
 verifier('la version du manifest est renseignee', /^\d+\.\d+\.\d+$/.test(manifest.version));
 
-/* --------------------- 5. Couverture de la traduction -------------------- */
+/* --------------------- 5. Invariante du defilement ----------------------- */
+/* Le tableau ne dessine que les lignes visibles ; deux cales tiennent la place
+   des autres. Si leur somme avec les lignes dessinees ne vaut pas exactement la
+   hauteur totale, `scrollHeight` change a chaque image et le defilement saute.
+   On le verifie sur des hauteurs fractionnaires, celles que produit la mise a
+   l echelle : c est precisement la ou l ancien arrondi derivait. */
+const { fenetreVirtuelle, memeFenetre } = await import('../ui/lib/fenetre-virtuelle.js');
+
+const HAUTEURS = [28, 29.96, 30.8, 32.2, 34.16, 23, 26.22];
+let derives = 0;
+let horsBornes = 0;
+for (const h of HAUTEURS) {
+  for (const total of [1, 7, 100, 5000, 250000]) {
+    const hauteurTotale = total * h;
+    for (let pas = 0; pas <= 40; pas++) {
+      const scrollTop = (hauteurTotale * pas) / 40;
+      const f = fenetreVirtuelle(scrollTop, 800, h, total, 12);
+      const somme = f.haut + (f.derniere - f.premiere) * h + f.bas;
+      if (Math.abs(somme - hauteurTotale) > 1e-6) derives++;
+      if (f.premiere < 0 || f.derniere > total || f.premiere > f.derniere) horsBornes++;
+    }
+  }
+}
+egal('la somme des cales et des lignes vaut toujours la hauteur totale', derives, 0);
+egal('la fenetre reste dans les bornes du tableau', horsBornes, 0);
+
+/* Une position au-dela du contenu ne doit jamais donner une page vide : c est
+   ce qui arrive juste apres un filtrage ou une suppression. */
+const trop = fenetreVirtuelle(1e9, 800, 30, 50, 12);
+verifier('une position hors contenu affiche quand meme des lignes',
+  trop.derniere > trop.premiere);
+egal('la derniere ligne reste la derniere', trop.derniere, 50);
+
+const vide = fenetreVirtuelle(0, 800, 30, 0, 12);
+egal('aucun contenu : aucune ligne', vide.derniere, 0);
+egal('aucun contenu : aucune cale', vide.haut + vide.bas, 0);
+
+/* La marge doit reellement dessiner au-dela de l ecran, dans les deux sens. */
+const milieu = fenetreVirtuelle(300 * 30, 600, 30, 1000, 12);
+egal('marge appliquee avant la premiere ligne visible', milieu.premiere, 300 - 12);
+verifier('marge appliquee apres la derniere ligne visible', milieu.derniere >= 300 + 20 + 12);
+
+/* Des valeurs absurdes ne doivent pas produire NaN ni Infinity. */
+for (const [st, vp, h, n] of [[NaN, 800, 30, 10], [-100, 800, 30, 10], [0, 0, 30, 10],
+  [0, 800, 0, 10], [0, 800, 30, -5]]) {
+  const f = fenetreVirtuelle(st, vp, h, n, 12);
+  verifier('entree absurde traitee sans NaN (' + st + ',' + vp + ',' + h + ',' + n + ')',
+    Number.isFinite(f.haut) && Number.isFinite(f.bas)
+    && Number.isFinite(f.premiere) && Number.isFinite(f.derniere));
+}
+
+verifier('deux fenetres identiques sont reconnues',
+  memeFenetre({ premiere: 3, derniere: 9 }, { premiere: 3, derniere: 9 }) === true);
+verifier('deux fenetres differentes sont distinguees',
+  memeFenetre({ premiere: 3, derniere: 9 }, { premiere: 4, derniere: 9 }) === false);
+verifier('une fenetre absente n est jamais identique', memeFenetre(null, { premiere: 0, derniere: 0 }) === false);
+
+/* --------------------- 6. Couverture de la traduction -------------------- */
 /* Le francais est la langue source : la cle de traduction EST le texte
    francais. Une chaine passee a `t`, `kv`, `sec` ou `button` sans entree au
    dictionnaire reste donc en francais quand l interface est en anglais — sans
@@ -167,6 +224,32 @@ for (const [texte, ou] of sansEntree) {
   verifier('la chaine ' + JSON.stringify(texte.slice(0, 60)) + ' a une traduction', false, ou);
 }
 egal('aucune chaine visible sans traduction anglaise', sansEntree.size, 0);
+
+/* Une cle definie deux fois est un piege silencieux : la derniere ecrase la
+   precedente selon l ordre de fusion, sans erreur ni trace. C est ainsi que la
+   colonne « Duree » s est retrouvee traduite par « Lifetime » au lieu de
+   « Duration ». Toute redefinition est desormais un echec. */
+const CLE_DICT = /^\s*('(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*")\s*:/;
+const definitions = new Map();
+for (const rel of fichiersJs(path.join(racine, 'ui/lib'))) {
+  if (!/\/dict-en/.test(rel)) continue;
+  const source = fs.readFileSync(path.join(racine, rel), 'utf8');
+  for (const ligne of source.split('\n')) {
+    const m = CLE_DICT.exec(ligne);
+    if (!m) continue;
+    const cle = m[1].slice(1, -1);
+    if (!definitions.has(cle)) definitions.set(cle, []);
+    definitions.get(cle).push(rel);
+  }
+}
+const redefinies = [...definitions.entries()].filter(([, ou]) => ou.length > 1);
+for (const [cle, ou] of redefinies) {
+  verifier('la cle ' + JSON.stringify(cle.slice(0, 40)) + ' n est definie qu une fois',
+    false, ou.join(' et '));
+}
+egal('aucune cle de traduction definie deux fois', redefinies.length, 0);
+verifier('le dictionnaire couvre plus de deux mille chaines', definitions.size > 2000,
+  definitions.size + ' cles');
 
 /* Le dictionnaire ne doit pas non plus se contredire : une cle traduite par
    elle-meme est soit un mot identique dans les deux langues, soit un oubli. */

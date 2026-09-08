@@ -7,7 +7,6 @@
  */
 export const EN_OUTILS = {
   /* ------------------------- Familles du catalogue ------------------------ */
-  'Base64': 'Base64',
   'URL': 'URL',
   'HTML': 'HTML',
   'Hexadecimal': 'Hexadecimal',

@@ -8,7 +8,7 @@
 
 ## Checks
 
-- [ ] `npm test` passes — all 734 assertions
+- [ ] `npm test` passes — all 784 assertions
 - [ ] `./build.ps1 -Verify` is green
 - [ ] New behaviour is covered by a test that fails without the change
 - [ ] If a field was added to a record, it is displayed somewhere (`detail-coverage` enforces this)

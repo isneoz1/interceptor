@@ -79,6 +79,29 @@ First public release.
   the empty input, and the thumbprint matches the example in RFC 7638 section 3.1.
   132 transformations in total.
 
+- **Structured fields (RFC 8941).** Modern HTTP headers share one grammar — list,
+  dictionary or item, built on six base types. `Priority: u=1, i` is now read as a
+  dictionary of two members, one of them an implicit boolean, instead of an opaque
+  string. Nine headers are parsed with the form their own specification requires.
+  Checked against the examples of sections 3.1 to 3.3.
+
+### Fixed after the first release
+
+- **The table jumped while scrolling with the wheel.** The two spacers that hold the
+  place of the undrawn rows were rounded independently. With a fractional row height —
+  which is what `calc(28px * scale)` produces at any zoom other than 100% — their sum
+  changed by up to a pixel at every notch, so `scrollHeight` moved under the scrollbar
+  and the content shifted. The spacers are now exact, so spacer + drawn rows + spacer
+  always equals the total height. Measured over sixty real wheel events: the old
+  arithmetic produced fourteen different total heights, the new one produces a single
+  constant. The window computation moved into `ui/lib/fenetre-virtuelle.js`, a pure
+  function with its own tests, and the table is no longer rebuilt when the visible
+  window has not moved.
+- **Nine translation keys were defined twice**, the later one silently overriding the
+  earlier. Two were user-visible mistakes: the `Duration` column showed *Lifetime*, and
+  *Active interception* stayed in French. All duplicates are gone, and a test now fails
+  the build if any key is defined more than once.
+
 ### Internal
 
 - Six finished modules were reachable from no import — 886 lines of RFC-accurate code that
@@ -87,7 +110,7 @@ First public release.
   decoding into the Request tab, RFC 3986 canonical URLs and homograph detection into the
   URL panel, reverse DNS names into the Address panel, WebSocket and HTTP/2 frame decoding
   into the Binary panel, and TLS / QUIC / HTTP-3 / DNS tables into the Reference panel.
-- Test suite added: 734 assertions across five suites, running under Node with no browser
+- Test suite added: 784 assertions across five suites, running under Node with no browser
   and no dependencies, validated against published RFC vectors. `build.ps1` already required
   these suites but the directory was absent, so packaging failed wherever Node was
   installed.
