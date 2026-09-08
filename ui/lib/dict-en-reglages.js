@@ -35,6 +35,13 @@ export const EN_REGLAGES = {
   'Trois couches peuvent rapporter la meme requete : webRequest, les sondes de page et PerformanceObserver. La correlation garantit une ligne unique. La desactiver fait apparaitre une ligne par couche.':
     'Three layers can report the same request: webRequest, the page probes and PerformanceObserver. Correlation guarantees a single row. Turning it off makes one row appear per layer.',
 
+  /* Gabarit a trou : tp() traduit d abord, puis remplace {entrees}. Une aide
+     qui cite un nombre calcule doit passer par la, sinon la concatenation la
+     rend intraduisible. */
+  'Toute l interface, l aide et le tutoriel changent de langue : {entrees} entrees traduites, et un test refuse la construction s il en manque une.':
+    'The whole interface, the help and the tutorial change language: {entrees} translated entries, and a test refuses the build if one is missing.',
+  'Profil « {nom} » applique': 'Profile "{nom}" applied',
+
   /* ------------------------------- Interface ------------------------------ */
   'Ne garde que Requetes, Securite, Synthese, Reglages, Tutoriel et Aide. Les vues avancees restent accessibles en le desactivant.':
     'Keeps only Requests, Security, Summary, Settings, Tutorial and Help. The advanced views come back as soon as you turn it off.',

@@ -7,7 +7,7 @@ import { $, el, clear, sec, button } from '../lib/dom.js';
 import { RESOURCE_TYPES } from '../lib/format.js';
 import { COLUMNS, COLUMN_ORDER, DEFAULT_COLUMNS } from '../lib/columns.js';
 import { state, cmd, toast, saveConfig, B, copy } from '../app.js';
-import { t } from '../lib/i18n.js';
+import { t, tp, dictionarySize } from '../lib/i18n.js';
 import { GROUPS, PROFILES } from './settings-groups.js';
 
 let importText = '';
@@ -28,12 +28,15 @@ export function render() {
   for (const [label, note, patch] of PROFILES) {
     profiles.appendChild(button(label, async () => {
       await saveConfig(patch);
-      toast('Profil « ' + label + ' » applique');
+      toast(tp('Profil « {nom} » applique', { nom: t(label) }));
       render();
-    }, { title: note }));
+    }, { title: t(note) }));
   }
   box.appendChild(profiles);
-  box.appendChild(el('p', { class: 'note', text: PROFILES.map(p => p[0] + ' : ' + p[1]).join('   ·   ') }));
+  /* Le nom du profil ET sa description passent par le dictionnaire : sans
+     cela, la ligne de resume restait en francais sous des boutons anglais. */
+  box.appendChild(el('p', { class: 'note',
+    text: PROFILES.map(p => t(p[0]) + ' : ' + t(p[1])).join('   ·   ') }));
 
   for (const group of GROUPS) {
     box.appendChild(sec(group.title));
@@ -51,7 +54,9 @@ function buildField([key, label, type, extra, hint]) {
   const row = el('div', { class: 'opt' });
   const text = el('div', { class: 'lbl' }, t(label));
   const note = type === 'select' ? hint : (typeof extra === 'string' ? extra : hint);
-  if (note) text.appendChild(el('i', { text: t(note) }));
+  /* tp interpole apres traduction : c est ce qui permet a une aide de citer
+     un nombre calcule sans devenir intraduisible par concatenation. */
+  if (note) text.appendChild(el('i', { text: tp(note, { entrees: dictionarySize() }) }));
   row.appendChild(text);
   const ctl = el('div', { class: 'ctl' });
   row.appendChild(ctl);
