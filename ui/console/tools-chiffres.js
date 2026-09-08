@@ -14,6 +14,7 @@ import { xorTexte, xorHex, xorForceUnOctet, cesarToutes, vigenere } from '../lib
 import { texteVersOctets } from '../lib/bytes.js';
 import { reconnaitreEmpreinte } from '../lib/hashes.js';
 import { reconnaitreTexte } from '../lib/ref-mime.js';
+import { lireIdentifiant, remarqueDate } from '../lib/identifiants.js';
 
 export function panneauCles(entree, etat, redessiner, poser) {
   const box = frag();
@@ -134,6 +135,40 @@ export function panneauIdentifier(entree) {
   }
   for (const s of signatures) {
     add(box, kv(s.nom, s.type, { hl: true }));
+  }
+
+  /* Ce que l identifiant CONTIENT, quand sa forme le permet : la plupart des
+     identifiants d API portent un horodatage, parfois une machine et un
+     compteur. Le lire dit quand la ressource a ete creee. */
+  const lectures = lireIdentifiant(brut);
+  if (lectures.length) {
+    box.appendChild(sec('Identifiant reconnu', lectures.length + ' ' + t('lecture(s) possible(s)')));
+    for (const lu of lectures) {
+      const carte = el('div', { class: 'find info' }, [el('h4', { text: lu.nom })]);
+      if (lu.versionSens) add(carte, kv('Version', t(lu.versionSens), { hl: true }));
+      if (lu.variante) add(carte, kv('Variante', t(lu.variante)));
+      if (lu.particulier) add(carte, kv('Cas particulier', t(lu.particulier), { hl: true }));
+      if (lu.iso) {
+        add(carte, kv('Date de creation', lu.iso, { copy: true, hl: true }));
+        add(carte, kv('Anciennete', t(remarqueDate(lu.instant))));
+      }
+      add(carte, kv('Machine', lu.machine));
+      add(carte, kv('Processus', lu.processus));
+      add(carte, kv('Sequence dans la milliseconde', lu.sequence));
+      add(carte, kv('Compteur', lu.compteur));
+      add(carte, kv('Horloge', lu.horloge));
+      if (lu.noeud) {
+        add(carte, kv('Noeud', lu.noeud, { copy: true }));
+        add(carte, kv('Noeud tire au hasard', lu.noeudAleatoire ? 'oui' : 'non — adresse de machine reelle'));
+      }
+      add(carte, kv('Secondes depuis l origine', lu.secondes));
+      add(carte, kv('Partie aleatoire', lu.hasard || lu.hasardBase32, { copy: true }));
+      box.appendChild(carte);
+    }
+    if (lectures.length > 1) {
+      box.appendChild(el('p', { class: 'note', text:
+        t('Plusieurs lectures tiennent : seule la source de l identifiant dit laquelle est la bonne.') }));
+    }
   }
 
   box.appendChild(sec('Formes reconnues', 'lecture directe'));

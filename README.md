@@ -14,7 +14,7 @@ Created by **D4RK**
 ![Manifest V2](https://img.shields.io/badge/Manifest-V2-444?style=flat)
 [![MIT licence](https://img.shields.io/badge/Licence-MIT-00DDFF?style=flat)](LICENSE)
 ![No dependencies](https://img.shields.io/badge/Dependencies-none-2ea043?style=flat)
-![822 assertions](https://img.shields.io/badge/Assertions-822-2ea043?style=flat)
+![862 assertions](https://img.shields.io/badge/Assertions-862-2ea043?style=flat)
 ![English and French](https://img.shields.io/badge/UI-EN%20%2F%20FR-444?style=flat)
 
 [**Install**](#3-installation) · [**Screenshots**](#2-screenshots) · [**How it works**](#4-how-it-works-the-capture-layers) · [**Changelog**](CHANGELOG.md) · [**Security**](SECURITY.md)
@@ -43,7 +43,7 @@ Created by **D4RK**
 8. [The detail panel: twelve tabs](#8-the-detail-panel-twelve-tabs)
 9. [Search: full syntax](#9-search-full-syntax)
 10. [The security analyser](#10-the-security-analyser)
-11. [The toolbox: 23 families](#11-the-toolbox-23-families)
+11. [The toolbox: 23 tools in 6 families](#11-the-toolbox-23-tools-in-6-families)
 12. [Acting on traffic: rules and interception](#12-acting-on-traffic-rules-and-interception)
 13. [Replaying a request](#13-replaying-a-request)
 14. [Import and export](#14-import-and-export)
@@ -78,7 +78,7 @@ specific points:
 happens inside your Firefox, on your machine.
 
 **By the numbers**: 144 JavaScript modules, ~28,000 lines, zero external dependencies,
-822 automated assertions, English and French interface.
+862 automated assertions, English and French interface.
 
 ---
 
@@ -134,7 +134,7 @@ What exists on the visited sites, host by host, reconstructed from observed traf
 
 ### The toolbox
 
-134 transformations across 23 families: decode, hash, measure, inspect — everything is
+134 transformations across 23 tools, grouped into six families by intent: decode, hash, measure, inspect — everything is
 computed locally, nothing leaves the machine.
 
 ![Toolbox](docs/images/console-outils.png)
@@ -463,9 +463,9 @@ own secret and tracker patterns in the settings.
 
 ---
 
-## 11. The toolbox: 23 families
+## 11. The toolbox: 23 tools in 6 families
 
-134 transformations, 23 families, **all computed locally**. A row's context menu, and the
+134 transformations, 23 tools grouped into six families by what you are trying to do — decode and convert, encryption and digests, network and HTTP, read and measure, search and compare, produce — **all computed locally**. A row's context menu, and the
 "Toolbox" buttons in the detail panel, send a value straight into it.
 
 | Family | Contents |
@@ -480,7 +480,7 @@ own secret and tracker patterns in the settings.
 | **Binary** | Protocol Buffers, MessagePack, CBOR, ASN.1/DER and X.509 certificates, character sets and mojibake repair, **WebSocket and HTTP/2 frames decoded byte by byte, including full HPACK header decompression** (RFC 7541: static table, dynamic table, Huffman) |
 | **Code** | Call-code generation in 39 formats (see [section 14](#14-import-and-export)), readability and deobfuscation |
 | **OTP codes** | HOTP and TOTP (RFC 4226 / 6238), neighbouring windows, `otpauth://` links |
-| **Identify** | Recognising an unknown value: format, likely encoding, candidate digest |
+| **Identify** | Recognising an unknown value: format, likely encoding, candidate digest. **Identifiers are decoded, not just recognised**: a UUID gives its version, variant and — for v1, v6 and v7 — the timestamp it embeds; ULID, Snowflake (Twitter, Discord, Instagram), MongoDB ObjectId and KSUID give their creation date, machine, sequence and counter |
 | **Timestamps** | Unix in seconds / milliseconds / microseconds / nanoseconds, Apple/Cocoa, ISO week, durations |
 | **Numbers** | Conversion between bases 2 to 36, boundary values, Luhn |
 | **Structures** | JSON, XML, YAML: navigable tree, JSONPath paths, CSS and XPath selectors. **PHP `serialize()`** is read as a tree — arrays, objects, enums, references, and the NUL-encoded `protected`/`private` visibility — and never executed |
@@ -716,7 +716,7 @@ ui/                        The interface — one page for all four surfaces
 ├── console/               One view per file, plus the detail panel
 └── lib/                   Codecs, digests, network, reference tables, i18n
 
-tests/                     822 assertions, no browser required
+tests/                     862 assertions, no browser required
 tools/captures.mjs         Generates the documentation screenshots
 build.ps1                  Verification and .xpi packaging
 ```
@@ -762,7 +762,7 @@ French at the flip of a setting.
 npm test
 ```
 
-822 assertions, with no browser and no dependencies. The kernel and interface modules are
+862 assertions, with no browser and no dependencies. The kernel and interface modules are
 written for Firefox; `tests/harnais.mjs` supplies the minimum WebExtension API and DOM they
 need to import and run under Node. **The logic under test is exactly the logic that runs in
 the browser, with no rewriting.**
@@ -770,8 +770,8 @@ the browser, with no rewriting.**
 | Suite | Assertions | What it covers |
 |---|---|---|
 | `core.test.mjs` | 173 | URL normalisation, correlation signatures, the store, the rule engine (both ways: what matches **and** what must not), the security analyser rule by rule, HAR export, curl import, all 39 code generators |
-| `avance.test.mjs` | 282 | WebSocket and HTTP/2 frames, CSP, RFC 9111 freshness, multipart, canonical URLs and homographs, protocol tables, binary structures, rare digests, generators |
-| `ui-load.test.mjs` | 151 | Actual loading of the 101 interface modules, complete module graph (no dead import, no file outside the graph), consistency with the HTML pages and the manifest, and **full translation coverage** — every displayed string must have a dictionary entry |
+| `avance.test.mjs` | 321 | WebSocket and HTTP/2 frames, CSP, RFC 9111 freshness, multipart, canonical URLs and homographs, protocol tables, binary structures, rare digests, generators |
+| `ui-load.test.mjs` | 152 | Actual loading of the 101 interface modules, complete module graph (no dead import, no file outside the graph), consistency with the HTML pages and the manifest, and **full translation coverage** — every displayed string must have a dictionary entry |
 | `detail-coverage.test.mjs` | 120 | Each of a record's 60 fields is displayed, each tab has a render function, each searchable field exists |
 | `outils.test.mjs` | 96 | The toolbox, against published vectors |
 
@@ -813,7 +813,7 @@ the file. It contains internal errors and the command log — not your traffic.
 Before opening a pull request:
 
 ```bash
-npm test              # all 822 assertions must pass
+npm test              # all 862 assertions must pass
 .\build.ps1 -Verify   # the build must be green
 ```
 

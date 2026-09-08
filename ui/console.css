@@ -619,3 +619,40 @@ body { display: flex; flex-direction: column; overflow: hidden; }
 .opt .lbl { font-size: calc(12.5px * var(--scale)); }
 .help p, .help li, .lesson p, .lesson li { font-size: calc(13px * var(--scale)); }
 .help td, .help th { font-size: calc(12px * var(--scale)); }
+
+/* Familles de la boite a outils : vingt-trois outils en une seule rangee ne se
+   lisent pas. Ranges par intention, chaque famille tient sur une ligne et se
+   parcourt d un regard. */
+.familles {
+  display: flex;
+  flex-direction: column;
+  gap: calc(6px * var(--scale));
+  margin: calc(10px * var(--scale)) 0;
+  padding: calc(8px * var(--scale)) calc(10px * var(--scale));
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: calc(8px * var(--scale));
+}
+.famille {
+  display: grid;
+  grid-template-columns: minmax(0, calc(150px * var(--scale))) 1fr;
+  align-items: baseline;
+  gap: calc(10px * var(--scale));
+}
+.famille + .famille { border-top: 1px solid var(--line); padding-top: calc(6px * var(--scale)); }
+.famille-nom {
+  font-size: calc(11px * var(--scale));
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  white-space: nowrap;
+}
+.famille .dtabs { border-bottom: 0; gap: calc(4px * var(--scale)); }
+.famille .dtab { padding: calc(3px * var(--scale)) calc(8px * var(--scale)); border-bottom: 0; }
+.famille .dtab.on {
+  background: var(--accent-weak);
+  color: var(--accent);
+  border-radius: calc(5px * var(--scale));
+}
+/* Sous une fenetre etroite, le nom de la famille passe au-dessus de ses outils. */
+:root[data-largeur='etroite'] .famille { grid-template-columns: 1fr; gap: calc(2px * var(--scale)); }

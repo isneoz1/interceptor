@@ -27,31 +27,49 @@ import { panneauChercher } from './tools-chercher.js';
 import { panneauCode } from './tools-code.js';
 import { panneauOtp } from './tools-otp.js';
 
-const ONGLETS = [
-  ['transformer', 'Transformer'],
-  ['cles', 'Cles et essais'],
-  ['chiffrement', 'Chiffrement'],
-  ['jwt', 'JWT'],
-  ['empreintes', 'Empreintes'],
-  ['mesures', 'Mesures'],
-  ['hex', 'Hexadecimal'],
-  ['binaire', 'Binaire'],
-  ['code', 'Code'],
-  ['otp', 'Codes OTP'],
-  ['identifier', 'Identifier'],
-  ['temps', 'Horodatage'],
-  ['nombres', 'Nombres'],
-  ['analyse', 'Structures'],
-  ['entetes', 'Entetes'],
-  ['chercher', 'Chercher'],
-  ['regex', 'Expression reguliere'],
-  ['comparer', 'Comparer'],
-  ['url', 'URL'],
-  ['adresse', 'Adresse IP'],
-  ['reference', 'Reference'],
-  ['generer', 'Generer'],
-  ['importer', 'Importer une requete']
+/* Les outils, ranges par intention plutot qu en une seule rangee de vingt-trois
+   boutons. On cherche « ce que je veux faire », pas le nom de l outil : les
+   familles portent donc des verbes, et chacune tient sur une ligne. */
+const FAMILLES = [
+  ['Decoder et convertir', [
+    ['transformer', 'Transformer'],
+    ['hex', 'Hexadecimal'],
+    ['binaire', 'Binaire'],
+    ['code', 'Code']
+  ]],
+  ['Chiffrement et empreintes', [
+    ['empreintes', 'Empreintes'],
+    ['chiffrement', 'Chiffrement'],
+    ['cles', 'Cles et essais'],
+    ['jwt', 'JWT'],
+    ['otp', 'Codes OTP']
+  ]],
+  ['Reseau et HTTP', [
+    ['url', 'URL'],
+    ['adresse', 'Adresse IP'],
+    ['entetes', 'Entetes'],
+    ['reference', 'Reference']
+  ]],
+  ['Lire et mesurer', [
+    ['analyse', 'Structures'],
+    ['identifier', 'Identifier'],
+    ['mesures', 'Mesures'],
+    ['temps', 'Horodatage'],
+    ['nombres', 'Nombres']
+  ]],
+  ['Chercher et comparer', [
+    ['chercher', 'Chercher'],
+    ['regex', 'Expression reguliere'],
+    ['comparer', 'Comparer']
+  ]],
+  ['Produire', [
+    ['generer', 'Generer'],
+    ['importer', 'Importer une requete']
+  ]]
 ];
+
+/* La liste a plat reste utile : `poser` verifie qu un onglet existe. */
+const ONGLETS = FAMILLES.flatMap(([, outils]) => outils);
 
 let entree = '';
 let onglet = 'transformer';
@@ -106,7 +124,7 @@ export function render() {
 
   box.appendChild(sec('Boite a outils',
     tp('{t} transformations, {f} familles — tout se calcule en local',
-      { t: TRANSFORMATIONS.length, f: ONGLETS.length })));
+      { t: TRANSFORMATIONS.length, f: FAMILLES.length })));
 
   /* ---------------------------- Texte de travail ------------------------- */
   const zone = el('textarea', {
@@ -133,14 +151,22 @@ export function render() {
   box.appendChild(barre);
 
   /* ------------------------------- Onglets -------------------------------- */
-  const tabs = el('div', { class: 'dtabs wrap' });
-  for (const [cle, libelle] of ONGLETS) {
-    const btn = el('button', { class: 'dtab' + (onglet === cle ? ' on' : ''), type: 'button' },
-      el('span', { text: t(libelle) }));
-    btn.addEventListener('click', () => { onglet = cle; render(); });
-    tabs.appendChild(btn);
+  const familles = el('div', { class: 'familles' });
+  for (const [nom, outils] of FAMILLES) {
+    const groupe = el('div', { class: 'famille' }, [
+      el('span', { class: 'famille-nom', text: t(nom) })
+    ]);
+    const rangee = el('div', { class: 'dtabs wrap' });
+    for (const [cle, libelle] of outils) {
+      const btn = el('button', { class: 'dtab' + (onglet === cle ? ' on' : ''), type: 'button' },
+        el('span', { text: t(libelle) }));
+      btn.addEventListener('click', () => { onglet = cle; render(); });
+      rangee.appendChild(btn);
+    }
+    groupe.appendChild(rangee);
+    familles.appendChild(groupe);
   }
-  box.appendChild(tabs);
+  box.appendChild(familles);
 
   const redessiner = () => render();
   const reprendre = valeur => poser(valeur, { bascule: false });

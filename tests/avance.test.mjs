@@ -35,6 +35,8 @@ import { crc, crcParNom, CRC_VARIANTES, murmur3, xxhash32, xxhash64, siphash24Oc
 import { z85Encoder, z85Decoder, uuencode, uudecode } from '../ui/lib/codecs-transport.js';
 import { empreinteJwk, jwkCanonique } from '../ui/lib/jwt.js';
 import { lirePhpStrict, versJs, ecrirePhp, ressemblePhp } from '../ui/lib/php-serialise.js';
+import { lireUuid, lireUlid, lireSnowflake, snowflakeToutesOrigines, lireObjectId,
+  lireKsuid, lireIdentifiant, remarqueDate, ORIGINES_SNOWFLAKE } from '../ui/lib/identifiants.js';
 import { luhn, chercherJson } from '../ui/lib/motifs.js';
 import { uuidV4, uuidV5, ulid, forceMotDePasse, ESPACES_UUID } from '../ui/lib/generateurs.js';
 import { entropie, analyserChaineRequete, analyserCookies } from '../ui/lib/inspect.js';
@@ -598,6 +600,86 @@ egal('aller-retour',
 
 verifier('une valeur PHP est reconnue', ressemblePhp('a:1:{i:0;N;}') === true);
 verifier('du texte ordinaire ne l est pas', ressemblePhp('bonjour') === false);
+
+/* ------------------- Identifiants et leur horodatage ---------------------- */
+/* La plupart des identifiants d API portent une date. Chaque decoupage suit la
+   specification de l identifiant ; aucun n est devine. */
+
+/* UUID v7 : l exemple travaille de la RFC 9562, dont l horodatage
+   0x017F22E279B0 vaut 1645557742000 ms. */
+const uuid7 = lireUuid('017F22E2-79B0-7CC3-98C4-DC0C0C07398F');
+egal('UUID v7 : version', uuid7.version, 7);
+egal('UUID v7 : horodatage', uuid7.instant, 1645557742000);
+egal('UUID v7 : date', uuid7.iso, '2022-02-22T19:22:22.000Z');
+egal('UUID v7 : variante', uuid7.variante, 'RFC 9562 (anciennement 4122)');
+
+/* UUID v1 : l espace de noms DNS de la RFC, genere en fevrier 1998. Sa date
+   lue doit tomber a ce moment-la, ce qui valide l origine de 1582. */
+const uuid1 = lireUuid('6ba7b810-9dad-11d1-80b4-00c04fd430c8');
+egal('UUID v1 : version', uuid1.version, 1);
+verifier('UUID v1 : date situee en 1998', uuid1.iso.startsWith('1998-'));
+egal('UUID v1 : noeud', uuid1.noeud, '00:c0:4f:d4:30:c8');
+verifier('UUID v1 : noeud reconnu comme adresse reelle', uuid1.noeudAleatoire === false);
+
+egal('UUID v4 : version', lireUuid('f47ac10b-58cc-4372-a567-0e02b2c3d479').version, 4);
+verifier('UUID v4 : aucun horodatage a extraire',
+  lireUuid('f47ac10b-58cc-4372-a567-0e02b2c3d479').instant === undefined);
+egal('UUID nul reconnu',
+  lireUuid('00000000-0000-0000-0000-000000000000').particulier, 'UUID nul (nil)');
+egal('UUID maximal reconnu',
+  lireUuid('ffffffff-ffff-ffff-ffff-ffffffffffff').particulier, 'UUID maximal (max)');
+leve('forme d UUID invalide refusee', () => lireUuid('pas-un-uuid'));
+
+/* ULID : l horodatage occupe les dix premiers caracteres, sur 48 bits. La
+   valeur maximale « 7ZZZZZZZZZ » doit donc valoir exactement 2^48 - 1, ce qui
+   verifie l alphabet de Crockford d un bout a l autre. */
+egal('ULID : horodatage maximal sur 48 bits',
+  lireUlid('7ZZZZZZZZZ' + 'A'.repeat(16)).instant, 281474976710655);
+egal('ULID : horodatage nul', lireUlid('0'.repeat(26)).instant, 0);
+const ulidLu = lireUlid('01ARZ3NDEKTSV4RRFFQ69G5FAV');
+egal('ULID : horodatage lu', ulidLu.instant, 1469922850259);
+egal('ULID : date', ulidLu.iso, '2016-07-30T23:54:10.259Z');
+egal('ULID : partie aleatoire', ulidLu.hasardBase32, 'TSV4RRFFQ69G5FAV');
+leve('ULID trop court refuse', () => lireUlid('TROPCOURT'));
+leve('ULID avec une lettre exclue refuse', () => lireUlid('01ARZ3NDEKTSV4RRFFQ69G5FAI'));
+
+/* Snowflake : 41 bits de millisecondes depuis une origine propre au service.
+   L exemple est celui de la documentation de Discord. */
+const flocon = lireSnowflake('175928847299117063', 1420070400000);
+egal('Snowflake Discord : date', flocon.iso, '2016-04-30T11:18:25.796Z');
+egal('Snowflake : machine', flocon.machine, 1);
+egal('Snowflake : sequence', flocon.sequence, 7);
+verifier('origines connues declarees', ORIGINES_SNOWFLAKE.length >= 3);
+verifier('plusieurs origines donnent plusieurs lectures',
+  snowflakeToutesOrigines('175928847299117063').filter(x => x.plausible).length >= 2);
+leve('Snowflake non numerique refuse', () => lireSnowflake('abc'));
+
+/* ObjectId : les quatre premiers octets sont des secondes Unix. */
+const oid = lireObjectId('507f1f77bcf86cd799439011');
+egal('ObjectId : secondes', oid.secondes, 1350508407);
+egal('ObjectId : date', oid.iso, '2012-10-17T21:13:27.000Z');
+egal('ObjectId : compteur', oid.compteur, 0x439011);
+leve('ObjectId trop court refuse', () => lireObjectId('507f1f77'));
+
+/* KSUID : quatre octets de secondes depuis le 13 mai 2014, puis seize de
+   hasard. L exemple vient du depot de reference. */
+const ksuid = lireKsuid('0ujtsYcgvSTl8PAuAdqWYSMnLOv');
+egal('KSUID : secondes depuis son origine', ksuid.secondes, 107608047);
+egal('KSUID : date', ksuid.iso, '2017-10-10T04:00:47.000Z');
+egal('KSUID : partie aleatoire sur seize octets', ksuid.hasard.length, 32);
+leve('KSUID trop court refuse', () => lireKsuid('court'));
+
+/* Reconnaissance d ensemble : on propose, on ne choisit pas. */
+memeListe('un ULID n est lu que comme un ULID',
+  lireIdentifiant('01ARZ3NDEKTSV4RRFFQ69G5FAV').map(x => x.nom), ['ULID']);
+verifier('un entier donne plusieurs lectures de Snowflake',
+  lireIdentifiant('175928847299117063').length >= 2);
+memeListe('un texte quelconque ne donne aucune lecture',
+  lireIdentifiant('bonjour tout le monde'), []);
+
+verifier('une date du futur lointain est signalee',
+  /futur/.test(remarqueDate(Date.now() + 400 * 86400000)));
+verifier('une date anterieure a 1970 est signalee', /1970/.test(remarqueDate(-1)));
 
 /* --------------------------------- Motifs --------------------------------- */
 /* Numero de test Visa publie : 4111 1111 1111 1111 passe la cle de Luhn. */

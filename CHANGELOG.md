@@ -93,6 +93,22 @@ First public release.
   characters. Nothing is executed: the structure is read, no object is reconstructed.
   Two more transformations, 134 in total.
 
+- **Identifiers are decoded, not merely recognised.** The Identify panel reported
+  "looks like a UUID" and stopped there. It now reads what the identifier actually
+  contains: a UUID gives its version, its variant and — for v1, v6 and v7 — the
+  timestamp, clock sequence and node it embeds, including whether that node is a real
+  machine address or a random draw. ULID, Snowflake (Twitter, Discord, Instagram),
+  MongoDB ObjectId and KSUID give their creation date, machine, sequence and counter.
+  When several readings hold, all are shown with their dates: the tool proposes, it
+  does not choose. Checked against the RFC 9562 worked example, Discord's documented
+  snowflake, the KSUID reference example, and the 48-bit bound of the ULID timestamp.
+
+- **The toolbox is organised by intent.** Twenty-three tools sat in one flat row of
+  tabs that wrapped onto two lines and could not be scanned. They are now grouped into
+  six named families — decode and convert, encryption and digests, network and HTTP,
+  read and measure, search and compare, produce — so you look for what you want to do
+  rather than for a tool name.
+
 ### Fixed after the first release
 
 - **The table jumped while scrolling with the wheel.** The two spacers that hold the
@@ -124,7 +140,7 @@ First public release.
   decoding into the Request tab, RFC 3986 canonical URLs and homograph detection into the
   URL panel, reverse DNS names into the Address panel, WebSocket and HTTP/2 frame decoding
   into the Binary panel, and TLS / QUIC / HTTP-3 / DNS tables into the Reference panel.
-- Test suite added: 822 assertions across five suites, running under Node with no browser
+- Test suite added: 862 assertions across five suites, running under Node with no browser
   and no dependencies, validated against published RFC vectors. `build.ps1` already required
   these suites but the directory was absent, so packaging failed wherever Node was
   installed.
