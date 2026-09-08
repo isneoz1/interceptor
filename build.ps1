@@ -246,7 +246,9 @@ $stage = Join-Path $dist '_stage'
 if (Test-Path $stage) { Remove-Item $stage -Recurse -Force }
 New-Item -ItemType Directory -Force -Path $stage | Out-Null
 
-$include = @('manifest.json', 'background', 'content', 'ui', 'icons')
+# _locales porte le nom et la description : sans lui, le manifeste renvoie
+# a des messages absents et Firefox refuse de charger l extension.
+$include = @('manifest.json', '_locales', 'background', 'content', 'ui', 'icons')
 foreach ($item in $include) {
   Copy-Item $item -Destination $stage -Recurse -Force
 }

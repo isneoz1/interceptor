@@ -1,0 +1,10 @@
+{
+  "extensionName": {
+    "message": "INTERCEPTOR",
+    "description": "Name shown in about:addons and on addons.mozilla.org."
+  },
+  "extensionDescription": {
+    "message": "See every request Firefox makes: response bodies off the wire, the JavaScript stack behind each call, TLS and cookies. Block, rewrite or replay any of them. No duplicated rows, no telemetry, no dependencies.",
+    "description": "Short description shown under the name. Kept close to 200 characters so it is not truncated in about:addons."
+  }
+}

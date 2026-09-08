@@ -1,13 +1,15 @@
 {
   "manifest_version": 2,
-  "name": "INTERCEPTOR",
+  "default_locale": "en",
+  "name": "__MSG_extensionName__",
   "short_name": "INTERCEPTOR",
   "version": "3.0.0",
   "author": "NeoZ",
-  "description": "INTERCEPTOR par NeoZ. Poste de supervision reseau complet pour Firefox, en francais et en anglais : console plein ecran, panneau lateral et popup, tutoriel guide, synthese chiffree, comparaison de requetes, regles d interception et rejeu. Interception totale et temps reel de toutes les requetes du navigateur : webRequest complet, corps de reponse (StreamFilter), fetch/XHR/WebSocket/SSE/Beacon/WebRTC, TLS, cookies, navigation. Zero doublon. Cree par NeoZ.",
+  "homepage_url": "https://github.com/isneoz1/interceptor",
+  "description": "__MSG_extensionDescription__",
   "browser_specific_settings": {
     "gecko": {
-      "id": "interceptor@d4rk",
+      "id": "interceptor@neoz",
       "strict_min_version": "115.0"
     }
   },

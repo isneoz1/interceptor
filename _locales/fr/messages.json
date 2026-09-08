@@ -1,0 +1,10 @@
+{
+  "extensionName": {
+    "message": "INTERCEPTOR",
+    "description": "Nom affiche dans about:addons et sur addons.mozilla.org."
+  },
+  "extensionDescription": {
+    "message": "Voyez chaque requete de Firefox : corps de reponse lus sur le fil, pile JavaScript a l origine de l appel, TLS et cookies. Bloquez, reecrivez ou rejouez n importe laquelle. Aucun doublon, aucune telemetrie, aucune dependance.",
+    "description": "Description courte affichee sous le nom."
+  }
+}
