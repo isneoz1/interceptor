@@ -1,4 +1,4 @@
-/* Ingestion des observations du contexte page — INTERCEPTOR (by D4RK)
+/* Ingestion des observations du contexte page — INTERCEPTOR (by NeoZ)
  *
  * Cette couche voit ce que webRequest ne peut PAS voir :
  *   - trames WebSocket (webRequest ne voit que la poignee de main)

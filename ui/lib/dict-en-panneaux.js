@@ -1,5 +1,5 @@
 /* Dictionnaire anglais — panneaux de la boite a outils
- * INTERCEPTOR (by D4RK)
+ * INTERCEPTOR (by NeoZ)
  *
  * Suite de dict-en-tools.js, dont il complete la table (`...EN_PANNEAUX`).
  * Meme regle : la cle est le texte francais tel qu il apparait dans le code.

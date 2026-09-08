@@ -1,4 +1,4 @@
-/* Rejouer une requete — INTERCEPTOR (by D4RK)
+/* Rejouer une requete — INTERCEPTOR (by NeoZ)
  *
  * SEULE fonction de l extension qui emet volontairement du trafic, et la seule
  * a le faire vers une destination choisie. Elle est :

@@ -1,5 +1,5 @@
 /* Capture des corps de reponse via StreamFilter (API exclusive Firefox)
- * INTERCEPTOR (by D4RK)
+ * INTERCEPTOR (by NeoZ)
  *
  * filterResponseData() ne peut etre appele que depuis un listener bloquant.
  * On privilegie onHeadersReceived (on connait alors Content-Type / Content-Length,

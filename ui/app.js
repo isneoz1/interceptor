@@ -1,4 +1,4 @@
-/* Etat partage et services communs — INTERCEPTOR (by D4RK)
+/* Etat partage et services communs — INTERCEPTOR (by NeoZ)
  *
  * Utilise a l identique par la console plein ecran, le panneau lateral et la
  * popup : une seule logique d acces au noyau, une seule mise en forme.

@@ -1,4 +1,4 @@
-/* Traduction de l interface — INTERCEPTOR (by D4RK)
+/* Traduction de l interface — INTERCEPTOR (by NeoZ)
  *
  * Le francais est la langue source : la cle de traduction EST le texte francais.
  * `t('Requetes')` rend « Requests » en anglais, et le texte d origine sinon.

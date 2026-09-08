@@ -1,4 +1,4 @@
-/* BLAKE2 (RFC 7693) — INTERCEPTOR (by D4RK)
+/* BLAKE2 (RFC 7693) — INTERCEPTOR (by NeoZ)
  *
  * BLAKE2b-512 (mots de 64 bits) et BLAKE2s-256 (mots de 32 bits), sans cle.
  * Ce sont les deux seules variantes que l on peut recouper ici contre une

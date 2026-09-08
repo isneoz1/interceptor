@@ -1,5 +1,5 @@
 /* Pont de communication content script <-> coeur <-> interface
- * INTERCEPTOR (by D4RK)
+ * INTERCEPTOR (by NeoZ)
  *
  * Durcissement :
  *   - toute commande d'interface exige un expediteur interne a l'extension ;

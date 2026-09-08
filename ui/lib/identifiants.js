@@ -1,4 +1,4 @@
-/* Identifiants : ce qu ils contiennent vraiment — INTERCEPTOR (by D4RK)
+/* Identifiants : ce qu ils contiennent vraiment — INTERCEPTOR (by NeoZ)
  *
  * Une URL d API est pleine d identifiants, et la plupart ne sont pas
  * aleatoires : ils portent un horodatage, parfois une machine, parfois un

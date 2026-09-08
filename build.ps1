@@ -1,4 +1,4 @@
-# Fabrication du paquet INTERCEPTOR - cree par D4RK
+# Fabrication du paquet INTERCEPTOR - cree par NeoZ
 #   .\build.ps1            -> dist/interceptor-<version>.xpi
 #   .\build.ps1 -Verify    -> verifie seulement, ne construit pas
 
@@ -10,7 +10,7 @@ Set-Location $root
 
 $manifest = Get-Content 'manifest.json' -Raw | ConvertFrom-Json
 $version  = $manifest.version
-Write-Host "INTERCEPTOR $version - by D4RK" -ForegroundColor DarkYellow
+Write-Host "INTERCEPTOR $version - by NeoZ" -ForegroundColor DarkYellow
 
 # --- Verification d integrite -------------------------------------------------
 $required = @(

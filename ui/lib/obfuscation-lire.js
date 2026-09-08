@@ -1,4 +1,4 @@
-/* Rendre un code lisible — INTERCEPTOR (by D4RK)
+/* Rendre un code lisible — INTERCEPTOR (by NeoZ)
  *
  * Le versant lecture de obfuscation.js. Trois etapes, toutes statiques : rien
  * n execute le code.

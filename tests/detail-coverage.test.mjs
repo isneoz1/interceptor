@@ -1,4 +1,4 @@
-/* Exhaustivite de l affichage — INTERCEPTOR (cree par D4RK)
+/* Exhaustivite de l affichage — INTERCEPTOR (cree par NeoZ)
  *
  * Regle du projet, ecrite en tete de `detail-parts.js` : tout champ present
  * dans un enregistrement est affiche quelque part. Ce test la fait respecter

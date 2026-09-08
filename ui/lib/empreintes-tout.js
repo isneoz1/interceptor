@@ -1,4 +1,4 @@
-/* Catalogue des empreintes locales — INTERCEPTOR (by D4RK)
+/* Catalogue des empreintes locales — INTERCEPTOR (by NeoZ)
  *
  * Rassemble les empreintes calculees sans le navigateur : SHA-3 et SHAKE,
  * Keccak d origine, RIPEMD-160, SM3, MD4, NTLM, BLAKE2, xxHash64. Chacune est verifiee

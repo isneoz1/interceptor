@@ -1,4 +1,4 @@
-/* Vue « Requetes » — tableau virtualise — INTERCEPTOR (by D4RK)
+/* Vue « Requetes » — tableau virtualise — INTERCEPTOR (by NeoZ)
  *
  * Le tableau n impose aucune limite d affichage : seules les lignes visibles
  * sont construites, ce qui permet de garder des centaines de milliers

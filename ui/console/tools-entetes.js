@@ -1,4 +1,4 @@
-/* Panneau « Entetes » — INTERCEPTOR (by D4RK)
+/* Panneau « Entetes » — INTERCEPTOR (by NeoZ)
  *
  * La table de reference dit a quoi sert un entete ; ce panneau lit sa valeur.
  * On colle une ligne ou un bloc entier, et chaque entete connu est decoupe,

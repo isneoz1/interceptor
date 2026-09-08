@@ -1,4 +1,4 @@
-/* Dictionnaire anglais — INTERCEPTOR (by D4RK)
+/* Dictionnaire anglais — INTERCEPTOR (by NeoZ)
  *
  * La cle est le texte francais tel qu il apparait dans le code. Une entree
  * absente laisse le texte francais s afficher : jamais de vide ni de cle brute.

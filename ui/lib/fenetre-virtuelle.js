@@ -1,4 +1,4 @@
-/* Fenetre du defilement virtuel — INTERCEPTOR (by D4RK)
+/* Fenetre du defilement virtuel — INTERCEPTOR (by NeoZ)
  *
  * Le tableau ne dessine que les lignes visibles ; deux cales tiennent la place
  * des autres. Tout le probleme tient dans une invariante :

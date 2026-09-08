@@ -1,4 +1,4 @@
-/* Export HAR 1.2 — INTERCEPTOR (by D4RK)
+/* Export HAR 1.2 — INTERCEPTOR (by NeoZ)
  * Format standard, relisible par Firefox DevTools, Charles, Fiddler, Postman...
  */
 import { headerGet, parseContentType } from '../lib/util.js';
@@ -161,7 +161,7 @@ export function buildHar(records, meta = {}) {
   return {
     log: {
       version: '1.2',
-      creator: { name: 'INTERCEPTOR', version: VERSION, comment: 'cree par D4RK' },
+      creator: { name: 'INTERCEPTOR', version: VERSION, comment: 'cree par NeoZ' },
       browser: { name: 'Firefox', version: meta.browserVersion || 'unknown' },
       pages,
       entries,

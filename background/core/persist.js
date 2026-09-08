@@ -1,4 +1,4 @@
-/* Persistance IndexedDB — INTERCEPTOR (by D4RK)
+/* Persistance IndexedDB — INTERCEPTOR (by NeoZ)
  *
  * Optionnelle (reglage `persist`). Ecrit les enregistrements termines par lots
  * pour ne jamais bloquer la capture, et les recharge au demarrage du navigateur.

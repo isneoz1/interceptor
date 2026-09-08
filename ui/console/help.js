@@ -1,4 +1,4 @@
-/* Vue « Aide » — mode d emploi complet, hors ligne — INTERCEPTOR (by D4RK) */
+/* Vue « Aide » — mode d emploi complet, hors ligne — INTERCEPTOR (by NeoZ) */
 import { $, el, clear } from '../lib/dom.js';
 import { fieldHelp } from '../lib/filters.js';
 import { cmd, toast } from '../app.js';
@@ -213,8 +213,8 @@ export function render() {
 
   box.appendChild(el('h2', { text: lang() === 'en' ? 'INTERCEPTOR — user manual' : 'INTERCEPTOR — mode d emploi' }));
   box.appendChild(el('p', { text: lang() === 'en'
-    ? 'Network supervision station for Firefox, created by D4RK. This page holds everything you need to know: it works offline and always matches the installed version.'
-    : 'Poste de supervision reseau pour Firefox, cree par D4RK. Cette page contient tout ce qu il faut savoir : elle fonctionne hors ligne et suit exactement la version installee.' }));
+    ? 'Network supervision station for Firefox, created by NeoZ. This page holds everything you need to know: it works offline and always matches the installed version.'
+    : 'Poste de supervision reseau pour Firefox, cree par NeoZ. Cette page contient tout ce qu il faut savoir : elle fonctionne hors ligne et suit exactement la version installee.' }));
 
   const sections = lang() === 'en' ? SECTIONS_EN : SECTIONS;
   for (const section of sections) {

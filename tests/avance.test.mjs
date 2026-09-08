@@ -1,4 +1,4 @@
-/* Tests des outils avances — INTERCEPTOR (cree par D4RK)
+/* Tests des outils avances — INTERCEPTOR (cree par NeoZ)
  *
  * Couvre les modules d analyse de protocole : trames sur le fil, politiques de
  * securite, fraicheur de cache, corps multipart, URL canoniques, tables de
@@ -513,7 +513,7 @@ leve('SipHash refuse une cle de mauvaise taille',
 egal('xxHash64 de la chaine vide', xxhash64(''), 'ef46db3751d8e999');
 verifier('xxHash64 change avec la graine', xxhash64('', 1) !== xxhash64('', 0));
 verifier('xxHash64 rend seize chiffres hexadecimaux',
-  /^[0-9a-f]{16}$/.test(xxhash64('INTERCEPTOR par D4RK, poste de supervision reseau')));
+  /^[0-9a-f]{16}$/.test(xxhash64('INTERCEPTOR par NeoZ, poste de supervision reseau')));
 
 /* ----------------------- Empreinte de cle JWK (RFC 7638) ------------------ */
 /* La cle et l empreinte de la section 3.1 de la RFC. */

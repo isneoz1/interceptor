@@ -1,5 +1,5 @@
 /* Dictionnaire anglais — tables reseau, analyse d entetes et certificats
- * INTERCEPTOR (by D4RK)
+ * INTERCEPTOR (by NeoZ)
  *
  * Complete dict-en-tools.js (`...EN_RESEAU`). Couvre ref-reseau.js,
  * entetes-analyse.js et les libelles de asn1.js.

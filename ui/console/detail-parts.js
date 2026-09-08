@@ -1,4 +1,4 @@
-/* Contenu des onglets du panneau de detail — INTERCEPTOR (by D4RK)
+/* Contenu des onglets du panneau de detail — INTERCEPTOR (by NeoZ)
  *
  * Principe : tout champ present dans l enregistrement est affiche. Les blocs
  * connus recoivent un libelle francais ; tout champ inconnu est neanmoins

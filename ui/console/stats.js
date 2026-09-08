@@ -1,4 +1,4 @@
-/* Vue « Diagnostic » — INTERCEPTOR (by D4RK)
+/* Vue « Diagnostic » — INTERCEPTOR (by NeoZ)
  * Chiffres lus en direct dans le noyau : rien n est simule, rien n est estime.
  */
 import { $, el, clear, sec, grid, button } from '../lib/dom.js';

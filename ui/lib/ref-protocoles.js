@@ -1,4 +1,4 @@
-/* Tables de reference des protocoles — INTERCEPTOR (by D4RK)
+/* Tables de reference des protocoles — INTERCEPTOR (by NeoZ)
  *
  * Alertes TLS (RFC 8446 section 6 et registre IANA), erreurs HTTP/3 et QPACK
  * (RFC 9114 section 8.1, RFC 9204), erreurs de transport QUIC (RFC 9000

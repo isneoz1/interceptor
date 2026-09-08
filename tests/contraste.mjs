@@ -1,4 +1,4 @@
-/* Mesure du contraste des jetons de couleur — INTERCEPTOR (cree par D4RK)
+/* Mesure du contraste des jetons de couleur — INTERCEPTOR (cree par NeoZ)
  *
  * Une interface sombre a neons est vite jolie et illisible. Ce module lit les
  * couleurs declarees dans `ui/theme.css` et calcule le contraste reel de

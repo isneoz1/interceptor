@@ -1,4 +1,4 @@
-/* Vue « Boite a outils » — INTERCEPTOR (by D4RK)
+/* Vue « Boite a outils » — INTERCEPTOR (by NeoZ)
  *
  * Un seul texte de travail, tous les outils dessus : on colle une valeur une
  * fois, et chaque panneau la regarde. Le texte peut venir du presse-papiers,
@@ -123,7 +123,7 @@ export function render() {
   pane.appendChild(box);
 
   box.appendChild(sec('Boite a outils',
-    tp('{t} transformations, {f} familles — tout se calcule en local',
+    tp('{t} transformations en {f} familles d outils — tout se calcule en local',
       { t: TRANSFORMATIONS.length, f: FAMILLES.length })));
 
   /* ---------------------------- Texte de travail ------------------------- */
@@ -200,7 +200,8 @@ export function render() {
 function panneauTransformer() {
   const box = el('div');
   box.appendChild(sec('Transformation',
-    tp('{t} disponibles, {f} familles', { t: TRANSFORMATIONS.length, f: GROUPES.length })));
+    tp('{t} disponibles, reparties en {f} groupes',
+      { t: TRANSFORMATIONS.length, f: GROUPES.length })));
 
   const select = el('select');
   let groupeCourant = null;

@@ -1,4 +1,4 @@
-/* Configuration persistante — INTERCEPTOR (by D4RK)
+/* Configuration persistante — INTERCEPTOR (by NeoZ)
  *
  * Regle du projet : toute option presente ici a un effet reel dans le code, et
  * toute option de l interface existe ici. Aucun reglage decoratif.

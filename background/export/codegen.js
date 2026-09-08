@@ -1,4 +1,4 @@
-/* Generation de code a partir d'une requete capturee — INTERCEPTOR (by D4RK)
+/* Generation de code a partir d'une requete capturee — INTERCEPTOR (by NeoZ)
  *
  * Registre central : les generateurs bruts et « ligne de commande » vivent ici,
  * les clients par langage dans codegen-clients.js. Chaque generateur produit du
@@ -271,7 +271,7 @@ export function generateScript(kind, records) {
 
   const head = [];
   if (shebang) head.push(shebang);
-  const title = 'INTERCEPTOR (by D4RK) — ' + records.length + ' requetes';
+  const title = 'INTERCEPTOR (by NeoZ) — ' + records.length + ' requetes';
   head.push(comment ? comment + ' ' + title : title, '');
   const parts = records.map(r => generate(kind, r) + NL);
   return { content: head.concat(parts).join(NL), extension, mime };

@@ -1,4 +1,4 @@
-/* Formats binaires — INTERCEPTOR (by D4RK)
+/* Formats binaires — INTERCEPTOR (by NeoZ)
  *
  * Protocol Buffers, MessagePack et CBOR : les trois corps binaires que l on
  * croise vraiment dans du trafic HTTP moderne (gRPC, API compactes, WebAuthn,

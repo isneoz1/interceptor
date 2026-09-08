@@ -1,4 +1,4 @@
-/* Inspection de valeurs — INTERCEPTOR (by D4RK)
+/* Inspection de valeurs — INTERCEPTOR (by NeoZ)
  *
  * JWT, entropie, vidage hexadecimal, analyse de chaines de requete, de cookies
  * et d entetes. Fonctions pures : la boite a outils les affiche, les tests les

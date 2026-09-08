@@ -1,4 +1,4 @@
-/* Constructeurs DOM surs — INTERCEPTOR (by D4RK)
+/* Constructeurs DOM surs — INTERCEPTOR (by NeoZ)
  *
  * Aucune donnee capturee n est jamais injectee en HTML : tout passe par
  * textContent. Un site observe ne peut donc rien injecter dans l interface.

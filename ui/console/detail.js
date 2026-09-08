@@ -1,4 +1,4 @@
-/* Panneau de detail — INTERCEPTOR (by D4RK)
+/* Panneau de detail — INTERCEPTOR (by NeoZ)
  *
  * Douze onglets couvrant la totalite d un enregistrement, dont un onglet
  * « Brut » qui affiche l objet complet : aucune donnee capturee ne peut

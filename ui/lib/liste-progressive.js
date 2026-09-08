@@ -1,4 +1,4 @@
-/* Liste rendue par lots — INTERCEPTOR (by D4RK)
+/* Liste rendue par lots — INTERCEPTOR (by NeoZ)
  *
  * Certaines vues affichent des listes longues dont les elements n ont pas tous
  * la meme hauteur : les alertes, les journaux. Le defilement virtuel du tableau

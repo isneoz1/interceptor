@@ -1,5 +1,5 @@
 /* ============================================================
-   INTERCEPTOR — console (cree par D4RK)
+   INTERCEPTOR — console (cree par NeoZ)
 
    Meme page pour l onglet plein ecran, le panneau lateral et la page
    d options : la mise en page suit la largeur disponible.
@@ -658,7 +658,7 @@ body { display: flex; flex-direction: column; overflow: hidden; }
 :root[data-largeur='etroite'] .famille { grid-template-columns: 1fr; gap: calc(2px * var(--scale)); }
 
 /* ============================================================
-   Habillage neon — INTERCEPTOR (by D4RK)
+   Habillage neon — INTERCEPTOR (by NeoZ)
 
    La lueur habille les BORDS des surfaces, jamais le fond d un texte :
    un halo derriere des caracteres les rend flous, et la lisibilite prime

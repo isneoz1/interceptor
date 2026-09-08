@@ -1,4 +1,4 @@
-/* Champs structures HTTP (RFC 8941) — INTERCEPTOR (by D4RK)
+/* Champs structures HTTP (RFC 8941) — INTERCEPTOR (by NeoZ)
  *
  * La syntaxe commune des en-tetes HTTP recents : `Accept-CH`, `Priority`,
  * `Cache-Status`, `Signature-Input`, `Client-Hints`… Au lieu que chaque

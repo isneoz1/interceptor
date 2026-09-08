@@ -1,4 +1,4 @@
-/* Panneau « Generer » — INTERCEPTOR (by D4RK)
+/* Panneau « Generer » — INTERCEPTOR (by NeoZ)
  *
  * Identifiants, secrets d essai, adresses et valeurs limites. Tout est tire du
  * generateur aleatoire du moteur ; la valeur produite remplace le texte de

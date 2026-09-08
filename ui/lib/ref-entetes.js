@@ -1,4 +1,4 @@
-/* Table de reference des entetes HTTP — INTERCEPTOR (by D4RK)
+/* Table de reference des entetes HTTP — INTERCEPTOR (by NeoZ)
  *
  * Chaque entete courant, son sens de circulation et ce qu il fait reellement.
  * Sert la boite a outils et l explication d une requete capturee.

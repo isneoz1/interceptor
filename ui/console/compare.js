@@ -1,4 +1,4 @@
-/* Vue « Comparaison » — deux requetes cote a cote — INTERCEPTOR (by D4RK)
+/* Vue « Comparaison » — deux requetes cote a cote — INTERCEPTOR (by NeoZ)
  *
  * Selectionnez exactement deux lignes (Ctrl+clic) puis « Comparer ».
  * Les entetes et les corps sont confrontes ligne a ligne : ce qui est identique

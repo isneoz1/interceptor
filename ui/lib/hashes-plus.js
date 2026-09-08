@@ -1,4 +1,4 @@
-/* Empreintes que le navigateur ne fournit pas — INTERCEPTOR (by D4RK)
+/* Empreintes que le navigateur ne fournit pas — INTERCEPTOR (by NeoZ)
  *
  * RIPEMD-160 (adresses Bitcoin, PGP), SM3 (norme chinoise) et MD4 (ancetre de
  * MD5, encore croise dans NTLM et de vieux protocoles).

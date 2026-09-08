@@ -1,4 +1,4 @@
-/* Contenu francais du tutoriel — INTERCEPTOR (by D4RK)
+/* Contenu francais du tutoriel — INTERCEPTOR (by NeoZ)
  *
  * Douze lecons. Chaque lecon peut proposer des boutons qui font reellement
  * l action decrite, et des verifications qui lisent l etat reel de la capture.

@@ -1,4 +1,4 @@
-/* Calculs de prefixes — INTERCEPTOR (by D4RK)
+/* Calculs de prefixes — INTERCEPTOR (by NeoZ)
  *
  * Decouper un reseau en sous-reseaux, resumer une liste de prefixes, passer
  * d une plage d adresses a la liste de prefixes qui la couvre exactement,

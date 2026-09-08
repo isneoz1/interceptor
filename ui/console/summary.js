@@ -1,4 +1,4 @@
-/* Vue « Synthese » — agregats de la capture — INTERCEPTOR (by D4RK)
+/* Vue « Synthese » — agregats de la capture — INTERCEPTOR (by NeoZ)
  *
  * Tous les chiffres sont calcules a partir des enregistrements reels du
  * perimetre choisi. Aucune estimation, aucune extrapolation : si une donnee

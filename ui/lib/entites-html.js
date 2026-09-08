@@ -1,4 +1,4 @@
-/* Entites HTML nommees — INTERCEPTOR (by D4RK)
+/* Entites HTML nommees — INTERCEPTOR (by NeoZ)
  *
  * La table des noms que l on rencontre reellement dans une page : latin-1
  * complet, ponctuation, monnaies, mathematiques, fleches, grec. Les entites

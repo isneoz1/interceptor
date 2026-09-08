@@ -1,4 +1,4 @@
-/* Exports tabulaires et rapport d alertes — INTERCEPTOR (by D4RK) */
+/* Exports tabulaires et rapport d alertes — INTERCEPTOR (by NeoZ) */
 
 const CSV_HEAD = [
   'id', 'heure', 'methode', 'statut', 'hote', 'chemin', 'type', 'mime',
@@ -42,7 +42,7 @@ export function buildFindingsReport(records) {
   const lines = [
     '# INTERCEPTOR — rapport d alertes',
     '',
-    '_genere par INTERCEPTOR (by D4RK) le ' + new Date().toLocaleString('fr-FR') + '_',
+    '_genere par INTERCEPTOR (by NeoZ) le ' + new Date().toLocaleString('fr-FR') + '_',
     '',
     '- Requetes analysees : ' + records.length,
     '- Requetes porteuses d au moins une alerte : ' + flagged.length,

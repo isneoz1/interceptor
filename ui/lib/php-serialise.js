@@ -1,4 +1,4 @@
-/* Serialisation PHP — INTERCEPTOR (by D4RK)
+/* Serialisation PHP — INTERCEPTOR (by NeoZ)
  *
  * `serialize()` de PHP se croise partout dans le trafic applicatif : cookies de
  * session, champs caches, files de travail, caches. Sans lecteur, une valeur

@@ -1,4 +1,4 @@
-/* Dictionnaire anglais — analyses, trames et bandeau — INTERCEPTOR (by D4RK)
+/* Dictionnaire anglais — analyses, trames et bandeau — INTERCEPTOR (by NeoZ)
  *
  * Ce fichier couvre trois endroits qui parlaient encore francais en anglais :
  *   - le bandeau du bas et ses compteurs ;
@@ -329,9 +329,9 @@ export const EN_ANALYSE = {
   'en cours': 'in flight',
 
   /* ---------------------------- Boite a outils ---------------------------- */
-  '{t} transformations, {f} familles — tout se calcule en local':
-    '{t} transformations, {f} families - everything is computed locally',
-  '{t} disponibles, {f} familles': '{t} available, {f} families',
+  '{t} transformations en {f} familles d outils — tout se calcule en local':
+    '{t} transformations in {f} tool families - everything is computed locally',
+  '{t} disponibles, reparties en {f} groupes': '{t} available, in {f} groups',
 
   /* ------------------------------ Divers ---------------------------------- */
   'alerte(s)': 'finding(s)',

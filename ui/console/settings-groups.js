@@ -1,4 +1,4 @@
-/* Description des reglages — INTERCEPTOR (by D4RK)
+/* Description des reglages — INTERCEPTOR (by NeoZ)
  *
  * Donnees pures : la liste des groupes affiches par console/settings.js et les
  * profils rapides. Chaque cle citee ici existe dans DEFAULTS (core/config.js)

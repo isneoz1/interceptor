@@ -1,4 +1,4 @@
-/* Encodages par alphabet — INTERCEPTOR (by D4RK)
+/* Encodages par alphabet — INTERCEPTOR (by NeoZ)
  *
  * Base32, base32hex, base58, base45, Ascii85, binaire, octal, decimal, et les
  * ponts directs entre representations d octets. Fonctions pures : la boite a

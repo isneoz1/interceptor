@@ -1,4 +1,4 @@
-/* Panneaux « URL » et « Adresse IP » — INTERCEPTOR (by D4RK)
+/* Panneaux « URL » et « Adresse IP » — INTERCEPTOR (by NeoZ)
  *
  * Une URL vue dans le tableau se decoupe ici en toutes ses parties, avec ce
  * que le port revele et ce que le nom de domaine cache. Une adresse ou un

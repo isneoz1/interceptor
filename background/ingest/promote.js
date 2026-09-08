@@ -1,4 +1,4 @@
-/* Promotion des observations orphelines — INTERCEPTOR (by D4RK)
+/* Promotion des observations orphelines — INTERCEPTOR (by NeoZ)
  *
  * Une observation venue du monde page ou de PerformanceObserver qui ne trouve
  * aucune requete reseau correspondante dans la fenetre de correlation devient

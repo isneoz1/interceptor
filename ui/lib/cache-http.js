@@ -1,4 +1,4 @@
-/* Fraicheur HTTP — INTERCEPTOR (by D4RK)
+/* Fraicheur HTTP — INTERCEPTOR (by NeoZ)
  *
  * Applique les regles de la RFC 9111 (HTTP Caching) a des en-tetes reels :
  *   - duree de fraicheur (section 4.2.1) : s-maxage, puis max-age, puis

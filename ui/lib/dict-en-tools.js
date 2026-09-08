@@ -1,5 +1,5 @@
 /* Dictionnaire anglais — boite a outils, cible, diagnostic interne
- * INTERCEPTOR (by D4RK)
+ * INTERCEPTOR (by NeoZ)
  *
  * Suite de dict-en.js, dont il complete la table (`...EN_TOOLS`). Meme regle :
  * la cle est le texte francais tel qu il apparait dans le code.

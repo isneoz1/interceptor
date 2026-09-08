@@ -1,4 +1,4 @@
-/* Interception en direct — points d arret — INTERCEPTOR (by D4RK)
+/* Interception en direct — points d arret — INTERCEPTOR (by NeoZ)
  *
  * Met une requete en attente avant son depart (ou sa reponse avant qu elle
  * n atteigne la page), et laisse l utilisateur la laisser passer, l abandonner

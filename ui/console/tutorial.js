@@ -1,4 +1,4 @@
-/* Vue « Tutoriel » — INTERCEPTOR (by D4RK)
+/* Vue « Tutoriel » — INTERCEPTOR (by NeoZ)
  *
  * Douze lecons guidees. Chaque lecon propose des boutons qui font reellement
  * l action decrite, et des verifications qui lisent l etat reel de la capture :

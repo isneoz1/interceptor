@@ -1,4 +1,4 @@
-/* Panneau « Importer une requete » — INTERCEPTOR (by D4RK)
+/* Panneau « Importer une requete » — INTERCEPTOR (by NeoZ)
  *
  * Deux entrees possibles, un seul resultat : une ligne dans le tableau, a
  * l etat « pending », que l on peut ensuite rejouer, comparer ou regenerer

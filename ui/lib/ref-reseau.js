@@ -1,4 +1,4 @@
-/* Tables de reference reseau — INTERCEPTOR (by D4RK)
+/* Tables de reference reseau — INTERCEPTOR (by NeoZ)
  *
  * Suites TLS, codes de fermeture WebSocket, erreurs HTTP/2 et codes d erreur
  * reseau de Firefox. Ce sont exactement les valeurs que la capture affiche :

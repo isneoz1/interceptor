@@ -1,4 +1,4 @@
-/* Analyse et evaluation des filtres — INTERCEPTOR (by D4RK)
+/* Analyse et evaluation des filtres — INTERCEPTOR (by NeoZ)
  *
  * Syntaxe supportee :
  *   texte libre              -> url + hote + chemin + methode + MIME

@@ -1,4 +1,4 @@
-/* Analyse automatique de chaque requete — INTERCEPTOR (by D4RK)
+/* Analyse automatique de chaque requete — INTERCEPTOR (by NeoZ)
  *
  * Aucune action de l'utilisateur : chaque enregistrement termine est audite.
  * Ce module orchestre — reglages, motifs personnels, compteurs, mise en cache ;

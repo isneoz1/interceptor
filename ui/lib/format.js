@@ -1,4 +1,4 @@
-/* Formatage d'affichage — INTERCEPTOR (by D4RK) */
+/* Formatage d'affichage — INTERCEPTOR (by NeoZ) */
 
 import { t, tp } from './i18n.js';
 

@@ -1,4 +1,4 @@
-/* Dictionnaire anglais — reste de la console — INTERCEPTOR (by D4RK)
+/* Dictionnaire anglais — reste de la console — INTERCEPTOR (by NeoZ)
  *
  * Les libelles du tableau, du detail, des flux, des menus et de la fenetre
  * compacte. Avec ce fichier, le bouton FR / EN bascule vraiment toute

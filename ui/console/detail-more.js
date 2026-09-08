@@ -1,5 +1,5 @@
 /* Onglets « Cookies », « Securite », « Alertes », « Flux », « Chronologie »,
- * « Pile JS » et « Brut » du panneau de detail — INTERCEPTOR (by D4RK)
+ * « Pile JS » et « Brut » du panneau de detail — INTERCEPTOR (by NeoZ)
  *
  * Suite de detail-parts.js : meme principe, tout champ present est affiche.
  */

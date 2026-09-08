@@ -1,4 +1,4 @@
-/* Vue « Securite » — toutes les alertes de la capture — INTERCEPTOR (by D4RK) */
+/* Vue « Securite » — toutes les alertes de la capture — INTERCEPTOR (by NeoZ) */
 import { $, el, clear, sec, button } from '../lib/dom.js';
 import { clock, middle, preuveLisible } from '../lib/format.js';
 import { state, cmd, toast, copy } from '../app.js';

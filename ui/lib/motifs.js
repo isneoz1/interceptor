@@ -1,4 +1,4 @@
-/* Motifs, chemins et selecteurs — INTERCEPTOR (by D4RK)
+/* Motifs, chemins et selecteurs — INTERCEPTOR (by NeoZ)
  *
  * Trois facons d aller chercher une valeur dans un texte : une expression
  * reguliere toute prete, un chemin dans du JSON, un selecteur dans du HTML.

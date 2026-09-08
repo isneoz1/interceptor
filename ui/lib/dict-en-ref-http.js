@@ -1,5 +1,5 @@
 /* Dictionnaire anglais — codes de statut et methodes HTTP
- * INTERCEPTOR (by D4RK)
+ * INTERCEPTOR (by NeoZ)
  *
  * Traduction des descriptions de ref-http.js. La cle reste le texte francais.
  */

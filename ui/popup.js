@@ -1,5 +1,5 @@
 /* ============================================================
- * INTERCEPTOR — fenetre compacte  (cree par D4RK)
+ * INTERCEPTOR — fenetre compacte  (cree par NeoZ)
  *
  * Poste de veille : etat de la capture, chiffres cles, dernieres requetes,
  * filtres rapides. Tout le detail se trouve dans la console complete, qui

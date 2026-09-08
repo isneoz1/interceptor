@@ -1,4 +1,4 @@
-/* Catalogues de detection — INTERCEPTOR (by D4RK)
+/* Catalogues de detection — INTERCEPTOR (by NeoZ)
  *
  * Trois catalogues purs, sans dependance : secrets, donnees personnelles,
  * pisteurs. Ils sont lus par core/analyzer.js, qui applique les reglages

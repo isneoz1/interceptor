@@ -1,4 +1,4 @@
-/* Mutations de cookies (cookies.onChanged) — INTERCEPTOR (by D4RK)
+/* Mutations de cookies (cookies.onChanged) — INTERCEPTOR (by NeoZ)
  * Capture aussi les cookies poses en JavaScript, invisibles dans Set-Cookie.
  */
 import { B } from '../lib/util.js';

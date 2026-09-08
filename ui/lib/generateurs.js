@@ -1,4 +1,4 @@
-/* Generateurs de valeurs — INTERCEPTOR (by D4RK)
+/* Generateurs de valeurs — INTERCEPTOR (by NeoZ)
  *
  * Identifiants, secrets de test et adresses. Tout vient de crypto.getRandomValues :
  * aucun tirage n emploie Math.random, qui ne convient pas a une valeur qui

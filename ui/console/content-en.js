@@ -1,4 +1,4 @@
-/* English content for the Help and Tutorial views — INTERCEPTOR (by D4RK)
+/* English content for the Help and Tutorial views — INTERCEPTOR (by NeoZ)
  *
  * The French text lives in the views themselves; this file mirrors it in
  * English so the language switch changes everything, not just the labels.

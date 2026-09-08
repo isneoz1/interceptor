@@ -1,4 +1,4 @@
-/* Commandes de fichiers — INTERCEPTOR (by D4RK)
+/* Commandes de fichiers — INTERCEPTOR (by NeoZ)
  *
  * Exports (HAR, JSON, CSV, Markdown, Postman, URL, reglages, et un script
  * dans chacun des langages du generateur de code), import
@@ -39,7 +39,7 @@ export const FILE_COMMANDS = {
     if (format === 'debug') {
       const instantane = journal.instantane({ limite: 0 });
       const content = JSON.stringify({
-        tool: 'INTERCEPTOR', author: 'D4RK', exportedAt: new Date().toISOString(),
+        tool: 'INTERCEPTOR', author: 'NeoZ', exportedAt: new Date().toISOString(),
         journal: instantane
       }, null, 2);
       const res = await saveFile('diagnostic', 'json', content, 'application/json');
@@ -59,7 +59,7 @@ export const FILE_COMMANDS = {
         break;
       case 'json':
         content = JSON.stringify({
-          tool: 'INTERCEPTOR', author: 'D4RK', exportedAt: new Date().toISOString(),
+          tool: 'INTERCEPTOR', author: 'NeoZ', exportedAt: new Date().toISOString(),
           stats: collectStats(), records: records.map(detail)
         }, null, 2);
         extension = 'json'; mime = 'application/json';

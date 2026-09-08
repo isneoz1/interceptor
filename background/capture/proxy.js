@@ -1,4 +1,4 @@
-/* Couche proxy (proxy.onRequest / proxy.onError) — INTERCEPTOR (by D4RK)
+/* Couche proxy (proxy.onRequest / proxy.onError) — INTERCEPTOR (by NeoZ)
  *
  * Point d'observation le PLUS precoce de Firefox : declenche avant meme
  * onBeforeRequest, et donne la decision de proxy appliquee a chaque requete.

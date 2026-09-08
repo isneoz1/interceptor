@@ -1,5 +1,5 @@
 /* Etat du noyau : statistiques agregees et capacites reelles du navigateur.
- * INTERCEPTOR (by D4RK)
+ * INTERCEPTOR (by NeoZ)
  *
  * Separe de rpc.js pour que la collecte d etat reste lisible et reutilisable :
  * le badge, la console et le journal de demarrage s en servent tous.

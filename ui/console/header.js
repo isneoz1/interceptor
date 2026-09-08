@@ -1,4 +1,4 @@
-/* Barre d en-tete de la console — INTERCEPTOR (by D4RK)
+/* Barre d en-tete de la console — INTERCEPTOR (by NeoZ)
  *
  * Libelles traduits, bouton de capture, perimetre, langue, menus Exporter et
  * Actions, imports de fichiers. La coquille (console.js) fournit ce dont ce

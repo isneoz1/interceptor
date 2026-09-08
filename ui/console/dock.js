@@ -1,4 +1,4 @@
-/* Emplacement de la console — INTERCEPTOR (by D4RK)
+/* Emplacement de la console — INTERCEPTOR (by NeoZ)
  *
  * Le menu d ancrage de la barre d en-tete : le meme choix qu au clic sur
  * l icone (onglet, fenetre detachee, panneau lateral, fenetre compacte), plus

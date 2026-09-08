@@ -1,5 +1,5 @@
 /* ============================================================
- * INTERCEPTOR — sondes du contexte page  (cree par D4RK)
+ * INTERCEPTOR — sondes du contexte page  (cree par NeoZ)
  *
  * Execute dans le monde de la page pour observer ce que webRequest
  * ne peut pas voir : trames WebSocket, messages SSE, piles d'appel,

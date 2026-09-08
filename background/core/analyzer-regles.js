@@ -1,4 +1,4 @@
-/* Regles d analyse — INTERCEPTOR (by D4RK)
+/* Regles d analyse — INTERCEPTOR (by NeoZ)
  *
  * Une seule ligne de conduite : une alerte ne sort que si elle est
  * DEMONTRABLE a partir de ce qui a ete capture, et si elle correspond a une

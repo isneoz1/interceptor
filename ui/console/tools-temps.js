@@ -1,4 +1,4 @@
-/* Panneaux « Horodatage » et « Nombres » — INTERCEPTOR (by D4RK)
+/* Panneaux « Horodatage » et « Nombres » — INTERCEPTOR (by NeoZ)
  *
  * Un nombre trouve dans un jeton ou un journal se lit de plusieurs facons :
  * on affiche toutes les lectures plausibles et toutes les ecritures d un meme

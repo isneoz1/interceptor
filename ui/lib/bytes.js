@@ -1,4 +1,4 @@
-/* Primitives d octets — INTERCEPTOR (by D4RK)
+/* Primitives d octets — INTERCEPTOR (by NeoZ)
  *
  * Le socle commun de tous les encodages : texte <-> octets, octets <-> chaine
  * binaire, octets <-> hexadecimal, octets <-> base64. Aucun DOM, aucune API

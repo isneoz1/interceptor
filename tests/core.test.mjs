@@ -1,4 +1,4 @@
-/* Tests du noyau — INTERCEPTOR (cree par D4RK)
+/* Tests du noyau — INTERCEPTOR (cree par NeoZ)
  *
  * Le noyau tourne dans le processus d arriere-plan de Firefox. Ici il tourne
  * sous Node, avec le harnais qui imite l API WebExtension : la logique testee

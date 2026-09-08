@@ -1,5 +1,5 @@
 /* ============================================================
- * INTERCEPTOR — noyau  (cree par D4RK)
+ * INTERCEPTOR — noyau  (cree par NeoZ)
  * Demarrage entierement automatique : aucune action requise.
  * ============================================================ */
 import { B } from './lib/util.js';
@@ -65,7 +65,7 @@ async function boot() {
     updateBadge(true);
   });
 
-  console.info('%cINTERCEPTOR actif — cree par D4RK', 'color:#FF6611;font-weight:bold');
+  console.info('%cINTERCEPTOR actif — cree par NeoZ', 'color:#FF6611;font-weight:bold');
   console.info('[INTERCEPTOR] console complete :', CONSOLE_URL);
   console.info('[INTERCEPTOR] etat initial', collectStats());
 }

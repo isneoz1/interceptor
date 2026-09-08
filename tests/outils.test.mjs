@@ -1,4 +1,4 @@
-/* Tests de la boite a outils — INTERCEPTOR (cree par D4RK)
+/* Tests de la boite a outils — INTERCEPTOR (cree par NeoZ)
  *
  * Chaque valeur attendue vient d une source publiee : vecteurs de RFC,
  * valeurs de controle normalisees, ou resultat verifiable a la main. Aucun
@@ -37,7 +37,7 @@ import { transformer } from '../ui/lib/catalogue.js';
 /* RFC 4648 : les vecteurs de la section 10 pour base32. */
 egal('base32 de « Bonjour »', base32Encoder('Bonjour'), 'IJXW42TPOVZA====');
 egal('base32 aller-retour', base32Decoder(base32Encoder('INTERCEPTOR')), 'INTERCEPTOR');
-egal('base58 aller-retour', base58Decoder(base58Encoder('D4RK')), 'D4RK');
+egal('base58 aller-retour', base58Decoder(base58Encoder('NeoZ')), 'NeoZ');
 egal('base64 vers hexadecimal', base64VersHex('aGVsbG8='), '68 65 6c 6c 6f');
 egal('hexadecimal vers base64', hexVersBase64('68656c6c6f'), 'aGVsbG8=');
 egal('binaire de « A »', binaireEncoder('A'), '01000001');
@@ -48,7 +48,7 @@ egal('11111111 lu en base 2', convertirNombre('11111111', 2), 255n);
 /* ------------------------------- Textes ----------------------------------- */
 egal('ROT13', rot13('Bonjour'), 'Obawbhe');
 egal('ROT13 est son propre inverse', rot13(rot13('Bonjour')), 'Bonjour');
-egal('ROT47 est son propre inverse', rot47(rot47('D4RK!')), 'D4RK!');
+egal('ROT47 est son propre inverse', rot47(rot47('NeoZ!')), 'NeoZ!');
 egal('Atbash est son propre inverse', atbash(atbash('secret')), 'secret');
 egal('Cesar de 3', cesar('abc', 3), 'def');
 egal('Vigenere aller-retour', vigenere(vigenere('attaque', 'cle'), 'cle', true), 'attaque');
@@ -209,7 +209,7 @@ egal('port 443 connu', decrirePort(443).service, 'HTTPS');
 /* ------------------------------- Catalogue -------------------------------- */
 /* Le catalogue est ce que l onglet « Transformer » expose : s il se desaccorde
    des fonctions, l interface propose une transformation qui echoue. */
-egal('transformation base64 par le catalogue', transformer('base64-enc', 'D4RK').valeur, 'RDRSSw==');
-egal('transformation inverse par le catalogue', transformer('base64-dec', 'RDRSSw==').valeur, 'D4RK');
+egal('transformation base64 par le catalogue', transformer('base64-enc', 'NeoZ').valeur, 'TmVvWg==');
+egal('transformation inverse par le catalogue', transformer('base64-dec', 'TmVvWg==').valeur, 'NeoZ');
 
 bilan('Boite a outils');

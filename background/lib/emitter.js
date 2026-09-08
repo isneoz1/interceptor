@@ -11,7 +11,7 @@ export class Emitter {
     const set = this._handlers.get(event);
     if (!set) return;
     for (const fn of set) {
-      try { fn(payload); } catch (e) { console.error('[D4RK] handler', event, e); }
+      try { fn(payload); } catch (e) { console.error('[NeoZ] handler', event, e); }
     }
   }
 }

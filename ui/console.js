@@ -1,5 +1,5 @@
 /* ============================================================
- * INTERCEPTOR — console complete  (cree par D4RK)
+ * INTERCEPTOR — console complete  (cree par NeoZ)
  *
  * Coquille de l application : en-tete, navigation laterale, routage des
  * vues, pied de page temps reel et raccourcis clavier.

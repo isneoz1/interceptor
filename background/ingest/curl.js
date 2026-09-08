@@ -1,4 +1,4 @@
-/* Import d une commande cURL — INTERCEPTOR (by D4RK)
+/* Import d une commande cURL — INTERCEPTOR (by NeoZ)
  *
  * Le pendant exact du generateur de code : ce que l on sait ecrire, on sait le
  * relire. Une commande copiee depuis les outils de developpement d un autre

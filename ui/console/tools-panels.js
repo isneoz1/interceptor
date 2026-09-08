@@ -1,4 +1,4 @@
-/* Panneaux de la boite a outils — INTERCEPTOR (by D4RK)
+/* Panneaux de la boite a outils — INTERCEPTOR (by NeoZ)
  *
  * Inspection d une valeur : jeton JWT, empreintes et signatures, mesures,
  * vidage hexadecimal, structures reconnues, expression reguliere.

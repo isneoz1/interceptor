@@ -1,4 +1,4 @@
-/* Pied de page et diagramme de debit — INTERCEPTOR (by D4RK)
+/* Pied de page et diagramme de debit — INTERCEPTOR (by NeoZ)
  *
  * Deux affichages temps reel, alimentes uniquement par les chiffres du noyau :
  * aucune valeur n est lissee, interpolee ni inventee.

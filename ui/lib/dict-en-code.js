@@ -1,5 +1,5 @@
 /* Dictionnaire anglais — Code, OTP, empreintes supplementaires, emplacement
- * INTERCEPTOR (by D4RK)
+ * INTERCEPTOR (by NeoZ)
  *
  * Suite de dict-en-tools.js. Meme regle : la cle est le texte francais tel
  * qu il apparait dans le code. Couvre le panneau Code (brouillage/lecture),

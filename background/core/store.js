@@ -1,4 +1,4 @@
-/* Magasin memoire des enregistrements reseau — INTERCEPTOR (by D4RK) */
+/* Magasin memoire des enregistrements reseau — INTERCEPTOR (by NeoZ) */
 import { Emitter } from '../lib/emitter.js';
 import { config } from './config.js';
 import { hostOf, pathOf, schemeOf, throttleFlush } from '../lib/util.js';

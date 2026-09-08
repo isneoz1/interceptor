@@ -1,4 +1,4 @@
-/* Decodage des corps de requete fournis par webRequest — INTERCEPTOR (by D4RK) */
+/* Decodage des corps de requete fournis par webRequest — INTERCEPTOR (by NeoZ) */
 import { config } from '../core/config.js';
 import { bytesToBase64, decodeBytes, looksBinary, truncateText } from '../lib/util.js';
 

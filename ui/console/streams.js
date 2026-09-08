@@ -1,4 +1,4 @@
-/* Vue « Flux temps reel » — WebSocket et Server-Sent Events — INTERCEPTOR (by D4RK)
+/* Vue « Flux temps reel » — WebSocket et Server-Sent Events — INTERCEPTOR (by NeoZ)
  *
  * Les trames arrivent en continu : cette vue suit un flux choisi et affiche
  * chaque message dans l ordre, sans en masquer aucun.

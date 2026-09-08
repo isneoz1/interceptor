@@ -1,4 +1,4 @@
-/* Moteur de correlation / anti-doublon — INTERCEPTOR (by D4RK)
+/* Moteur de correlation / anti-doublon — INTERCEPTOR (by NeoZ)
  *
  * Principe : une requete reelle = UN enregistrement, quel que soit le nombre de
  * couches de capture qui l'observent.

@@ -1,4 +1,4 @@
-/* Encodages de transport binaire — INTERCEPTOR (by D4RK)
+/* Encodages de transport binaire — INTERCEPTOR (by NeoZ)
  *
  * Deux facons anciennes et toujours vivantes de faire passer des octets par un
  * canal qui n accepte que du texte imprimable :

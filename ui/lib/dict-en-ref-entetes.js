@@ -1,5 +1,5 @@
 /* Dictionnaire anglais — descriptions des entetes HTTP
- * INTERCEPTOR (by D4RK)
+ * INTERCEPTOR (by NeoZ)
  *
  * Traduction des descriptions de ref-entetes.js. La cle reste le texte francais.
  */

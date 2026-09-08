@@ -1,4 +1,4 @@
-/* Verification de signature JWT — INTERCEPTOR (by D4RK)
+/* Verification de signature JWT — INTERCEPTOR (by NeoZ)
  *
  * Un jeton decode n est pas un jeton valide : tant que la signature n est pas
  * verifiee, la charge utile n est qu un texte que n importe qui a pu ecrire.

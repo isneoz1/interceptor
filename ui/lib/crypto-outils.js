@@ -1,4 +1,4 @@
-/* Chiffrement, derivation et signatures — INTERCEPTOR (by D4RK)
+/* Chiffrement, derivation et signatures — INTERCEPTOR (by NeoZ)
  *
  * Tout passe par crypto.subtle : AES-GCM, AES-CBC, AES-CTR, PBKDF2, HKDF,
  * verification RSA et ECDSA. Aucun algorithme n est reimplemente ici, donc

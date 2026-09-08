@@ -1,4 +1,4 @@
-/* Journal de diagnostic interne — INTERCEPTOR (by D4RK)
+/* Journal de diagnostic interne — INTERCEPTOR (by NeoZ)
  *
  * Ce module observe l extension elle-meme, pas le trafic. Il repond a une
  * question que rien d autre ne couvrait : « que fait INTERCEPTOR, et qu est-ce

@@ -1,4 +1,4 @@
-/* Capture TLS / chaine de certificats — INTERCEPTOR (by D4RK)
+/* Capture TLS / chaine de certificats — INTERCEPTOR (by NeoZ)
  * getSecurityInfo() n'est exploitable que depuis un listener onHeadersReceived bloquant.
  */
 import { B } from '../lib/util.js';

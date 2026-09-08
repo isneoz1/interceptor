@@ -1,4 +1,4 @@
-/* Panneau « Chiffrement » — INTERCEPTOR (by D4RK)
+/* Panneau « Chiffrement » — INTERCEPTOR (by NeoZ)
  *
  * AES, derivation de cle et verification de signature. Tout passe par le
  * moteur du navigateur : ce panneau ne fait qu offrir les champs et montrer

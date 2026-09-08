@@ -1,4 +1,4 @@
-/* Table de reference HTTP — INTERCEPTOR (by D4RK)
+/* Table de reference HTTP — INTERCEPTOR (by NeoZ)
  *
  * Codes de statut et methodes, tels que le registre IANA les publie. Cette
  * table sert la boite a outils, mais aussi tout affichage qui veut expliquer

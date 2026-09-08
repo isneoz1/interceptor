@@ -1,4 +1,4 @@
-/* Generateurs de code par langage — INTERCEPTOR (by D4RK)
+/* Generateurs de code par langage — INTERCEPTOR (by NeoZ)
  *
  * Un client HTTP pour chaque grand langage du monde. Chaque fonction recoit un
  * enregistrement capture et rend un extrait pret a coller. Aucune sortie

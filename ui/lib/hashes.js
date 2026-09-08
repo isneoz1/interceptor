@@ -1,4 +1,4 @@
-/* Empreintes et sommes de controle — INTERCEPTOR (by D4RK)
+/* Empreintes et sommes de controle — INTERCEPTOR (by NeoZ)
  *
  * SHA-1, SHA-256, SHA-384 et SHA-512 viennent du moteur du navigateur
  * (crypto.subtle). MD5, CRC-32, Adler-32, FNV-1a et djb2 sont ecrits ici :

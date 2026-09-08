@@ -1,4 +1,4 @@
-/* Import d un fichier HAR — INTERCEPTOR (by D4RK)
+/* Import d un fichier HAR — INTERCEPTOR (by NeoZ)
  *
  * Permet de relire une capture faite ailleurs (DevTools, Charles, Fiddler…)
  * dans la meme interface. Les fichiers exportes par INTERCEPTOR contiennent

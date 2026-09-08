@@ -1,4 +1,4 @@
-/* Contexte de navigation (webNavigation, 7 evenements) — INTERCEPTOR (by D4RK)
+/* Contexte de navigation (webNavigation, 7 evenements) — INTERCEPTOR (by NeoZ)
  * Fournit le contexte de page : qui a declenche quoi, transitions, erreurs,
  * navigations d'historique et fragments — invisible pour webRequest.
  */

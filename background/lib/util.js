@@ -1,4 +1,4 @@
-/* INTERCEPTOR (by D4RK) — utilitaires partages (cree par D4RK) */
+/* INTERCEPTOR (by NeoZ) — utilitaires partages (cree par NeoZ) */
 
 export const B = typeof browser !== 'undefined' ? browser : chrome;
 

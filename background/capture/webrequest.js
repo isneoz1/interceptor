@@ -1,4 +1,4 @@
-/* Capture webRequest — cycle de vie COMPLET (9 evenements) — INTERCEPTOR (by D4RK)
+/* Capture webRequest — cycle de vie COMPLET (9 evenements) — INTERCEPTOR (by NeoZ)
  *
  * onBeforeRequest -> onBeforeSendHeaders -> onSendHeaders -> onHeadersReceived
  *   -> [onAuthRequired] -> [onBeforeRedirect] -> onResponseStarted -> onCompleted

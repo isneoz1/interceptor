@@ -1,5 +1,5 @@
 /* Menu contextuel des lignes et redimensionnement des colonnes
- * INTERCEPTOR (by D4RK)
+ * INTERCEPTOR (by NeoZ)
  *
  * Extrait de la vue Requetes pour garder chaque module lisible. Le tableau
  * fournit les quelques actions dont ce menu a besoin (`api`), rien de plus.

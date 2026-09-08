@@ -1,4 +1,4 @@
-/* Colonnes du tableau de requetes — INTERCEPTOR (by D4RK)
+/* Colonnes du tableau de requetes — INTERCEPTOR (by NeoZ)
  *
  * Chaque colonne sait s afficher et se trier. La liste affichee est libre :
  * elle se choisit dans le menu « Colonnes » et se conserve dans les reglages.

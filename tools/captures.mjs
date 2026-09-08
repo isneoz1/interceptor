@@ -1,4 +1,4 @@
-/* Captures d ecran de la documentation - INTERCEPTOR (cree par D4RK)
+/* Captures d ecran de la documentation - INTERCEPTOR (cree par NeoZ)
  *
  *   node tools/captures.mjs
  *

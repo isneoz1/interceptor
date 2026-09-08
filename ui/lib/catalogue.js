@@ -1,4 +1,4 @@
-/* Catalogue des transformations — INTERCEPTOR (by D4RK)
+/* Catalogue des transformations — INTERCEPTOR (by NeoZ)
  *
  * Le registre unique de tout ce que la boite a outils sait appliquer a un
  * texte. Chaque entree porte sa cle, son groupe, son libelle, sa fonction, et

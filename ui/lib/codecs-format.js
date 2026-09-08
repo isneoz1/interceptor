@@ -1,4 +1,4 @@
-/* Formats structures et echappements — INTERCEPTOR (by D4RK)
+/* Formats structures et echappements — INTERCEPTOR (by NeoZ)
  *
  * JSON, YAML, CSV, XML, listes de proprietes, et les echappements de chaine
  * pour JavaScript, JSON, expressions regulieres et lignes de commande.

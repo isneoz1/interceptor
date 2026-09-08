@@ -1,4 +1,4 @@
-/* Onglet « Rejouer » — INTERCEPTOR (by D4RK)
+/* Onglet « Rejouer » — INTERCEPTOR (by NeoZ)
  *
  * Seule fonction de l extension qui emet volontairement une requete. Elle est
  * desactivee par defaut, s active ici en un clic, et n envoie jamais rien sans

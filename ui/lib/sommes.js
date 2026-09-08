@@ -1,4 +1,4 @@
-/* Sommes de controle — INTERCEPTOR (by D4RK)
+/* Sommes de controle — INTERCEPTOR (by NeoZ)
  *
  * Un seul moteur CRC parametre (largeur, polynome, valeur initiale, reflexion,
  * ou-exclusif final) et le catalogue des variantes reellement utilisees.

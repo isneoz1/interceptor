@@ -1,4 +1,4 @@
-/* Chargement de l interface — INTERCEPTOR (cree par D4RK)
+/* Chargement de l interface — INTERCEPTOR (cree par NeoZ)
  *
  * Un module d interface qui ne se charge pas laisse une vue vide, sans erreur
  * visible ailleurs que dans la console du navigateur. Ce test importe TOUS les
@@ -230,7 +230,7 @@ const APPELS_TRADUITS = /\b(?:t|tp|kv|sec|button)\(\s*'((?:[^'\\]|\\.)*)'/g;
 
 /* Ce qui n a pas a etre traduit : symboles, syntaxe de filtre, noms propres. */
 const SANS_TRADUCTION = new Set([
-  'INTERCEPTOR', 'D4RK', 'JSON', 'HTTP', 'URL', 'IP', 'TLS', 'DNS', 'CSP', 'JWT',
+  'INTERCEPTOR', 'NeoZ', 'JSON', 'HTTP', 'URL', 'IP', 'TLS', 'DNS', 'CSP', 'JWT',
   'HMAC-', 'Vary', 'Opcode', 'CORS', 'HAR', 'UUID', 'ULID', 'MIME'
 ]);
 

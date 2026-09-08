@@ -1,4 +1,4 @@
-/* Encodages propres au web — INTERCEPTOR (by D4RK)
+/* Encodages propres au web — INTERCEPTOR (by NeoZ)
  *
  * Punycode et noms de domaine internationaux, URI de donnees, authentification
  * « Basic », corps de formulaire, transfert par morceaux, compression gzip et

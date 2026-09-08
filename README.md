@@ -7,7 +7,7 @@
 **A complete network supervision station for Firefox.**
 Every request the browser makes — captured without duplicates, explained in plain language, and modifiable on demand.
 
-Created by **D4RK**
+Created by **NeoZ**
 
 [![Tests](https://github.com/isneoz1/interceptor/actions/workflows/tests.yml/badge.svg)](https://github.com/isneoz1/interceptor/actions/workflows/tests.yml)
 ![Firefox 115+](https://img.shields.io/badge/Firefox-115%2B-FF6611?style=flat&logo=firefoxbrowser&logoColor=white)
@@ -828,13 +828,13 @@ non-negotiable rule — **no feature that claims something it cannot prove.**
 
 ## 23. Licence
 
-[MIT](LICENSE) — © 2026 D4RK
+[MIT](LICENSE) — © 2026 NeoZ
 
 ---
 
 <div align="center">
 
-**INTERCEPTOR** · created by D4RK
+**INTERCEPTOR** · created by NeoZ
 
 *See everything. Invent nothing.*
 

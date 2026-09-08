@@ -1,4 +1,4 @@
-/* Verification de couverture — INTERCEPTOR (by D4RK)
+/* Verification de couverture — INTERCEPTOR (by NeoZ)
  *
  * Declenche de vraies requetes depuis l onglet actif, uniquement vers l origine
  * de cet onglet (chemins relatifs). Aucun service externe n est contacte.

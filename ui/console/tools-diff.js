@@ -1,4 +1,4 @@
-/* Panneau « Comparer » — INTERCEPTOR (by D4RK)
+/* Panneau « Comparer » — INTERCEPTOR (by NeoZ)
  *
  * La vue Comparaison confronte deux requetes capturees ; ici on confronte le
  * texte de travail a n importe quel autre texte colle a cote : deux reponses,

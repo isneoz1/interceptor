@@ -1,4 +1,4 @@
-/* Vue « Regles » — interception active — INTERCEPTOR (by D4RK)
+/* Vue « Regles » — interception active — INTERCEPTOR (by NeoZ)
  *
  * Editeur visuel : chaque regle se construit avec des champs et des boutons.
  * Le mode JSON reste disponible pour les cas avances et les copier-coller.

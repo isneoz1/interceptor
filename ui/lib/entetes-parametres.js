@@ -1,5 +1,5 @@
 /* Parametres d en-tete HTTP : valeurs etendues et mots codes
- * INTERCEPTOR (by D4RK)
+ * INTERCEPTOR (by NeoZ)
  *
  * Un `Content-Disposition` reel ne dit pas « filename=rapport.pdf ». Il dit
  * souvent `filename*=UTF-8''%e2%82%ac%20rates`, parfois decoupe en plusieurs
@@ -254,7 +254,7 @@ export function analyserContentDisposition(entree) {
   if (nom) {
     if (/[\\/]/.test(nom)) risques.push('le nom propose contient un separateur de chemin');
     if (/^\.\.|[\\/]\.\./.test(nom)) risques.push('le nom propose remonte dans l arborescence (..)');
-    if (/[ -]/.test(nom)) risques.push('le nom propose contient un caractere de controle');
+    if (/[\u0000-\u001f\u007f]/.test(nom)) risques.push('le nom propose contient un caractere de controle');
     if (/[‪-‮⁦-⁩]/.test(nom)) {
       risques.push('le nom propose contient une marque de sens d ecriture : l extension affichee peut differer de la reelle');
     }

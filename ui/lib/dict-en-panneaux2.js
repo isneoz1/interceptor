@@ -1,5 +1,5 @@
 /* Dictionnaire anglais — panneaux Chiffrement, Binaire, Entetes, Comparer,
- * Chercher et operations sur les prefixes. INTERCEPTOR (by D4RK)
+ * Chercher et operations sur les prefixes. INTERCEPTOR (by NeoZ)
  *
  * Suite de dict-en-panneaux.js, dont il complete la table (`...EN_PANNEAUX2`).
  * Meme regle : la cle est le texte francais tel qu il apparait dans le code.

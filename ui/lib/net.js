@@ -1,4 +1,4 @@
-/* Calculs de reseau — INTERCEPTOR (by D4RK)
+/* Calculs de reseau — INTERCEPTOR (by NeoZ)
  *
  * Decoupage d URL, arithmetique IPv4 et IPv6, calcul de sous-reseau,
  * appartenance a un prefixe et categorie d adresse (RFC 1918, 6598, 4193...).

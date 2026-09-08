@@ -1,4 +1,4 @@
-/* Encodages et decodages — INTERCEPTOR (by D4RK)
+/* Encodages et decodages — INTERCEPTOR (by NeoZ)
  *
  * Les encodages que l on rencontre a longueur de journee dans le trafic :
  * base64, URL, entites HTML, hexadecimal, echappements Unicode,

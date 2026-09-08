@@ -1,4 +1,4 @@
-/* Panneau « Codes OTP » — INTERCEPTOR (by D4RK)
+/* Panneau « Codes OTP » — INTERCEPTOR (by NeoZ)
  *
  * A quoi il sert : une capture montre un champ « code » a six chiffres refuse
  * par le serveur. Avec le secret que l on possede deja (celui de son propre

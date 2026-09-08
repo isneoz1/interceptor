@@ -1,4 +1,4 @@
-/* Ecriture de fichier depuis la page d arriere-plan — INTERCEPTOR (by D4RK)
+/* Ecriture de fichier depuis la page d arriere-plan — INTERCEPTOR (by NeoZ)
  *
  * L export est construit et telecharge ici, jamais dans la popup : une popup se
  * ferme des qu elle perd le focus, ce qui revoquerait l URL du blob en pleine

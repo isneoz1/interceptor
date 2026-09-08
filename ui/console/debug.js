@@ -1,4 +1,4 @@
-/* Vue « Journal interne » — INTERCEPTOR (by D4RK)
+/* Vue « Journal interne » — INTERCEPTOR (by NeoZ)
  *
  * Cette vue n observe pas le trafic : elle observe l extension. Elle repond a
  * « qu est-ce qui a echoue chez INTERCEPTOR, et qu a-t-il fait ? ».

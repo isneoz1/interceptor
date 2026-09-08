@@ -1,4 +1,4 @@
-/* Harnais de test — INTERCEPTOR (cree par D4RK)
+/* Harnais de test — INTERCEPTOR (cree par NeoZ)
  *
  * Les modules du noyau et de l interface sont ecrits pour un navigateur : ils
  * lisent `browser`, `document`, `window`. Ce fichier fournit le strict

@@ -1,4 +1,4 @@
-/* Panneau « Binaire » — INTERCEPTOR (by D4RK)
+/* Panneau « Binaire » — INTERCEPTOR (by NeoZ)
  *
  * Ce qui n est pas du texte : Protocol Buffers, MessagePack, CBOR, DER et
  * certificats, jeux de caracteres. Le texte de travail est lu en base64 ou en

@@ -1,4 +1,4 @@
-/* Resolution DNS (nom canonique + adresses) — INTERCEPTOR (by D4RK)
+/* Resolution DNS (nom canonique + adresses) — INTERCEPTOR (by NeoZ)
  * Cache par hote : une seule resolution, quel que soit le volume de requetes.
  */
 import { B } from '../lib/util.js';
