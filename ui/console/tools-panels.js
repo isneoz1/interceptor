@@ -22,6 +22,7 @@ import { EMPREINTES_SUP, empreinteSup, CRC_VARIANTES, crc, murmur3, xxhash32 }
 import { verifierJwt, cleAttendue, ALGORITHMES_JWT } from '../lib/jwt.js';
 import { frequences, caracteresCaches } from '../lib/codecs-text.js';
 import { dureeLisible } from '../lib/temps.js';
+import { lirePhp, versJs, ressemblePhp } from '../lib/php-serialise.js';
 
 /* ---------------------------------- JWT ----------------------------------- */
 export function panneauJwt(entree, etat, redessiner) {
@@ -329,7 +330,71 @@ export function panneauAnalyse(entree) {
   box.appendChild(sec('Entetes', vrais.length));
   if (!vrais.length) box.appendChild(el('p', { class: 'note', text: t('Aucune ligne « Nom: valeur » reconnue.') }));
   for (const h of vrais) add(box, kv(h.cle, h.valeur, { copy: true }));
+
+  /* Serialisation PHP : on la croise dans les cookies de session et les champs
+     caches. Sans lecteur, la valeur reste opaque. Rien n est execute ici : on
+     lit une structure, on ne reconstruit aucun objet. */
+  if (ressemblePhp(brut)) {
+    box.appendChild(sec('Serialisation PHP', 'lue, jamais executee'));
+    try {
+      const { valeur, reste } = lirePhp(brut.trim());
+      add(box, kv('Type', valeur.type, { hl: true }));
+      if (valeur.classe) add(box, kv('Classe', valeur.classe, { copy: true }));
+      if (valeur.taille != null) add(box, kv('Elements', valeur.taille, { always: true }));
+      box.appendChild(arbrePhp(valeur));
+      if (reste.trim()) {
+        box.appendChild(el('p', { class: 'note warn', text:
+          t('Texte en trop apres la valeur : ') + reste.slice(0, 60) }));
+      }
+      const json = JSON.stringify(versJs(valeur), null, 2);
+      box.appendChild(el('div', { class: 'actions' }, [
+        button('Copier en JSON', () => copy(json, 'Structure copiee'))
+      ]));
+    } catch (e) {
+      box.appendChild(el('p', { class: 'note warn', text:
+        t('Serialisation PHP illisible : ') + String(e.message || e) }));
+    }
+  }
   return box;
+}
+
+/** Arbre d une valeur PHP : chaque noeud porte son type et sa portee. */
+function arbrePhp(noeud, profondeur = 0) {
+  const boite = el('div', { class: 'tree' });
+  if (noeud.type === 'tableau') {
+    for (const e of noeud.entrees) {
+      boite.appendChild(ligneOuBranche(String(e.cle.valeur), e.valeur, profondeur));
+    }
+    return boite;
+  }
+  if (noeud.type === 'objet') {
+    for (const pr of noeud.proprietes) {
+      const nom = pr.nom + (pr.portee !== 'public' ? '  (' + t(pr.portee) + ')' : '');
+      boite.appendChild(ligneOuBranche(nom, pr.valeur, profondeur));
+    }
+    return boite;
+  }
+  boite.appendChild(el('div', { class: 'row' }, [
+    el('span', { class: 'k', text: t(noeud.type) + ' :' }),
+    el('span', { class: 'v', text: String(noeud.valeur) })
+  ]));
+  return boite;
+}
+
+function ligneOuBranche(nom, valeur, profondeur) {
+  if ((valeur.type === 'tableau' || valeur.type === 'objet') && profondeur < 12) {
+    const bloc = el('details', { open: profondeur < 2 });
+    const quoi = valeur.type === 'objet' ? valeur.classe : t('tableau');
+    bloc.appendChild(el('summary', { text: nom + '  ·  ' + quoi + '  ·  '
+      + valeur.taille + ' ' + t('element(s)') }));
+    bloc.appendChild(arbrePhp(valeur, profondeur + 1));
+    return bloc;
+  }
+  return el('div', { class: 'row' }, [
+    el('span', { class: 'k', text: nom + ' :' }),
+    el('span', { class: 'v', text: valeur.type === 'null' ? 'null' : String(valeur.valeur) }),
+    el('span', { class: 't', text: t(valeur.type) })
+  ]);
 }
 
 /* --------------------------- Expressions regulieres ----------------------- */

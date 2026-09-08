@@ -166,6 +166,22 @@ export const EN_ANALYSE = {
   '16 bits': '16 bits',
   '64 bits': '64 bits',
 
+  /* ------------------------- Serialisation PHP ---------------------------- */
+  'Serialisation PHP': 'PHP serialisation',
+  'lue, jamais executee': 'read, never executed',
+  'Classe': 'Class',
+  'Elements': 'Elements',
+  'element(s)': 'element(s)',
+  'Texte en trop apres la valeur : ': 'Trailing text after the value: ',
+  'Serialisation PHP illisible : ': 'Unreadable PHP serialisation: ',
+  'null': 'null',
+  'flottant': 'float',
+  'enumeration': 'enum',
+  'reference': 'reference',
+  'reference d objet': 'object reference',
+  'protected': 'protected',
+  'private': 'private',
+
   /* -------------------- Champs structures (RFC 8941) ---------------------- */
   'Forme': 'Form',
   'liste': 'list',

@@ -34,6 +34,7 @@ import { crc, crcParNom, CRC_VARIANTES, murmur3, xxhash32, xxhash64, siphash24Oc
   from '../ui/lib/sommes.js';
 import { z85Encoder, z85Decoder, uuencode, uudecode } from '../ui/lib/codecs-transport.js';
 import { empreinteJwk, jwkCanonique } from '../ui/lib/jwt.js';
+import { lirePhpStrict, versJs, ecrirePhp, ressemblePhp } from '../ui/lib/php-serialise.js';
 import { luhn, chercherJson } from '../ui/lib/motifs.js';
 import { uuidV4, uuidV5, ulid, forceMotDePasse, ESPACES_UUID } from '../ui/lib/generateurs.js';
 import { entropie, analyserChaineRequete, analyserCookies } from '../ui/lib/inspect.js';
@@ -534,6 +535,69 @@ leve('type de cle inconnu refuse', () => jwkCanonique({ kty: 'INCONNU' }));
 leve('membre requis absent refuse', () => jwkCanonique({ kty: 'RSA', e: 'AQAB' }));
 egal('empreinte d une cle symetrique', jwkCanonique({ kty: 'oct', k: 'AAA', autre: 1 }),
   '{"k":"AAA","kty":"oct"}');
+
+/* ------------------------- Serialisation PHP ------------------------------ */
+/* Les formes du langage, chacune verifiee dans les deux sens. La longueur des
+   chaines compte des OCTETS : c est la que se trompent la plupart des lecteurs. */
+egal('null', versJs(lirePhpStrict('N;')), null);
+egal('booleen vrai', versJs(lirePhpStrict('b:1;')), true);
+egal('booleen faux', versJs(lirePhpStrict('b:0;')), false);
+egal('entier', versJs(lirePhpStrict('i:42;')), 42);
+egal('entier negatif', versJs(lirePhpStrict('i:-7;')), -7);
+egal('flottant', versJs(lirePhpStrict('d:1.5;')), 1.5);
+egal('infini', versJs(lirePhpStrict('d:INF;')), Infinity);
+verifier('NAN reconnu', Number.isNaN(versJs(lirePhpStrict('d:NAN;'))));
+egal('chaine', versJs(lirePhpStrict('s:5:"hello";')), 'hello');
+egal('chaine accentuee comptee en octets',
+  versJs(lirePhpStrict('s:6:"héllo";')), 'héllo');
+memeListe('liste', versJs(lirePhpStrict('a:2:{i:0;s:1:"a";i:1;s:1:"b";}')), ['a', 'b']);
+egal('table associative',
+  JSON.stringify(versJs(lirePhpStrict('a:2:{s:3:"uid";i:42;s:4:"role";s:5:"admin";}'))),
+  '{"uid":42,"role":"admin"}');
+egal('structure imbriquee',
+  JSON.stringify(versJs(lirePhpStrict('a:1:{s:1:"a";a:1:{s:1:"b";i:1;}}'))), '{"a":{"b":1}}');
+egal('objet',
+  JSON.stringify(versJs(lirePhpStrict('O:4:"User":2:{s:2:"id";i:7;s:3:"nom";s:5:"Marie";}'))),
+  '{"id":7,"nom":"Marie"}');
+egal('classe de l objet', lirePhpStrict('O:4:"User":0:{}').classe, 'User');
+egal('enumeration PHP 8.1', lirePhpStrict('E:11:"Suit:Hearts";').cas, 'Hearts');
+egal('classe de l enumeration', lirePhpStrict('E:11:"Suit:Hearts";').classe, 'Suit');
+egal('reference', lirePhpStrict('R:2;').type, 'reference');
+egal('reference d objet', lirePhpStrict('r:3;').type, 'reference d objet');
+
+/* PHP encode la visibilite avec des octets nuls : les lire evite d afficher
+   des caracteres invisibles a la place du nom. */
+const NUL = '\u0000';
+const objetPortees = lirePhpStrict('O:1:"A":2:{s:4:"' + NUL + '*' + NUL + 'x";i:1;'
+  + 's:4:"' + NUL + 'A' + NUL + 'y";i:2;}');
+egal('propriete protegee', objetPortees.proprietes[0].portee, 'protected');
+egal('nom de la propriete protegee', objetPortees.proprietes[0].nom, 'x');
+egal('propriete privee', objetPortees.proprietes[1].portee, 'private');
+egal('nom de la propriete privee', objetPortees.proprietes[1].nom, 'y');
+
+/* Ce qui est malforme doit etre refuse, jamais devine. */
+leve('longueur de chaine trop grande refusee', () => lirePhpStrict('s:99:"court";'));
+leve('tableau incomplet refuse', () => lirePhpStrict('a:2:{i:0;s:1:"a";}'));
+leve('marque inconnue refusee', () => lirePhpStrict('x:1;'));
+leve('entier non numerique refuse', () => lirePhpStrict('i:abc;'));
+leve('texte en trop refuse', () => lirePhpStrict('s:5:"hello";extra'));
+leve('imbrication excessive refusee', () => {
+  let texte = 'i:1;';
+  for (let i = 0; i < 70; i++) texte = 'a:1:{i:0;' + texte + '}';
+  return lirePhpStrict(texte);
+});
+
+/* Ecriture : la longueur annoncee doit compter les octets, pas les caracteres. */
+egal('ecriture d une chaine accentuee', ecrirePhp('héllo'), 's:6:"héllo";');
+egal('ecriture d un entier', ecrirePhp(42), 'i:42;');
+egal('ecriture de null', ecrirePhp(null), 'N;');
+egal('ecriture d une liste', ecrirePhp(['a']), 'a:1:{i:0;s:1:"a";}');
+egal('aller-retour',
+  JSON.stringify(versJs(lirePhpStrict(ecrirePhp({ uid: 42, tags: ['a', 'b'] })))),
+  '{"uid":42,"tags":["a","b"]}');
+
+verifier('une valeur PHP est reconnue', ressemblePhp('a:1:{i:0;N;}') === true);
+verifier('du texte ordinaire ne l est pas', ressemblePhp('bonjour') === false);
 
 /* --------------------------------- Motifs --------------------------------- */
 /* Numero de test Visa publie : 4111 1111 1111 1111 passe la cle de Luhn. */

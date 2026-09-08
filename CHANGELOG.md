@@ -85,6 +85,14 @@ First public release.
   string. Nine headers are parsed with the form their own specification requires.
   Checked against the examples of sections 3.1 to 3.3.
 
+- **PHP `serialize()`.** The format turns up constantly in session cookies, hidden
+  fields and job queues, and stayed opaque without a reader. All forms are parsed —
+  null, boolean, integer, float including `INF` and `NAN`, string counted in *bytes*,
+  array, object, PHP 8.1 enum, and both reference kinds — along with the NUL-encoded
+  `protected` and `private` visibility that would otherwise print as invisible
+  characters. Nothing is executed: the structure is read, no object is reconstructed.
+  Two more transformations, 134 in total.
+
 ### Fixed after the first release
 
 - **The table jumped while scrolling with the wheel.** The two spacers that hold the
@@ -116,7 +124,7 @@ First public release.
   decoding into the Request tab, RFC 3986 canonical URLs and homograph detection into the
   URL panel, reverse DNS names into the Address panel, WebSocket and HTTP/2 frame decoding
   into the Binary panel, and TLS / QUIC / HTTP-3 / DNS tables into the Reference panel.
-- Test suite added: 790 assertions across five suites, running under Node with no browser
+- Test suite added: 822 assertions across five suites, running under Node with no browser
   and no dependencies, validated against published RFC vectors. `build.ps1` already required
   these suites but the directory was absent, so packaging failed wherever Node was
   installed.

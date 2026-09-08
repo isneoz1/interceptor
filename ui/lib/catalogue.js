@@ -54,6 +54,7 @@ import { baconChiffrer, baconDechiffrer } from './codecs-text.js';
 import { decoderValeurEtendue, encoderValeurEtendue, decoderMotsCodes }
   from './entetes-parametres.js';
 import { z85Encoder, z85Decoder, uuencode, uudecode } from './codecs-transport.js';
+import { lirePhpStrict, versJs, ecrirePhp } from './php-serialise.js';
 
 /* Raccourcis d ecriture : e = encodage, d = decodage, a = asynchrone. */
 const e = (cle, groupe, libelle, fn) => ({ cle, groupe, libelle, fn, decode: false, asynchrone: false });
@@ -169,6 +170,12 @@ export const TRANSFORMATIONS = [
     v => uuencode(new TextEncoder().encode(v))),
   d('uu-dec', 'Autres alphabets', 'uuencode — decoder',
     v => new TextDecoder().decode(uudecode(v).octets)),
+
+  /* Serialisation PHP : lecture et ecriture, sans jamais rien executer. */
+  d('php-json', 'JSON', 'Serialisation PHP vers JSON',
+    v => JSON.stringify(versJs(lirePhpStrict(v)), null, 2)),
+  e('json-php', 'JSON', 'JSON vers serialisation PHP',
+    v => ecrirePhp(JSON.parse(v))),
 
   /* ------------------------------- Domaines ------------------------------- */
   e('puny-enc', 'Domaines', 'Punycode — encoder', punycodeEncoder),
