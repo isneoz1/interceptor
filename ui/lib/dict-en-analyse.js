@@ -166,6 +166,15 @@ export const EN_ANALYSE = {
   '16 bits': '16 bits',
   '64 bits': '64 bits',
 
+  /* --------------------------- Horodatages -------------------------------- */
+  'Date MS-DOS empaquetee': 'Packed MS-DOS date',
+  'format des archives ZIP': 'the format used in ZIP archives',
+  'Date et heure': 'Date and time',
+  'Resolution': 'Resolution',
+  '2 secondes': '2 seconds',
+  'Fuseau': 'Time zone',
+  'heure locale, sans fuseau': 'local time, no zone',
+
   /* ------------------- Familles de la boite a outils ---------------------- */
   'Decoder et convertir': 'Decode and convert',
   'Chiffrement et empreintes': 'Encryption and digests',

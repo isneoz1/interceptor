@@ -7,6 +7,7 @@ import { $, el, clear, sec, button, kv, add } from '../lib/dom.js';
 import { bytes, clock, middle } from '../lib/format.js';
 import { state, cmd, toast, copy } from '../app.js';
 import { t } from '../lib/i18n.js';
+import { listeProgressive } from '../lib/liste-progressive.js';
 import { decrireFermetureWs } from '../lib/ref-reseau.js';
 
 let selected = null;
@@ -40,6 +41,10 @@ async function load(force) {
   render();
 }
 
+/* Un seul rendu progressif a la fois : changer de perimetre coupe le precedent. */
+let rendu = null;
+function arreterRendu() { if (rendu) { rendu.arreter(); rendu = null; } }
+
 export function render() {
   const pane = clear($('#view-streams'));
   const box = el('div', { class: 'pane' });
@@ -56,8 +61,12 @@ export function render() {
     return;
   }
 
+  /* Rendu par lots : aucune connexion n est ecartee, et la vue ne fige pas
+     quand une session en compte des milliers. */
   const list = el('div', { class: 'tiles' });
-  for (const rec of rows.slice(0, 200)) {
+  box.appendChild(list);
+  arreterRendu();
+  rendu = listeProgressive(list, rows, rec => {
     const tile = el('div', {
       class: 'tile' + (selected === rec.id ? ' ok' : ''),
       title: rec.url
@@ -67,9 +76,8 @@ export function render() {
       el('label', { text: middle(rec.path, 30) + '  ·  ' + rec.state })
     ]);
     tile.addEventListener('click', () => { selected = rec.id; record = null; load(true); render(); });
-    list.appendChild(tile);
-  }
-  box.appendChild(list);
+    return tile;
+  });
 
   if (selected == null) {
     box.appendChild(el('p', { class: 'note', text: 'Choisissez un flux pour voir ses messages.' }));

@@ -11,6 +11,7 @@
 import { $, el, clear, sec, button, kv, add } from '../lib/dom.js';
 import { bytes } from '../lib/format.js';
 import { t } from '../lib/i18n.js';
+import { listeProgressive } from '../lib/liste-progressive.js';
 import { state, inScope, copy, toast } from '../app.js';
 
 const ouverts = new Set();      // chemins deplies, conserves entre deux rendus
@@ -212,10 +213,12 @@ function rendreNoeud(n, estHote) {
 
   // Les requetes attachees a ce niveau exact : on peut les ouvrir directement.
   if (n.requetes.length) {
+    /* Toutes les requetes de ce niveau, par lots : un chemin tres frequente
+       en compte parfois des milliers, et aucune ne doit disparaitre. */
     const liste = el('div');
-    for (const id of n.requetes.slice(0, 200)) {
+    listeProgressive(liste, n.requetes, id => {
       const rec = state.records.get(id);
-      if (!rec) continue;
+      if (!rec) return null;
       const ligne = el('div', {
         class: 'kv copyable',
         title: t('Cliquer pour ouvrir cette requete')
@@ -226,12 +229,8 @@ function rendreNoeud(n, estHote) {
       ligne.addEventListener('click', () => {
         document.dispatchEvent(new CustomEvent('ic:goto', { detail: { view: 'requests', id } }));
       });
-      liste.appendChild(ligne);
-    }
-    if (n.requetes.length > 200) {
-      liste.appendChild(el('p', { class: 'note', text:
-        (n.requetes.length - 200) + t(' requetes supplementaires a ce niveau : ouvrez le tableau pour tout voir.') }));
-    }
+      return ligne;
+    });
     corps.appendChild(liste);
   }
 

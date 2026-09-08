@@ -109,6 +109,11 @@ First public release.
   read and measure, search and compare, produce — so you look for what you want to do
   rather than for a tool name.
 
+- **Three more timestamp origins**, bringing the total to fourteen read side by side:
+  NTP (RFC 5905, seconds since 1900), GPS (seconds since 6 January 1980), and the
+  packed 32-bit MS-DOS date used in ZIP archives, whose fields are juxtaposed bits
+  rather than a count and whose resolution is two seconds.
+
 ### Fixed after the first release
 
 - **The table jumped while scrolling with the wheel.** The two spacers that hold the
@@ -121,6 +126,10 @@ First public release.
   constant. The window computation moved into `ui/lib/fenetre-virtuelle.js`, a pure
   function with its own tests, and the table is no longer rebuilt when the visible
   window has not moved.
+- **Five views silently truncated long lists.** Beyond the internal logs and the
+  Security view, the live streams stopped at 200 connections, the site map at 200
+  requests per path, and JSON path search announced a result count larger than what
+  it drew. All now render in batches; no list is capped.
 - **Two views froze on long lists, and silently truncated them.** The internal logs
   built up to three thousand rows in one pass and dropped the rest; the Security view
   did the same at two thousand findings. Both now render in batches through
@@ -140,7 +149,7 @@ First public release.
   decoding into the Request tab, RFC 3986 canonical URLs and homograph detection into the
   URL panel, reverse DNS names into the Address panel, WebSocket and HTTP/2 frame decoding
   into the Binary panel, and TLS / QUIC / HTTP-3 / DNS tables into the Reference panel.
-- Test suite added: 862 assertions across five suites, running under Node with no browser
+- Test suite added: 874 assertions across five suites, running under Node with no browser
   and no dependencies, validated against published RFC vectors. `build.ps1` already required
   these suites but the directory was absent, so packaging failed wherever Node was
   installed.

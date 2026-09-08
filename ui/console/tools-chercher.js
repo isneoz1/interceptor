@@ -6,6 +6,7 @@
  */
 import { el, frag, kv, sec, add, button } from '../lib/dom.js';
 import { t } from '../lib/i18n.js';
+import { listeProgressive } from '../lib/liste-progressive.js';
 import { copy, toast } from '../app.js';
 import {
   MOTIFS, luhn, chercherJson, cheminsJson,
@@ -97,11 +98,15 @@ export function panneauChercher(entree, etat, redessiner, poser) {
       if (!trouves.length) {
         box.appendChild(el('p', { class: 'note', text: t('Ce chemin ne mene a rien dans ce document.') }));
       }
-      for (const trouve of trouves.slice(0, 200)) {
+      /* Le compte annonce plus haut doit correspondre a ce qui s affiche :
+         on rend tout, par lots, plutot que de couper en silence. */
+      const hote = el('div');
+      box.appendChild(hote);
+      listeProgressive(hote, trouves, trouve => {
         const valeur = typeof trouve.valeur === 'object'
           ? JSON.stringify(trouve.valeur) : String(trouve.valeur);
-        add(box, kv(trouve.chemin, valeur, { copy: true }));
-      }
+        return kv(trouve.chemin, valeur, { copy: true });
+      });
     } catch (e) {
       box.appendChild(el('p', { class: 'note warn', text: t('Echec : ') + String(e.message || e) }));
     }

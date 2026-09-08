@@ -30,6 +30,7 @@ import { comparerTextes, similariteTextes, distanceLevenshtein } from '../ui/lib
 import { parseQuery, matchTerms } from '../ui/lib/filters.js';
 import { decrireStatut, familleStatut } from '../ui/lib/ref-http.js';
 import { decrirePort } from '../ui/lib/ref-ports.js';
+import { lireHorodatage, lireDateDos } from '../ui/lib/temps.js';
 import { transformer } from '../ui/lib/catalogue.js';
 
 /* ------------------------------- Bases ------------------------------------ */
@@ -108,6 +109,41 @@ egal('TOTP a T=1111111109 (RFC 6238)',
 egal('fenetre TOTP de 30 s', fenetreTotp(59, 30), 1);
 egal('lien otpauth relu', lireOtpauth('otpauth://totp/Site:moi?secret=JBSWY3DPEHPK3PXP&digits=6').secret,
   'JBSWY3DPEHPK3PXP');
+
+/* ------------------------------ Horodatages -------------------------------- */
+/* Chaque origine est un ecart fixe avec l epoque Unix ; on le verifie sur une
+   date connue plutot que sur la sortie du code lui-meme. */
+const nomsPour = v => lireHorodatage(v).map(x => x.nom);
+const lecturePour = (v, nom) => lireHorodatage(v).find(x => x.nom === nom);
+
+/* NTP (RFC 5905) compte les secondes depuis 1900 : 2 208 988 800 de plus que
+   l epoque Unix. 3 913 056 000 doit donc donner le 1er janvier 2024. */
+egal('NTP : le 1er janvier 2024',
+  lecturePour('3913056000', 'Secondes depuis 1900 (NTP)').iso, '2024-01-01T00:00:00.000Z');
+
+/* GPS compte depuis le 6 janvier 1980, soit 315 964 800 secondes apres 1970. */
+egal('GPS : origine du 6 janvier 1980',
+  lecturePour('0', 'Secondes depuis 1980 (GPS, sans secondes intercalaires)').iso,
+  '1980-01-06T00:00:00.000Z');
+
+verifier('les deux origines sont proposees',
+  nomsPour('1700000000').some(n => /GPS/.test(n)));
+
+/* Date MS-DOS : les champs sont des bits juxtaposes, pas un compte de temps.
+   On compose 2024-01-15 10:30:00 et on verifie chaque champ au retour. */
+const dosBrut = ((((2024 - 1980) << 9) | (1 << 5) | 15) << 16 | ((10 << 11) | (30 << 5) | 0)) >>> 0;
+const dos = lireDateDos(dosBrut);
+egal('MS-DOS : annee', dos.annee, 2024);
+egal('MS-DOS : mois', dos.mois, 1);
+egal('MS-DOS : jour', dos.jour, 15);
+egal('MS-DOS : heures', dos.heures, 10);
+egal('MS-DOS : minutes', dos.minutes, 30);
+egal('MS-DOS : texte complet', dos.texte, '2024-01-15 10:30:00');
+/* La resolution est de deux secondes : le champ compte des paires. */
+egal('MS-DOS : resolution de deux secondes',
+  lireDateDos((dosBrut | 15) >>> 0).secondes, 30);
+leve('MS-DOS : un mois nul est refuse', () => lireDateDos(0));
+leve('MS-DOS : au-dela de 32 bits refuse', () => lireDateDos(0x1ffffffff));
 
 /* --------------------------------- Reseau --------------------------------- */
 const bloc = analyserPrefixe('192.168.1.130/26');

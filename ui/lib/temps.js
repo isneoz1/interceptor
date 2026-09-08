@@ -20,7 +20,14 @@ const ORIGINES = [
   ['Secondes depuis 2001 (Apple, Cocoa)', n => n * 1000 + 978307200000],
   ['Pas de 100 ns depuis l an 1 (.NET ticks)', n => n / 10000 - 62135596800000],
   ['Jours depuis 1899-12-30 (serie Excel)', n => (n - 25569) * MS_PAR_JOUR],
-  ['Jour julien', n => (n - 2440587.5) * MS_PAR_JOUR]
+  ['Jour julien', n => (n - 2440587.5) * MS_PAR_JOUR],
+  /* NTP (RFC 5905) : secondes depuis 1900, soit 2 208 988 800 de plus que
+     l epoque Unix. On croise la valeur entiere dans les journaux de synchro. */
+  ['Secondes depuis 1900 (NTP)', n => (n - 2208988800) * 1000],
+  /* GPS : semaines et secondes depuis le 6 janvier 1980, sans les secondes
+     intercalaires. La valeur brute est un compte de secondes. */
+  ['Secondes depuis 1980 (GPS, sans secondes intercalaires)',
+    n => (n + 315964800) * 1000]
 ];
 
 /* Une lecture n est retenue que si elle tombe dans une periode plausible :
@@ -28,6 +35,38 @@ const ORIGINES = [
    choisir a la place de l utilisateur. */
 const PLANCHER = Date.UTC(1970, 0, 1);
 const PLAFOND = Date.UTC(2200, 0, 1);
+
+/**
+ * Date et heure MS-DOS, empaquetees sur trente-deux bits. C est le format des
+ * horodatages d une archive ZIP :
+ *   bits 31-25 annee moins 1980, 24-21 mois, 20-16 jour,
+ *   bits 15-11 heures, 10-5 minutes, 4-0 secondes divisees par deux.
+ * La resolution est donc de deux secondes, et l heure est locale, sans fuseau.
+ */
+export function lireDateDos(valeur) {
+  const n = Number(valeur);
+  if (!Number.isInteger(n) || n < 0 || n > 0xffffffff) {
+    throw new Error('entier de 32 bits attendu');
+  }
+  const date = n >>> 16;
+  const heure = n & 0xffff;
+  const champs = {
+    annee: 1980 + ((date >> 9) & 0x7f),
+    mois: (date >> 5) & 0x0f,
+    jour: date & 0x1f,
+    heures: (heure >> 11) & 0x1f,
+    minutes: (heure >> 5) & 0x3f,
+    secondes: (heure & 0x1f) * 2
+  };
+  if (champs.mois < 1 || champs.mois > 12 || champs.jour < 1 || champs.jour > 31
+    || champs.heures > 23 || champs.minutes > 59 || champs.secondes > 59) {
+    throw new Error('champs hors des bornes : ce nombre n est pas une date MS-DOS');
+  }
+  const iso = String(champs.annee) + '-' + String(champs.mois).padStart(2, '0') + '-'
+    + String(champs.jour).padStart(2, '0') + ' ' + String(champs.heures).padStart(2, '0') + ':'
+    + String(champs.minutes).padStart(2, '0') + ':' + String(champs.secondes).padStart(2, '0');
+  return { ...champs, texte: iso, resolution: '2 secondes', fuseau: 'heure locale, sans fuseau' };
+}
 
 /** Toutes les lectures plausibles d une valeur, chacune avec son origine. */
 export function lireHorodatage(entree) {

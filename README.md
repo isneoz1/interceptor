@@ -14,7 +14,7 @@ Created by **D4RK**
 ![Manifest V2](https://img.shields.io/badge/Manifest-V2-444?style=flat)
 [![MIT licence](https://img.shields.io/badge/Licence-MIT-00DDFF?style=flat)](LICENSE)
 ![No dependencies](https://img.shields.io/badge/Dependencies-none-2ea043?style=flat)
-![862 assertions](https://img.shields.io/badge/Assertions-862-2ea043?style=flat)
+![874 assertions](https://img.shields.io/badge/Assertions-874-2ea043?style=flat)
 ![English and French](https://img.shields.io/badge/UI-EN%20%2F%20FR-444?style=flat)
 
 [**Install**](#3-installation) · [**Screenshots**](#2-screenshots) · [**How it works**](#4-how-it-works-the-capture-layers) · [**Changelog**](CHANGELOG.md) · [**Security**](SECURITY.md)
@@ -78,7 +78,7 @@ specific points:
 happens inside your Firefox, on your machine.
 
 **By the numbers**: 144 JavaScript modules, ~28,000 lines, zero external dependencies,
-862 automated assertions, English and French interface.
+874 automated assertions, English and French interface.
 
 ---
 
@@ -481,7 +481,7 @@ own secret and tracker patterns in the settings.
 | **Code** | Call-code generation in 39 formats (see [section 14](#14-import-and-export)), readability and deobfuscation |
 | **OTP codes** | HOTP and TOTP (RFC 4226 / 6238), neighbouring windows, `otpauth://` links |
 | **Identify** | Recognising an unknown value: format, likely encoding, candidate digest. **Identifiers are decoded, not just recognised**: a UUID gives its version, variant and — for v1, v6 and v7 — the timestamp it embeds; ULID, Snowflake (Twitter, Discord, Instagram), MongoDB ObjectId and KSUID give their creation date, machine, sequence and counter |
-| **Timestamps** | Unix in seconds / milliseconds / microseconds / nanoseconds, Apple/Cocoa, ISO week, durations |
+| **Timestamps** | Fourteen origins read side by side: Unix in seconds / milliseconds / microseconds / nanoseconds, Windows FILETIME, Chrome/WebKit, HFS, Apple/Cocoa, .NET ticks, Excel serial, Julian day, **NTP** (RFC 5905), **GPS**, plus the **packed MS-DOS date** used in ZIP archives. ISO week and durations |
 | **Numbers** | Conversion between bases 2 to 36, boundary values, Luhn |
 | **Structures** | JSON, XML, YAML: navigable tree, JSONPath paths, CSS and XPath selectors. **PHP `serialize()`** is read as a tree — arrays, objects, enums, references, and the NUL-encoded `protected`/`private` visibility — and never executed |
 | **Headers** | A pasted header block is split line by line, each value broken down, each point worth a look flagged. `Content-Disposition` filenames are decoded through **RFC 8187** extended values, **RFC 2231** continuations and **RFC 2047** encoded-words, so the real filename is shown rather than `UTF-8''%e2%82%ac%20rates`. Modern headers written as **RFC 8941 structured fields** (`Priority`, `Accept-CH`, `Cache-Status`, `Content-Digest`, `Signature-Input`) are parsed into their real types: `42` is an integer, `"42"` is a string, `:YQ==:` is a byte sequence |
@@ -716,7 +716,7 @@ ui/                        The interface — one page for all four surfaces
 ├── console/               One view per file, plus the detail panel
 └── lib/                   Codecs, digests, network, reference tables, i18n
 
-tests/                     862 assertions, no browser required
+tests/                     874 assertions, no browser required
 tools/captures.mjs         Generates the documentation screenshots
 build.ps1                  Verification and .xpi packaging
 ```
@@ -762,7 +762,7 @@ French at the flip of a setting.
 npm test
 ```
 
-862 assertions, with no browser and no dependencies. The kernel and interface modules are
+874 assertions, with no browser and no dependencies. The kernel and interface modules are
 written for Firefox; `tests/harnais.mjs` supplies the minimum WebExtension API and DOM they
 need to import and run under Node. **The logic under test is exactly the logic that runs in
 the browser, with no rewriting.**
@@ -773,7 +773,7 @@ the browser, with no rewriting.**
 | `avance.test.mjs` | 321 | WebSocket and HTTP/2 frames, CSP, RFC 9111 freshness, multipart, canonical URLs and homographs, protocol tables, binary structures, rare digests, generators |
 | `ui-load.test.mjs` | 152 | Actual loading of the 101 interface modules, complete module graph (no dead import, no file outside the graph), consistency with the HTML pages and the manifest, and **full translation coverage** — every displayed string must have a dictionary entry |
 | `detail-coverage.test.mjs` | 120 | Each of a record's 60 fields is displayed, each tab has a render function, each searchable field exists |
-| `outils.test.mjs` | 96 | The toolbox, against published vectors |
+| `outils.test.mjs` | 108 | The toolbox, against published vectors |
 
 Expected values come from published sources: RFC vectors (4226, 6238, 6455, 4231, 7541, 9113,
 3986, 7578, 9111, 8187, 2231, 2047, 6266, 7638, 8941, and ZeroMQ RFC 32), standard check values (all 20 CRC variants are verified against their
@@ -813,7 +813,7 @@ the file. It contains internal errors and the command log — not your traffic.
 Before opening a pull request:
 
 ```bash
-npm test              # all 862 assertions must pass
+npm test              # all 874 assertions must pass
 .\build.ps1 -Verify   # the build must be green
 ```
 

@@ -7,7 +7,8 @@
 import { el, frag, kv, sec, add, button } from '../lib/dom.js';
 import { t } from '../lib/i18n.js';
 import { copy, toast } from '../app.js';
-import { lireHorodatage, formatsDe, maintenant, lireDuree, dureeLisible, ecart } from '../lib/temps.js';
+import { lireHorodatage, formatsDe, maintenant, lireDuree, dureeLisible, ecart, lireDateDos }
+  from '../lib/temps.js';
 import { convertirNombre } from '../lib/codecs-bases.js';
 
 /* ------------------------------ Horodatages ------------------------------- */
@@ -26,6 +27,20 @@ export function panneauHorodatage(entree) {
   }
 
   const premier = brut.split(/\s+/)[0];
+
+  /* Une valeur entiere peut aussi etre une date MS-DOS empaquetee : c est le
+     format des horodatages d une archive ZIP. On l essaie a part, ses champs
+     n etant pas un compte de temps mais des bits juxtaposes. */
+  if (/^\d+$/.test(premier)) {
+    try {
+      const dos = lireDateDos(Number(premier));
+      box.appendChild(sec('Date MS-DOS empaquetee', 'format des archives ZIP'));
+      add(box, kv('Date et heure', dos.texte, { copy: true, hl: true }));
+      add(box, kv('Resolution', t(dos.resolution)));
+      add(box, kv('Fuseau', t(dos.fuseau)));
+    } catch { /* ce nombre n est pas une date MS-DOS valide */ }
+  }
+
   let lectures = null;
   try { lectures = lireHorodatage(premier); }
   catch (e) {
