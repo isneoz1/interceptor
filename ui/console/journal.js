@@ -5,6 +5,7 @@
  */
 import { $, el, clear, sec, button } from '../lib/dom.js';
 import { t } from '../lib/i18n.js';
+import { listeProgressive } from '../lib/liste-progressive.js';
 import { clock, middle } from '../lib/format.js';
 import { cmd, toast, copy } from '../app.js';
 
@@ -81,19 +82,24 @@ export function render(kind) {
     return;
   }
 
+  /* La liste est rendue par lots : la plus recente d abord, la suite quand le
+     lecteur descend. Rien n est coupe — une entree journalisee reste
+     atteignable, quel qu en soit le nombre. */
   const host = el('div');
-  for (const e of list.slice(-3000).reverse()) {
-    host.appendChild(el('div', { class: 'log' }, [
-      el('span', { class: 'ts', text: clock(e.ts) }),
-      el('b', { text: t(label(kind, e)) }),
-      el('span', { text: describe(kind, e) })
-    ]));
-  }
   box.appendChild(host);
-  if (list.length > 3000) {
-    box.appendChild(el('p', { class: 'note', text: (list.length - 3000) + ' entrees plus anciennes non affichees — filtrez pour les atteindre.' }));
-  }
+  const ordre = [...list].reverse();
+  arreterRendu();
+  rendu = listeProgressive(host, ordre, e => el('div', { class: 'log' }, [
+    el('span', { class: 'ts', text: clock(e.ts) }),
+    el('b', { text: t(label(kind, e)) }),
+    el('span', { text: describe(kind, e) })
+  ]));
 }
+
+/* Un seul rendu progressif a la fois : changer de journal ou de filtre coupe
+   le precedent, sinon deux observateurs continueraient d alimenter la page. */
+let rendu = null;
+function arreterRendu() { if (rendu) { rendu.arreter(); rendu = null; } }
 
 function shown(kind) {
   const needle = String(filters[kind] || '').toLowerCase();

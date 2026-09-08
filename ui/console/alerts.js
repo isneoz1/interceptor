@@ -3,6 +3,7 @@ import { $, el, clear, sec, button } from '../lib/dom.js';
 import { clock, middle, preuveLisible } from '../lib/format.js';
 import { state, cmd, toast, copy } from '../app.js';
 import { t } from '../lib/i18n.js';
+import { listeProgressive } from '../lib/liste-progressive.js';
 
 const LEVELS = [
   ['critical', 'Critiques'], ['high', 'Elevees'], ['medium', 'Moyennes'],
@@ -13,6 +14,9 @@ let severityFilter = null;
 let ruleFilter = null;
 let cache = { findings: [], counts: {} };
 let loading = false;
+/* Un seul rendu progressif a la fois : changer de filtre coupe le precedent. */
+let rendu = null;
+function arreterRendu() { if (rendu) { rendu.arreter(); rendu = null; } }
 let loaded = false;
 
 function scopeTab() {
@@ -111,7 +115,12 @@ export function render() {
     return;
   }
 
-  for (const f of list.slice(0, 2000)) {
+  /* Rendu par lots : les alertes les plus graves sont visibles tout de suite,
+     la suite arrive au defilement. Aucune n est ecartee. */
+  const hote = el('div');
+  box.appendChild(hote);
+  arreterRendu();
+  rendu = listeProgressive(hote, list, f => {
     const card = el('div', { class: 'find ' + f.severity, title: 'Cliquer pour ouvrir la requete' }, [
       el('h4', { text: t(f.title) }),
       el('p', { text: f.severity.toUpperCase() + '  ·  ' + f.where + (f.sample ? '  ·  ' + f.sample : '') }),
@@ -121,8 +130,8 @@ export function render() {
     card.addEventListener('click', () => {
       document.dispatchEvent(new CustomEvent('ic:goto', { detail: { view: 'requests', id: f.id } }));
     });
-    box.appendChild(card);
-  }
+    return card;
+  });
   if (list.length > 2000) {
     box.appendChild(el('p', { class: 'note', text: (list.length - 2000) + ' alertes supplementaires : affinez le filtre ou exportez le rapport complet.' }));
   }

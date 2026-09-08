@@ -14,7 +14,7 @@ Created by **D4RK**
 ![Manifest V2](https://img.shields.io/badge/Manifest-V2-444?style=flat)
 [![MIT licence](https://img.shields.io/badge/Licence-MIT-00DDFF?style=flat)](LICENSE)
 ![No dependencies](https://img.shields.io/badge/Dependencies-none-2ea043?style=flat)
-![784 assertions](https://img.shields.io/badge/Assertions-784-2ea043?style=flat)
+![790 assertions](https://img.shields.io/badge/Assertions-790-2ea043?style=flat)
 ![English and French](https://img.shields.io/badge/UI-EN%20%2F%20FR-444?style=flat)
 
 [**Install**](#3-installation) · [**Screenshots**](#2-screenshots) · [**How it works**](#4-how-it-works-the-capture-layers) · [**Changelog**](CHANGELOG.md) · [**Security**](SECURITY.md)
@@ -78,7 +78,7 @@ specific points:
 happens inside your Firefox, on your machine.
 
 **By the numbers**: 144 JavaScript modules, ~28,000 lines, zero external dependencies,
-784 automated assertions, English and French interface.
+790 automated assertions, English and French interface.
 
 ---
 
@@ -311,7 +311,7 @@ advanced views and keeps only the essentials.
 | View | What it shows |
 |---|---|
 | **Requests** | All traffic, request by request. The table is virtualised with an exact-height invariant, so `scrollHeight` never shifts while you scroll and the wheel stays smooth at any zoom level. Configurable columns, sorting on any column, quick facets (API, pages, resources, streams, errors, alerts, third-party, slow…), multiple selection, per-row context menu, free-text annotation and colour marking. The table is virtualised: only visible rows are drawn. |
-| **Security** | The analyser's findings, grouped by severity, each with its evidence and a link to the request. The report can be exported as Markdown. |
+| **Security** | The analyser's findings, grouped by severity, each with its evidence and a link to the request. Rendered in batches as you scroll, so nothing is capped and nothing freezes. The report can be exported as Markdown. |
 | **Summary** | The overall figures: requests, domains, volumes received and sent, median duration, errors, third-party share, encrypted share, cache, frames, cookies. Then the breakdowns: statuses, resource types, domains by volume and by count, real protocols, content types, capture layers. |
 | **Sites and paths** | The tree of what exists on each visited host, reconstructed from traffic. Useful to see an application's real surface. |
 | **Live streams** | WebSocket and Server-Sent Events, message by message, with direction (in/out), timestamp and payload. |
@@ -321,7 +321,7 @@ advanced views and keeps only the essentials.
 
 | View | What it shows |
 |---|---|
-| **Cookies** | Every cookie set, changed or removed, with the cause and all its attributes. |
+| **Cookies** | Every cookie set, changed or removed, with the cause and all its attributes. Like the other logs, rendered in batches: no entry is hidden behind a display cap. |
 | **Navigation** | Page and frame changes: start, commit, DOM ready, completion, errors, history changes. |
 | **Workers and WebRTC** | Workers, Service Workers, WebRTC connections and page performance metrics. |
 
@@ -716,7 +716,7 @@ ui/                        The interface — one page for all four surfaces
 ├── console/               One view per file, plus the detail panel
 └── lib/                   Codecs, digests, network, reference tables, i18n
 
-tests/                     784 assertions, no browser required
+tests/                     790 assertions, no browser required
 tools/captures.mjs         Generates the documentation screenshots
 build.ps1                  Verification and .xpi packaging
 ```
@@ -728,6 +728,7 @@ build.ps1                  Verification and .xpi packaging
 - **No unprovable finding.** Each one carries its evidence.
 - **Nothing is ever lost.** An observation without a parent becomes its own row.
 - **Short, cohesive files.** 200 to 400 lines typically.
+- **Nothing is capped for display.** Long lists render in batches rather than being truncated.
 - **Comments explain *why*,** not *what*.
 
 ---
@@ -761,7 +762,7 @@ French at the flip of a setting.
 npm test
 ```
 
-784 assertions, with no browser and no dependencies. The kernel and interface modules are
+790 assertions, with no browser and no dependencies. The kernel and interface modules are
 written for Firefox; `tests/harnais.mjs` supplies the minimum WebExtension API and DOM they
 need to import and run under Node. **The logic under test is exactly the logic that runs in
 the browser, with no rewriting.**
@@ -770,7 +771,7 @@ the browser, with no rewriting.**
 |---|---|---|
 | `core.test.mjs` | 173 | URL normalisation, correlation signatures, the store, the rule engine (both ways: what matches **and** what must not), the security analyser rule by rule, HAR export, curl import, all 39 code generators |
 | `avance.test.mjs` | 246 | WebSocket and HTTP/2 frames, CSP, RFC 9111 freshness, multipart, canonical URLs and homographs, protocol tables, binary structures, rare digests, generators |
-| `ui-load.test.mjs` | 149 | Actual loading of the 101 interface modules, complete module graph (no dead import, no file outside the graph), consistency with the HTML pages and the manifest, and **full translation coverage** — every displayed string must have a dictionary entry |
+| `ui-load.test.mjs` | 150 | Actual loading of the 101 interface modules, complete module graph (no dead import, no file outside the graph), consistency with the HTML pages and the manifest, and **full translation coverage** — every displayed string must have a dictionary entry |
 | `detail-coverage.test.mjs` | 120 | Each of a record's 60 fields is displayed, each tab has a render function, each searchable field exists |
 | `outils.test.mjs` | 96 | The toolbox, against published vectors |
 
@@ -812,7 +813,7 @@ the file. It contains internal errors and the command log — not your traffic.
 Before opening a pull request:
 
 ```bash
-npm test              # all 784 assertions must pass
+npm test              # all 790 assertions must pass
 .\build.ps1 -Verify   # the build must be green
 ```
 

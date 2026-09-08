@@ -97,6 +97,12 @@ First public release.
   constant. The window computation moved into `ui/lib/fenetre-virtuelle.js`, a pure
   function with its own tests, and the table is no longer rebuilt when the visible
   window has not moved.
+- **Two views froze on long lists, and silently truncated them.** The internal logs
+  built up to three thousand rows in one pass and dropped the rest; the Security view
+  did the same at two thousand findings. Both now render in batches through
+  `ui/lib/liste-progressive.js`: the first batch is immediate, the next arrive as you
+  approach the bottom, and nothing is capped. Measured on four thousand findings: 150
+  cards drawn at once, the rest following the scroll.
 - **Nine translation keys were defined twice**, the later one silently overriding the
   earlier. Two were user-visible mistakes: the `Duration` column showed *Lifetime*, and
   *Active interception* stayed in French. All duplicates are gone, and a test now fails
@@ -110,7 +116,7 @@ First public release.
   decoding into the Request tab, RFC 3986 canonical URLs and homograph detection into the
   URL panel, reverse DNS names into the Address panel, WebSocket and HTTP/2 frame decoding
   into the Binary panel, and TLS / QUIC / HTTP-3 / DNS tables into the Reference panel.
-- Test suite added: 784 assertions across five suites, running under Node with no browser
+- Test suite added: 790 assertions across five suites, running under Node with no browser
   and no dependencies, validated against published RFC vectors. `build.ps1` already required
   these suites but the directory was absent, so packaging failed wherever Node was
   installed.
