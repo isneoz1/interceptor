@@ -17,11 +17,9 @@ Created by **NeoZ**
 ![1033 assertions](https://img.shields.io/badge/Assertions-1033-2ea043?style=flat)
 ![English and French](https://img.shields.io/badge/UI-EN%20%2F%20FR-444?style=flat)
 
-[**Install**](#3-installation) · [**Screenshots**](#2-screenshots) · [**How it works**](#4-how-it-works-the-capture-layers) · [**Changelog**](CHANGELOG.md) · [**Security**](SECURITY.md)
+[**Try it in 60 seconds**](#try-it-in-60-seconds) · [**Why not the built-in panel?**](#firefox-already-has-a-network-panel-why-this) · [**Screenshots**](#2-screenshots) · [**How it works**](#4-how-it-works-the-capture-layers) · [**Changelog**](CHANGELOG.md)
 
-<img src="docs/images/console-requetes.png" alt="The INTERCEPTOR console: every request the browser made, one row each, with the detail panel open" width="100%">
-
-<sub>The real console, not a mockup - every screenshot in this README is rendered from the actual kernel by <code>node tools/captures.mjs</code>.</sub>
+<img src="docs/images/vitrine-capture.png" alt="One request, one row: eight capture layers observe the same call, and a correlator merges them" width="100%">
 
 </div>
 
@@ -32,6 +30,65 @@ Created by **NeoZ**
 >
 > Eight capture layers, zero duplicated rows, no telemetry, no dependencies, and an analyser
 > that refuses to report anything it cannot prove.
+
+---
+
+## In one look
+
+<img src="docs/images/vitrine-palette.png" alt="Ctrl+K opens a command palette over every view, tool and action" width="100%">
+
+<img src="docs/images/vitrine-securite.png" alt="Every finished request is audited on its own, and nothing is reported that cannot be proven" width="100%">
+
+<img src="docs/images/vitrine-outils.png" alt="134 transformations across 23 tools, all computed locally" width="100%">
+
+<div align="center">
+<sub><b>Every image on this page is a screenshot of the running tool</b>, not a mockup. They are
+produced by <code>node tools/captures.mjs</code>, which renders the real console in a headless
+browser fed by traffic that went through the <b>real kernel</b> — same store, same analyser,
+same statistics as in Firefox.</sub>
+</div>
+
+---
+
+## Try it in 60 seconds
+
+No account, no build step, no package to install.
+
+```
+1. Download or clone this repository
+2. Open  about:debugging#/runtime/this-firefox  in Firefox
+3. Click "Load Temporary Add-on…" and pick  manifest.json
+```
+
+Capture starts immediately. Browse anything, then press **Ctrl+K** and type `req` to open
+the request table. There is nothing to configure — and nothing leaves your machine, because
+there is nowhere for it to go.
+
+<sub>The extension disappears when Firefox restarts: that is what temporary loading means.
+For something lasting, see [Installation](#3-installation).</sub>
+
+---
+
+## Firefox already has a network panel. Why this?
+
+Because the built-in panel answers *that* a request happened. Most of the time the question
+is *why*.
+
+| The question you actually have | The built-in panel | INTERCEPTOR |
+|---|---|---|
+| What did the server send back? | The body, if it is still in the cache | The body **read off the wire as it arrives**, kept even when the cache drops it |
+| Which line of my code caused this call? | — | The **JavaScript stack** behind every `fetch`, `XHR`, `sendBeacon` and WebSocket |
+| Why is my CORS request blocked? | An error on the wrong row | The `OPTIONS` preflight **paired with the request it authorised**, naming the header that refused |
+| Why is this cookie ignored? | The cookie, as sent | The **exact rule it breaks** — prefix, `SameSite`, `Secure`, domain |
+| What did that WebSocket frame mean? | `42["order",{…}]` | *socket.io EVENT "order"* — plus **STOMP** and **SignalR** |
+| Did my gRPC-Web call succeed? | HTTP 200 | The **`grpc-status` in the trailers**, which is what actually decides |
+| Is a secret leaking in this traffic? | — | Every finished request **audited on its own**, with the value masked in the report |
+| Can I change a request before it leaves? | — | **Pause it, edit it, release it** — or block, redirect and rewrite by rule |
+| Can I share this capture safely? | A HAR carrying every token | A HAR with **secrets masked**, next to the faithful one |
+| What is served by a Service Worker? | Nothing — `webRequest` never sees it | Caught by `PerformanceObserver`, on **its own row** |
+
+It is not a replacement for the DevTools panel. It is what you open when the panel has
+stopped being enough.
 
 ---
 
@@ -346,7 +403,7 @@ advanced views and keeps only the essentials.
 
 | View | What it shows |
 |---|---|
-| **Toolbox** | See [section 11](#11-the-toolbox-23-families). |
+| **Toolbox** | See [section 11](#11-the-toolbox-23-tools-in-6-families). |
 
 ### Acting on traffic
 
@@ -739,6 +796,7 @@ ui/                        The interface — one page for all four surfaces
 tests/                     1033 assertions, no browser required
 tools/captures.mjs         Generates the documentation screenshots
 tools/banniere.mjs         Generates the social preview card (docs/images)
+tools/vitrine.mjs          Composes the showcase images at the top of this file
 tools/apercu-icone.mjs     Renders the icon at the sizes Firefox actually uses
 build.ps1                  Verification and .xpi packaging
 ```
