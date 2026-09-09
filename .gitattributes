@@ -3,4 +3,6 @@
 
 # Binaries: never converted.
 *.png binary
+*.gif binary
+*.mp4 binary
 *.xpi binary

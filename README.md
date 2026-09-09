@@ -19,7 +19,10 @@ Created by **NeoZ**
 
 [**Try it in 60 seconds**](#try-it-in-60-seconds) · [**Why not the built-in panel?**](#firefox-already-has-a-network-panel-why-this) · [**Screenshots**](#2-screenshots) · [**How it works**](#4-how-it-works-the-capture-layers) · [**Changelog**](CHANGELOG.md)
 
-<img src="docs/images/vitrine-capture.png" alt="One request, one row: eight capture layers observe the same call, and a correlator merges them" width="100%">
+<img src="docs/demo.gif" alt="INTERCEPTOR in use: the request table, the command palette, the security findings and the detail panel" width="100%">
+
+<sub>28 seconds, no narration needed. <a href="docs/demo.mp4">Full-resolution video</a> · every frame is
+the running tool, driven the way you would drive it.</sub>
 
 </div>
 
@@ -34,6 +37,8 @@ Created by **NeoZ**
 ---
 
 ## In one look
+
+<img src="docs/images/vitrine-capture.png" alt="One request, one row: eight capture layers observe the same call, and a correlator merges them" width="100%">
 
 <img src="docs/images/vitrine-palette.png" alt="Ctrl+K opens a command palette over every view, tool and action" width="100%">
 
@@ -797,6 +802,9 @@ tests/                     1033 assertions, no browser required
 tools/captures.mjs         Generates the documentation screenshots
 tools/banniere.mjs         Generates the social preview card (docs/images)
 tools/vitrine.mjs          Composes the showcase images at the top of this file
+tools/demo.mjs             Films the demonstration (docs/demo.mp4 and demo.gif)
+tools/scene.mjs            Real traffic through the real kernel, shared by the above
+tools/chrome.mjs           Headless Chromium over the DevTools protocol
 tools/apercu-icone.mjs     Renders the icon at the sizes Firefox actually uses
 build.ps1                  Verification and .xpi packaging
 ```
