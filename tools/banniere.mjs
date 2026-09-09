@@ -53,48 +53,48 @@ const PAGE = `<!doctype html><html><head><meta charset="utf-8"><style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body { width: ${LARGEUR}px; height: ${HAUTEUR}px; overflow: hidden; }
   body {
-    background: #06060F;
+    background: #0D1117;
     font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
-    color: #EEF0FF;
+    color: #E6EDF3;
     position: relative;
   }
   /* La lueur reste derriere l image, jamais derriere le texte : c est ce qui
      garde les lettres lisibles a la taille d une vignette. */
   .lueur {
-    position: absolute; border-radius: 50%; filter: blur(90px); opacity: .55;
+    position: absolute; border-radius: 50%; filter: blur(90px); opacity: .38;
   }
-  .l1 { width: 620px; height: 620px; right: -180px; top: -220px; background: #8A7BFF; }
-  .l2 { width: 520px; height: 520px; left: -200px; bottom: -260px; background: #54C8FF; opacity: .35; }
+  .l1 { width: 720px; height: 720px; right: -220px; top: -300px; background: #1E5FB8; }
+  .l2 { width: 520px; height: 520px; left: -220px; bottom: -280px; background: #17394F; opacity: .5; }
   .cadre { position: relative; height: 100%; display: flex; align-items: center; padding: 0 64px; gap: 52px; }
   .gauche { width: 560px; flex: none; }
   .marque { display: flex; align-items: center; gap: 16px; margin-bottom: 22px; }
   .marque svg { width: 60px; height: 60px; }
   .nom { font-size: 50px; font-weight: 800; letter-spacing: 3px; line-height: 1; }
-  .par { font-size: 17px; color: #AEB4E8; letter-spacing: 4px; margin-top: 7px; }
+  .par { font-size: 17px; color: #7C8794; letter-spacing: 4px; margin-top: 7px; }
   h1 {
     font-size: 33px; font-weight: 700; line-height: 1.25; letter-spacing: -.4px;
     margin-bottom: 16px;
   }
-  h1 em { font-style: normal; color: #C9BEFF; }
-  p.sous { font-size: 19px; line-height: 1.55; color: #C3C8F0; margin-bottom: 30px; }
+  h1 em { font-style: normal; color: #8DBDF5; }
+  p.sous { font-size: 19px; line-height: 1.55; color: #9BA7B4; margin-bottom: 30px; }
   .chiffres { display: flex; gap: 34px; }
-  .chiffre .n { font-size: 33px; font-weight: 800; color: #3DF5A5; line-height: 1; }
-  .chiffre .q { font-size: 13.5px; color: #AEB4E8; margin-top: 7px; letter-spacing: .3px; }
+  .chiffre .n { font-size: 33px; font-weight: 800; color: #3FB950; line-height: 1; }
+  .chiffre .q { font-size: 13.5px; color: #7C8794; margin-top: 7px; letter-spacing: .3px; }
   .droite { flex: 1; display: flex; justify-content: flex-end; }
   /* La console est inclinee et rognee : on montre qu il y a un vrai outil
      derriere sans pretendre qu on peut le lire a cette taille. */
   .ecran {
-    width: 660px; border-radius: 14px; overflow: hidden;
-    border: 1px solid rgba(138,123,255,.45);
+    width: 660px; border-radius: 8px; overflow: hidden;
+    border: 1px solid #30373F;
     box-shadow: 0 34px 90px rgba(0,0,0,.72), 0 0 0 1px rgba(255,255,255,.05) inset;
     transform: perspective(1500px) rotateY(-15deg) rotateX(3deg) scale(1.1);
   }
   .ecran img { display: block; width: 100%; }
   .pied {
     position: absolute; left: 64px; bottom: 30px;
-    font-size: 15px; color: #868CC6; letter-spacing: .4px;
+    font-size: 15px; color: #6E7781; letter-spacing: .4px;
   }
-  .pied b { color: #AEB4E8; font-weight: 600; }
+  .pied b { color: #9BA7B4; font-weight: 600; }
 </style></head><body>
   <div class="lueur l1"></div><div class="lueur l2"></div>
   <div class="cadre">

@@ -1,13 +1,14 @@
 /* ============================================================
    INTERCEPTOR — socle visuel (cree par NeoZ)
 
-   Direction : fond indigo profond, accents neons, surfaces vitrees aux
-   bords arrondis. La lueur habille les CADRES et les bordures ; elle ne
-   passe jamais derriere du texte, ou elle le rendrait flou.
+   Direction : gris neutres, un seul accent, des filets d un pixel qui
+   portent la structure. Pas de lueur, pas de degrade decoratif, pas de
+   verre depoli — un outil de lecture de reseau se juge a la densite
+   d information qu il rend lisible, pas a ses effets.
 
    Quatre regles tenues partout :
-     1. la couleur porte du SENS (statut, gravite, methode) ; le neon
-        souligne, il ne remplace pas l information ;
+     1. la couleur porte du SENS (statut, gravite, methode) et rien
+        d autre : une teinte qui ne signifie rien n a pas sa place ;
      2. le sans-serif habille l application, le monospace est reserve aux
         DONNEES (URL, entetes, corps, chiffres alignes) ;
      3. les capitales espacees ne servent qu aux en-tetes de tableau, la
@@ -15,7 +16,7 @@
      4. TOUT texte reste lisible : chaque paire couleur / fond declaree
         ici est mesuree par tests/contraste.mjs, et la construction
         s arrete si l une passe sous le seuil du WCAG. Une interface
-        sombre a neons est vite jolie et illisible ; celle-ci est
+        interface sombre est vite jolie et illisible ; celle-ci est
         verifiee, pas supposee.
 
    Aucune police distante : INTERCEPTOR surveille le reseau, il serait
@@ -27,65 +28,69 @@
 :root {
   color-scheme: dark;
 
-  /* Surfaces — indigo profond, chaque niveau un cran plus clair */
-  --bg:        #06060F;
-  --elev:      #0B0B1B;
-  --surface:   #111128;
-  --surface-2: #181834;
-  --surface-3: #242449;
-  --line:      #2B2B55;
-  --line-soft: #1B1B36;
-  --code-bg:   #050510;
+  /* Surfaces — gris neutres, chaque niveau un cran plus clair. Le fond
+     n est pas noir : un noir absolu fait vibrer le texte clair. */
+  --bg:        #0D1117;
+  --elev:      #11161D;
+  --surface:   #161B22;
+  --surface-2: #1C222B;
+  --surface-3: #262D38;
+  --line:      #30373F;
+  --line-soft: #21272F;
+  --code-bg:   #0A0E14;
 
-  /* Texte : trois niveaux, pas un de plus. Mesures a 15.9, 8.3 et 5.8
-     contre la surface courante — tous au-dessus du seuil de lecture. */
-  --text: #EEF0FF;
-  --dim:  #AEB4E8;
-  --mute: #868CC6;
+  /* Texte : trois niveaux, pas un de plus, et neutres. Une teinte dans le
+     gris de lecture fatigue sans rien apporter. */
+  --text: #E6EDF3;
+  --dim:  #9BA7B4;
+  --mute: #7C8794;
 
-  /* Accent unique. Il signale l element actif, jamais autre chose. */
-  --accent:      #8A7BFF;
-  --accent-hover:#A99DFF;
-  --on-accent:   #0A0618;
-  --accent-weak: rgba(138, 123, 255, .16);
-  --accent-line: rgba(138, 123, 255, .45);
+  /* Accent unique, et retenu. Il signale l element actif, jamais autre
+     chose : un accent qui decore cesse d informer. */
+  --accent:      #4C8DF6;
+  --accent-hover:#6BA1F8;
+  --on-accent:   #08111C;
+  --accent-weak: rgba(76, 141, 246, .14);
+  --accent-line: rgba(76, 141, 246, .42);
 
-  /* Etats — neons francs, choisis assez clairs pour se LIRE sur le fond */
-  --green:  #3DF5A5;
-  --red:    #FF6B85;
-  --amber:  #FFC93C;
-  --blue:   #54C8FF;
-  --violet: #C98CFF;
+  /* Etats — assez clairs pour se LIRE sur le fond, assez sobres pour ne pas
+     transformer un tableau dense en enseigne lumineuse. */
+  --green:  #3FB950;
+  --red:    #F1707B;
+  --amber:  #D5A028;
+  --blue:   #58A6FF;
+  --violet: #B392F0;
 
-  --green-soft:  rgba(61, 245, 165, .14);
-  --red-soft:    rgba(255, 107, 133, .14);
-  --amber-soft:  rgba(255, 201, 60, .14);
-  --blue-soft:   rgba(84, 200, 255, .14);
-  --violet-soft: rgba(201, 140, 255, .14);
+  --green-soft:  rgba(63, 185, 80, .13);
+  --red-soft:    rgba(241, 112, 123, .13);
+  --amber-soft:  rgba(213, 160, 40, .13);
+  --blue-soft:   rgba(88, 166, 255, .13);
+  --violet-soft: rgba(179, 146, 240, .13);
 
   /* Marquage manuel des lignes */
-  --mk-rouge:  #FF6B85;
-  --mk-orange: #FF9F45;
-  --mk-jaune:  #FFD84D;
-  --mk-vert:   #3DF5A5;
-  --mk-bleu:   #54C8FF;
-  --mk-violet: #C98CFF;
+  --mk-rouge:  #F1707B;
+  --mk-orange: #E8914A;
+  --mk-jaune:  #D9B440;
+  --mk-vert:   #3FB950;
+  --mk-bleu:   #58A6FF;
+  --mk-violet: #B392F0;
 
-  /* Ombres teintees d indigo plutot que de noir : les cartes se detachent
-     du fond sans le trou noir d une ombre neutre. */
-  --shadow:    0 18px 48px -20px rgba(0, 0, 0, .85), 0 0 0 1px rgba(138, 123, 255, .06);
-  --shadow-sm: 0 2px 10px -4px rgba(0, 0, 0, .6);
-  /* Lueurs : reservees aux BORDS. Jamais derriere un texte. */
-  --lueur:        0 0 0 1px rgba(138, 123, 255, .28), 0 0 22px -6px rgba(138, 123, 255, .45);
-  --lueur-faible: 0 0 0 1px rgba(138, 123, 255, .16);
-  --degrade-carte: linear-gradient(160deg, rgba(138, 123, 255, .07), rgba(84, 200, 255, .03) 55%, transparent);
+  /* Ombres discretes : elles disent qu une surface flotte au-dessus d une
+     autre, elles ne cherchent pas a se faire remarquer. */
+  --shadow:    0 16px 40px -20px rgba(0, 0, 0, .8);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, .45);
+  /* Le liseré de mise au point. Un anneau franc vaut mieux qu un halo :
+     on voit ou l on est, sans que la lettre devienne floue. */
+  --anneau: 0 0 0 2px var(--accent-line);
 
   --mono: "JetBrains Mono", "Cascadia Mono", "SF Mono", Consolas, "Liberation Mono", monospace;
   --sans: "Inter", "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif;
 
-  --r-sm: 6px;
-  --r: 9px;
-  --r-lg: 14px;
+  /* Des angles francs : un outil de donnees se lit mieux dans des cadres
+     nets que dans des pastilles. */
+  --r-sm: 3px;
+  --r: 5px;
+  --r-lg: 8px;
   --scale: 1;
   --row-h: calc(28px * var(--scale));
   --fs-row: 11.5px;
@@ -111,12 +116,12 @@
   --dim:  #55555F;
   --mute: #82828C;
 
-  /* Assombri pour que le blanc du bouton reste lisible dessus (4.78). */
-  --accent:      #C64A18;
-  --accent-hover:#AC3E12;
+  /* Assombri pour que le blanc du bouton reste lisible dessus. */
+  --accent:      #0F62CE;
+  --accent-hover:#0B4FA8;
   --on-accent:   #FFFFFF;
-  --accent-weak: rgba(198, 74, 24, .09);
-  --accent-line: rgba(198, 74, 24, .32);
+  --accent-weak: rgba(15, 98, 206, .09);
+  --accent-line: rgba(15, 98, 206, .32);
 
   --green:  #1A7F37;
   --red:    #CF222E;

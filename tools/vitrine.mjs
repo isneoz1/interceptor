@@ -75,25 +75,28 @@ function page(v) {
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body { width: ${LARGEUR}px; height: ${HAUTEUR}px; overflow: hidden; }
   body {
-    background: #06060F; color: #EEF0FF; position: relative;
+    background: #0D1117; color: #E6EDF3; position: relative;
     font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
   }
-  .lueur { position: absolute; border-radius: 50%; filter: blur(90px); opacity: .5; }
-  .l1 { width: 560px; height: 560px; right: -200px; top: -240px; background: #8A7BFF; }
-  .l2 { width: 460px; height: 460px; left: -220px; bottom: -240px; background: #54C8FF; opacity: .3; }
+  /* Un degrade tres sourd, pas un halo colore : la lumiere doit venir de
+     la capture elle-meme, pas d un effet pose derriere le titre. */
+  .fond {
+    position: absolute; inset: 0;
+    background: radial-gradient(120% 80% at 78% -10%, #1A222E 0%, #0D1117 62%);
+  }
 
   .texte { position: relative; padding: 44px 56px 0; }
   h1 { font-size: 38px; font-weight: 800; letter-spacing: -.5px; line-height: 1.1; }
-  p { margin-top: 14px; font-size: 17px; line-height: 1.55; color: #C3C8F0; max-width: 900px; }
+  p { margin-top: 14px; font-size: 17px; line-height: 1.55; color: #9BA7B4; max-width: 900px; }
 
   /* La capture, cadree sur la zone qui porte le propos et posee en bas :
      elle deborde volontairement, pour donner la sensation d un outil plus
      grand que le cadre. */
   .ecran {
     position: absolute; left: 56px; right: 56px; top: 212px; bottom: -22px;
-    border-radius: 12px 12px 0 0; overflow: hidden;
-    border: 1px solid rgba(138,123,255,.4); border-bottom: 0;
-    box-shadow: 0 -18px 60px rgba(0,0,0,.6);
+    border-radius: 8px 8px 0 0; overflow: hidden;
+    border: 1px solid #30373F; border-bottom: 0;
+    box-shadow: 0 -20px 60px rgba(0,0,0,.55);
   }
   .ecran img {
     position: absolute; width: ${zoom * 100}%;
@@ -101,10 +104,10 @@ function page(v) {
   }
   .pied {
     position: absolute; right: 56px; top: 46px;
-    font-size: 13px; letter-spacing: 3px; color: #868CC6; font-weight: 600;
+    font-size: 12px; letter-spacing: 3.4px; color: #6E7781; font-weight: 600;
   }
 </style></head><body>
-  <div class="lueur l1"></div><div class="lueur l2"></div>
+  <div class="fond"></div>
   <div class="pied">INTERCEPTOR</div>
   <div class="texte"><h1>${v.titre}</h1><p>${v.phrase}</p></div>
   <div class="ecran"><img src="${dataUri(v.source)}"></div>

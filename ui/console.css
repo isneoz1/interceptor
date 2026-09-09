@@ -658,94 +658,83 @@ body { display: flex; flex-direction: column; overflow: hidden; }
 :root[data-largeur='etroite'] .famille { grid-template-columns: 1fr; gap: calc(2px * var(--scale)); }
 
 /* ============================================================
-   Habillage neon — INTERCEPTOR (by NeoZ)
+   Habillage — INTERCEPTOR (by NeoZ)
 
-   La lueur habille les BORDS des surfaces, jamais le fond d un texte :
-   un halo derriere des caracteres les rend flous, et la lisibilite prime
-   sur l effet. Les couleurs viennent toutes de theme.css, dont chaque
-   paire est mesuree par tests/contraste.mjs.
+   Un filet d un pixel porte la structure ; l accent ne sert qu a dire ou
+   l on se trouve. Pas de degrade de carte, pas de lueur au survol, pas de
+   flou derriere les fenetres : ce sont les tics d une interface qui cherche
+   a impressionner plutot qu a se laisser lire.
+
+   Les couleurs viennent toutes de theme.css, dont chaque paire est mesuree
+   par tests/contraste.mjs.
    ============================================================ */
 
-/* Cartes et tuiles : degrade tres discret, bord fin, ombre teintee. */
+/* Cartes et tuiles : un cadre net, un fond a peine detache. */
 .tile,
 .find,
 .rule,
 .familles,
 .chart,
 .empty {
-  background-image: var(--degrade-carte);
-  border-radius: var(--r-lg);
+  background: var(--surface);
+  border-radius: var(--r);
 }
 
 .tile {
   border: 1px solid var(--line);
-  box-shadow: var(--shadow-sm);
-  transition: border-color var(--speed), box-shadow var(--speed), transform var(--speed);
+  transition: border-color var(--speed), background-color var(--speed);
 }
-.tile:hover {
-  border-color: var(--accent-line);
-  box-shadow: var(--lueur);
-  transform: translateY(-1px);
-}
-.tile.alert { border-color: rgba(255, 201, 60, .30); }
-.tile.alert.hot { border-color: rgba(255, 107, 133, .40); }
-.tile.ok { border-color: rgba(61, 245, 165, .30); }
+/* Au survol, le cadre se marque. Rien ne bouge : dans un tableau dense, des
+   elements qui sautent au passage de la souris rendent la lecture penible. */
+.tile:hover { border-color: var(--accent-line); background: var(--surface-2); }
 
-/* Les cartes d alerte gardent leur barre de gravite, plus lisible qu une
-   teinte de fond : la couleur reste au bord, le texte sur du sombre. */
-.find {
-  border-radius: var(--r-lg);
-  box-shadow: var(--shadow-sm);
-}
+/* La gravite se lit au bord gauche, jamais en fond de texte. */
+.tile.alert     { border-left: 2px solid var(--amber); }
+.tile.alert.hot { border-left: 2px solid var(--red); }
+.tile.ok        { border-left: 2px solid var(--green); }
 
-/* En-tete et colonne laterale : un liseré lumineux au lieu d un trait mat. */
-header.top {
-  background-image: linear-gradient(180deg, rgba(138, 123, 255, .10), transparent 70%);
-  border-bottom: 1px solid var(--line);
-  box-shadow: 0 1px 0 rgba(138, 123, 255, .18);
-}
-.side {
-  background-image: linear-gradient(180deg, rgba(138, 123, 255, .06), transparent 40%);
-}
+.find { border-radius: var(--r); }
 
-/* Element de navigation actif : barre lumineuse a gauche, fond a peine teinte.
-   Le texte passe en pleine clarte, jamais en couleur sur couleur. */
+/* En-tete et colonne laterale : un trait franc, pas un liseré lumineux. */
+header.top { border-bottom: 1px solid var(--line); }
+.side { border-right: 1px solid var(--line-soft); }
+
+/* Navigation : une barre pleine a gauche de l element actif. C est la
+   convention de tous les outils a colonne, et elle se lit d un coup d oeil. */
+.navbtn { border-radius: var(--r-sm); }
 .navbtn.on {
   background: var(--accent-weak);
-  box-shadow: inset 3px 0 0 var(--accent), var(--lueur-faible);
-  border-radius: var(--r);
+  box-shadow: inset 2px 0 0 var(--accent);
 }
-.navbtn { border-radius: var(--r); }
 
-/* Boutons : l accent devient un degrade, avec sa lueur au survol. */
-.btn.accent {
-  background-image: linear-gradient(135deg, var(--accent), #5FD6FF);
-  border-color: transparent;
-}
-.btn.accent:hover { box-shadow: var(--lueur); }
-.btn { border-radius: var(--r); }
+/* Boutons : un aplat. Un degrade sur un bouton de trente pixels de haut ne
+   se voit pas ; il ne fait que trahir l intention decorative. */
+.btn { border-radius: var(--r-sm); }
+.btn.accent { background: var(--accent); border-color: var(--accent); }
+.btn.accent:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
 
-/* Ligne selectionnee du tableau : liseré lumineux, fond discret. Le texte
-   d une ligne doit rester aussi lisible que celui des autres. */
-.trow.sel { box-shadow: inset 3px 0 0 var(--accent), 0 0 18px -8px rgba(138, 123, 255, .55); }
+/* Ligne selectionnee : la meme barre que la navigation, pour que le meme
+   signal veuille dire la meme chose partout dans l interface. */
+.trow.sel { box-shadow: inset 2px 0 0 var(--accent); }
 
-/* Champs de saisie : bord qui s allume a la mise au point. */
+/* Mise au point : un anneau franc. Un halo flou rend la lettre floue. */
 .field:focus,
 input:focus,
 select:focus,
 textarea:focus {
   border-color: var(--accent-line);
-  box-shadow: 0 0 0 3px var(--accent-weak);
+  box-shadow: var(--anneau);
   outline: none;
 }
 
-/* Barres de progression et diagrammes : degrade au lieu d un aplat. */
-.track .fill { background-image: linear-gradient(90deg, var(--accent), #5FD6FF); }
+/* Barres de progression : un aplat, comme les boutons. */
+.track .fill { background: var(--accent); }
 
-/* Le panneau de detail se detache du tableau par une lueur haute. */
-#detail { box-shadow: 0 -1px 0 rgba(138, 123, 255, .20), var(--shadow); }
+/* Le panneau de detail se detache par un trait, pas par une ombre portee. */
+#detail { box-shadow: none; border-top: 1px solid var(--line); }
 
-/* Les titres de section portent un filet lumineux court, pas un fond. */
+/* Titres de section : un filet court sous l intitule. Il marque le debut
+   d un bloc sans lui donner de fond. */
 .sec { border-bottom: 1px solid var(--line-soft); }
 .sec > span { position: relative; }
 .sec > span::after {
@@ -753,32 +742,22 @@ textarea:focus {
   position: absolute;
   left: 0;
   bottom: calc(-4px * var(--scale));
-  width: calc(22px * var(--scale));
+  width: calc(20px * var(--scale));
   height: 2px;
-  border-radius: 2px;
-  background: linear-gradient(90deg, var(--accent), transparent);
+  background: var(--accent);
 }
 
-/* Contraste renforce : on eteint degrades et lueurs plutot que de les
-   attenuer. Le reglage sert a lire, pas a decorer. */
-body[data-contrast="fort"] .tile,
-body[data-contrast="fort"] .find,
-body[data-contrast="fort"] .rule,
-body[data-contrast="fort"] .familles,
-body[data-contrast="fort"] .chart,
-body[data-contrast="fort"] .empty,
-body[data-contrast="fort"] header.top,
-body[data-contrast="fort"] .side { background-image: none; }
-body[data-contrast="fort"] .tile:hover,
-body[data-contrast="fort"] .btn.accent:hover { box-shadow: none; }
+/* Les fenetres modales assombrissent le fond sans le flouter : le flou
+   derriere une fenetre est un effet, pas une aide a la lecture. */
+.overlay { backdrop-filter: none; background: rgba(1, 4, 9, .72); }
+.overlay .sheet { border-radius: var(--r-lg); }
+
+/* Contraste renforce : la barre d etat devient un trait plein plutot qu un
+   fond teinte, qui reste le plus lisible des deux. */
+body[data-contrast="fort"] .navbtn.on,
+body[data-contrast="fort"] .trow.sel { background: transparent; }
+body[data-contrast="fort"] .navbtn.on { box-shadow: inset 3px 0 0 var(--accent); }
 body[data-contrast="fort"] .sec > span::after { display: none; }
-
-/* Mouvement reduit : plus aucune transition ni deplacement au survol. */
-@media (prefers-reduced-motion: reduce) {
-  .tile { transition: none; }
-  .tile:hover { transform: none; }
-}
-
 
 /* ========================= Palette de commandes ========================== */
 /* Elle se place haut dans la fenetre plutot qu au centre : le regard y est

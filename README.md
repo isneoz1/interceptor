@@ -808,9 +808,9 @@ build.ps1                  Verification and .xpi packaging
 - **No unprovable finding.** Each one carries its evidence.
 - **Nothing is ever lost.** An observation without a parent becomes its own row.
 - **Short, cohesive files.** 200 to 400 lines typically.
-- **Every colour pair is measured.** The dark neon theme is verified against WCAG 2.1
-  contrast thresholds by a test; the build stops if any text falls below the reading
-  threshold. A dark neon interface is easy to make pretty and unreadable.
+- **Every colour pair is measured.** Both themes are verified against WCAG 2.1 contrast
+  thresholds by a test; the build stops if any text falls below the reading threshold. A
+  dark interface is easy to make pretty and unreadable.
 - **Nothing is capped for display.** Long lists render in batches rather than being truncated.
 - **Comments explain *why*,** not *what*.
 

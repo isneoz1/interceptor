@@ -19,12 +19,12 @@
 
   <defs>
     <linearGradient id="fond" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#1B1638"/>
-      <stop offset="1" stop-color="#0A0A1A"/>
+      <stop offset="0" stop-color="#1C222B"/>
+      <stop offset="1" stop-color="#0D1117"/>
     </linearGradient>
     <linearGradient id="barre" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#A896FF"/>
-      <stop offset="1" stop-color="#6F5CF0"/>
+      <stop offset="0" stop-color="#6BA1F8"/>
+      <stop offset="1" stop-color="#3B7FE8"/>
     </linearGradient>
   </defs>
 
@@ -32,23 +32,23 @@
        garde sa propre surface et ne se dissout pas dans la barre d outils. -->
   <rect x="4" y="4" width="120" height="120" rx="28" fill="url(#fond)"/>
   <rect x="4.5" y="4.5" width="119" height="119" rx="27.5" fill="none"
-        stroke="#8A7BFF" stroke-opacity=".45" stroke-width="3"/>
+        stroke="#30373F" stroke-opacity="1" stroke-width="3"/>
 
   <!-- Trois lignes de trafic. Les largeurs different : une capture reelle n a
        jamais des requetes de meme taille. -->
   <g stroke-linecap="round" stroke-width="9">
-    <path d="M26 44 H94" stroke="#54C8FF" stroke-opacity=".95"/>
-    <path d="M26 64 H102" stroke="#C98CFF" stroke-opacity=".85"/>
-    <path d="M26 84 H80" stroke="#54C8FF" stroke-opacity=".6"/>
+    <path d="M26 44 H94" stroke="#58A6FF" stroke-opacity=".95"/>
+    <path d="M26 64 H102" stroke="#8DBDF5" stroke-opacity=".8"/>
+    <path d="M26 84 H80" stroke="#58A6FF" stroke-opacity=".5"/>
   </g>
 
   <!-- La barre d interception : elle coupe les trois lignes, c est tout le
        propos de l outil. Le lisere sombre la detache des lignes qu elle croise
        sans avoir besoin d une ombre, qui disparaitrait a 16 px. -->
-  <rect x="60" y="22" width="16" height="84" rx="8" fill="#0A0A1A"/>
+  <rect x="60" y="22" width="16" height="84" rx="8" fill="#0D1117"/>
   <rect x="62.5" y="24.5" width="11" height="79" rx="5.5" fill="url(#barre)"/>
 
   <!-- Le temoin de capture, vert comme dans l en-tete de la console. -->
-  <circle cx="96" cy="98" r="13" fill="#0A0A1A"/>
-  <circle cx="96" cy="98" r="8.5" fill="#3DF5A5"/>
+  <circle cx="96" cy="98" r="13" fill="#0D1117"/>
+  <circle cx="96" cy="98" r="8.5" fill="#3FB950"/>
 </svg>
