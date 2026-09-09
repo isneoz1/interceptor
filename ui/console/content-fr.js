@@ -134,7 +134,7 @@ export const LESSONS = [
     goal: 'Lire ce que l analyse trouve toute seule',
     body: [
       { p: 'Chaque requete terminee est auditee automatiquement : cles d API, jetons, mots de passe, e-mails, cartes bancaires validees par la cle de Luhn, HTTP en clair, certificats douteux, entetes de securite absents, CORS trop permissif, cookies de session mal proteges, pisteurs.' },
-      { p: 'Les valeurs sensibles sont **masquees** par defaut : une cle apparait sous la forme « sk_liv…C0 (32 car.) ». Le masquage se coupe dans les reglages si vous devez voir la valeur entiere.' },
+      { p: 'Les valeurs sensibles sont **masquees** par defaut : une cle apparait sous la forme « sk_liv…C0 (32) ». Le masquage se coupe dans les reglages si vous devez voir la valeur entiere.' },
       { p: 'La vue Securite regroupe tout, classe par gravite. Un clic sur une alerte ouvre la requete concernee.' },
       { p: 'Vous pouvez ajouter **vos propres motifs** de secret et **vos propres domaines** de pistage dans les reglages : le format est « Nom = expression reguliere = severite ».' }
     ],

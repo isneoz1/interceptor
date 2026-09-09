@@ -18,7 +18,19 @@ import { spawn } from 'child_process';
 import { installerTout } from '../tests/harnais.mjs';
 
 const RACINE = path.resolve(path.dirname(url.fileURLToPath(import.meta.url)), '..');
+
+/* La version vient du manifeste, jamais d une constante : ecrite a la main
+   elle prend du retard, et les captures finissent par annoncer une version
+   qui n existe plus. */
+const VERSION = JSON.parse(fs.readFileSync(path.join(RACINE, 'manifest.json'), 'utf8')).version;
 const SORTIE = path.join(RACINE, 'docs', 'images');
+
+/* Deux options, pour que la meme mise en scene serve au controle de la
+   traduction : --texte ecrit le texte de chaque vue au lieu des images, et
+   --lang choisit la langue rendue. Sans elles, rien ne change. */
+const ARGS = process.argv.slice(2);
+const MODE_TEXTE = ARGS.includes('--texte');
+const LANGUE = (ARGS.find(a => a.startsWith('--lang=')) || '--lang=en').slice(7);
 const LARGEUR = 1600;
 const HAUTEUR = 1000;
 
@@ -38,6 +50,13 @@ const VUES = [
 
 /* ======================= 1. Trafic passe dans le noyau ===================== */
 installerTout();
+
+/* Le harnais annonce « 0.0.0-test » : c est voulu pour les tests, ou une
+   version figee vaut mieux qu une valeur qui bouge a chaque publication. Mais
+   les captures servent de documentation, et la vue « Etat du systeme » affiche
+   ce numero. On lui donne donc la vraie version, celle du manifeste. */
+const MANIFESTE = JSON.parse(fs.readFileSync(path.join(RACINE, 'manifest.json'), 'utf8'));
+globalThis.browser.runtime.getManifest = () => MANIFESTE;
 
 const { config } = await import('../background/core/config.js');
 const { store } = await import('../background/core/store.js');
@@ -169,7 +188,7 @@ store.touch(sse.id);
    langue anglaise, celle que le dictionnaire produit a partir des memes
    sources francaises. */
 await config.set({
-  lang: 'en',
+  lang: LANGUE,
   rulesEnabled: false,
   rules: [
     { id: 'r-trackers', enabled: true, name: 'Block known trackers',
@@ -357,7 +376,7 @@ await page('Emulation.setDeviceMetricsOverride', {
 await page('Page.addScriptToEvaluateOnNewDocument', {
   source: scriptDeDemarrage(JSON.stringify({
     stats: premier.stats, config: premier.config,
-    capabilities: premier.capabilities, version: '3.0.0'
+    capabilities: premier.capabilities, version: VERSION
   }))
 });
 
@@ -369,14 +388,43 @@ const patienter = ms => new Promise(r => setTimeout(r, ms));
 await patienter(1500);
 
 fs.mkdirSync(SORTIE, { recursive: true });
+/* Le texte visible d une vue, fragment par fragment. */
+const EXTRAIRE_TEXTE = `(() => {
+  const vus = [];
+  const parcours = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+  let n;
+  while ((n = parcours.nextNode())) {
+    const t = (n.textContent || '').trim();
+    if (t) vus.push(t);
+  }
+  return JSON.stringify(vus);
+})()`;
+
+const texteParVue = {};
 for (const [vue, fichier] of VUES) {
   await page('Runtime.evaluate', { expression: 'window.__vue(' + JSON.stringify(vue) + ')' });
   await patienter(700);
+
+  if (MODE_TEXTE) {
+    const { result } = await page('Runtime.evaluate',
+      { expression: EXTRAIRE_TEXTE, returnByValue: true });
+    texteParVue[vue] = JSON.parse(result.value);
+    continue;
+  }
+
   const { data } = await page('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false });
   const chemin = path.join(SORTIE, fichier + '.png');
   fs.writeFileSync(chemin, Buffer.from(data, 'base64'));
   console.log('  ' + path.relative(RACINE, chemin).replace(/\\/g, '/')
     + '  (' + Math.round(fs.statSync(chemin).size / 1024) + ' Ko)');
+}
+
+if (MODE_TEXTE) {
+  const cible = path.join(RACINE, 'dist', 'texte-' + LANGUE + '.json');
+  fs.mkdirSync(path.dirname(cible), { recursive: true });
+  fs.writeFileSync(cible, JSON.stringify(texteParVue, null, 1));
+  console.log('  ' + path.relative(RACINE, cible).replace(/\\/g, '/') + '  ('
+    + Object.values(texteParVue).reduce((n, l) => n + l.length, 0) + ' fragments)');
 }
 
 /* Le panneau de detail, ouvert sur la requete la plus parlante. */

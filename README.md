@@ -14,7 +14,7 @@ Created by **NeoZ**
 ![Manifest V2](https://img.shields.io/badge/Manifest-V2-444?style=flat)
 [![MIT licence](https://img.shields.io/badge/Licence-MIT-00DDFF?style=flat)](LICENSE)
 ![No dependencies](https://img.shields.io/badge/Dependencies-none-2ea043?style=flat)
-![892 assertions](https://img.shields.io/badge/Assertions-892-2ea043?style=flat)
+![895 assertions](https://img.shields.io/badge/Assertions-895-2ea043?style=flat)
 ![English and French](https://img.shields.io/badge/UI-EN%20%2F%20FR-444?style=flat)
 
 [**Install**](#3-installation) · [**Screenshots**](#2-screenshots) · [**How it works**](#4-how-it-works-the-capture-layers) · [**Changelog**](CHANGELOG.md) · [**Security**](SECURITY.md)
@@ -81,8 +81,8 @@ specific points:
 **What it is not**: not a proxy, not a vulnerability scanner, not an attack tool. Everything
 happens inside your Firefox, on your machine.
 
-**By the numbers**: 154 JavaScript modules, ~30,800 lines, zero external dependencies,
-892 automated assertions, English and French interface.
+**By the numbers**: 157 JavaScript modules, ~30,800 lines, zero external dependencies,
+895 automated assertions, English and French interface.
 
 ---
 
@@ -722,7 +722,7 @@ ui/                        The interface — one page for all four surfaces
 ├── console/               One view per file, plus the detail panel
 └── lib/                   Codecs, digests, network, reference tables, i18n
 
-tests/                     892 assertions, no browser required
+tests/                     895 assertions, no browser required
 tools/captures.mjs         Generates the documentation screenshots
 tools/banniere.mjs         Generates the social preview card (docs/images)
 tools/apercu-icone.mjs     Renders the icon at the sizes Firefox actually uses
@@ -773,7 +773,7 @@ French at the flip of a setting.
 npm test
 ```
 
-892 assertions, with no browser and no dependencies. The kernel and interface modules are
+895 assertions, with no browser and no dependencies. The kernel and interface modules are
 written for Firefox; `tests/harnais.mjs` supplies the minimum WebExtension API and DOM they
 need to import and run under Node. **The logic under test is exactly the logic that runs in
 the browser, with no rewriting.**
@@ -782,7 +782,7 @@ the browser, with no rewriting.**
 |---|---|---|
 | `core.test.mjs` | 173 | URL normalisation, correlation signatures, the store, the rule engine (both ways: what matches **and** what must not), the security analyser rule by rule, HAR export, curl import, all 39 code generators |
 | `avance.test.mjs` | 321 | WebSocket and HTTP/2 frames, CSP, RFC 9111 freshness, multipart, canonical URLs and homographs, protocol tables, binary structures, rare digests, generators |
-| `ui-load.test.mjs` | 170 | Actual loading of the 113 interface modules, complete module graph (no dead import, no file outside the graph), consistency with the HTML pages and the manifest, **full translation coverage** — every displayed string must have a dictionary entry — and **measured contrast**: every colour pair in both themes is checked against the WCAG 2.1 thresholds |
+| `ui-load.test.mjs` | 173 | Actual loading of the 116 interface modules, complete module graph (no dead import, no file outside the graph), consistency with the HTML pages and the manifest, **full translation coverage** — every displayed string must have a dictionary entry — and **measured contrast**: every colour pair in both themes is checked against the WCAG 2.1 thresholds |
 | `detail-coverage.test.mjs` | 120 | Each of a record's 60 fields is displayed, each tab has a render function, each searchable field exists |
 | `outils.test.mjs` | 108 | The toolbox, against published vectors |
 
@@ -824,7 +824,7 @@ the file. It contains internal errors and the command log — not your traffic.
 Before opening a pull request:
 
 ```bash
-npm test              # all 892 assertions must pass
+npm test              # all 895 assertions must pass
 .\build.ps1 -Verify   # the build must be green
 ```
 

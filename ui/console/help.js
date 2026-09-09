@@ -1,8 +1,8 @@
 /* Vue « Aide » — mode d emploi complet, hors ligne — INTERCEPTOR (by NeoZ) */
-import { $, el, clear } from '../lib/dom.js';
+import { $, el, clear, button } from '../lib/dom.js';
 import { fieldHelp } from '../lib/filters.js';
 import { cmd, toast } from '../app.js';
-import { t, lang } from '../lib/i18n.js';
+import { t, tp, lang } from '../lib/i18n.js';
 import { HELP_SECTIONS as SECTIONS_EN } from './content-en.js';
 
 const SECTIONS = [
@@ -230,39 +230,38 @@ export function render() {
 
   /* Syntaxe de recherche : construite depuis le code, donc toujours exacte. */
   box.appendChild(el('h2', { text: lang() === 'en' ? 'Search syntax' : 'Syntaxe de recherche' }));
-  box.appendChild(el('p', { text:
-    'Ecrivez du texte libre, ou combinez les criteres ci-dessous. Prefixez par un tiret pour exclure : ' +
-    '« -image ». Encadrez de guillemets pour chercher une expression avec des espaces. Une expression ' +
-    'reguliere s ecrit entre deux barres obliques : /\\/api\\/v[0-9]+\\//.' }));
+  box.appendChild(el('p', { text: t(
+    'Ecrivez du texte libre, ou combinez les criteres ci-dessous. Prefixez par un tiret pour exclure : « -image ». Encadrez de guillemets pour chercher une expression avec des espaces. Une expression reguliere s ecrit entre deux barres obliques : /\\/api\\/v[0-9]+\\//.') }));
   box.appendChild(table(lang() === 'en' ? ['Criterion', 'Meaning'] : ['Critere', 'Signification'],
+    /* Le tableau se construit ici pour les deux langues : la description de
+       chaque critere vient des donnees, donc elle passe par le dictionnaire,
+       et le suffixe des comparaisons par un gabarit plutot qu une addition. */
     fieldHelp().map(f => [
-      f.name + ':' + (f.kind === 'num' ? '>100' : f.kind === 'bool' ? 'oui' : 'valeur'),
-      f.help + (f.kind === 'num' ? '  (comparaisons > >= < <= =)' : '')
+      f.name + ':' + (f.kind === 'num' ? '>100' : f.kind === 'bool' ? t('oui') : t('valeur')),
+      f.kind === 'num' ? tp('{aide}  (comparaisons > >= < <= =)', { aide: t(f.help) }) : t(f.help)
     ])));
-  box.appendChild(el('p', { text:
-    'La case « corps » a cote de la recherche delegue le travail au noyau : il cherche aussi dans les corps, ' +
-    'les entetes, les trames WebSocket, les messages SSE et les piles JavaScript. Les corps ne transitent ' +
-    'jamais en masse vers l interface, seuls les identifiants correspondants reviennent.' }));
+  box.appendChild(el('p', { text: t(
+    'La case « corps » a cote de la recherche delegue le travail au noyau : il cherche aussi dans les corps, les entetes, les trames WebSocket, les messages SSE et les piles JavaScript. Les corps ne transitent jamais en masse vers l interface, seuls les identifiants correspondants reviennent.') }));
 
   box.appendChild(el('h2', { text: lang() === 'en' ? 'Permanent installation' : 'Installation permanente' }));
-  box.appendChild(el('p', { text:
-    'Un chargement temporaire (about:debugging) disparait a la fermeture de Firefox. Pour une installation ' +
-    'durable il faut un paquet .xpi signe par Mozilla, ou Firefox Developer Edition / Nightly avec ' +
-    'xpinstall.signatures.required = false dans about:config.' }));
+  box.appendChild(el('p', { text: t(
+    'Un chargement temporaire (about:debugging) disparait a la fermeture de Firefox. Pour une installation durable il faut un paquet .xpi signe par Mozilla, ou Firefox Developer Edition / Nightly avec xpinstall.signatures.required = false dans about:config.') }));
 
   const about = el('p', { class: 'note' });
   box.appendChild(about);
   cmd('about', {}).then(res => {
     if (res && !res.error) {
-      about.textContent = 'Version ' + res.version + ' — ' + res.author + ' — console : ' + res.consoleUrl;
+      about.textContent = tp('Version {v} — {auteur} — console : {url}',
+        { v: res.version, auteur: res.author, url: res.consoleUrl });
     }
   });
 
+  /* button() traduit son libelle ; un <button> ecrit a la main, non. */
   box.appendChild(el('div', { class: 'actions' }, [
-    el('button', {
-      class: 'btn', type: 'button',
-      on: { click: () => { navigator.clipboard.writeText(location.href).then(() => toast('Adresse de la console copiee'), () => {}); } }
-    }, 'Copier l adresse de cette console')
+    button('Copier l adresse de cette console', () => {
+      navigator.clipboard.writeText(location.href)
+        .then(() => toast(t('Adresse de la console copiee')), () => {});
+    })
   ]));
 }
 

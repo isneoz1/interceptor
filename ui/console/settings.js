@@ -18,7 +18,7 @@ export function render() {
   pane.appendChild(box);
 
   if (!state.config) {
-    box.appendChild(el('p', { class: 'note', text: 'Chargement des reglages…' }));
+    box.appendChild(el('p', { class: 'note', text: t('Chargement des reglages…') }));
     cmd('getConfig', {}).then(res => { if (!res.error) { state.config = res.config; render(); } });
     return;
   }
@@ -101,7 +101,7 @@ function buildField([key, label, type, extra, hint]) {
         if (bad) return toast('Expression invalide : ' + bad, false);
       }
       saveConfig({ [key]: list });
-      toast(list.length + ' ligne(s) enregistree(s)');
+      toast(tp('{n} ligne(s) enregistree(s)', { n: list.length }));
     });
     return el('div', { class: 'opt', style: 'display:block' }, [text, area]);
   } else if (type === 'types') {
@@ -131,7 +131,7 @@ async function onToggle(key, input) {
     try { granted = await B.permissions.request({ permissions: [permission] }); } catch { granted = false; }
     if (!granted) {
       input.checked = false;
-      toast('Permission « ' + permission + ' » refusee', false);
+      toast(tp('Permission « {nom} » refusee', { nom: permission }), false);
       return;
     }
   }
@@ -141,8 +141,10 @@ async function onToggle(key, input) {
 /* ------------------------------- Colonnes --------------------------------- */
 function colonnesSection() {
   const box = el('div');
-  box.appendChild(sec('Colonnes du tableau', (state.config.columns || []).length + ' affichee(s)'));
-  box.appendChild(el('p', { class: 'note', text: 'Egalement accessible par le bouton « Colonnes » au-dessus du tableau.' }));
+  box.appendChild(sec('Colonnes du tableau',
+    tp('{n} affichee(s)', { n: (state.config.columns || []).length })));
+  box.appendChild(el('p', { class: 'note',
+    text: t('Egalement accessible par le bouton « Colonnes » au-dessus du tableau.') }));
   const grid = el('div', { class: 'checks' });
   const current = new Set(state.config.columns || DEFAULT_COLUMNS);
   for (const key of COLUMN_ORDER) {
@@ -152,7 +154,10 @@ function colonnesSection() {
       if (input.checked) current.add(key); else current.delete(key);
       saveConfig({ columns: COLUMN_ORDER.filter(k => current.has(k)) });
     });
-    grid.appendChild(el('label', {}, [input, COLUMNS[key].label + ' — ' + (COLUMNS[key].title || COLUMNS[key].label)]));
+    /* Les deux moities passent par le dictionnaire : sans cela la liste
+       affichait « Heure — Heure » au milieu d une interface anglaise. */
+    grid.appendChild(el('label', {},
+      [input, t(COLUMNS[key].label) + ' — ' + t(COLUMNS[key].title || COLUMNS[key].label)]));
   }
   box.appendChild(grid);
   box.appendChild(el('div', { class: 'actions' },
@@ -168,13 +173,15 @@ function importHarFile() {
   picker.addEventListener('change', async () => {
     const file = picker.files && picker.files[0];
     if (!file) { picker.remove(); return; }
-    toast('Lecture de ' + file.name + '…');
+    toast(tp('Lecture de {fichier}…', { fichier: file.name }));
     try {
       const res = await cmd('importHar', { har: JSON.parse(await file.text()) });
       if (res.error) toast(res.error, false);
-      else toast(res.imported + ' requetes importees' + (res.skipped ? ', ' + res.skipped + ' ignorees' : ''));
+      else toast(res.skipped
+        ? tp('{n} requetes importees, {i} ignorees', { n: res.imported, i: res.skipped })
+        : tp('{n} requetes importees', { n: res.imported }));
     } catch (e) {
-      toast('Fichier illisible : ' + String(e && e.message || e), false);
+      toast(tp('Fichier illisible : {raison}', { raison: String(e && e.message || e) }), false);
     }
     picker.remove();
   });
@@ -186,13 +193,13 @@ function maintenanceSection() {
   const box = el('div');
   box.appendChild(sec('Sauvegarde des reglages'));
   box.appendChild(el('p', { class: 'note', text:
-    'Exportez pour conserver votre configuration, ou collez ci-dessous un fichier exporte pour la restaurer.' }));
+    t('Exportez pour conserver votre configuration, ou collez ci-dessous un fichier exporte pour la restaurer.') }));
 
   const actions = el('div', { class: 'actions' });
   actions.appendChild(button('Exporter dans un fichier', async () => {
     const res = await cmd('exportFile', { format: 'config' });
     if (res.error) return toast(res.error, false);
-    toast('Reglages ecrits — ' + res.filename);
+    toast(tp('Reglages ecrits — {fichier}', { fichier: res.filename }));
   }));
   actions.appendChild(button('Copier les reglages', () => copy(JSON.stringify(state.config, null, 2), 'Reglages copies')));
   actions.appendChild(button('Importer un fichier HAR', importHarFile,
@@ -212,12 +219,18 @@ function maintenanceSection() {
   box.appendChild(el('div', { class: 'actions' }, button('Importer', async () => {
     let parsed;
     try { parsed = JSON.parse(area.value || '{}'); }
-    catch (e) { status.className = 'note ko'; status.textContent = 'JSON invalide : ' + e.message; return; }
+    catch (e) {
+      status.className = 'note ko';
+      status.textContent = tp('JSON invalide : {raison}', { raison: e.message });
+      return;
+    }
     const res = await cmd('importConfig', { values: parsed });
     if (res.error) { status.className = 'note ko'; status.textContent = res.error; return; }
     state.config = res.config;
     status.className = 'note ok';
-    status.textContent = res.applied + ' reglage(s) appliques' + (res.ignored.length ? ', ' + res.ignored.length + ' inconnus ignores' : '') + '.';
+    status.textContent = res.ignored.length
+      ? tp('{n} reglage(s) appliques, {i} inconnus ignores.', { n: res.applied, i: res.ignored.length })
+      : tp('{n} reglage(s) appliques.', { n: res.applied });
     toast('Reglages importes');
     render();
   }, { class: 'accent' })));

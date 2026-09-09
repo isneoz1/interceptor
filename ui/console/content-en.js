@@ -262,7 +262,7 @@ export const LESSONS = {
     goal: 'Read what the analysis finds on its own',
     body: [
       { p: 'Every finished request is audited automatically: API keys, tokens, passwords, e-mails, card numbers validated with the Luhn checksum, cleartext HTTP, dubious certificates, missing security headers, permissive CORS, badly protected session cookies, trackers.' },
-      { p: 'Sensitive values are **masked** by default: a key shows as "sk_liv…C0 (32 chars)". Masking can be turned off in the settings when you must see the whole value.' },
+      { p: 'Sensitive values are **masked** by default: a key shows as "sk_liv…C0 (32)". Masking can be turned off in the settings when you must see the whole value.' },
       { p: 'The Security view gathers everything, sorted by severity. Clicking an alert opens the request concerned.' },
       { p: 'You can add **your own secret patterns** and **your own tracking domains** in the settings; the format is "Name = regular expression = severity".' }
     ]

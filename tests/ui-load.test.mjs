@@ -228,6 +228,15 @@ verifier('le dictionnaire anglais est charge', Object.keys(EN).length > 1500,
 /* Les quatre fonctions qui traduisent leur premier argument. */
 const APPELS_TRADUITS = /\b(?:t|tp|kv|sec|button)\(\s*'((?:[^'\\]|\\.)*)'/g;
 
+/* Un litteral tel qu il est ecrit dans le source, ramene a la valeur que le
+   programme manipule vraiment : « \\/ » vaut « \/ », « \' » vaut « ' ». */
+function desechapper(litteral) {
+  return litteral.replace(/\\(u[0-9a-fA-F]{4}|.)/g, (tout, quoi) => {
+    if (quoi[0] === 'u') return String.fromCharCode(parseInt(quoi.slice(1), 16));
+    return { n: '\n', t: '\t', r: '\r', b: '\b', f: '\f', v: '\v', '0': '\0' }[quoi] ?? quoi;
+  });
+}
+
 /* Ce qui n a pas a etre traduit : symboles, syntaxe de filtre, noms propres. */
 const SANS_TRADUCTION = new Set([
   'INTERCEPTOR', 'NeoZ', 'JSON', 'HTTP', 'URL', 'IP', 'TLS', 'DNS', 'CSP', 'JWT',
@@ -242,7 +251,12 @@ for (const rel of fichiersJs(path.join(racine, 'ui'))) {
   if (rel === 'ui/lib/i18n.js') continue;
   const source = fs.readFileSync(path.join(racine, rel), 'utf8');
   for (const m of source.matchAll(APPELS_TRADUITS)) {
-    const texte = m[1].replace(/\\'/g, "'");
+    /* On compare des valeurs d execution, pas des litteraux : la cle que
+       recoit t() est la chaine une fois deshabillee de ses echappements. Sans
+       cela une chaine contenant une barre oblique inverse — un exemple
+       d expression reguliere, par exemple — ne correspondrait jamais a son
+       entree, et le test reclamerait une traduction qui existe deja. */
+    const texte = desechapper(m[1]);
     if (!texte.trim() || !/[a-zA-Z]/.test(texte)) continue;   // symboles seuls
     if (SANS_TRADUCTION.has(texte)) continue;
     if (EN[texte] !== undefined) continue;

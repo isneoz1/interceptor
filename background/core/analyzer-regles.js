@@ -14,7 +14,10 @@ export function redact(value) {
   const s = String(value);
   if (!config.get('maskSecrets')) return s.length > 300 ? s.slice(0, 300) + '…' : s;
   if (s.length <= 12) return s.slice(0, 3) + '***';
-  return s.slice(0, 6) + '…' + s.slice(-4) + ' (' + s.length + ' car.)';
+  /* Le noyau n a pas de dictionnaire : tout ce qu il ecrit s affiche tel quel,
+     dans les deux langues. « car. » restait donc en francais dans l interface
+     anglaise. Le nombre seul, apres les points de suspension, se lit partout. */
+  return s.slice(0, 6) + '…' + s.slice(-4) + ' (' + s.length + ')';
 }
 
 export function addFinding(list, seen, f) {

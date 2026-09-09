@@ -6,6 +6,9 @@
 import { EN_MENUS } from './dict-en-menus.js';
 import { EN_TOOLS } from './dict-en-tools.js';
 import { EN_REGLAGES } from './dict-en-reglages.js';
+import { EN_ETAT } from './dict-en-etat.js';
+import { EN_RECHERCHE } from './dict-en-recherche.js';
+import { EN_REGLES } from './dict-en-regles.js';
 
 export const EN = {
   /* ------------------------------ Navigation ----------------------------- */
@@ -104,6 +107,12 @@ export const EN = {
   'Onglet': 'Tab',
   'Cadre': 'Frame',
   'Cascade': 'Waterfall',
+  /* Les descriptions au survol des colonnes : elles se voient aussi dans la
+     liste des colonnes, en reglages. */
+  'Classement de la protection Firefox': 'Firefox tracking-protection classification',
+  'Octets reellement echanges, entetes comprises': 'Bytes actually exchanged, headers included',
+  'Annotation libre': 'Free-form annotation',
+  'Position dans la session et duree reelle': 'Position in the session and real duration',
   'Epingle': 'Pinned',
   'Niveau de risque': 'Risk level',
 
@@ -267,7 +276,7 @@ export const EN = {
   'Trames conservees par socket': 'Frames kept per socket',
   'Messages SSE conserves par flux': 'SSE messages kept per stream',
   'Types sans capture de corps': 'Types with no body capture',
-  'Correlation active': 'Correlation active',
+  'Correlation active': 'Correlation on',
   'Fenetre de correlation (ms)': 'Correlation window (ms)',
   'Periode de verification (ms)': 'Sweep period (ms)',
   'Requetes conservees en memoire': 'Requests kept in memory',
@@ -391,5 +400,8 @@ export const EN = {
      Boite a outils, Cible et Diagnostic interne : voir dict-en-tools.js. */
   ...EN_MENUS,
   ...EN_TOOLS,
-  ...EN_REGLAGES
+  ...EN_REGLAGES,
+  ...EN_ETAT,
+  ...EN_RECHERCHE,
+  ...EN_REGLES
 };

@@ -86,10 +86,28 @@ function applyStaticLabels() {
   set('#d-prev', null, 'Ligne precedente');
   set('#d-next', null, 'Ligne suivante');
   set('#d-flag', null, 'Epingler');
+  set('#keys-title', 'Raccourcis clavier');
   set('#keys-close', 'Fermer');
   set('#dock', null, 'Emplacement de la console');
   set('#lang', null, 'Francais / Anglais');
   set('#prefs', null, 'Reglages');
+
+  /* Les aria-label ne se voient pas, ils s entendent : c est le seul nom que
+     recoit un lecteur d ecran. Les laisser en francais dans une interface
+     anglaise rend la navigation inutilisable pour qui s en sert. */
+  const nommer = (selecteur, nom) => {
+    const node = $(selecteur);
+    if (node) node.setAttribute('aria-label', t(nom));
+  };
+  nommer('#q-saved', 'Filtres enregistres');
+  nommer('#q-help', 'Aide sur la recherche');
+  nommer('#dock', 'Emplacement');
+  nommer('#lang', 'Langue');
+  nommer('#prefs', 'Reglages');
+  nommer('#side', 'Navigation principale');
+  nommer('#tablewrap', 'Tableau des requetes');
+  nommer('#dtabs', 'Onglets du detail');
+  nommer('#keys', 'Raccourcis clavier');
   $('#scope').title = t('Perimetre observe');
   $('#q').placeholder = t('Filtrer :  method:POST   status:5xx   host:api.   size:>100000   -image   /regex/');
   const deepLabel = $('#deep-label');

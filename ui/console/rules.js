@@ -4,7 +4,7 @@
  * Le mode JSON reste disponible pour les cas avances et les copier-coller.
  */
 import { $, el, clear, sec, button } from '../lib/dom.js';
-import { t } from '../lib/i18n.js';
+import { t, tp } from '../lib/i18n.js';
 import { RESOURCE_TYPES } from '../lib/format.js';
 import { state, toast, saveConfig, copy } from '../app.js';
 
@@ -99,21 +99,20 @@ export function render() {
   const box = el('div', { class: 'pane narrow' });
   pane.appendChild(box);
   const config = state.config;
-  if (!config) { box.appendChild(el('p', { class: 'note', text: 'Chargement…' })); return; }
+  if (!config) { box.appendChild(el('p', { class: 'note', text: t('Chargement…') })); return; }
 
   const list = rules();
   const stats = state.stats && state.stats.rules;
 
-  box.appendChild(sec('Interception active', list.length + ' regle(s)'));
-  box.appendChild(el('p', { class: 'note warn', text:
-    'Par defaut INTERCEPTOR observe sans jamais modifier le trafic. Activer le moteur autorise le blocage, ' +
-    'la redirection et la reecriture d entetes. A n utiliser que sur des cibles dont vous avez la responsabilite.' }));
+  box.appendChild(sec('Interception active', tp('{n} regle(s)', { n: list.length })));
+  box.appendChild(el('p', { class: 'note warn', text: t(
+    'Par defaut INTERCEPTOR observe sans jamais modifier le trafic. Activer le moteur autorise le blocage, la redirection et la reecriture d entetes. A n utiliser que sur des cibles dont vous avez la responsabilite.') }));
 
   /* Interrupteur principal */
   const master = el('div', { class: 'opt' }, [
     el('div', { class: 'lbl' }, [
-      'Moteur de regles actif',
-      el('i', { text: 'Desactive, aucune regle n est evaluee : les regles restent enregistrees.' })
+      t('Moteur de regles actif'),
+      el('i', { text: t('Desactive, aucune regle n est evaluee : les regles restent enregistrees.') })
     ]),
     el('div', { class: 'ctl' })
   ]);
@@ -121,7 +120,7 @@ export function render() {
   masterInput.checked = !!config.rulesEnabled;
   masterInput.addEventListener('change', async () => {
     await saveConfig({ rulesEnabled: masterInput.checked });
-    toast(masterInput.checked ? 'Moteur de regles ACTIF' : 'Moteur de regles arrete');
+    toast(t(masterInput.checked ? 'Moteur de regles ACTIF' : 'Moteur de regles arrete'));
     render();
   });
   master.querySelector('.ctl').appendChild(masterInput);
@@ -129,8 +128,8 @@ export function render() {
 
   if (stats) {
     box.appendChild(el('p', { class: 'note', text:
-      'Depuis le demarrage : ' + stats.evaluated + ' evaluations, ' + stats.blocked + ' blocages, ' +
-      stats.redirected + ' redirections, ' + stats.headersModified + ' entetes modifies.' }));
+      tp('Depuis le demarrage : {e} evaluations, {b} blocages, {r} redirections, {h} entetes modifies.', {
+        e: stats.evaluated, b: stats.blocked, r: stats.redirected, h: stats.headersModified }) }));
   }
 
   /* Barre d actions */
@@ -236,9 +235,9 @@ function ruleCard(rule, index, list) {
     const body = el('textarea', { class: 'field', spellcheck: 'false', rows: '5' });
     body.value = mock.body || '';
     body.addEventListener('change', () => update({ mock: { ...mock, body: body.value } }));
-    panel.appendChild(el('label', {}, ['Corps servi a la page', body]));
+    panel.appendChild(el('label', {}, [t('Corps servi a la page'), body]));
     panel.appendChild(el('p', { class: 'note', text:
-      'Le code de statut d origine est conserve : Firefox ne permet pas de le reecrire depuis une extension.' }));
+      t('Le code de statut d origine est conserve : Firefox ne permet pas de le reecrire depuis une extension.') }));
     card.appendChild(panel);
   }
 
@@ -252,9 +251,9 @@ function ruleCard(rule, index, list) {
       champ.value = String(ms);
       update({ delayMs: ms });
     });
-    panel.appendChild(el('label', {}, ['Attente avant emission (ms)', champ]));
+    panel.appendChild(el('label', {}, [t('Attente avant emission (ms)'), champ]));
     panel.appendChild(el('p', { class: 'note', text:
-      'La requete part normalement, mais plus tard : de quoi reproduire un reseau lent sans rien changer d autre.' }));
+      t('La requete part normalement, mais plus tard : de quoi reproduire un reseau lent sans rien changer d autre.') }));
     card.appendChild(panel);
   }
 
@@ -269,7 +268,7 @@ function ruleCard(rule, index, list) {
     panel.appendChild(labelled('Options',
       textInput(repl.flags || 'g', v => update({ replace: { ...repl, flags: v || 'g' } }), 'g, gi, gm…')));
     panel.appendChild(el('p', { class: 'note', text:
-      'Ne s applique qu aux reponses textuelles non compressees. Dans les autres cas le flux passe intact et la raison est inscrite sur la ligne.' }));
+      t('Ne s applique qu aux reponses textuelles non compressees. Dans les autres cas le flux passe intact et la raison est inscrite sur la ligne.') }));
     card.appendChild(panel);
   }
 
@@ -297,32 +296,49 @@ function alerteDe(rule) {
   return sansCondition && (rule.action === 'block' || rule.action === 'redirect');
 }
 
+/* La phrase qui dit, en clair, ce que la regle fera.
+ *
+ * Chaque morceau est un gabarit traduit separement puis assemble : une phrase
+ * collee bout a bout a l execution ne correspond a aucune cle, et resterait
+ * donc en francais. Or c est precisement le texte sur lequel l operateur se
+ * fie avant d activer une regle qui modifie du trafic. */
 function describe(rule) {
+  if (motifIllisible(rule)) {
+    return t('L expression d URL de cette regle est illisible : elle ne correspondra a aucune requete tant qu elle n est pas corrigee.');
+  }
+
   const m = rule.match || {};
   const conditions = [
-    m.host ? 'hote contient « ' + m.host + ' »' : null,
-    m.urlRegex ? 'URL correspond a /' + m.urlRegex + '/' : null,
-    m.method ? 'methode ' + m.method : null,
-    m.type ? 'type ' + m.type : null
+    m.host ? tp('hote contient « {valeur} »', { valeur: m.host }) : null,
+    m.urlRegex ? tp('URL correspond a /{motif}/', { motif: m.urlRegex }) : null,
+    m.method ? tp('methode {valeur}', { valeur: m.method }) : null,
+    m.type ? tp('type {valeur}', { valeur: m.type }) : null
   ].filter(Boolean);
-  const what = rule.action === 'block' ? 'la requete est bloquee'
-    : rule.action === 'redirect' ? 'la requete part vers ' + (rule.redirectUrl || '(URL manquante)')
-    : rule.action === 'upgrade' ? 'la requete http est renvoyee en https'
-    : rule.action === 'mock' ? 'la page recoit une reponse simulee (' +
-        ((rule.mock && rule.mock.body) || '').length + ' octets), le corps reel restant enregistre'
-    : rule.action === 'delay' ? 'la requete part avec ' + (rule.delayMs || 0) + ' ms de retard'
-    : rule.action === 'replaceBody' ? 'la page recoit le corps du serveur avec « ' +
-        ((rule.replace && rule.replace.find) || '(motif manquant)') + ' » remplace par « ' +
-        ((rule.replace && rule.replace.replace) || '') + ' »'
-    : 'les entetes sont reecrits';
-  if (motifIllisible(rule)) {
-    return 'L expression d URL de cette regle est illisible : elle ne correspondra a aucune '
-      + 'requete tant qu elle n est pas corrigee.';
-  }
-  return 'Si ' + (conditions.length ? conditions.join(' ET ') : 'AUCUNE condition (toutes les requetes)') + ', alors ' + what + '.';
+
+  const quoi = {
+    block: () => t('la requete est bloquee'),
+    redirect: () => tp('la requete part vers {url}',
+      { url: rule.redirectUrl || t('(URL manquante)') }),
+    upgrade: () => t('la requete http est renvoyee en https'),
+    mock: () => tp('la page recoit une reponse simulee ({n} octets), le corps reel restant enregistre',
+      { n: ((rule.mock && rule.mock.body) || '').length }),
+    delay: () => tp('la requete part avec {n} ms de retard', { n: rule.delayMs || 0 }),
+    replaceBody: () => tp('la page recoit le corps du serveur avec « {cherche} » remplace par « {par} »', {
+      cherche: (rule.replace && rule.replace.find) || t('(motif manquant)'),
+      par: (rule.replace && rule.replace.replace) || ''
+    })
+  };
+  const what = (quoi[rule.action] || (() => t('les entetes sont reecrits')))();
+
+  return tp('Si {conditions}, alors {effet}.', {
+    conditions: conditions.length
+      ? conditions.join(t(' ET '))
+      : t('AUCUNE condition (toutes les requetes)'),
+    effet: what
+  });
 }
 
-function labelled(text, control) { return el('label', {}, [text, control]); }
+function labelled(text, control) { return el('label', {}, [t(text), control]); }
 
 function textInput(value, onChange, placeholder) {
   const input = el('input', { type: 'text', class: 'field', value: value || '', placeholder: placeholder || '' });
