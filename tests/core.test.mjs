@@ -417,5 +417,178 @@ egal('un objet vide ne fait pas echouer l assainissement',
 egal('l assainissement est deterministe',
   JSON.stringify(assainirHar(harSensible).har), JSON.stringify(assainirHar(harSensible).har));
 
+/* --------------------------- Preflight CORS ------------------------------- */
+/* Quand une requete CORS echoue, le navigateur affiche l erreur sur ELLE. La
+   cause vit pourtant dans la reponse au OPTIONS qui la precede. Ces regles
+   sont celles de la specification Fetch, et chaque verdict cite l entete qui
+   le fonde. */
+const { estPreflight, verdictPreflight, apparierPreflights, resumerPreflight, entete: enteteCors } =
+  await import('../ui/lib/cors-preflight.js');
+
+const hCors = (...cors_paires) => cors_paires.map(([name, value]) => ({ name, value }));
+
+function preflightExemple(patch = {}) {
+  return {
+    id: patch.id || 1, startTime: patch.startTime || 100,
+    method: 'OPTIONS', url: 'https://api.test/v1/items', statusCode: 204,
+    requestHeaders: patch.requestHeaders || hCors(
+      ['Origin', 'https://app.test'],
+      ['Access-Control-Request-Method', 'PUT'],
+      ['Access-Control-Request-Headers', 'content-type, x-token']),
+    responseHeaders: patch.responseHeaders || hCors(
+      ['Access-Control-Allow-Origin', 'https://app.test'],
+      ['Access-Control-Allow-Methods', 'GET, PUT, DELETE'],
+      ['Access-Control-Allow-Headers', 'content-type, x-token'],
+      ['Access-Control-Max-Age', '600']),
+    ...patch
+  };
+}
+
+verifier('un preflight est reconnu', estPreflight(preflightExemple()));
+verifier('un OPTIONS ordinaire n en est pas un',
+  !estPreflight({ method: 'OPTIONS', requestHeaders: hCors(['Origin', 'https://app.test']) }));
+verifier('un GET n en est pas un', !estPreflight({ method: 'GET', requestHeaders: [] }));
+verifier('rien n en est pas un', !estPreflight(null));
+
+/* --- Lecture d entete insensible a la casse --- */
+verifier('entete lu sans tenir compte de la casse',
+  enteteCors(hCors(['CoNtEnT-TyPe', 'application/json']), 'content-type') === 'application/json');
+verifier('entete absent rend null', enteteCors([], 'x') === null);
+
+/* --- Le cas qui passe --- */
+const cors_bon = verdictPreflight(preflightExemple());
+verifier('un preflight complet autorise', cors_bon.autorise === true,
+  JSON.stringify(cors_bon.motifs));
+verifier('la duree de validite est lue', cors_bon.details.maxAgeSecondes === 600);
+verifier('la methode demandee est lue', cors_bon.details.methode === 'PUT');
+
+/* --- Origine absente --- */
+const cors_sansOrigine = verdictPreflight(preflightExemple({
+  responseHeaders: hCors(['Access-Control-Allow-Methods', 'PUT']) }));
+verifier('origine absente bloque', !cors_sansOrigine.autorise);
+verifier('le motif cite l origine', cors_sansOrigine.motifs.some(m => m.quoi === 'origine'));
+
+/* --- Origine qui ne correspond pas --- */
+const cors_mauvaiseOrigine = verdictPreflight(preflightExemple({
+  responseHeaders: hCors(['Access-Control-Allow-Origin', 'https://cors_autre.test'],
+                     ['Access-Control-Allow-Methods', 'PUT'],
+                     ['Access-Control-Allow-Headers', 'content-type, x-token']) }));
+verifier('une origine differente bloque', !cors_mauvaiseOrigine.autorise);
+
+/* --- Le joker avec identifiants : le piege classique --- */
+const cors_jokerCredentials = verdictPreflight(preflightExemple({
+  responseHeaders: hCors(['Access-Control-Allow-Origin', '*'],
+                     ['Access-Control-Allow-Credentials', 'true'],
+                     ['Access-Control-Allow-Methods', 'PUT'],
+                     ['Access-Control-Allow-Headers', 'content-type, x-token']) }));
+verifier('« * » avec identifiants est refuse', !cors_jokerCredentials.autorise);
+verifier('le motif explique la combinaison',
+  cors_jokerCredentials.motifs.some(m => /identifiants/.test(m.cle)));
+
+/* --- Le joker sans identifiants passe --- */
+const cors_jokerSeul = verdictPreflight(preflightExemple({
+  responseHeaders: hCors(['Access-Control-Allow-Origin', '*'],
+                     ['Access-Control-Allow-Methods', 'PUT'],
+                     ['Access-Control-Allow-Headers', 'content-type, x-token']) }));
+verifier('« * » sans identifiants passe', cors_jokerSeul.autorise, JSON.stringify(cors_jokerSeul.motifs));
+
+/* --- Methode absente de la liste --- */
+const cors_mauvaiseMethode = verdictPreflight(preflightExemple({
+  responseHeaders: hCors(['Access-Control-Allow-Origin', 'https://app.test'],
+                     ['Access-Control-Allow-Methods', 'GET, POST'],
+                     ['Access-Control-Allow-Headers', 'content-type, x-token']) }));
+verifier('methode non autorisee bloque', !cors_mauvaiseMethode.autorise);
+verifier('le motif cite la methode', cors_mauvaiseMethode.motifs.some(m => m.quoi === 'methode'));
+
+/* --- Une methode sure n a pas besoin d etre citee --- */
+const cors_methodeSure = verdictPreflight(preflightExemple({
+  requestHeaders: hCors(['Origin', 'https://app.test'],
+                    ['Access-Control-Request-Method', 'POST']),
+  responseHeaders: hCors(['Access-Control-Allow-Origin', 'https://app.test']) }));
+verifier('une methode sure passe sans etre citee', cors_methodeSure.autorise,
+  JSON.stringify(cors_methodeSure.motifs));
+
+/* --- Entete non couvert --- */
+const cors_enteteManquant = verdictPreflight(preflightExemple({
+  responseHeaders: hCors(['Access-Control-Allow-Origin', 'https://app.test'],
+                     ['Access-Control-Allow-Methods', 'PUT'],
+                     ['Access-Control-Allow-Headers', 'content-type']) }));
+verifier('un entete non couvert bloque', !cors_enteteManquant.autorise);
+verifier('le motif nomme l entete',
+  cors_enteteManquant.motifs.some(m => /x-token/.test(m.valeurs && m.valeurs.entete)));
+
+/* --- Un entete simple n a pas besoin d etre couvert --- */
+const cors_enteteSimple = verdictPreflight(preflightExemple({
+  requestHeaders: hCors(['Origin', 'https://app.test'],
+                    ['Access-Control-Request-Method', 'PUT'],
+                    ['Access-Control-Request-Headers', 'accept, content-type']),
+  responseHeaders: hCors(['Access-Control-Allow-Origin', 'https://app.test'],
+                     ['Access-Control-Allow-Methods', 'PUT']) }));
+verifier('les entetes simples passent sans autorisation', cors_enteteSimple.autorise,
+  JSON.stringify(cors_enteteSimple.motifs));
+
+/* --- Authorization n est PAS couvert par le joker --- */
+const cors_autorisationJoker = verdictPreflight(preflightExemple({
+  requestHeaders: hCors(['Origin', 'https://app.test'],
+                    ['Access-Control-Request-Method', 'PUT'],
+                    ['Access-Control-Request-Headers', 'authorization']),
+  responseHeaders: hCors(['Access-Control-Allow-Origin', 'https://app.test'],
+                     ['Access-Control-Allow-Methods', 'PUT'],
+                     ['Access-Control-Allow-Headers', '*']) }));
+verifier('« * » ne couvre pas Authorization', !cors_autorisationJoker.autorise);
+
+/* --- Un preflight en echec refuse tout --- */
+const cors_enEchec = verdictPreflight(preflightExemple({ statusCode: 403 }));
+verifier('un preflight 403 refuse tout', !cors_enEchec.autorise);
+verifier('le motif cite le statut', cors_enEchec.motifs.some(m => m.quoi === 'statut'));
+
+/* --- Appariement --- */
+const cors_suite = { id: 2, startTime: 200, method: 'PUT', url: 'https://api.test/v1/items?x=1',
+                requestHeaders: [], responseHeaders: [] };
+const cors_autre = { id: 3, startTime: 300, method: 'PUT', url: 'https://api.test/v1/items',
+                requestHeaders: [], responseHeaders: [] };
+const cors_paires = apparierPreflights([preflightExemple(), cors_suite, cors_autre]);
+verifier('un preflight est appariee', cors_paires.length === 1);
+verifier('la requete suivante est trouvee', cors_paires[0].requete && cors_paires[0].requete.id === 2);
+verifier('la chaine de requete est ignoree a l appariement',
+  cors_paires[0].requete.url.includes('?x=1'));
+
+/* Sans cors_suite, la paire existe quand meme : c est un resultat. */
+const cors_orpheline = apparierPreflights([preflightExemple()]);
+verifier('un preflight sans cors_suite est signale',
+  cors_orpheline.length === 1 && cors_orpheline[0].requete === null);
+
+/* Une methode differente n est pas appariee. */
+const cors_mauvaisAppariement = apparierPreflights([preflightExemple(),
+  { id: 9, startTime: 200, method: 'DELETE', url: 'https://api.test/v1/items' }]);
+verifier('une methode differente n est pas appariee',
+  cors_mauvaisAppariement[0].requete === null);
+
+/* Une requete anterieure n est jamais appariee. */
+const cors_avant = apparierPreflights([
+  { id: 8, startTime: 50, method: 'PUT', url: 'https://api.test/v1/items' },
+  preflightExemple()]);
+verifier('une requete anterieure n est pas appariee', cors_avant[0].requete === null);
+
+/* Deux preflights ne se disputent pas la meme requete. */
+const cors_deux = apparierPreflights([
+  preflightExemple({ id: 1, startTime: 100 }),
+  preflightExemple({ id: 2, startTime: 110 }),
+  cors_suite]);
+verifier('une requete n est consommee qu une fois',
+  cors_deux.filter(p => p.requete).length === 1);
+
+verifier('liste vide sans appariement', apparierPreflights([]).length === 0);
+verifier('liste absente sans appariement', apparierPreflights(null).length === 0);
+
+/* --- Resumes --- */
+verifier('resume d un preflight accepte',
+  resumerPreflight(preflightExemple()) === 'preflight accepte pour PUT · valable 600 s',
+  JSON.stringify(resumerPreflight(preflightExemple())));
+verifier('resume d un refus cite les causes',
+  resumerPreflight(preflightExemple({ statusCode: 403 })).startsWith('preflight refuse'));
+verifier('un non-preflight n a pas de resume',
+  resumerPreflight({ method: 'GET', requestHeaders: [] }) === null);
+
 correlator.stop();
 bilan('Noyau');

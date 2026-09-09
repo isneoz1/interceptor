@@ -16,6 +16,8 @@ import { decrireType } from '../lib/ref-mime.js';
 import { decrireErreurReseau } from '../lib/ref-reseau.js';
 import { analyserCsp } from '../lib/csp.js';
 import { analyserFraicheur, resumerFraicheur } from '../lib/cache-http.js';
+import { estGrpcWeb, estGrpcWebTexte, lireGrpcWeb, resumerGrpcWeb } from '../lib/grpc-web.js';
+import { estPreflight, verdictPreflight, apparierPreflights } from '../lib/cors-preflight.js';
 import { analyserMultipart } from '../lib/multipart.js';
 
 /** Rend toutes les cles d un objet, y compris celles qu on n a pas prevues. */
@@ -192,6 +194,9 @@ export function headers(rec) {
     box.appendChild(headerBlock('Entetes vues par le code JavaScript', rec.pageMeta.requestHeaders));
   }
   box.appendChild(fraicheur(rec));
+  /* Le preflight se lit avec les entetes : c est la qu on cherche quand une
+     requete CORS echoue, et la cause vit dans une AUTRE ligne. */
+  box.appendChild(cors(rec));
   box.appendChild(politique(rec));
   return box;
 }
@@ -291,6 +296,97 @@ function politique(rec) {
   return box;
 }
 
+/* ---------------------------- Preflight CORS ------------------------------ */
+/* Quand une requete CORS echoue, le navigateur affiche l erreur sur ELLE. La
+   cause vit pourtant dans la reponse au OPTIONS qui la precede, quelques
+   lignes plus haut dans le tableau. On rapproche les deux. */
+function cors(rec) {
+  const box = frag();
+
+  if (estPreflight(rec)) {
+    let verdict;
+    try { verdict = verdictPreflight(rec); } catch { return box; }
+
+    box.appendChild(sec(t('Preflight CORS'),
+      verdict.autorise ? t('accepte') : t('refuse')));
+    add(box, kv(t('Methode demandee'), verdict.details.methode));
+    add(box, kv(t('Origine demandee'), verdict.details.origine));
+    if (verdict.details.entetesDemandes.length) {
+      add(box, kv(t('Entetes demandes'), verdict.details.entetesDemandes.join(', ')));
+    }
+    add(box, kv('Access-Control-Allow-Origin', verdict.details.permisOrigine));
+    add(box, kv('Access-Control-Allow-Methods', verdict.details.permisMethodes));
+    add(box, kv('Access-Control-Allow-Headers', verdict.details.permisEntetes));
+    if (verdict.details.identifiants) {
+      add(box, kv('Access-Control-Allow-Credentials', 'true'));
+    }
+    if (Number.isFinite(verdict.details.maxAgeSecondes)) {
+      add(box, kv('Access-Control-Max-Age',
+        tp('{n} s — passe ce delai, le navigateur refait un preflight',
+           { n: verdict.details.maxAgeSecondes })));
+    }
+    for (const motif of verdict.motifs) {
+      box.appendChild(el('p', { class: 'note ko', text: tp(motif.cle, motif.valeurs) }));
+    }
+    if (verdict.autorise) {
+      box.appendChild(el('p', { class: 'note ok',
+        text: t('Cette reponse autorise bien la requete annoncee.') }));
+    }
+    /* La requete que ce preflight precedait, quand elle a suivi. */
+    const suite = paireDuPreflight(rec);
+    if (suite && suite.requete) {
+      box.appendChild(lienVers(suite.requete, t('Requete autorisee par ce preflight')));
+    } else {
+      box.appendChild(el('p', { class: 'note warn',
+        text: t('Aucune requete n a suivi ce preflight : le navigateur a renonce, ou la page a abandonne.') }));
+    }
+    return box;
+  }
+
+  /* Sur la vraie requete : le preflight qui l a precedee, et son verdict. */
+  const paire = paireDeLaRequete(rec);
+  if (!paire) return box;
+  let verdict;
+  try { verdict = verdictPreflight(paire.preflight); } catch { return box; }
+
+  box.appendChild(sec(t('Preflight CORS'),
+    verdict.autorise ? t('accepte') : t('refuse')));
+  box.appendChild(el('p', { class: verdict.autorise ? 'note' : 'note ko',
+    text: verdict.autorise
+      ? t('Un preflight OPTIONS a precede cette requete et l autorisait.')
+      : t('Un preflight OPTIONS a precede cette requete et ne l autorisait pas. C est la cause a chercher, pas cette ligne-ci.') }));
+  for (const motif of verdict.motifs) {
+    box.appendChild(el('p', { class: 'note ko', text: tp(motif.cle, motif.valeurs) }));
+  }
+  box.appendChild(lienVers(paire.preflight, t('Voir le preflight')));
+  return box;
+}
+
+/* Les enregistrements dont l interface dispose, dans l ordre de capture. */
+function tousLesEnregistrements() {
+  return state.order.map(id => state.records.get(id)).filter(Boolean);
+}
+
+function paireDuPreflight(rec) {
+  return apparierPreflights(tousLesEnregistrements())
+    .find(p => p.preflight && p.preflight.id === rec.id) || null;
+}
+
+function paireDeLaRequete(rec) {
+  return apparierPreflights(tousLesEnregistrements())
+    .find(p => p.requete && p.requete.id === rec.id) || null;
+}
+
+/* Un renvoi cliquable vers une autre ligne de la capture. */
+function lienVers(rec, texte) {
+  const bouton = el('button', { class: 'btn sm', type: 'button' }, texte);
+  bouton.addEventListener('click', () => {
+    document.dispatchEvent(new CustomEvent('ic:goto',
+      { detail: { view: 'requests', id: rec.id } }));
+  });
+  return el('div', { class: 'actions' }, bouton);
+}
+
 /* -------------------------------- 3. Corps -------------------------------- */
 function bodyViewer(body, title, mimeHint) {
   const box = frag();
@@ -331,6 +427,14 @@ function bodyViewer(body, title, mimeHint) {
      fichier separement, sans rien envoyer. */
   if (/multipart\//i.test(mime) && body.text) {
     add(box, partiesMultipart(body.text, mime));
+  }
+
+  /* gRPC-Web : un appel peut repondre HTTP 200 et avoir echoue. Le verdict
+     vit dans les trailers, jamais dans le statut HTTP — c est le piege
+     classique du protocole, et la seule facon de le voir. */
+  if (estGrpcWeb(mime)) {
+    const bloc = blocGrpcWeb(body, mime);
+    if (bloc) add(box, bloc);
   }
 
   if (body.base64 && /^image\//i.test(mime)) {
@@ -383,6 +487,61 @@ function bodyViewer(body, title, mimeHint) {
 }
 
 /** Les parties d un corps multipart/form-data (RFC 7578), une par carte. */
+/* La lecture d un corps gRPC-Web : cadres, trailers, verdict. */
+function blocGrpcWeb(body, mime) {
+  let lu;
+  try {
+    /* La variante -text transporte les memes octets en base64 ; la variante
+       binaire n arrive lisible que si le corps binaire a ete conserve. */
+    const source = estGrpcWebTexte(mime) ? (body.text || '') : (body.base64 || '');
+    if (!source) return null;
+    lu = lireGrpcWeb(source);
+  } catch (e) {
+    return el('p', { class: 'note ko', text: tp('Corps gRPC-Web illisible : {raison}', { raison: e.message }) });
+  }
+  if (!lu.cadres.length) return null;
+
+  const bloc = el('div');
+  bloc.appendChild(sec('gRPC-Web', resumerGrpcWeb(lu)));
+
+  if (lu.statut) {
+    add(bloc, kv('grpc-status',
+      lu.statut.code + '  ' + lu.statut.nom + '  ·  ' + t(lu.statut.sens),
+      { tone: lu.statut.ok ? 'ok' : 'ko' }));
+    if (lu.statut.message) add(bloc, kv('grpc-message', lu.statut.message));
+  } else {
+    bloc.appendChild(el('p', { class: 'note warn',
+      text: t('Aucun cadre de trailers : la reponse est incomplete, ou le flux est encore ouvert.') }));
+  }
+  if (!lu.complet) {
+    bloc.appendChild(el('p', { class: 'note warn',
+      text: t('Le corps capture s arrete au milieu d un cadre : la limite de capture des corps est peut-etre atteinte.') }));
+  }
+
+  lu.cadres.forEach((cadre, i) => {
+    if (cadre.type === 'trailers') {
+      for (const [nom, valeur] of Object.entries(cadre.trailers || {})) {
+        add(bloc, kv('trailer ' + nom, valeur, { copy: true }));
+      }
+      return;
+    }
+    const titre = tp('Message {n}', { n: i + 1 });
+    if (cadre.tronque) {
+      add(bloc, kv(titre, tp('{a} octets annonces, {p} presents',
+        { a: cadre.longueurAnnoncee, p: cadre.octetsPresents }), { tone: 'warn' }));
+    } else if (cadre.compresse) {
+      add(bloc, kv(titre, tp('{n} octets, compresses — voir grpc-encoding',
+        { n: cadre.taille }), { tone: 'warn' }));
+    } else if (cadre.protobuf) {
+      add(bloc, kv(titre, tp('{n} octets', { n: cadre.taille })));
+      bloc.appendChild(jsonTree(cadre.protobuf));
+    } else {
+      add(bloc, kv(titre, cadre.erreur || tp('{n} octets', { n: cadre.taille }), { tone: 'warn' }));
+    }
+  });
+  return bloc;
+}
+
 function partiesMultipart(texte, contentType) {
   let lu;
   try { lu = analyserMultipart(texte, '', contentType); }

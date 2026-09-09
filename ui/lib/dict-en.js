@@ -10,6 +10,8 @@ import { EN_ETAT } from './dict-en-etat.js';
 import { EN_RECHERCHE } from './dict-en-recherche.js';
 import { EN_REGLES } from './dict-en-regles.js';
 import { EN_PALETTE } from './dict-en-palette.js';
+import { EN_GRPC } from './dict-en-grpc.js';
+import { EN_CORS } from './dict-en-cors.js';
 
 export const EN = {
   /* ------------------------------ Navigation ----------------------------- */
@@ -405,5 +407,7 @@ export const EN = {
   ...EN_ETAT,
   ...EN_RECHERCHE,
   ...EN_REGLES,
-  ...EN_PALETTE
+  ...EN_PALETTE,
+  ...EN_GRPC,
+  ...EN_CORS
 };

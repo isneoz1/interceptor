@@ -795,4 +795,102 @@ egal('la selection boucle vers le haut', deplacer(0, -1, 3), 2);
 egal('la selection boucle vers le bas', deplacer(2, 1, 3), 0);
 egal('liste vide sans deplacement', deplacer(0, 1, 0), 0);
 
+/* ------------------------------- gRPC-Web --------------------------------- */
+/* gRPC ne passe pas tel quel dans un navigateur : gRPC-Web est la variante
+   qu on capture. Son piege est connu — un appel peut repondre HTTP 200 et
+   avoir echoue, le verdict ne vivant que dans le cadre de trailers. */
+const { estGrpcWeb, estGrpcWebTexte, lireGrpcWeb, resumerGrpcWeb } =
+  await import('../ui/lib/grpc-web.js');
+
+/* Un cadre : drapeau, longueur sur quatre octets gros-boutiste, charge. */
+function cadreGrpc(drapeau, charge) {
+  const out = new Uint8Array(5 + charge.length);
+  out[0] = drapeau;
+  new DataView(out.buffer).setUint32(1, charge.length, false);
+  out.set(charge, 5);
+  return out;
+}
+function collerOctets(...morceaux) {
+  const out = new Uint8Array(morceaux.reduce((n, m) => n + m.length, 0));
+  let i = 0;
+  for (const m of morceaux) { out.set(m, i); i += m.length; }
+  return out;
+}
+
+/* protobuf : champ 1, varint, valeur 150. */
+const MSG_GRPC = new Uint8Array([0x08, 0x96, 0x01]);
+const TRAILERS_OK = new TextEncoder().encode('grpc-status:0\r\n');
+const TRAILERS_KO = new TextEncoder().encode('grpc-status:5\r\ngrpc-message:Not%20Found\r\n');
+
+verifier('grpc-web+proto est reconnu', estGrpcWeb('application/grpc-web+proto'));
+verifier('un parametre de charset ne gene pas',
+  estGrpcWeb('application/grpc-web+proto; charset=utf-8'));
+verifier('la variante base64 est distinguee',
+  estGrpcWebTexte('application/grpc-web-text+proto'));
+verifier('la variante binaire n est pas prise pour du texte',
+  !estGrpcWebTexte('application/grpc-web+proto'));
+verifier('un JSON ordinaire n est pas pris pour du gRPC-Web',
+  !estGrpcWeb('application/json'));
+
+const appelReussi = lireGrpcWeb(collerOctets(cadreGrpc(0x00, MSG_GRPC), cadreGrpc(0x80, TRAILERS_OK)));
+egal('deux cadres sont lus', appelReussi.cadres.length, 2);
+egal('le premier cadre est un message', appelReussi.cadres[0].type, 'message');
+verifier('la charge protobuf est decodee', !!appelReussi.cadres[0].protobuf);
+egal('le second cadre porte les trailers', appelReussi.cadres[1].type, 'trailers');
+egal('le code de statut est lu', appelReussi.statut.code, 0);
+egal('le code est nomme', appelReussi.statut.nom, 'OK');
+verifier('le corps est signale complet', appelReussi.complet);
+
+/* Le piege du protocole : HTTP 200, mais l appel a echoue. */
+const appelEchoue = lireGrpcWeb(collerOctets(cadreGrpc(0x00, MSG_GRPC), cadreGrpc(0x80, TRAILERS_KO)));
+egal('un echec est lu malgre un corps bien forme', appelEchoue.statut.code, 5);
+egal('le code d echec est nomme', appelEchoue.statut.nom, 'NOT_FOUND');
+egal('l echec est signale', appelEchoue.statut.ok, false);
+egal('le message est desechappe', appelEchoue.statut.message, 'Not Found');
+
+egal('un flux de trois messages est compte',
+  lireGrpcWeb(collerOctets(cadreGrpc(0x00, MSG_GRPC), cadreGrpc(0x00, MSG_GRPC),
+    cadreGrpc(0x00, MSG_GRPC), cadreGrpc(0x80, TRAILERS_OK)))
+    .cadres.filter(c => c.type === 'message').length, 3);
+
+/* Un message compresse ne se lit pas sans defaire la compression : on le dit
+   plutot que de rendre un decodage protobuf absurde. */
+const compresse = lireGrpcWeb(cadreGrpc(0x01, MSG_GRPC));
+egal('la compression est signalee', compresse.cadres[0].compresse, true);
+egal('aucun protobuf n est invente sur des octets compresses',
+  compresse.cadres[0].protobuf, undefined);
+
+/* Un corps coupe par la limite de capture ne doit pas passer pour complet. */
+const coupe = lireGrpcWeb(cadreGrpc(0x00, MSG_GRPC).subarray(0, 6));
+egal('un corps tronque est signale', coupe.complet, false);
+egal('le cadre incomplet est decrit', coupe.cadres[0].tronque, true);
+const enTeteCoupe = lireGrpcWeb(new Uint8Array([0x00, 0x00, 0x00]));
+egal('un en-tete coupe est signale', enTeteCoupe.complet, false);
+egal('aucun cadre n est invente sur un en-tete coupe', enTeteCoupe.cadres.length, 0);
+
+/* La variante -text transporte les memes octets en base64. */
+const binaireGrpc = collerOctets(cadreGrpc(0x00, MSG_GRPC), cadreGrpc(0x80, TRAILERS_OK));
+let b64Grpc = '';
+for (const o of binaireGrpc) b64Grpc += String.fromCharCode(o);
+egal('la variante base64 rend le meme statut',
+  lireGrpcWeb(btoa(b64Grpc)).statut.code, 0);
+leve('un base64 invalide est refuse', () => lireGrpcWeb('pas du base64 !!'));
+/* L alphabet ne suffit pas : « a » le respecte, mais le base64 se lit par
+   groupes de quatre. Sans ce controle, atob remontait une DOMException au
+   lieu d un refus propre — trouve en jetant des entrees degenerees. */
+leve('un base64 de longueur invalide est refuse proprement', () => lireGrpcWeb('a'));
+leve('trois caracteres de base64 sont refuses', () => lireGrpcWeb('abc'));
+leve('une entree qui n est ni octets ni base64 est refusee', () => lireGrpcWeb(42));
+
+egal('un corps vide ne casse rien', lireGrpcWeb(new Uint8Array(0)).cadres.length, 0);
+egal('resume d un appel reussi', resumerGrpcWeb(appelReussi), '1 message(s) · grpc-status 0 OK');
+verifier('le resume d un echec cite le message',
+  resumerGrpcWeb(appelEchoue).includes('Not Found'));
+verifier('un flux sans trailers est signale comme tel',
+  resumerGrpcWeb(lireGrpcWeb(cadreGrpc(0x00, MSG_GRPC))).includes('aucun trailer'));
+/* Un code hors table est decrit comme inconnu, jamais invente. */
+verifier('un code de statut hors table est signale',
+  lireGrpcWeb(cadreGrpc(0x80, new TextEncoder().encode('grpc-status:99\r\n')))
+    .statut.sens.includes('hors de la table'));
+
 bilan('Outils avances');
