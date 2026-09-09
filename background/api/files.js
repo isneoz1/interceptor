@@ -11,6 +11,7 @@ import { config } from '../core/config.js';
 import { journal } from '../core/debug.js';
 import { store, detail } from '../core/store.js';
 import { buildHar } from '../export/har.js';
+import { assainirHar } from '../export/assainir.js';
 import { buildPostman } from '../export/postman.js';
 import { buildCsv, buildFindingsReport } from '../export/report.js';
 import { generateScript } from '../export/codegen.js';
@@ -52,11 +53,23 @@ export const FILE_COMMANDS = {
     if (!records.length) return { error: 'aucune requete a exporter' };
 
     let content, extension, mime;
+    let masques = null;
     switch (format) {
       case 'har':
         content = JSON.stringify(buildHar(records, { startedAt: store.stats.startedAt }), null, 2);
         extension = 'har'; mime = 'application/json';
         break;
+      /* Le meme HAR, mais partageable : jetons, cookies et cles d API
+         remplaces. Le fichier dit lui-meme combien de valeurs ont ete
+         masquees, pour qu on ne prenne pas un export assaini pour un
+         trafic qui n avait rien a cacher. */
+      case 'har-masque': {
+        const assaini = assainirHar(buildHar(records, { startedAt: store.stats.startedAt }));
+        content = JSON.stringify(assaini.har, null, 2);
+        extension = 'har'; mime = 'application/json';
+        masques = assaini.masques;
+        break;
+      }
       case 'json':
         content = JSON.stringify({
           tool: 'INTERCEPTOR', author: 'NeoZ', exportedAt: new Date().toISOString(),
@@ -88,8 +101,11 @@ export const FILE_COMMANDS = {
     }
 
     const res = await saveFile(format, extension, content, mime);
-    return res.ok ? { ok: true, count: records.length, filename: res.filename, bytes: res.bytes }
-                  : { error: res.error };
+    if (!res.ok) return { error: res.error };
+    /* `masques` ne remonte que pour l export assaini : l interface s en sert
+       pour dire combien de valeurs ont disparu du fichier. */
+    return { ok: true, count: records.length, filename: res.filename, bytes: res.bytes,
+             ...(masques == null ? {} : { masques }) };
   },
 
   /** Cookies reellement disponibles pour une URL, HttpOnly compris. */

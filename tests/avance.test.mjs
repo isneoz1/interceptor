@@ -704,4 +704,95 @@ verifier('entropie plus haute pour du texte varie',
 egal('chaine de requete decoupee', analyserChaineRequete('?a=1&b=2').length, 2);
 egal('cookies decoupes', analyserCookies('a=1; b=2').length, 2);
 
+/* ---------------------- Sous-protocoles WebSocket ------------------------- */
+/* Une trame « 42["order",{"id":77}] » est un paquet Engine.IO de type 4
+   contenant un paquet socket.io de type 2 nomme « order ». Sans decoupage,
+   la vue « Flux » n affiche qu une suite de caracteres. */
+const { lireEngineIo, lireStomp, lireSignalR, lireSousProtocole, resumerTrame } =
+  await import('../ui/lib/sous-protocoles.js');
+
+const trameEvenement = lireEngineIo('42["order",{"id":77}]');
+egal('Engine.IO reconnait un message', trameEvenement.type, 'message');
+egal('socket.io reconnait un EVENT', trameEvenement.socketIo.type, 'EVENT');
+egal('socket.io lit le nom emis', trameEvenement.socketIo.evenement, 'order');
+egal('socket.io lit les arguments', trameEvenement.socketIo.arguments.length, 1);
+egal('socket.io espace par defaut', trameEvenement.socketIo.espace, '/');
+egal('Engine.IO lit un ping', lireEngineIo('2').type, 'ping');
+egal('Engine.IO lit la poignee de main',
+  lireEngineIo('0{"sid":"abc","pingInterval":25000}').poignee.sid, 'abc');
+egal('socket.io lit un espace de noms',
+  lireEngineIo('42/admin,["ping"]').socketIo.espace, '/admin');
+egal('socket.io lit un accuse de reception',
+  lireEngineIo('4213["save",{}]').socketIo.ack, 13);
+egal('socket.io compte les pieces jointes',
+  lireEngineIo('451-["photo",{}]').socketIo.pieces, 1);
+leve('Engine.IO refuse un type hors 0-6', () => lireEngineIo('9abc'));
+
+const trameStomp = lireStomp(
+  'SEND\ndestination:/queue/a\ncontent-type:application/json\n\n{"hello":"world"}\0');
+egal('STOMP lit la commande', trameStomp.commande, 'SEND');
+egal('STOMP lit la destination', trameStomp.entetes.destination, '/queue/a');
+egal('STOMP lit un corps JSON', trameStomp.json.hello, 'world');
+/* STOMP 1.2 echappe les deux-points et les sauts de ligne dans les entetes. */
+egal('STOMP desechappe les entetes',
+  lireStomp('MESSAGE\na\\cb:x\\ny\n\n').entetes['a:b'], 'x\ny');
+/* Contrairement a HTTP, un entete repete garde sa PREMIERE valeur. */
+egal('STOMP garde la premiere valeur d un entete repete',
+  lireStomp('MESSAGE\nk:1\nk:2\n\n').entetes.k, '1');
+leve('STOMP refuse une commande inconnue', () => lireStomp('BONJOUR\n\n'));
+
+const trameSignalR = lireSignalR('{"type":1,"target":"Send","arguments":["hi"]}\u001e');
+egal('SignalR reconnait une invocation', trameSignalR.messages[0].type, 'Invocation');
+egal('SignalR lit la cible', trameSignalR.messages[0].cible, 'Send');
+egal('SignalR lit la negociation',
+  lireSignalR('{"protocol":"json","version":1}\u001e').messages[0].type, 'Handshake');
+egal('SignalR lit plusieurs messages d une trame',
+  lireSignalR('{"type":6}\u001e{"type":7}\u001e').messages.length, 2);
+leve('SignalR exige son separateur', () => lireSignalR('{"type":6}'));
+
+egal('resume d une trame socket.io',
+  resumerTrame('42["order",{"id":77}]'), 'socket.io EVENT « order »');
+egal('resume d une trame STOMP',
+  resumerTrame('SEND\ndestination:/q\n\nx\0'), 'STOMP SEND -> /q');
+egal('un texte quelconque ne recoit aucun resume',
+  resumerTrame('bonjour tout le monde'), null);
+/* Le sous-protocole negocie tranche : « 2 » est un ping autant qu un texte. */
+egal('le sous-protocole annonce passe en tete',
+  lireSousProtocole('2', 'socket.io')[0].nom, 'Engine.IO / socket.io');
+
+/* ------------------------- Palette de commandes --------------------------- */
+/* Le classement doit rester previsible : taper les memes lettres ramene
+   toujours le meme premier resultat, sinon la palette devient inutilisable
+   des qu on la connait par coeur. */
+const { apparier, filtrer, morceaux, deplacer } = await import('../ui/lib/palette.js');
+
+verifier('sous-sequence trouvee', !!apparier('Sites et chemins', 'chemin'));
+egal('lettres absentes refusees', apparier('Comparer', 'xyz'), null);
+egal('ordre des lettres impose', apparier('abc', 'cba'), null);
+verifier('accents ignores dans le sujet', !!apparier('Règles', 'regles'));
+verifier('accents ignores dans la requete', !!apparier('Regles', 'règles'));
+
+const COMMANDES = [
+  { id: 'a', libelle: 'Trames et messages', groupe: 'Trafic' },
+  { id: 'b', libelle: 'Tri', groupe: 'Tableau' },
+  { id: 'c', libelle: 'Transformer', groupe: 'Outils' }
+];
+egal('le libelle court passe devant', filtrer(COMMANDES, 'tri')[0].commande.id, 'b');
+egal('le groupe ramene ses membres', filtrer(COMMANDES, 'outils')[0].commande.id, 'c');
+egal('requete vide rend tout', filtrer(COMMANDES, '').length, 3);
+egal('limite respectee', filtrer(COMMANDES, '', 2).length, 2);
+egal('aucune correspondance', filtrer(COMMANDES, 'zzzz').length, 0);
+egal('classement stable entre deux appels',
+  filtrer(COMMANDES, 'tra')[0].commande.id, filtrer(COMMANDES, 'tra')[0].commande.id);
+
+egal('les lettres appariees sont marquees',
+  morceaux('abc', [0, 2]).filter(m => m.marque).map(m => m.texte).join(''), 'ac');
+egal('aucun caractere perdu au decoupage',
+  morceaux('Sites et chemins', apparier('Sites et chemins', 'chemin').positions)
+    .map(m => m.texte).join(''), 'Sites et chemins');
+
+egal('la selection boucle vers le haut', deplacer(0, -1, 3), 2);
+egal('la selection boucle vers le bas', deplacer(2, 1, 3), 0);
+egal('liste vide sans deplacement', deplacer(0, 1, 0), 0);
+
 bilan('Outils avances');

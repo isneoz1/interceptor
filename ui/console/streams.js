@@ -9,6 +9,7 @@ import { state, cmd, toast, copy } from '../app.js';
 import { t } from '../lib/i18n.js';
 import { listeProgressive } from '../lib/liste-progressive.js';
 import { decrireFermetureWs } from '../lib/ref-reseau.js';
+import { resumerTrame } from '../lib/sous-protocoles.js';
 
 let selected = null;
 let record = null;
@@ -135,6 +136,9 @@ export function render() {
   for (const f of shown) {
     box.appendChild(el('div', { class: 'frame full ' + (f.dir === 'send' ? 'send' : 'recv') }, [
       el('b', { text: (f.dir === 'send' ? '↑ ' : '↓ ') + clock(f.ts) }),
+      /* Le resume du sous-protocole precede la trame, qui reste entiere en
+         dessous : on ajoute une lecture, on n en retire jamais. */
+      f.resume ? el('i', { class: 'sous-protocole', text: f.resume }) : null,
       el('span', { text: f.text })
     ]));
   }
@@ -142,9 +146,13 @@ export function render() {
 
 function collectFrames(rec) {
   const out = [];
+  /* Le sous-protocole negocie a la poignee de main leve les ambiguites : une
+     trame « 2 » est un ping Engine.IO autant qu un texte quelconque. */
+  const sousProtocole = (rec.ws && rec.ws.protocol) || '';
   for (const f of (rec.ws && rec.ws.frames) || []) {
     out.push({
       dir: f.dir, ts: f.ts,
+      resume: f.data != null ? resumerTrame(f.data, sousProtocole) : null,
       text: (f.data != null ? f.data : '[' + f.opcode + ' ' + bytes(f.size) + ']') + (f.truncated ? ' …tronque' : '')
     });
   }

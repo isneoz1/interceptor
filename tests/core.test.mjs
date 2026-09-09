@@ -337,5 +337,85 @@ await config.set({ capturing: false });
 egal('valeur modifiee relue', config.get('capturing'), false);
 await config.set({ capturing: true });
 
+/* ------------------------- Export HAR assaini ----------------------------- */
+/* Un HAR se partage — ticket, collegue, analyseur en ligne — et il emporte
+   l entete Authorization, les cookies de session et les cles glissees dans
+   une URL. L export assaini les remplace ; l export fidele reste a cote, pour
+   rejouer. Ce qui compte ici : rien ne fuit, et le reste survit. */
+const { assainirHar } = await import('../background/export/assainir.js');
+
+const CLE_AWS = 'AKIA' + 'IOSFODNN7EXAMPLE';
+const JETON_TEST = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIn0.abcdefghijklmnop';
+
+const harSensible = {
+  log: {
+    version: '1.2',
+    entries: [{
+      request: {
+        method: 'GET',
+        url: 'https://api.example.com/v2/me?access_token=' + JETON_TEST + '&page=2',
+        headers: [
+          { name: 'Authorization', value: 'Bearer ' + JETON_TEST },
+          { name: 'Accept', value: 'application/json' },
+          { name: 'X-Trace', value: 'cle ' + CLE_AWS + ' dans un entete banal' }
+        ],
+        queryString: [
+          { name: 'access_token', value: JETON_TEST },
+          { name: 'page', value: '2' },
+          { name: 'tokenizer', value: 'lent' }
+        ],
+        cookies: [{ name: 'sid', value: 'abc123def456' }],
+        postData: { mimeType: 'application/json', text: '{"aws":"' + CLE_AWS + '"}' }
+      },
+      response: {
+        status: 200,
+        headers: [{ name: 'Set-Cookie', value: 'sid=xyz789; HttpOnly' }],
+        cookies: [{ name: 'sid', value: 'xyz789' }],
+        content: { mimeType: 'application/json', text: '{"key":"' + CLE_AWS + '"}' }
+      }
+    }]
+  }
+};
+
+const copieAvant = JSON.stringify(harSensible);
+const assaini = assainirHar(harSensible);
+const rendu = JSON.stringify(assaini.har);
+
+verifier('la cle AWS ne survit nulle part dans le HAR assaini', !rendu.includes(CLE_AWS));
+verifier('le jeton complet ne survit nulle part', !rendu.includes(JETON_TEST));
+verifier('le cookie envoye est masque', !rendu.includes('abc123def456'));
+verifier('le cookie recu est masque', !rendu.includes('xyz789'));
+egal('le HAR d origine n est pas modifie', JSON.stringify(harSensible), copieAvant);
+
+const entreeAssainie = assaini.har.log.entries[0];
+egal('la methode survit', entreeAssainie.request.method, 'GET');
+verifier('l hote reste lisible',
+  entreeAssainie.request.url.startsWith('https://api.example.com/v2/me'));
+verifier('l URL garde ses parametres ordinaires', entreeAssainie.request.url.includes('page=2'));
+egal('un parametre ordinaire est intact',
+  entreeAssainie.request.queryString.find(p => p.name === 'page').value, '2');
+egal('un entete ordinaire est intact',
+  entreeAssainie.request.headers.find(h => h.name === 'Accept').value, 'application/json');
+egal('le statut survit', entreeAssainie.response.status, 200);
+/* Un nom qui CONTIENT « token » sans etre un secret ne doit pas etre masque. */
+egal('« tokenizer » n est pas pris pour un secret',
+  entreeAssainie.request.queryString.find(p => p.name === 'tokenizer').value, 'lent');
+
+verifier('le compte de valeurs masquees est remonte', assaini.masques > 0);
+verifier('le fichier declare lui-meme avoir ete assaini',
+  /Assaini par INTERCEPTOR/.test(assaini.har.log.comment));
+verifier('le commentaire porte le compte',
+  assaini.har.log.comment.includes(String(assaini.masques)));
+egal('la version du HAR est preservee', assaini.har.log.version, '1.2');
+
+egal('un HAR sans entree passe sans rien masquer',
+  assainirHar({ log: { entries: [] } }).masques, 0);
+egal('un objet vide ne fait pas echouer l assainissement',
+  assainirHar({}).har.log.entries.length, 0);
+/* Le meme HAR assaini deux fois doit rendre exactement le meme fichier : les
+   motifs portent le drapeau global, dont le lastIndex se conserve. */
+egal('l assainissement est deterministe',
+  JSON.stringify(assainirHar(harSensible).har), JSON.stringify(assainirHar(harSensible).har));
+
 correlator.stop();
 bilan('Noyau');

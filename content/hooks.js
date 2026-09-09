@@ -328,6 +328,14 @@
           post({ t: 'ws:frame', pid: id, dir: 'recv', opcode: f.opcode, data: f.data, size: f.size, truncated: f.truncated });
         } catch (e) {}
       }, true);
+      /* Le serveur choisit le sous-protocole parmi ceux proposes, et son
+         choix n est lisible qu une fois la connexion ouverte. C est lui qui
+         dit comment lire les trames qui vont suivre. */
+      ws.addEventListener('open', function () {
+        try {
+          if (ws.protocol) post({ t: 'ws:protocol', pid: id, protocol: ws.protocol });
+        } catch (e) {}
+      }, true);
       ws.addEventListener('close', function (ev) {
         post({ t: 'ws:close', pid: id, code: ev.code, reason: ev.reason, wasClean: ev.wasClean });
       }, true);

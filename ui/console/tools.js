@@ -30,7 +30,9 @@ import { panneauOtp } from './tools-otp.js';
 /* Les outils, ranges par intention plutot qu en une seule rangee de vingt-trois
    boutons. On cherche « ce que je veux faire », pas le nom de l outil : les
    familles portent donc des verbes, et chacune tient sur une ligne. */
-const FAMILLES = [
+/* Exporte pour la palette de commandes, qui construit son registre a partir
+   de cette table plutot que d en recopier une. */
+export const FAMILLES = [
   ['Decoder et convertir', [
     ['transformer', 'Transformer'],
     ['hex', 'Hexadecimal'],
@@ -102,6 +104,12 @@ const etat = {
   otpForme: 'base32', otpAlgo: 'SHA-1', otpChiffres: 6, otpPas: 30, otpSecret: null,
   otpResultat: null, otpVoisins: null, otpCompteur: 0
 };
+
+/** Ouvre la boite a outils sur un onglet precis, sans toucher a l entree. */
+export function ouvrir(cle) {
+  if (ONGLETS.some(([id]) => id === cle)) onglet = cle;
+  document.dispatchEvent(new CustomEvent('ic:goto', { detail: { view: 'tools' } }));
+}
 
 /** Charge un texte dans la boite a outils depuis n importe quelle autre vue. */
 export function poser(texte, { bascule = true, vers = null } = {}) {

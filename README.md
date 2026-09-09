@@ -14,7 +14,7 @@ Created by **NeoZ**
 ![Manifest V2](https://img.shields.io/badge/Manifest-V2-444?style=flat)
 [![MIT licence](https://img.shields.io/badge/Licence-MIT-00DDFF?style=flat)](LICENSE)
 ![No dependencies](https://img.shields.io/badge/Dependencies-none-2ea043?style=flat)
-![895 assertions](https://img.shields.io/badge/Assertions-895-2ea043?style=flat)
+![960 assertions](https://img.shields.io/badge/Assertions-960-2ea043?style=flat)
 ![English and French](https://img.shields.io/badge/UI-EN%20%2F%20FR-444?style=flat)
 
 [**Install**](#3-installation) · [**Screenshots**](#2-screenshots) · [**How it works**](#4-how-it-works-the-capture-layers) · [**Changelog**](CHANGELOG.md) · [**Security**](SECURITY.md)
@@ -73,6 +73,7 @@ specific points:
 
 | | What INTERCEPTOR does |
 |---|---|
+| **You never hunt for a feature** | `Ctrl+K` opens a command palette over every view, every tool and every action. Type three letters — `chm` finds *Sites and paths*, `cook` finds *Cookies* — and press Enter. The registry is built from the real tables, so anything added later appears in it without anyone remembering to register it. |
 | **It misses nothing** | Eight capture layers run in parallel: `webRequest`, response bodies via `StreamFilter`, TLS via `securityInfo`, DNS resolution, navigation, cookies, page probes (`fetch`, `XHR`, WebSocket, SSE, Beacon, WebRTC, `PerformanceObserver`), and an optional passive proxy. What one layer misses, another sees. |
 | **It never counts twice** | A correlator pairs observations coming from different layers. One real request produces **one** row, even when five layers saw it. Two identical polling `GET`s stay two separate rows. |
 | **It explains** | 62 status codes, 129 headers, 70 media types, 83 ports, 31 TLS cipher suites, TLS alerts, QUIC and HTTP/3 errors, DNS record types — all described in the tool, offline. |
@@ -81,8 +82,8 @@ specific points:
 **What it is not**: not a proxy, not a vulnerability scanner, not an attack tool. Everything
 happens inside your Firefox, on your machine.
 
-**By the numbers**: 157 JavaScript modules, ~30,800 lines, zero external dependencies,
-895 automated assertions, English and French interface.
+**By the numbers**: 162 JavaScript modules, ~32,100 lines, zero external dependencies,
+960 automated assertions, English and French interface.
 
 ---
 
@@ -99,6 +100,15 @@ All traffic, one row per request. Configurable columns, sorting, quick facets, v
 scrolling (the table stays fluid at tens of thousands of rows).
 
 ![Requests view](docs/images/console-requetes.png)
+
+### The command palette
+
+`Ctrl+K` from anywhere. Type a few letters and the matching views, tools and actions rank
+themselves; the letters you typed are highlighted so you can see why a result matched. The
+list is built from the real view and tool tables, so it never falls out of step with what
+the extension can actually do.
+
+![Command palette](docs/images/console-palette.png)
 
 ### The Security view
 
@@ -319,7 +329,7 @@ advanced views and keeps only the essentials.
 | **Security** | The analyser's findings, grouped by severity, each with its evidence and a link to the request. Rendered in batches as you scroll, so nothing is capped and nothing freezes. The report can be exported as Markdown. |
 | **Summary** | The overall figures: requests, domains, volumes received and sent, median duration, errors, third-party share, encrypted share, cache, frames, cookies. Then the breakdowns: statuses, resource types, domains by volume and by count, real protocols, content types, capture layers. |
 | **Sites and paths** | The tree of what exists on each visited host, reconstructed from traffic. Useful to see an application's real surface. |
-| **Live streams** | WebSocket and Server-Sent Events, message by message, with direction (in/out), timestamp and payload. |
+| **Live streams** | WebSocket and Server-Sent Events, message by message, with direction (in/out), timestamp and payload. Frames riding a known subprotocol are also read: `42["order",{...}]` is shown as *socket.io EVENT "order"*, alongside the raw frame. **Engine.IO / socket.io**, **STOMP** and **SignalR** are decoded, and the subprotocol the server actually negotiated decides which reading applies. |
 | **Comparison** | Two requests side by side, line by line: headers, bodies, timings. Select two rows and press `C`. |
 
 ### Logs
@@ -558,6 +568,7 @@ reproducing an error, comparing two variants with the **Comparison** view.
 | Format | File | What for |
 |---|---|---|
 | **HAR 1.2** | `.har` | The standard interchange format: readable by Firefox, Chrome, Charles, Fiddler, Wireshark… |
+| **HAR 1.2, secrets masked** | `.har` | The same file, made shareable. `Authorization`, `Cookie`, `Set-Cookie` and the other secret-bearing headers lose their value; so do query parameters whose name announces a secret, and anything the analyser's own patterns recognise, wherever it sits — including inside a response body. The file says how many values it masked, so a sanitised export is never mistaken for traffic that had nothing to hide. The faithful export stays next to it: you need that one to replay. |
 | **Full JSON** | `.json` | Every record in full, with the statistics |
 | **CSV** | `.csv` | For a spreadsheet |
 | **Postman collection** | `.postman_collection.json` | Replaying in Postman |
@@ -633,6 +644,7 @@ interface exists in the configuration. No decorative settings.**
 
 | Key | Effect |
 |---|---|
+| `Ctrl+K` | Open the command palette — every view, tool and action by name |
 | `/` | Focus the search box |
 | `↑` `↓` | Previous / next request |
 | `Esc` | Close the detail panel, a menu, or this window |
@@ -722,7 +734,7 @@ ui/                        The interface — one page for all four surfaces
 ├── console/               One view per file, plus the detail panel
 └── lib/                   Codecs, digests, network, reference tables, i18n
 
-tests/                     895 assertions, no browser required
+tests/                     960 assertions, no browser required
 tools/captures.mjs         Generates the documentation screenshots
 tools/banniere.mjs         Generates the social preview card (docs/images)
 tools/apercu-icone.mjs     Renders the icon at the sizes Firefox actually uses
@@ -773,16 +785,16 @@ French at the flip of a setting.
 npm test
 ```
 
-895 assertions, with no browser and no dependencies. The kernel and interface modules are
+960 assertions, with no browser and no dependencies. The kernel and interface modules are
 written for Firefox; `tests/harnais.mjs` supplies the minimum WebExtension API and DOM they
 need to import and run under Node. **The logic under test is exactly the logic that runs in
 the browser, with no rewriting.**
 
 | Suite | Assertions | What it covers |
 |---|---|---|
-| `core.test.mjs` | 173 | URL normalisation, correlation signatures, the store, the rule engine (both ways: what matches **and** what must not), the security analyser rule by rule, HAR export, curl import, all 39 code generators |
-| `avance.test.mjs` | 321 | WebSocket and HTTP/2 frames, CSP, RFC 9111 freshness, multipart, canonical URLs and homographs, protocol tables, binary structures, rare digests, generators |
-| `ui-load.test.mjs` | 173 | Actual loading of the 116 interface modules, complete module graph (no dead import, no file outside the graph), consistency with the HTML pages and the manifest, **full translation coverage** — every displayed string must have a dictionary entry — and **measured contrast**: every colour pair in both themes is checked against the WCAG 2.1 thresholds |
+| `core.test.mjs` | 192 | URL normalisation, correlation signatures, the store, the rule engine (both ways: what matches **and** what must not), the security analyser rule by rule, HAR export, curl import, all 39 code generators |
+| `avance.test.mjs` | 363 | WebSocket and HTTP/2 frames, CSP, RFC 9111 freshness, multipart, canonical URLs and homographs, protocol tables, binary structures, rare digests, generators |
+| `ui-load.test.mjs` | 177 | Actual loading of the 120 interface modules, complete module graph (no dead import, no file outside the graph), consistency with the HTML pages and the manifest, **full translation coverage** — every displayed string must have a dictionary entry — and **measured contrast**: every colour pair in both themes is checked against the WCAG 2.1 thresholds |
 | `detail-coverage.test.mjs` | 120 | Each of a record's 60 fields is displayed, each tab has a render function, each searchable field exists |
 | `outils.test.mjs` | 108 | The toolbox, against published vectors |
 
@@ -824,7 +836,7 @@ the file. It contains internal errors and the command log — not your traffic.
 Before opening a pull request:
 
 ```bash
-npm test              # all 895 assertions must pass
+npm test              # all 960 assertions must pass
 .\build.ps1 -Verify   # the build must be green
 ```
 

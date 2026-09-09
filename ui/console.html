@@ -109,6 +109,15 @@
 
 <footer class="bottom" id="foot" aria-live="off"></footer>
 
+<div class="overlay" id="pal" hidden role="dialog" aria-modal="true" aria-label="Palette de commandes">
+  <div class="sheet pal-sheet">
+    <input id="pal-q" type="text" autocomplete="off" spellcheck="false"
+           role="combobox" aria-expanded="true" aria-controls="pal-list" aria-autocomplete="list">
+    <div class="pal-list" id="pal-list" role="listbox"></div>
+    <p class="pal-aide" id="pal-aide"></p>
+  </div>
+</div>
+
 <div class="overlay" id="keys" hidden role="dialog" aria-modal="true" aria-label="Raccourcis clavier">
   <div class="sheet">
     <h3 id="keys-title">Raccourcis clavier</h3>

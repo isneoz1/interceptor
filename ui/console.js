@@ -25,6 +25,7 @@ import * as summary from './console/summary.js';
 import * as compare from './console/compare.js';
 import * as tools from './console/tools.js';
 import * as sitemap from './console/sitemap.js';
+import * as palette from './console/palette.js';
 import * as debugview from './console/debug.js';
 import * as intercept from './console/intercept.js';
 import { renderFoot, renderSpark } from './console/statusbar.js';
@@ -203,6 +204,7 @@ const SHORTCUTS = [
   ['C', 'Comparer les deux lignes selectionnees'],
   ['S', 'Enregistrer le filtre courant'],
   ['1 a 9', 'Basculer sur une vue'],
+  ['Ctrl+K', 'Ouvrir la palette de commandes'],
   ['?', 'Afficher cette aide'],
   ['Ctrl+clic', 'Ajouter une ligne a la selection'],
   ['Maj+clic', 'Selectionner une plage de lignes'],
@@ -242,10 +244,24 @@ document.addEventListener('ic:echelle', () => requests.applyConfig());
 /* ------------------------------- Clavier --------------------------------- */
 function bindKeyboard() {
   document.addEventListener('keydown', ev => {
-    const typing = ev.target.matches('input, textarea, select');
+    /* `ev.target` n est pas toujours un element : un evenement adresse au
+       document lui-meme n a pas de matches(), et l appel jetait alors avant
+       le moindre raccourci. */
+    const cible = ev.target;
+    const typing = !!(cible && typeof cible.matches === 'function'
+      && cible.matches('input, textarea, select'));
+
+    /* Ctrl+K reste actif pendant la saisie : c est justement quand on cherche
+       quelque chose qu on veut l atteindre par son nom. */
+    if ((ev.ctrlKey || ev.metaKey) && ev.key.toLowerCase() === 'k') {
+      ev.preventDefault();
+      palette.basculer();
+      return;
+    }
 
     if (ev.key === 'Escape') {
       closeMenus();
+      if (palette.estOuverte()) { palette.basculer(false); return; }
       if (!$('#keys').hidden) { toggleKeys(false); return; }
       if (!typing && detail.isOpen()) detail.close();
       return;
@@ -276,6 +292,33 @@ function bindKeyboard() {
   buildSidebar();
   initHeader({ setView, renderView, buildSidebar, toggleKeys });
   bindKeyboard();
+
+  /* La palette lit les tables reelles : une vue ou un outil ajoute plus tard
+     y apparait sans que personne ait a penser a l y inscrire. */
+  palette.definirSources({
+    vues: VIEWS,
+    outils: tools.FAMILLES,
+    allerVue: setView,
+    allerOutil: cle => tools.ouvrir(cle),
+    actions: [
+      { id: 'pause', libelle: 'Mettre la capture en pause ou la reprendre',
+        groupe: 'Capture', faire: () => $('#capture').click() },
+      { id: 'suivre', libelle: 'Suivre le flux ou le figer',
+        groupe: 'Capture', faire: () => requests.toggleFollow() },
+      { id: 'vider', libelle: 'Vider toute la capture',
+        groupe: 'Capture', faire: () => $('#clear').click() },
+      { id: 'chercher', libelle: 'Placer le curseur dans la recherche',
+        groupe: 'Tableau', faire: () => { setView('requests'); $('#q').focus(); } },
+      { id: 'colonnes', libelle: 'Colonnes du tableau',
+        groupe: 'Tableau', faire: () => { setView('requests'); $('#columns').click(); } },
+      { id: 'exporter', libelle: 'Exporter dans un fichier',
+        groupe: 'Exporter', faire: () => $('#export').click() },
+      { id: 'raccourcis', libelle: 'Raccourcis clavier',
+        groupe: 'Aide', faire: () => toggleKeys(true) }
+    ]
+  });
+  palette.init();
+
   $('#keys-close').addEventListener('click', () => toggleKeys(false));
   $('#keys').addEventListener('click', ev => { if (ev.target.id === 'keys') toggleKeys(false); });
   requests.init({ onOpen: id => detail.open(id) });

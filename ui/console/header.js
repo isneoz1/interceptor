@@ -5,7 +5,7 @@
  * module a besoin pour agir sur les vues : `api`.
  */
 import { $, el, clear } from '../lib/dom.js';
-import { t } from '../lib/i18n.js';
+import { t, tp } from '../lib/i18n.js';
 import { B, cmd, state, toast, copy, dropdown, saveConfig } from '../app.js';
 import * as requests from './requests.js';
 import * as detail from './detail.js';
@@ -108,6 +108,14 @@ function applyStaticLabels() {
   nommer('#tablewrap', 'Tableau des requetes');
   nommer('#dtabs', 'Onglets du detail');
   nommer('#keys', 'Raccourcis clavier');
+  nommer('#pal', 'Palette de commandes');
+
+  /* La palette : son invite et sa ligne d aide, poses ici comme le reste des
+     libelles statiques, pour qu ils suivent la langue sans rechargement. */
+  const invite = $('#pal-q');
+  if (invite) invite.placeholder = t('Chercher une vue, un outil, une action…');
+  const aidePalette = $('#pal-aide');
+  if (aidePalette) aidePalette.textContent = t('Fleches pour choisir · Entree pour lancer · Echap pour fermer');
   $('#scope').title = t('Perimetre observe');
   $('#q').placeholder = t('Filtrer :  method:POST   status:5xx   host:api.   size:>100000   -image   /regex/');
   const deepLabel = $('#deep-label');
@@ -218,6 +226,10 @@ function bindHeader() {
     const items = [
       { kind: 'head', label: t('Lignes filtrees ou selectionnees') },
       { label: 'HAR 1.2 (DevTools, Charles…)', action: () => exportAs('har') },
+      /* Le meme HAR, mais partageable. Un HAR fidele emporte l entete
+         Authorization et les cookies de session : l envoyer, c est les
+         divulguer. */
+      { label: t('HAR 1.2 — secrets masques, pour partage'), action: () => exportAs('har-masque') },
       { label: t('JSON complet'), action: () => exportAs('json') },
       { label: 'Collection Postman v2.1', action: () => exportAs('postman') },
       { label: t('Tableau CSV'), action: () => exportAs('csv') },
@@ -271,7 +283,12 @@ async function exportAs(format) {
     // fermeture de cette fenetre.
     const res = await cmd('exportFile', { format, ids: rows.map(r => r.id) });
     if (res.error) return toast(res.error, false);
-    return toast(res.count + ' requetes exportees — ' + res.filename);
+    /* Dire combien de valeurs ont ete masquees evite de prendre un export
+       assaini pour un trafic qui n avait rien a cacher. */
+    return toast(res.masques == null
+      ? tp('{n} requetes exportees — {fichier}', { n: res.count, fichier: res.filename })
+      : tp('{n} requetes exportees — {fichier} · {m} valeur(s) masquee(s)',
+           { n: res.count, fichier: res.filename, m: res.masques }));
   }
   const res = await cmd('exportFile', { format: 'config' });
   if (res.error) return toast(res.error, false);

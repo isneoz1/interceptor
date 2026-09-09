@@ -330,6 +330,14 @@ for (const groupe of GROUPS) {
 }
 for (const tr of TRANSFORMATIONS) exigerTraduction('libelle de transformation', tr.libelle);
 
+/* Les actions de la palette de commandes vivent dans une table de console.js,
+   qui a besoin d un DOM pour s importer. On lit donc sa source : les cles
+   `libelle` et `groupe` n apparaissent que dans ce registre. */
+const sourceConsoleJs = fs.readFileSync(path.join(racine, 'ui/console.js'), 'utf8');
+for (const m of sourceConsoleJs.matchAll(/(?:libelle|groupe):\s*'((?:[^'\\]|\\.)*)'/g)) {
+  exigerTraduction('action de la palette', desechapper(m[1]));
+}
+
 for (const [texte, ou] of donneesSansEntree) {
   verifier('la chaine de donnees ' + JSON.stringify(texte.slice(0, 60)) + ' a une traduction',
     false, ou);

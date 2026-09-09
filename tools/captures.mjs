@@ -427,6 +427,33 @@ if (MODE_TEXTE) {
     + Object.values(texteParVue).reduce((n, l) => n + l.length, 0) + ' fragments)');
 }
 
+/* La palette, ouverte et deja filtree : une capture vide ne montrerait ni le
+   classement ni la mise en evidence des lettres tapees. */
+if (!MODE_TEXTE) {
+  await page('Runtime.evaluate', { expression: 'window.__vue("requests")' });
+  await patienter(300);
+  await page('Runtime.evaluate', {
+    expression: 'document.dispatchEvent(new KeyboardEvent("keydown",'
+      + ' { key: "k", ctrlKey: true, bubbles: true }))'
+  });
+  await patienter(400);
+  await page('Runtime.evaluate', {
+    expression: 'const c = document.getElementById("pal-q");'
+      + ' c.value = "co"; c.dispatchEvent(new Event("input", { bubbles: true }));'
+  });
+  await patienter(400);
+  const { data } = await page('Page.captureScreenshot', { format: 'png' });
+  const chemin = path.join(SORTIE, 'console-palette.png');
+  fs.writeFileSync(chemin, Buffer.from(data, 'base64'));
+  console.log('  ' + path.relative(RACINE, chemin).replace(/\\/g, '/')
+    + '  (' + Math.round(fs.statSync(chemin).size / 1024) + ' Ko)');
+  await page('Runtime.evaluate', {
+    expression: 'document.dispatchEvent(new KeyboardEvent("keydown",'
+      + ' { key: "Escape", bubbles: true }))'
+  });
+  await patienter(250);
+}
+
 /* Le panneau de detail, ouvert sur la requete la plus parlante. */
 const cible = premier.records.find(r => r.method === 'POST');
 if (cible) {

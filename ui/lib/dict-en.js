@@ -9,6 +9,7 @@ import { EN_REGLAGES } from './dict-en-reglages.js';
 import { EN_ETAT } from './dict-en-etat.js';
 import { EN_RECHERCHE } from './dict-en-recherche.js';
 import { EN_REGLES } from './dict-en-regles.js';
+import { EN_PALETTE } from './dict-en-palette.js';
 
 export const EN = {
   /* ------------------------------ Navigation ----------------------------- */
@@ -403,5 +404,6 @@ export const EN = {
   ...EN_REGLAGES,
   ...EN_ETAT,
   ...EN_RECHERCHE,
-  ...EN_REGLES
+  ...EN_REGLES,
+  ...EN_PALETTE
 };

@@ -70,6 +70,7 @@ function dispatch(ev, ctx) {
     case 'req:body':   return onRequestBody(ev, ctx);
     case 'req:end':    return onRequestEnd(ev, ctx);
     case 'ws:open':    return onWsOpen(ev, ctx);
+    case 'ws:protocol': return onWsProtocol(ev, ctx);
     case 'ws:frame':   return onWsFrame(ev, ctx);
     case 'ws:close':   return onWsClose(ev, ctx);
     case 'sse:open':   return onSseOpen(ev, ctx);
@@ -226,6 +227,16 @@ function withPageRecord(ev, ctx, fn) {
   if (rec) { fn(rec); return; }
   if (!orphanEnds.has(key)) orphanEnds.set(key, []);
   orphanEnds.get(key).push(ev);          // rejoue des que la correlation aboutit
+}
+
+/* Le sous-protocole retenu par le serveur. La vue « Flux » s en sert pour
+   choisir comment decouper chaque trame. */
+function onWsProtocol(ev, ctx) {
+  const rec = ctx.byPid(ev.pid);
+  if (!rec || !ev.protocol) return;
+  rec.ws = rec.ws || { frames: [], protocols: null, openedAt: null, closedAt: null, close: null, sent: 0, received: 0, bytesSent: 0, bytesReceived: 0 };
+  rec.ws.protocol = String(ev.protocol);
+  store.touch(rec.id);
 }
 
 function onWsFrame(ev, ctx) {
