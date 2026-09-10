@@ -1,9 +1,13 @@
-/* Champs structures HTTP (RFC 8941) — INTERCEPTOR (by NeoZ)
+/* Champs structures HTTP (RFC 9651) — INTERCEPTOR (by NeoZ)
  *
  * La syntaxe commune des en-tetes HTTP recents : `Accept-CH`, `Priority`,
  * `Cache-Status`, `Signature-Input`, `Client-Hints`… Au lieu que chaque
- * en-tete invente sa grammaire, la RFC 8941 en definit trois formes de haut
- * niveau — liste, dictionnaire, article — construites sur six types de base.
+ * en-tete invente sa grammaire, la RFC 9651 en definit trois formes de haut
+ * niveau — liste, dictionnaire, article — construites sur huit types de base.
+ *
+ * La RFC 9651 remplace la 8941 et ajoute deux de ces huit : la Date, et la
+ * chaine destinee a l affichage. Un lecteur qui les ignore ne se contente pas
+ * de les manquer — il rejette l en-tete entier pour un seul membre.
  *
  * Sans ce module, `Priority: u=1, i` restait une chaine ; on peut maintenant
  * dire que c est un dictionnaire de deux membres, dont un booleen implicite.
@@ -13,7 +17,8 @@
 
 /* Un article de base porte son type : c est la que se trouve l information.
    `42` et `"42"` ne sont pas la meme chose, et le dire est le but du module. */
-const TYPES = ['entier', 'decimal', 'chaine', 'jeton', 'suite d octets', 'booleen'];
+const TYPES = ['entier', 'decimal', 'chaine', 'jeton', 'suite d octets', 'booleen',
+  'date', 'chaine affichee'];
 export const TYPES_DE_BASE = TYPES;
 
 class Curseur {
@@ -108,7 +113,7 @@ function lireBooleen(c) {
   return { type: 'booleen', valeur: ch === '1' };
 }
 
-/** Un article de base, sans ses parametres (RFC 8941 section 4.2.3.1). */
+/** Un article de base, sans ses parametres (RFC 9651 section 4.2.3.1). */
 export function lireArticleDeBase(c) {
   if (c.fini()) throw c.erreur('article attendu');
   const ch = c.voir();
@@ -116,8 +121,81 @@ export function lireArticleDeBase(c) {
   if (ch === '"') return lireChaine(c);
   if (ch === ':') return lireOctets(c);
   if (ch === '?') return lireBooleen(c);
+  /* RFC 9651 : deux types que la 8941 ne connaissait pas. */
+  if (ch === '@') return lireDate(c);
+  if (ch === '%') return lireChaineAffichee(c);
   if (/[A-Za-z*]/.test(ch)) return lireJeton(c);
   throw c.erreur('debut d article inattendu « ' + ch + ' »');
+}
+
+/* ------------------------- Date (RFC 9651, 4.2.9) ------------------------- */
+/* « @1659578233 » : un entier de secondes depuis 1970, precede d une arobase.
+   Un decimal est explicitement refuse — un instant ne se fractionne pas ici. */
+const DATE_MIN = -62135596800;   /* 0001-01-01T00:00:00Z */
+const DATE_MAX = 253402214400;   /* 9999-12-31T23:59:59Z */
+
+function lireDate(c) {
+  c.lire();                                   /* l arobase */
+  const nombre = lireEntierOuDecimal(c);
+  if (nombre.type !== 'entier') {
+    throw c.erreur('une date porte un entier de secondes, pas un decimal');
+  }
+  /* La RFC impose de couvrir les annees 1 a 9999. Au-dela, ce n est plus une
+     date mais un entier qui se fait passer pour telle. */
+  if (nombre.valeur < DATE_MIN || nombre.valeur > DATE_MAX) {
+    throw c.erreur('date hors des bornes imposees (annees 1 a 9999)');
+  }
+  return {
+    type: 'date',
+    valeur: nombre.valeur,
+    /* L instant lisible se calcule ici : le lire suppose sinon de savoir que
+       la valeur est en secondes, pas en millisecondes comme partout en JS. */
+    iso: new Date(nombre.valeur * 1000).toISOString()
+  };
+}
+
+/* ------------------ Chaine affichee (RFC 9651, 4.2.10) ------------------- */
+/* « %"pour les %c3%bcsers" » : de l UTF-8 pourcent-encode, destine a etre lu
+   par un humain. A ne pas confondre avec une chaine ordinaire, qui ne porte
+   que de l ASCII : c est precisement la distinction que le type apporte. */
+function lireChaineAffichee(c) {
+  c.lire();                                   /* le pourcent */
+  if (c.fini() || c.voir() !== '"') throw c.erreur('un guillemet est attendu apres « % »');
+  c.lire();
+
+  const octets = [];
+  for (;;) {
+    if (c.fini()) throw c.erreur('chaine affichee non terminee');
+    const ch = c.lire();
+
+    if (ch === '"') {
+      /* Les octets accumules ne sont de l UTF-8 valide que si l emetteur a
+         respecte la specification : on le verifie plutot que de rendre des
+         caracteres de remplacement silencieux. */
+      const texte = new TextDecoder('utf-8', { fatal: true })
+        .decode(new Uint8Array(octets));
+      return { type: 'chaine affichee', valeur: texte };
+    }
+
+    if (ch === '%') {
+      const a = c.lire();
+      const b = c.lire();
+      /* Minuscules seulement : la RFC l impose, pour que deux emetteurs
+         produisent la meme suite d octets pour la meme chaine. */
+      if (!/^[0-9a-f]$/.test(a || '') || !/^[0-9a-f]$/.test(b || '')) {
+        throw c.erreur('un pourcent doit etre suivi de deux chiffres hexadecimaux minuscules');
+      }
+      octets.push(parseInt(a + b, 16));
+      continue;
+    }
+
+    /* Tout le reste passe tel quel, sauf ce que la RFC exige d encoder. */
+    const code = ch.charCodeAt(0);
+    if (code <= 0x1f || code >= 0x7f) {
+      throw c.erreur('ce caractere doit etre pourcent-encode dans une chaine affichee');
+    }
+    octets.push(code);
+  }
 }
 
 /* ------------------------------- Parametres ------------------------------- */

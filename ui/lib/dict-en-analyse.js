@@ -241,7 +241,7 @@ export const EN_ANALYSE = {
   'protected': 'protected',
   'private': 'private',
 
-  /* -------------------- Champs structures (RFC 8941) ---------------------- */
+  /* -------------------- Champs structures (RFC 9651) ---------------------- */
   'Forme': 'Form',
   'liste': 'list',
   'dictionnaire': 'dictionary',

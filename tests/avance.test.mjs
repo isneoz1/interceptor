@@ -27,7 +27,7 @@ import { decoderValeurEtendue, encoderValeurEtendue, decoderMotsCodes,
   contientMotCode, decouperParametres, analyserValeurParametree, analyserContentDisposition }
   from '../ui/lib/entetes-parametres.js';
 import { lireListe, lireDictionnaire, lireArticleSeul, analyserChampStructure,
-  decrireArticle, FORMES_CONNUES } from '../ui/lib/champs-structures.js';
+  decrireArticle, FORMES_CONNUES, TYPES_DE_BASE } from '../ui/lib/champs-structures.js';
 import { sha3, shake } from '../ui/lib/sha3.js';
 import { blake2b512, blake2s256 } from '../ui/lib/blake2.js';
 import { crc, crcParNom, CRC_VARIANTES, murmur3, xxhash32, xxhash64, siphash24Octets }
@@ -398,6 +398,40 @@ egal('une chaine reste une chaine',
   lireDictionnaire('en="Applepie"')[0].valeur, 'Applepie');
 egal('une suite d octets est decodee',
   lireDictionnaire('da=:w4ZibGV0w6ZydGU=:')[0].valeur.length, 11);
+
+/* --- RFC 9651 : les deux types que la RFC 8941 ne connaissait pas --- */
+const dateSf = lireArticleSeul('@1659578233');
+egal('une date est reconnue', dateSf.type, 'date');
+egal('la valeur en secondes est lue', dateSf.valeur, 1659578233);
+egal('l instant lisible est calcule', dateSf.iso, '2022-08-04T01:57:13.000Z');
+egal('l origine Unix se lit', lireArticleSeul('@0').iso, '1970-01-01T00:00:00.000Z');
+egal('une date anterieure a 1970 se lit', lireArticleSeul('@-1').valeur, -1);
+/* Un decimal est explicitement refuse par la section 4.2.9. */
+leve('une date decimale est refusee', () => lireArticleSeul('@1.5'));
+/* La RFC impose de couvrir les annees 1 a 9999, et rien au-dela. */
+leve('une date hors bornes est refusee', () => lireArticleSeul('@999999999999'));
+
+/* L exemple de la section 3.3.8, mot pour mot. */
+const affichee = lireArticleSeul('%"This is intended for display to %c3%bcsers."');
+egal('une chaine affichee est reconnue', affichee.type, 'chaine affichee');
+egal('son UTF-8 pourcent-encode est decode',
+  affichee.valeur, 'This is intended for display to \u00fcsers.');
+egal('une chaine affichee vide se lit', lireArticleSeul('%""').valeur, '');
+/* Les minuscules sont imposees : deux emetteurs doivent produire les memes
+   octets pour la meme chaine. */
+leve('un hexadecimal majuscule est refuse', () => lireArticleSeul('%"%C3%BC"'));
+leve('un pourcent isole est refuse', () => lireArticleSeul('%"a%"'));
+leve('une chaine affichee non terminee est refusee', () => lireArticleSeul('%"abc'));
+leve('un caractere de controle en clair est refuse',
+  () => lireArticleSeul('%"a\u0001b"'));
+
+/* Les deux types vivent aussi dans les formes de haut niveau. */
+egal('une date dans un dictionnaire', lireDictionnaire('a=@0, b=1')[0].type, 'date');
+egal('une chaine affichee dans une liste',
+  lireListe('%"h%c3%a9", 2')[0].valeur, 'h\u00e9');
+/* Les six types d origine restent intacts : la mise a jour ajoute, elle ne
+   remplace pas. */
+egal('les huit types de base sont declares', TYPES_DE_BASE.length, 8);
 egal('membre sans valeur : booleen vrai implicite',
   lireDictionnaire('a=?0, b, c; foo=bar').map(x => x.cle + '=' + x.valeur).join(' '),
   'a=false b=true c=true');

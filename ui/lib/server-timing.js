@@ -7,7 +7,7 @@
  *
  *   Server-Timing: db;dur=53, cache;desc="hit", app;dur=47.2;desc="Application"
  *
- * C est une liste de champs structures (RFC 8941) dont chaque element porte
+ * C est une liste de champs structures (RFC 9651) dont chaque element porte
  * deux parametres possibles : `dur`, en millisecondes, et `desc`, une phrase
  * libre. Les deux sont facultatifs — une mesure sans duree existe, et sert a
  * signaler un evenement plutot qu a le chronometrer (« cache;desc="hit" »).

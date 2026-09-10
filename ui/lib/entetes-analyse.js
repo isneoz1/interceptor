@@ -213,7 +213,7 @@ function contentDisposition(valeur) {
   return { parties, risques };
 }
 
-/* ---------------------- Champs structures (RFC 8941) ---------------------- */
+/* ---------------------- Champs structures (RFC 9651) ---------------------- */
 /* Les en-tetes HTTP recents partagent une grammaire commune : liste,
    dictionnaire ou article, batis sur six types de base. Rendre la valeur brute
    perdrait la seule information qui compte — `42` n est pas `"42"`. */
