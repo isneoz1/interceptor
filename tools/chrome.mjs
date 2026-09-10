@@ -125,3 +125,37 @@ export async function ouvrirChrome(options = {}) {
 
 /** Attendre, sans importer un minuteur dans chaque outil. */
 export const patienter = ms => new Promise(r => setTimeout(r, ms));
+
+/**
+ * Rend une page HTML et rend son image.
+ *
+ * Trois outils du depot font exactement cela — la banniere, les vitrines,
+ * l apercu de l icone : composer un gabarit, le photographier une fois. Ils
+ * portaient chacun leur copie du lancement de Chrome.
+ *
+ * @param pages    [{ html, fichier }] — rendues l une apres l autre dans le
+ *                 meme navigateur, ce qui evite d en relancer un par image
+ * @param options.attendreMs  temps laisse a la page pour finir de peindre ;
+ *                 les images incrustees en base64 ne sont pas pretes des le
+ *                 chargement
+ * @returns [{ fichier, octets }]
+ */
+export async function rendrePages(pages, options = {}) {
+  const attendre = options.attendreMs == null ? 1200 : options.attendreMs;
+  const navigateur = await ouvrirChrome(options);
+  const sortie = [];
+  try {
+    for (const { html, fichier } of pages) {
+      await navigateur.page('Page.navigate', {
+        url: 'data:text/html;charset=utf-8,' + encodeURIComponent(html)
+      });
+      await patienter(attendre);
+      const { data } = await navigateur.page('Page.captureScreenshot', { format: 'png' });
+      sortie.push({ fichier, octets: Buffer.from(data, 'base64') });
+    }
+  } finally {
+    /* Meme si une page echoue, le navigateur doit etre rendu au systeme. */
+    navigateur.fermer();
+  }
+  return sortie;
+}

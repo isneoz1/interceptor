@@ -17,7 +17,7 @@
 import fs from 'fs';
 import path from 'path';
 import url from 'url';
-import { spawn } from 'child_process';
+import { rendrePages } from './chrome.mjs';
 
 const RACINE = path.resolve(path.dirname(url.fileURLToPath(import.meta.url)), '..');
 const LARGEUR = 1280;
@@ -118,99 +118,14 @@ const PAGE = `<!doctype html><html><head><meta charset="utf-8"><style>
   <div class="pied">Open source · MIT · no telemetry · <b>github.com/isneoz1/interceptor</b></div>
 </body></html>`;
 
-/* ------------------------------- Chromium --------------------------------- */
-function trouverChrome() {
-  const candidats = [];
-  const pw = path.join(process.env.LOCALAPPDATA || '', 'ms-playwright');
-  if (fs.existsSync(pw)) {
-    for (const d of fs.readdirSync(pw).filter(n => n.startsWith('chromium-')).sort().reverse()) {
-      candidats.push(path.join(pw, d, 'chrome-win64', 'chrome.exe'));
-      candidats.push(path.join(pw, d, 'chrome-linux', 'chrome'));
-    }
-  }
-  candidats.push('C:/Program Files/Google/Chrome/Application/chrome.exe');
-  candidats.push('C:/Program Files (x86)/Google/Chrome/Application/chrome.exe');
-  candidats.push('/usr/bin/google-chrome', '/usr/bin/chromium');
-  return candidats.find(c => fs.existsSync(c)) || null;
-}
+/* --------------------------------- Le rendu ------------------------------- */
+const [image] = await rendrePages([{ html: PAGE, fichier: SORTIE }],
+  { largeur: LARGEUR, hauteur: HAUTEUR, echelle: ECHELLE, attendreMs: 2500 });
 
-const chrome = trouverChrome();
-if (!chrome) {
-  console.error('Aucun Chrome ou Chromium trouve : banniere impossible.');
-  process.exit(1);
-}
-
-const profil = fs.mkdtempSync(path.join(process.env.TEMP || '/tmp', 'interceptor-banniere-'));
-const navigateur = spawn(chrome, [
-  '--headless=new', '--remote-debugging-port=0', '--no-first-run', '--no-default-browser-check',
-  '--disable-gpu', '--hide-scrollbars', '--force-color-profile=srgb',
-  '--user-data-dir=' + profil, '--window-size=' + LARGEUR + ',' + HAUTEUR, 'about:blank'
-], { stdio: ['ignore', 'ignore', 'pipe'] });
-
-const adresseCdp = await new Promise((resolve, reject) => {
-  let tampon = '';
-  const minuteur = setTimeout(() => reject(new Error('Chrome n a pas annonce son port')), 30000);
-  navigateur.stderr.on('data', bloc => {
-    tampon += bloc.toString();
-    const m = /ws:\/\/[^\s]+/.exec(tampon);
-    if (m) { clearTimeout(minuteur); resolve(m[0]); }
-  });
-});
-
-const ws = new WebSocket(adresseCdp);
-await new Promise((resolve, reject) => { ws.onopen = resolve; ws.onerror = reject; });
-
-let sequence = 0;
-const attentes = new Map();
-ws.onmessage = ev => {
-  const msg = JSON.parse(ev.data);
-  if (msg.id && attentes.has(msg.id)) {
-    const { resoudre, rejeter } = attentes.get(msg.id);
-    attentes.delete(msg.id);
-    msg.error ? rejeter(new Error(msg.error.message)) : resoudre(msg.result);
-  }
-};
-function envoyer(method, params = {}, sessionId) {
-  const id = ++sequence;
-  return new Promise((resoudre, rejeter) => {
-    attentes.set(id, { resoudre, rejeter });
-    ws.send(JSON.stringify(sessionId ? { id, method, params, sessionId } : { id, method, params }));
-  });
-}
-
-const cibles = await envoyer('Target.getTargets');
-const page = cibles.targetInfos.find(t => t.type === 'page');
-const { sessionId } = await envoyer('Target.attachToTarget', { targetId: page.targetId, flatten: true });
-
-await envoyer('Page.enable', {}, sessionId);
-await envoyer('Emulation.setDeviceMetricsOverride', {
-  width: LARGEUR, height: HAUTEUR, deviceScaleFactor: ECHELLE, mobile: false
-}, sessionId);
-
-await envoyer('Page.navigate', {
-  url: 'data:text/html;charset=utf-8,' + encodeURIComponent(PAGE)
-}, sessionId);
-
-/* On attend que la page ait fini de peindre : l image incrustee pese
-   plusieurs centaines de kilo-octets, elle n est pas prete des le navigate. */
-await new Promise(resolve => setTimeout(resolve, 2500));
-
-const { data } = await envoyer('Page.captureScreenshot', { format: 'png' }, sessionId);
 fs.mkdirSync(path.dirname(SORTIE), { recursive: true });
-fs.writeFileSync(SORTIE, Buffer.from(data, 'base64'));
+fs.writeFileSync(SORTIE, image.octets);
 
-const ko = Math.round(fs.statSync(SORTIE).size / 1024);
-console.log('  ' + path.relative(RACINE, SORTIE).replace(/\\/g, '/') +
-            '  (' + LARGEUR * ECHELLE + 'x' + HAUTEUR * ECHELLE + ', ' + ko + ' Ko)');
-
-ws.close();
-navigateur.kill();
-
-/* Windows garde le profil verrouille un instant apres kill() : un echec de
-   menage ne doit pas faire echouer une banniere deja ecrite sur le disque. */
-try {
-  fs.rmSync(profil, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 });
-} catch {
-  console.log('  (profil temporaire laisse a Windows : ' + profil + ')');
-}
+console.log('  ' + path.relative(RACINE, SORTIE).replace(/\\/g, '/')
+  + '  (' + LARGEUR * ECHELLE + 'x' + HAUTEUR * ECHELLE + ', '
+  + Math.round(fs.statSync(SORTIE).size / 1024) + ' Ko)');
 console.log('Banniere terminee. A deposer dans Settings > General > Social preview.');

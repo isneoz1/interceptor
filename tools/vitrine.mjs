@@ -13,7 +13,7 @@
 import fs from 'fs';
 import path from 'path';
 import url from 'url';
-import { spawn } from 'child_process';
+import { rendrePages } from './chrome.mjs';
 
 const RACINE = path.resolve(path.dirname(url.fileURLToPath(import.meta.url)), '..');
 const SORTIE = path.join(RACINE, 'docs', 'images');
@@ -114,86 +114,25 @@ function page(v) {
 </body></html>`;
 }
 
-/* ------------------------------- Chromium --------------------------------- */
-function trouverChrome() {
-  const candidats = [];
-  const pw = path.join(process.env.LOCALAPPDATA || '', 'ms-playwright');
-  if (fs.existsSync(pw)) {
-    for (const d of fs.readdirSync(pw).filter(n => n.startsWith('chromium-')).sort().reverse()) {
-      candidats.push(path.join(pw, d, 'chrome-win64', 'chrome.exe'));
-      candidats.push(path.join(pw, d, 'chrome-linux', 'chrome'));
-    }
-  }
-  candidats.push('C:/Program Files/Google/Chrome/Application/chrome.exe');
-  candidats.push('/usr/bin/google-chrome', '/usr/bin/chromium');
-  return candidats.find(c => fs.existsSync(c)) || null;
-}
-
-const chrome = trouverChrome();
-if (!chrome) { console.error('Aucun Chrome trouve : vitrines impossibles.'); process.exit(1); }
-
-const profil = fs.mkdtempSync(path.join(process.env.TEMP || '/tmp', 'interceptor-vitrine-'));
-const navigateur = spawn(chrome, [
-  '--headless=new', '--remote-debugging-port=0', '--no-first-run', '--disable-gpu',
-  '--hide-scrollbars', '--force-color-profile=srgb',
-  '--user-data-dir=' + profil, '--window-size=' + LARGEUR + ',' + HAUTEUR, 'about:blank'
-], { stdio: ['ignore', 'ignore', 'pipe'] });
-
-const adresseCdp = await new Promise((resolve, reject) => {
-  let tampon = '';
-  const minuteur = setTimeout(() => reject(new Error('port de debogage absent')), 30000);
-  navigateur.stderr.on('data', b => {
-    tampon += b.toString();
-    const m = /ws:\/\/[^\s]+/.exec(tampon);
-    if (m) { clearTimeout(minuteur); resolve(m[0]); }
-  });
-});
-
-const ws = new WebSocket(adresseCdp);
-await new Promise((r, j) => { ws.onopen = r; ws.onerror = j; });
-let sequence = 0;
-const attentes = new Map();
-ws.onmessage = ev => {
-  const m = JSON.parse(ev.data);
-  if (m.id && attentes.has(m.id)) {
-    const { resoudre, rejeter } = attentes.get(m.id);
-    attentes.delete(m.id);
-    m.error ? rejeter(new Error(m.error.message)) : resoudre(m.result);
-  }
-};
-const envoyer = (method, params = {}, sessionId) => {
-  const id = ++sequence;
-  return new Promise((resoudre, rejeter) => {
-    attentes.set(id, { resoudre, rejeter });
-    ws.send(JSON.stringify(sessionId ? { id, method, params, sessionId } : { id, method, params }));
-  });
-};
-
-const cibles = await envoyer('Target.getTargets');
-const cible = cibles.targetInfos.find(t => t.type === 'page');
-const { sessionId } = await envoyer('Target.attachToTarget',
-  { targetId: cible.targetId, flatten: true });
-await envoyer('Page.enable', {}, sessionId);
-await envoyer('Emulation.setDeviceMetricsOverride',
-  { width: LARGEUR, height: HAUTEUR, deviceScaleFactor: ECHELLE, mobile: false }, sessionId);
-
+/* --------------------------------- Le rendu ------------------------------- */
+/* Une capture source absente n est pas une erreur de ce fichier : c est que
+   tools/captures.mjs n a pas encore tourne. On le dit et on passe. */
+const aRendre = [];
 for (const v of VITRINES) {
-  const source = path.join(SORTIE, v.source);
-  if (!fs.existsSync(source)) {
-    console.error('  capture source absente : ' + v.source + ' — lancez d abord tools/captures.mjs');
+  if (!fs.existsSync(path.join(SORTIE, v.source))) {
+    console.error('  capture source absente : ' + v.source
+      + ' — lancez d abord tools/captures.mjs');
     continue;
   }
-  await envoyer('Page.navigate',
-    { url: 'data:text/html;charset=utf-8,' + encodeURIComponent(page(v)) }, sessionId);
-  await new Promise(r => setTimeout(r, 1600));
-  const { data } = await envoyer('Page.captureScreenshot', { format: 'png' }, sessionId);
-  const chemin = path.join(SORTIE, v.fichier + '.png');
-  fs.writeFileSync(chemin, Buffer.from(data, 'base64'));
-  console.log('  ' + path.relative(RACINE, chemin).replace(/\\/g, '/')
-    + '  (' + Math.round(fs.statSync(chemin).size / 1024) + ' Ko)');
+  aRendre.push({ html: page(v), fichier: path.join(SORTIE, v.fichier + '.png') });
 }
 
-ws.close();
-navigateur.kill();
-try { fs.rmSync(profil, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 }); } catch {}
+const images = await rendrePages(aRendre,
+  { largeur: LARGEUR, hauteur: HAUTEUR, echelle: ECHELLE, attendreMs: 1600 });
+
+for (const { fichier, octets } of images) {
+  fs.writeFileSync(fichier, octets);
+  console.log('  ' + path.relative(RACINE, fichier).replace(/\\/g, '/')
+    + '  (' + Math.round(fs.statSync(fichier).size / 1024) + ' Ko)');
+}
 console.log('Vitrines terminees.');

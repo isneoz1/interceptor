@@ -912,6 +912,10 @@ Repository conventions: dependency-free ES modules, files of 200 to 400 lines, F
 comments that explain the *why* (see [section 19](#19-why-the-source-is-in-french)), and one
 non-negotiable rule — **no feature that claims something it cannot prove.**
 
+[CONTRIBUTING.md](CONTRIBUTING.md) has the practical detail: what the build checks beyond the
+tests, how to add a decoder, and why a string assembled at runtime can never be translated.
+[CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) covers the rest.
+
 ---
 
 ## 23. Licence
