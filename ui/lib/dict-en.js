@@ -12,6 +12,7 @@ import { EN_REGLES } from './dict-en-regles.js';
 import { EN_PALETTE } from './dict-en-palette.js';
 import { EN_GRPC } from './dict-en-grpc.js';
 import { EN_CORS } from './dict-en-cors.js';
+import { EN_INTEGRITE } from './dict-en-integrite.js';
 
 export const EN = {
   /* ------------------------------ Navigation ----------------------------- */
@@ -409,5 +410,6 @@ export const EN = {
   ...EN_REGLES,
   ...EN_PALETTE,
   ...EN_GRPC,
-  ...EN_CORS
+  ...EN_CORS,
+  ...EN_INTEGRITE
 };

@@ -14,7 +14,7 @@ Created by **NeoZ**
 ![Manifest V2](https://img.shields.io/badge/Manifest-V2-444?style=flat)
 [![MIT licence](https://img.shields.io/badge/Licence-MIT-00DDFF?style=flat)](LICENSE)
 ![No dependencies](https://img.shields.io/badge/Dependencies-none-2ea043?style=flat)
-![1033 assertions](https://img.shields.io/badge/Assertions-1033-2ea043?style=flat)
+![1081 assertions](https://img.shields.io/badge/Assertions-1081-2ea043?style=flat)
 ![English and French](https://img.shields.io/badge/UI-EN%20%2F%20FR-444?style=flat)
 
 [**Try it in 60 seconds**](#try-it-in-60-seconds) · [**Why not the built-in panel?**](#firefox-already-has-a-network-panel-why-this) · [**Screenshots**](#2-screenshots) · [**How it works**](#4-how-it-works-the-capture-layers) · [**Changelog**](CHANGELOG.md)
@@ -137,6 +137,8 @@ specific points:
 |---|---|
 | **You never hunt for a feature** | `Ctrl+K` opens a command palette over every view, every tool and every action. Type three letters — `chm` finds *Sites and paths*, `cook` finds *Cookies* — and press Enter. The registry is built from the real tables, so anything added later appears in it without anyone remembering to register it. |
 | **It reads what the browser cannot** | A `application/grpc-web+proto` body is a run of length-prefixed frames, and its **real verdict lives in the trailers** — a gRPC-Web call can answer HTTP 200 and still have failed. The detail panel decodes the frames, the protobuf inside them, and the `grpc-status` that actually decides. |
+| **It checks, rather than repeats** | When a server announces `Content-Digest: sha-256=…`, INTERCEPTOR has the body — so it **recomputes the digest and says whether it matches**, showing both values when it does not. No browser does this. RFC 9530 and the older RFC 3230 form, plus `Content-MD5`. |
+| **It says where the time went** | `Server-Timing` next to the duration actually measured: the server claims 100 of the 214 ms, and the other 114 are network, queueing, or time it does not count. |
 | **It finds the cause, not the symptom** | When a CORS request fails, the browser shows the error on *that* request — while the cause sits in the `OPTIONS` preflight a few rows above. INTERCEPTOR pairs the two and says which header blocked it: a missing `Access-Control-Allow-Methods`, an origin that does not match, or the classic `*` with credentials, which no browser accepts. |
 | **It misses nothing** | Eight capture layers run in parallel: `webRequest`, response bodies via `StreamFilter`, TLS via `securityInfo`, DNS resolution, navigation, cookies, page probes (`fetch`, `XHR`, WebSocket, SSE, Beacon, WebRTC, `PerformanceObserver`), and an optional passive proxy. What one layer misses, another sees. |
 | **It never counts twice** | A correlator pairs observations coming from different layers. One real request produces **one** row, even when five layers saw it. Two identical polling `GET`s stay two separate rows. |
@@ -146,8 +148,8 @@ specific points:
 **What it is not**: not a proxy, not a vulnerability scanner, not an attack tool. Everything
 happens inside your Firefox, on your machine.
 
-**By the numbers**: 166 JavaScript modules, ~32,800 lines, zero external dependencies,
-1033 automated assertions, English and French interface.
+**By the numbers**: 169 JavaScript modules, ~33,300 lines, zero external dependencies,
+1081 automated assertions, English and French interface.
 
 ---
 
@@ -798,7 +800,7 @@ ui/                        The interface — one page for all four surfaces
 ├── console/               One view per file, plus the detail panel
 └── lib/                   Codecs, digests, network, reference tables, i18n
 
-tests/                     1033 assertions, no browser required
+tests/                     1081 assertions, no browser required
 tools/captures.mjs         Generates the documentation screenshots
 tools/banniere.mjs         Generates the social preview card (docs/images)
 tools/vitrine.mjs          Composes the showcase images at the top of this file
@@ -853,7 +855,7 @@ French at the flip of a setting.
 npm test
 ```
 
-1033 assertions, with no browser and no dependencies. The kernel and interface modules are
+1081 assertions, with no browser and no dependencies. The kernel and interface modules are
 written for Firefox; `tests/harnais.mjs` supplies the minimum WebExtension API and DOM they
 need to import and run under Node. **The logic under test is exactly the logic that runs in
 the browser, with no rewriting.**
@@ -861,8 +863,8 @@ the browser, with no rewriting.**
 | Suite | Assertions | What it covers |
 |---|---|---|
 | `core.test.mjs` | 228 | URL normalisation, correlation signatures, the store, the rule engine (both ways: what matches **and** what must not), the security analyser rule by rule, HAR export, curl import, all 39 code generators |
-| `avance.test.mjs` | 396 | WebSocket and HTTP/2 frames, CSP, RFC 9111 freshness, multipart, canonical URLs and homographs, protocol tables, binary structures, rare digests, generators |
-| `ui-load.test.mjs` | 181 | Actual loading of the 124 interface modules, complete module graph (no dead import, no file outside the graph), consistency with the HTML pages and the manifest, **full translation coverage** — every displayed string must have a dictionary entry — and **measured contrast**: every colour pair in both themes is checked against the WCAG 2.1 thresholds |
+| `avance.test.mjs` | 441 | WebSocket and HTTP/2 frames, CSP, RFC 9111 freshness, multipart, canonical URLs and homographs, protocol tables, binary structures, rare digests, generators |
+| `ui-load.test.mjs` | 184 | Actual loading of the 127 interface modules, complete module graph (no dead import, no file outside the graph), consistency with the HTML pages and the manifest, **full translation coverage** — every displayed string must have a dictionary entry — and **measured contrast**: every colour pair in both themes is checked against the WCAG 2.1 thresholds |
 | `detail-coverage.test.mjs` | 120 | Each of a record's 60 fields is displayed, each tab has a render function, each searchable field exists |
 | `outils.test.mjs` | 108 | The toolbox, against published vectors |
 
@@ -904,7 +906,7 @@ the file. It contains internal errors and the command log — not your traffic.
 Before opening a pull request:
 
 ```bash
-npm test              # all 1033 assertions must pass
+npm test              # all 1081 assertions must pass
 .\build.ps1 -Verify   # the build must be green
 ```
 

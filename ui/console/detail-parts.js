@@ -18,6 +18,11 @@ import { analyserCsp } from '../lib/csp.js';
 import { analyserFraicheur, resumerFraicheur } from '../lib/cache-http.js';
 import { estGrpcWeb, estGrpcWebTexte, lireGrpcWeb, resumerGrpcWeb } from '../lib/grpc-web.js';
 import { estPreflight, verdictPreflight, apparierPreflights } from '../lib/cors-preflight.js';
+import { ENTETES_INTEGRITE, lireEmpreintes, verifierEmpreintes, resumerVerification }
+  from '../lib/integrite.js';
+import { lireServerTiming, comparerAuMesure, resumerServerTiming }
+  from '../lib/server-timing.js';
+import { base64VersOctets, texteVersOctets } from '../lib/bytes.js';
 import { analyserMultipart } from '../lib/multipart.js';
 
 /** Rend toutes les cles d un objet, y compris celles qu on n a pas prevues. */
@@ -197,6 +202,8 @@ export function headers(rec) {
   /* Le preflight se lit avec les entetes : c est la qu on cherche quand une
      requete CORS echoue, et la cause vit dans une AUTRE ligne. */
   box.appendChild(cors(rec));
+  box.appendChild(integrite(rec));
+  box.appendChild(serverTiming(rec));
   box.appendChild(politique(rec));
   return box;
 }
@@ -385,6 +392,111 @@ function lienVers(rec, texte) {
       { detail: { view: 'requests', id: rec.id } }));
   });
   return el('div', { class: 'actions' }, bouton);
+}
+
+/* ------------------------ Integrite du corps ------------------------------ */
+/* Un serveur peut annoncer l empreinte de ce qu il envoie. INTERCEPTOR a le
+   corps : il peut donc la VERIFIER, ce que le navigateur ne fait pas. On ne
+   dit pas « le serveur annonce sha-256=… », on dit si cela correspond. */
+function integrite(rec) {
+  const box = frag();
+  const recu = objetEntetes(rec.responseHeaders);
+  const envoye = objetEntetes(rec.requestHeaders);
+
+  for (const [nom, quoi] of Object.entries(ENTETES_INTEGRITE)) {
+    /* L en-tete peut venir de la reponse (le serveur annonce ce qu il rend)
+       ou de la requete (le client annonce ce qu il envoie). */
+    const surReponse = recu[nom];
+    const surRequete = envoye[nom];
+    for (const [valeur, corps, sens] of [
+      [surReponse, rec.responseBody, 'reponse'],
+      [surRequete, rec.requestBody, 'requete']
+    ]) {
+      if (!valeur) continue;
+      let annonces;
+      try { annonces = lireEmpreintes(nom, valeur); }
+      catch (e) {
+        box.appendChild(el('p', { class: 'note ko',
+          text: tp('{entete} illisible : {raison}', { entete: nom, raison: e.message }) }));
+        continue;
+      }
+      if (!annonces.length) continue;
+
+      const titre = nom + '  ·  ' + t(sens);
+      box.appendChild(sec(titre, t(quoi.porte)));
+      for (const a of annonces) {
+        add(box, kv(a.algorithme, a.base64, { copy: true }));
+        if (a.sens) box.appendChild(el('p', { class: 'note', text: t(a.sens) }));
+      }
+
+      /* Le verdict arrive apres : crypto.subtle est asynchrone, et une
+         interface qui attend un calcul pour dessiner parait bloquee. */
+      const verdict = el('p', { class: 'note', text: t('Verification en cours…') });
+      box.appendChild(verdict);
+      const octets = corps && (corps.base64 != null || corps.text != null)
+        ? (corps.base64 != null ? base64VersOctets(corps.base64) : texteVersOctets(corps.text))
+        : null;
+      if (!octets) {
+        verdict.textContent = t('Corps non capture : l empreinte ne peut pas etre verifiee.');
+        verdict.className = 'note warn';
+        continue;
+      }
+      verifierEmpreintes(nom, valeur, octets).then(resultats => {
+        const differe = resultats.some(r => r.verdict === 'differe');
+        const conforme = resultats.some(r => r.verdict === 'correspond');
+        const dit = resumerVerification(resultats);
+        verdict.textContent = dit ? tp(dit.cle, dit.valeurs) : '';
+        verdict.className = 'note ' + (differe ? 'ko' : conforme ? 'ok' : 'warn');
+        for (const r of resultats) {
+          if (r.verdict !== 'differe') continue;
+          add(box, kv(t('Empreinte calculee'), r.calcule, { copy: true, tone: 'ko' }));
+        }
+      }).catch(() => {
+        verdict.textContent = t('Verification impossible dans ce contexte.');
+        verdict.className = 'note warn';
+      });
+    }
+  }
+  return box;
+}
+
+/* --------------------------- Server-Timing -------------------------------- */
+/* La requete a mis 214 ms. Combien le serveur en revendique-t-il ? C est la
+   seule facon de savoir si le probleme est chez lui ou sur le chemin. */
+function serverTiming(rec) {
+  const box = frag();
+  const valeur = objetEntetes(rec.responseHeaders)['server-timing'];
+  if (!valeur) return box;
+
+  let mesures;
+  try { mesures = lireServerTiming(valeur); }
+  catch (e) {
+    box.appendChild(el('p', { class: 'note ko',
+      text: tp('Server-Timing illisible : {raison}', { raison: e.message }) }));
+    return box;
+  }
+  if (!mesures.length) return box;
+
+  const duree = Number.isFinite(rec.duration) ? rec.duration : null;
+  /* Les morceaux sont traduits un a un, puis assembles : le separateur
+     est le meme dans les deux langues. */
+  box.appendChild(sec('Server-Timing',
+    resumerServerTiming(mesures, duree).map(m => tp(m.cle, m.valeurs)).join('  ·  ')));
+
+  for (const m of mesures) {
+    const valeurAffichee = m.duree == null
+      ? (m.description || t('(aucune duree annoncee)'))
+      : m.duree + ' ms' + (m.description ? '  ·  ' + m.description : '');
+    add(box, kv(m.nom, valeurAffichee));
+  }
+
+  const bilan = comparerAuMesure(mesures, duree);
+  if (bilan.reste != null && !bilan.depasse) {
+    box.appendChild(el('p', { class: 'note', text:
+      tp('{n} ms ne sont revendiquees par personne : reseau, mise en file, ou temps que le serveur ne compte pas.',
+        { n: Math.round(bilan.reste * 100) / 100 }) }));
+  }
+  return box;
 }
 
 /* -------------------------------- 3. Corps -------------------------------- */

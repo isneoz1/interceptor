@@ -7,7 +7,7 @@
  * Ces modules sont ceux que l interface branche dans le panneau de detail et
  * dans la boite a outils : un echec ici est une regression visible a l ecran.
  */
-import { egal, memeListe, verifier, leve, bilan } from './harnais.mjs';
+import { egal, proche, memeListe, verifier, leve, bilan } from './harnais.mjs';
 
 import { decoderTrameWs, decoderTramesWs, encoderTrameWs, decoderTrameH2, decoderTramesH2, PREFACE_H2,
   fragmentEntetes, entetesDeTrame } from '../ui/lib/trames.js';
@@ -892,5 +892,111 @@ verifier('un flux sans trailers est signale comme tel',
 verifier('un code de statut hors table est signale',
   lireGrpcWeb(cadreGrpc(0x80, new TextEncoder().encode('grpc-status:99\r\n')))
     .statut.sens.includes('hors de la table'));
+
+/* --------------------- Integrite du corps (RFC 9530) ---------------------- */
+/* Un serveur peut annoncer l empreinte de ce qu il envoie. INTERCEPTOR a le
+   corps : il peut donc la verifier, ce que le navigateur ne fait pas. Le
+   vecteur vient de l annexe de la RFC 9530. */
+const { lireEmpreintes, verifierEmpreintes, resumerVerification, lirePreferences } =
+  await import('../ui/lib/integrite.js');
+
+const CORPS_RFC = '{"hello": "world"}';
+const SHA256_RFC = 'X48E9qOokqqrvdts8nOJRJN3OWDUoyWxBf7kbu9DBPE=';
+
+const empreintes = lireEmpreintes('Content-Digest', 'sha-256=:' + SHA256_RFC + ':');
+egal('une empreinte lue', empreintes.length, 1);
+egal('algorithme lu', empreintes[0].algorithme, 'sha-256');
+egal('valeur lue', empreintes[0].base64, SHA256_RFC);
+egal('signalee verifiable', empreintes[0].verifiable, true);
+egal('deux algorithmes lus',
+  lireEmpreintes('Content-Digest', 'sha-256=:' + SHA256_RFC + ':, sha-512=:aGk=:').length, 2);
+
+/* La forme heritee de la RFC 3230, encore tres repandue. Son base64 contient
+   des « = » de remplissage : le decoupage doit se faire au PREMIER. */
+egal('forme heritee lue', lireEmpreintes('Digest', 'SHA-256=' + SHA256_RFC)[0].base64, SHA256_RFC);
+egal('le remplissage base64 ne casse pas le decoupage',
+  lireEmpreintes('Digest', 'MD5=rL0Y20zC+Fzt72VPzMSk2A==')[0].base64, 'rL0Y20zC+Fzt72VPzMSk2A==');
+/* Content-MD5 ne nomme pas son algorithme : l en-tete EST le nom. */
+egal('Content-MD5 devine son algorithme',
+  lireEmpreintes('Content-MD5', 'rL0Y20zC+Fzt72VPzMSk2A==')[0].algorithme, 'md5');
+leve('un en-tete etranger est refuse', () => lireEmpreintes('Content-Type', 'application/json'));
+leve('une forme heritee sans « = » est refusee', () => lireEmpreintes('Digest', 'sansEgal'));
+egal('une valeur vide ne rend rien', lireEmpreintes('Content-Digest', '').length, 0);
+
+/* La verification : c est elle qui distingue une lecture d une preuve. */
+const conforme = await verifierEmpreintes('Content-Digest', 'sha-256=:' + SHA256_RFC + ':', CORPS_RFC);
+egal('un corps conforme est reconnu', conforme[0].verdict, 'correspond');
+egal('l empreinte calculee est rendue', conforme[0].calcule, SHA256_RFC);
+
+const altere = await verifierEmpreintes('Content-Digest', 'sha-256=:' + SHA256_RFC + ':',
+  '{"hello": "WORLD"}');
+egal('un corps altere est detecte', altere[0].verdict, 'differe');
+verifier('les deux valeurs sont montrees', altere[0].annonce !== altere[0].calcule);
+
+/* MD5 se calcule sans crypto.subtle : la verification marche aussi la. */
+egal('MD5 se verifie localement',
+  (await verifierEmpreintes('Content-MD5', 'XrY7u+Ae7tCTyyK7j1rNww==', 'hello world'))[0].verdict,
+  'correspond');
+
+/* Ce qu on ne sait pas recalculer, on le dit — au lieu de laisser croire
+   qu une absence de verdict vaut approbation. */
+const nonCalculable = await verifierEmpreintes('Content-Digest', 'unixsum=:aGk=:', CORPS_RFC);
+egal('un algorithme non calculable est signale', nonCalculable[0].verdict, 'non verifiable ici');
+egal('aucun verdict n est invente', nonCalculable[0].calcule, null);
+verifier('un algorithme hors registre est signale comme tel',
+  lireEmpreintes('Content-Digest', 'sha-999=:aGk=:')[0].sens.includes('hors du registre'));
+
+egal('resume d un corps conforme', resumerVerification(conforme).cle,
+  'corps conforme a l empreinte annoncee ({liste})');
+egal('resume d un corps altere', resumerVerification(altere).cle,
+  'empreinte annoncee non conforme au corps recu ({liste})');
+egal('aucun resume sans resultat', resumerVerification([]), null);
+
+/* Want-Content-Digest : ce que l autre partie prefere recevoir. Un poids nul
+   ne veut pas dire « peu » mais « surtout pas ». */
+const preferences = lirePreferences('sha-512=10, sha-256=3, md5=0');
+egal('preferences triees par poids',
+  preferences.map(v => v.algorithme).join(','), 'sha-512,sha-256,md5');
+egal('un poids nul est un refus', preferences[2].refuse, true);
+egal('un poids non nul n est pas un refus', preferences[0].refuse, false);
+leve('un poids hors bornes est refuse', () => lirePreferences('sha-256=99'));
+
+/* ---------------------------- Server-Timing ------------------------------- */
+/* La requete a mis 214 ms. Combien le serveur en revendique-t-il ? C est la
+   seule facon de savoir si le probleme est chez lui ou sur le chemin. */
+const { lireServerTiming, comparerAuMesure, resumerServerTiming } =
+  await import('../ui/lib/server-timing.js');
+
+const timings = lireServerTiming('db;dur=53, app;dur=47.2;desc="Application"');
+egal('deux mesures lues', timings.length, 2);
+egal('nom lu', timings[0].nom, 'db');
+egal('duree entiere lue', timings[0].duree, 53);
+proche('duree decimale lue', timings[1].duree, 47.2, 0.001);
+egal('description lue', timings[1].description, 'Application');
+/* Une mesure sans duree est licite : elle signale un evenement. */
+egal('mesure sans duree acceptee', lireServerTiming('cache;desc="hit"')[0].duree, null);
+egal('un nom seul est accepte', lireServerTiming('miss')[0].nom, 'miss');
+egal('valeur vide sans mesure', lireServerTiming('').length, 0);
+leve('une duree non numerique est refusee', () => lireServerTiming('db;dur="beaucoup"'));
+
+const bilanTiming = comparerAuMesure(timings, 214);
+proche('total revendique', bilanTiming.total, 100.2, 0.001);
+egal('deux mesures chronometrees', bilanTiming.mesurees, 2);
+proche('le reste est calcule', bilanTiming.reste, 113.8, 0.001);
+
+/* Un serveur peut revendiquer PLUS que la duree mesuree : mesures qui se
+   chevauchent, ou travail asynchrone. Le reste ne doit pas devenir negatif. */
+const depassement = comparerAuMesure(lireServerTiming('a;dur=500'), 100);
+egal('un total superieur est signale', depassement.depasse, true);
+egal('le reste ne devient jamais negatif', depassement.reste, 0);
+egal('la part est plafonnee a 1', depassement.part, 1);
+/* Sans duree mesuree, on ne calcule pas un reste imaginaire. */
+egal('sans duree mesuree, aucun reste', comparerAuMesure(timings, null).reste, null);
+
+verifier('le resume cite le total',
+  resumerServerTiming(timings, 214).some(m => m.cle === '{n} mesure(s), {ms} ms revendiques'));
+verifier('le resume signale le depassement',
+  resumerServerTiming(lireServerTiming('a;dur=500'), 100).some(m => m.cle.includes('chevauchent')));
+egal('aucun resume sans mesure', resumerServerTiming([], 100).length, 0);
 
 bilan('Outils avances');
