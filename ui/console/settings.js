@@ -12,6 +12,10 @@ import { GROUPS, PROFILES } from './settings-groups.js';
 
 let importText = '';
 
+/* Une seule demande de configuration a la fois : sans ce verrou, chaque
+   rendu en lancait une de plus. */
+let demandeConfig = false;
+
 export function render() {
   const pane = clear($('#view-settings'));
   const box = el('div', { class: 'pane narrow' });
@@ -19,7 +23,22 @@ export function render() {
 
   if (!state.config) {
     box.appendChild(el('p', { class: 'note', text: t('Chargement des reglages…') }));
-    cmd('getConfig', {}).then(res => { if (!res.error) { state.config = res.config; render(); } });
+    /* Une reponse sans `config` et sans erreur laissait `state.config` vide :
+       ce rendu redemandait la configuration, dont la reponse redemandait un
+       rendu, sans fin. La chaine ne passe par aucun minuteur, donc elle ne
+       rend jamais la main — l onglet figeait, un coeur a fond.
+       On ne redessine donc que si la reponse a vraiment apporte quelque
+       chose, et une demande a la fois. */
+    if (!demandeConfig) {
+      demandeConfig = true;
+      cmd('getConfig', {}).then(res => {
+        demandeConfig = false;
+        if (res.error) return toast(res.error, false);
+        if (!res.config) return;
+        state.config = res.config;
+        render();
+      });
+    }
     return;
   }
 

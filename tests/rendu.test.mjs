@@ -33,6 +33,30 @@ const { newRecord, store } = await import('../background/core/store.js');
 const { collectStats } = await import('../background/api/status.js');
 const { importHar } = await import('../background/ingest/har.js');
 
+/* ------------------- Garde-fou contre une vue qui s emballe --------------- */
+/* Une vue qui redessine depuis une reponse du noyau sans verifier qu elle a
+   apporte quelque chose se rappelle elle-meme sans fin. Le va-et-vient ne
+   passe par aucun minuteur — ce sont des microtaches — donc il ne rend jamais
+   la main : le test se bloque, sans une ligne de sortie. C est ce qui a fait
+   tourner cette suite dix-neuf minutes en integration continue.
+
+   Le compteur est pose AVANT le premier rendu, et coupe court au-dela d un
+   plafond. Un test qui echoue vaut infiniment mieux qu un test qui pend. */
+const PLAFOND_COMMANDES = 40;
+const appels = new Map();
+const envoiReel = globalThis.browser.runtime.sendMessage;
+let emballement = null;
+globalThis.browser.runtime.sendMessage = async message => {
+  const cle = (message && message.cmd) || (message && message.t) || 'inconnu';
+  const n = (appels.get(cle) || 0) + 1;
+  appels.set(cle, n);
+  if (n > PLAFOND_COMMANDES) {
+    if (!emballement) emballement = cle + ' demandee plus de ' + PLAFOND_COMMANDES + ' fois';
+    throw new Error('emballement arrete : ' + emballement);
+  }
+  return envoiReel ? envoiReel(message) : {};
+};
+
 verifier('la page declare assez d identifiants pour rendre les vues',
   parId.size > 50, parId.size + ' identifiants');
 
@@ -406,5 +430,124 @@ for (const reste of uniques.slice(0, 15)) {
 egal('aucun fragment ne reste en francais dans l interface anglaise', uniques.length, 0);
 verifier('la comparaison a bien porte sur les vues',
   vuesComparees >= 12, vuesComparees + ' vues comparees');
+
+/* ============ 6. La liste par lots ne doit jamais se bloquer ============= */
+/* Un IntersectionObserver ne rappelle que si l etat CHANGE. Quand un lot ne
+   suffit pas a sortir la sentinelle de la zone visible, aucun rappel ne suit —
+   et descendre n y change rien, puisque descendre ne change pas davantage son
+   etat. La liste s arretait alors definitivement : mesure sur trois mille
+   elements, elle en posait trois cents.
+
+   Le defaut ne demande pas un navigateur pour exister, seulement pour se voir.
+   Un observateur qui ne rappelle qu une fois suffit a le reproduire. */
+const { listeProgressive } = await import('../ui/lib/liste-progressive.js');
+
+function hoteNeuf() {
+  const noeud = document.createElement('div');
+  document.body.appendChild(noeud);
+  return noeud;
+}
+
+/* Sans IntersectionObserver, le module pose tout d un coup : mieux vaut une
+   pause qu une liste tronquee sans que personne le sache. */
+const sansObservateur = hoteNeuf();
+const listeSans = listeProgressive(sansObservateur, Array.from({ length: 3000 }, (_, i) => i),
+  i => document.createElement('div'));
+egal('sans IntersectionObserver, toute la liste est posee', listeSans.rendus, 3000);
+listeSans.arreter();
+
+/* Avec un observateur qui ne rappelle QU UNE FOIS — le cas qui bloquait. */
+const rappels = [];
+globalThis.IntersectionObserver = class {
+  constructor(rappel) { this.rappel = rappel; rappels.push(this); }
+  observe() { this.rappel([{ isIntersecting: true }]); }
+  disconnect() {}
+};
+
+const avecObservateur = hoteNeuf();
+const listeAvec = listeProgressive(avecObservateur, Array.from({ length: 3000 }, (_, i) => i),
+  i => document.createElement('div'));
+egal('un seul rappel suffit a poser toute la liste', listeAvec.rendus, 3000);
+/* Sous ce decor, la sentinelle reste toujours « proche » : la premiere passe
+   pose donc tout, et l observateur n a meme pas lieu d etre. C est le
+   comportement voulu — ce qui compte est que rien ne reste en arriere. */
+verifier('aucune entree ne reste en arriere', listeAvec.rendus === 3000);
+listeAvec.arreter();
+
+/* La sentinelle disparait une fois tout pose : elle ne doit pas rester dans
+   le document a observer le vide. */
+egal('la sentinelle est retiree quand la liste est complete',
+  avecObservateur.querySelectorAll('.sentinelle').length, 0);
+
+/* `arreter()` doit couper net, meme au milieu. */
+const coupee = hoteNeuf();
+const listeCoupee = listeProgressive(coupee, Array.from({ length: 3000 }, (_, i) => i),
+  i => document.createElement('div'));
+listeCoupee.arreter();
+const rendusApresArret = listeCoupee.rendus;
+egal('arreter() fige le compte', listeCoupee.rendus, rendusApresArret);
+verifier('arreter() retire la sentinelle',
+  coupee.querySelectorAll('.sentinelle').length === 0);
+
+delete globalThis.IntersectionObserver;
+
+/* Une liste vide ne doit ni poser de sentinelle ni se plaindre. */
+const vide0 = hoteNeuf();
+const listeVide = listeProgressive(vide0, [], () => document.createElement('div'));
+egal('une liste vide ne rend rien', listeVide.rendus, 0);
+egal('une liste vide ne laisse pas de sentinelle',
+  vide0.querySelectorAll('.sentinelle').length, 0);
+
+/* Une fabrique qui rend null pour certaines entrees ne doit pas fausser le
+   compte : la carte des sites s en sert pour ignorer une requete disparue. */
+const trous = hoteNeuf();
+const listeTrous = listeProgressive(trous, Array.from({ length: 400 }, (_, i) => i),
+  i => (i % 2 ? null : document.createElement('div')));
+egal('les entrees ignorees comptent quand meme comme posees', listeTrous.rendus, 400);
+egal('seules les entrees fabriquees sont dans le document',
+  trous.children.length, 200);
+
+/* =========== 7. Aucune vue ne doit tourner en rond sur le noyau ========== */
+/* Une vue qui redessine depuis une reponse sans verifier qu elle a apporte
+   quelque chose se rappelle elle-meme sans fin. Le va-et-vient ne passe par
+   aucun minuteur — ce sont des microtaches — donc il ne rend jamais la main :
+   l onglet fige, et rien ne le debloque.
+
+   Trois vues le faisaient. La suite de rendu elle-meme en est restee bloquee
+   dix-neuf minutes en integration continue, sans afficher une ligne.
+
+   Le compteur est pose en tete de fichier, avant le premier rendu. Ici on ne
+   fait que le constat, apres avoir mis les vues dans le pire cas. */
+
+/* Le noyau repond « rien », sans erreur : la reponse la plus tordue possible,
+   et celle qu une version plus ancienne ou un demarrage a mi-chemin produit. */
+for (const langue of ['fr', 'en']) {
+  setLang(langue);
+  for (const [, records] of CAPTURES) {
+    poserCapture(records);
+    /* Une configuration absente est precisement ce qui declenchait la vue des
+       reglages : on la retire pour eprouver ce chemin-la. */
+    state.config = null;
+    for (const [nom, rendre] of VUES) {
+      state.view = nom;
+      try { rendre(); } catch { /* les plantages sont couverts plus haut */ }
+    }
+  }
+}
+
+/* Les microtaches en attente doivent s epuiser : si une vue boucle, cette
+   attente ne revient jamais — et c est exactement le symptome recherche. */
+await new Promise(resoudre => setTimeout(resoudre, 250));
+
+globalThis.browser.runtime.sendMessage = envoiReel;
+
+verifier('aucune vue ne s emballe sur le noyau', emballement === null,
+  emballement || '');
+const plusDemandee = [...appels].sort((a, b) => b[1] - a[1])[0];
+verifier('les commandes restent en nombre raisonnable',
+  !plusDemandee || plusDemandee[1] <= PLAFOND_COMMANDES,
+  plusDemandee ? plusDemandee[0] + ' : ' + plusDemandee[1] + ' fois' : 'aucune commande');
+verifier('les vues parlent bien au noyau', appels.size > 0,
+  [...appels.keys()].join(', '));
 
 bilan('Rendu de l interface');

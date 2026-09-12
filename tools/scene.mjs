@@ -28,10 +28,13 @@ const VERSION = MANIFESTE.version;
  * Prepare la scene et rend de quoi s en servir.
  *
  * @param options.langue  « en » ou « fr » — la langue rendue par l interface
+ * @param options.volume  requetes ordinaires ajoutees apres la demonstration,
+ *                        pour eprouver le defilement du tableau
  * @returns { port, instantane, scriptDeDemarrage, fermer, RACINE, VERSION }
  */
 export async function ouvrirScene(options = {}) {
   const langue = options.langue || 'en';
+  const volume = Math.max(0, Number(options.volume) || 0);
 
   /* ======================= 1. Trafic passe dans le noyau ===================== */
   installerTout();
@@ -185,6 +188,34 @@ export async function ouvrirScene(options = {}) {
         mock: { body: '{"remaining":42}', contentType: 'application/json' } }
     ]
   });
+
+  /* --- Du volume, quand on veut eprouver le defilement --- */
+  /* Des requetes ordinaires, variees juste ce qu il faut pour que les colonnes
+     ne rendent pas toutes la meme chose : le tableau doit tenir sur du trafic
+     reel, pas sur mille copies d une meme ligne. */
+  if (volume) {
+    const HOTES = ['api.example.com', 'cdn.example.com', 'shop.example.com',
+      'auth.example.com', 'assets.example.net'];
+    const TYPES = ['xmlhttprequest', 'script', 'image', 'stylesheet', 'font', 'other'];
+    const MIMES = ['application/json', 'text/javascript', 'image/webp', 'text/css',
+      'font/woff2', 'text/plain'];
+    const METHODES = ['GET', 'GET', 'GET', 'POST', 'PUT', 'DELETE', 'PATCH'];
+    const STATUTS = [200, 200, 200, 200, 204, 301, 304, 400, 404, 429, 500, 503];
+    for (let i = 0; i < volume; i++) {
+      const t = i % TYPES.length;
+      requete({
+        methode: METHODES[i % METHODES.length],
+        url: 'https://' + HOTES[i % HOTES.length] + '/v2/r/' + i + '?page=' + (i % 97),
+        type: TYPES[t],
+        mime: MIMES[t],
+        statut: STATUTS[i % STATUTS.length],
+        taille: (i * 137) % 90000,
+        duree: (i * 31) % 2400,
+        ecart: 3
+      });
+    }
+    console.log('Volume ajoute : ' + volume + ' requetes ordinaires.');
+  }
 
   /* Le vrai service de commandes du noyau, celui que la console interroge dans
      Firefox. La demo ne reimplemente rien : elle lui parle. */

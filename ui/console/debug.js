@@ -23,6 +23,9 @@ let recherche = '';
 let cache = null;
 let enCours = false;
 let detailOuvert = new Set();
+/* Ce que la derniere lecture a donne, quand elle a echoue. Sans cela, l ecran
+   restait sur « Lecture du journal… » sans rien de plus a faire. */
+let erreur = null;
 
 /** Relit le journal du noyau puis redessine. */
 export async function charger({ silencieux = false } = {}) {
@@ -32,8 +35,17 @@ export async function charger({ silencieux = false } = {}) {
     niveau: filtreNiveau, source: filtreSource, recherche, limite: 3000
   });
   enCours = false;
-  if (res.error) { if (!silencieux) toast(res.error, false); return; }
-  cache = res.journal;
+  if (res.error) {
+    erreur = res.error;
+    if (!silencieux) toast(res.error, false);
+    if (state.view === 'debug') render();
+    return;
+  }
+  erreur = null;
+  /* TOUJOURS une forme exploitable. Une reponse sans `journal` laissait
+     `cache` vide, donc `render` redemandait un chargement, qui redemandait un
+     rendu : la vue tournait en rond en microtaches et figeait l onglet. */
+  cache = res.journal || { actif: false, entrees: [], compteurs: {} };
   render();
 }
 
@@ -50,6 +62,12 @@ export function render() {
   box.appendChild(sec('Journal interne', 'INTERCEPTOR observe par lui-meme'));
 
   if (!cache) {
+    if (erreur) {
+      box.appendChild(vide('Journal indisponible', erreur));
+      box.appendChild(el('div', { class: 'actions' },
+        button('Reessayer', () => { erreur = null; charger(); })));
+      return;
+    }
     box.appendChild(el('p', { class: 'note', text: t('Lecture du journal…') }));
     charger();
     return;

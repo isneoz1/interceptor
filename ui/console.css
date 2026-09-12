@@ -395,7 +395,14 @@ body { display: flex; flex-direction: column; overflow: hidden; }
 .tile.alert.hot b { color: var(--red); }
 .tile.ok b { color: var(--green); }
 
-.cols2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px 30px; }
+/* `min(300px, 100%)` et non `300px` : dans un cadre plus etroit que 300 px —
+   le panneau lateral en fait 350 au total — une piste de 300 px deborde au
+   lieu de se replier. L intention est « au moins 300 px si la place existe ». */
+.cols2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
+  gap: 20px 30px;
+}
 
 /* ============================== Diagrammes =============================== */
 .chart {
@@ -610,6 +617,11 @@ body { display: flex; flex-direction: column; overflow: hidden; }
   .brand .title span { display: none; }
   .pane { padding: 15px 13px 40px; }
   .detail { height: 56%; }
+  /* La rangee d actions mesure 390 px et refusait de retrecir : dans le
+     panneau lateral de Firefox, large de 350 px, elle poussait la page a
+     400 px — une barre de defilement horizontale sur toutes les vues, en
+     permanence. Elle a le droit de passer a la ligne. */
+  .top .actions { flex-wrap: wrap; flex-shrink: 1; row-gap: 6px; }
 }
 
 /* ===================== Confort de lecture et redimension ================== */

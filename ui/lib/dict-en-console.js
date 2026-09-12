@@ -234,5 +234,9 @@ export const EN_CONSOLE = {
   '{s} (protocole non mesure)': '{s} (protocol not measured)',
   '{debut}  →  {fin}  ·  {ms} ms par barre': '{debut}  →  {fin}  ·  {ms} ms per bar',
   'Rien a signaler sur ce perimetre.': 'Nothing to report on this scope.',
-  'Aucun marqueur pose sur ce perimetre.': 'No tag set on this scope.'
+  'Aucun marqueur pose sur ce perimetre.': 'No tag set on this scope.',
+
+  /* La vue « Journal interne » quand le noyau ne repond pas. */
+  'Journal indisponible': 'Log unavailable',
+  'Reessayer': 'Try again'
 };

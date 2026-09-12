@@ -14,7 +14,7 @@ Created by **NeoZ**
 ![Manifest V2](https://img.shields.io/badge/Manifest-V2-444?style=flat)
 [![MIT licence](https://img.shields.io/badge/Licence-MIT-00DDFF?style=flat)](LICENSE)
 ![No dependencies](https://img.shields.io/badge/Dependencies-none-2ea043?style=flat)
-![1167 assertions](https://img.shields.io/badge/Assertions-1167-2ea043?style=flat)
+![1180 assertions](https://img.shields.io/badge/Assertions-1180-2ea043?style=flat)
 ![English and French](https://img.shields.io/badge/UI-EN%20%2F%20FR-444?style=flat)
 
 [**Try it in 60 seconds**](#try-it-in-60-seconds) · [**Why not the built-in panel?**](#firefox-already-has-a-network-panel-why-this) · [**Screenshots**](#2-screenshots) · [**How it works**](#4-how-it-works-the-capture-layers) · [**Changelog**](CHANGELOG.md)
@@ -149,7 +149,7 @@ specific points:
 happens inside your Firefox, on your machine.
 
 **By the numbers**: 171 JavaScript modules, ~33,300 lines, zero external dependencies,
-1167 automated assertions, English and French interface.
+1180 automated assertions, English and French interface.
 
 ---
 
@@ -819,7 +819,9 @@ ui/                        The interface — one page for all four surfaces
 ├── console/               One view per file, plus the detail panel
 └── lib/                   Codecs, digests, network, reference tables, i18n
 
-tests/                     1167 assertions, no browser required
+tests/                     1180 assertions, no browser required
+tools/defilement.mjs       Scrolls 20 000 rows in a real browser, looking for holes
+tools/affichage.mjs        Opens every view at four widths, looking for overflow
 tools/captures.mjs         Generates the documentation screenshots
 tools/banniere.mjs         Generates the social preview card (docs/images)
 tools/vitrine.mjs          Composes the showcase images at the top of this file
@@ -874,7 +876,7 @@ French at the flip of a setting.
 npm test
 ```
 
-1167 assertions, with no browser and no dependencies. The kernel and interface modules are
+1180 assertions, with no browser and no dependencies. The kernel and interface modules are
 written for Firefox; `tests/harnais.mjs` supplies the minimum WebExtension API and DOM they
 need to import and run under Node. **The logic under test is exactly the logic that runs in
 the browser, with no rewriting.**
@@ -886,7 +888,7 @@ the browser, with no rewriting.**
 | `ui-load.test.mjs` | 224 | Actual loading of the 129 interface modules, complete module graph (no dead import, no file outside the graph), consistency with the HTML pages and the manifest, **full translation coverage** — every displayed string must have a dictionary entry — and **measured contrast**: every colour pair in both themes is checked against the WCAG 2.1 thresholds |
 | `detail-coverage.test.mjs` | 120 | Each of a record's 60 fields is displayed, each tab has a render function, each searchable field exists |
 | `outils.test.mjs` | 108 | The toolbox, against published vectors |
-| `rendu.test.mjs` | 17 | The interface **actually rendered**: sixteen views against three captures, the eleven detail tabs, the twenty-two toolbox panels against thirty-two hostile inputs, and 264 deliberately malformed HAR files — then a fragment-by-fragment comparison of both languages, so nothing can stay in French on an English screen |
+| `rendu.test.mjs` | 30 | The interface **actually rendered**: sixteen views against three captures, the eleven detail tabs, the twenty-two toolbox panels against thirty-two hostile inputs, and 264 deliberately malformed HAR files — then a fragment-by-fragment comparison of both languages, so nothing can stay in French on an English screen. It also counts the commands each view sends the kernel: **a view that re-renders itself in a loop is caught in a second instead of freezing the tab** |
 
 Expected values come from published sources: RFC vectors (4226, 6238, 6455, 4231, 7541, 9113,
 3986, 7578, 9111, 8187, 2231, 2047, 6266, 7638, 8941, and ZeroMQ RFC 32), standard check values (all 20 CRC variants are verified against their
@@ -914,6 +916,28 @@ To regenerate the documentation screenshots:
 node tools/captures.mjs
 ```
 
+### Two audits that need a real browser
+
+The six test suites run under Node with no browser, which is what lets them run everywhere.
+Two things cannot be checked that way, because they only exist once a layout engine is
+involved — so they live as tools, and each prints a verdict and an exit code:
+
+```bash
+node tools/defilement.mjs            # 20 000 rows, scrolled for real
+node tools/affichage.mjs             # every view at 350, 700, 1100 and 1600 px
+```
+
+**`defilement.mjs`** fills the store with 20 000 requests, then scrolls the table down and
+back up a thousand steps. At each step it checks that the drawn rows follow one another
+with no gap and no repeated index, that they cover the visible area from top to bottom,
+that `scrollHeight` does not move between frames — it is what makes a scrollbar jump — and
+that the batch-rendered lists keep posting until nothing is left.
+
+**`affichage.mjs`** opens every view at four widths, including the 350 px of a Firefox
+sidebar, and looks for a page that overflows horizontally, an element wider than its frame
+with nothing able to scroll it into view, two siblings that overlap when they should stack,
+and text cut off with nothing to say so.
+
 ---
 
 ## 22. Contributing
@@ -926,7 +950,7 @@ the file. It contains internal errors and the command log — not your traffic.
 Before opening a pull request:
 
 ```bash
-npm test              # all 1167 assertions must pass
+npm test              # all 1180 assertions must pass
 .\build.ps1 -Verify   # the build must be green
 ```
 

@@ -213,8 +213,17 @@ class Noeud {
       if (c) this.classList._set.add(c);
     }
   }
+  get parentNode() { return this.parentElement; }
   appendChild(n) {
     if (n == null) return n;
+    /* Un fragment verse ses enfants et reste vide : c est tout son interet.
+       L inserer tel quel faisait compter les LOTS au lieu des elements. */
+    if (n.nodeType === 11) {
+      for (const enfant of [...n.children]) this.appendChild(enfant);
+      n.children.length = 0;
+      n.childNodes.length = 0;
+      return n;
+    }
     this.children.push(n);
     this.childNodes.push(n);
     n.parentElement = this;
@@ -226,6 +235,13 @@ class Noeud {
   insertBefore(n, reference) {
     if (n == null) return n;
     const i = reference == null ? -1 : this.childNodes.indexOf(reference);
+    if (n.nodeType === 11) {
+      const enfants = [...n.children];
+      n.children.length = 0;
+      n.childNodes.length = 0;
+      for (const enfant of enfants) this.insertBefore(enfant, reference);
+      return n;
+    }
     if (i < 0) return this.appendChild(n);
     this.children.splice(i, 0, n);
     this.childNodes.splice(i, 0, n);

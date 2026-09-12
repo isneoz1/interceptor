@@ -12,10 +12,28 @@
  *
  * Ici, un premier lot est rendu tout de suite, et la suite arrive quand le
  * lecteur approche du bas. Rien n est coupe, rien ne fige.
+ *
+ * Un piege merite d etre nomme : un IntersectionObserver ne rappelle que si
+ * l etat CHANGE. Si la sentinelle reste dans la zone visible apres un lot,
+ * elle reste « visible » — aucun changement, donc aucun rappel, et la liste
+ * s arretait la definitivement, descendre n y changeant rien puisque
+ * descendre ne changeait pas davantage son etat. On pose donc tant qu elle y
+ * reste, en mesurant, plutot que d attendre un rappel qui ne viendra pas.
  */
 import { el } from './dom.js';
 
 const LOT = 150;
+
+/* Marge sous la zone visible ou l on considere que la sentinelle approche.
+   La meme valeur sert au `rootMargin` de l observateur et a la mesure faite
+   apres chaque lot : les deux doivent parler de la meme zone. */
+const MARGE = 600;
+
+/* Nombre maximal de lots poses d affilee sans reprendre la main. A 150 par
+   lot, cela fait trente mille elements : bien au-dela de ce qu une liste
+   atteint, et assez bas pour qu une mesure impossible — un cadre masque, dont
+   tout mesure zero — ne fige pas la page. */
+const LOTS_MAX = 200;
 
 /**
  * @param hote        element qui recoit les elements rendus
@@ -51,6 +69,25 @@ export function listeProgressive(hote, elements, fabriquer, options = {}) {
     if (rendus >= total) retirer();
   }
 
+  /* La sentinelle est-elle encore assez haute pour meriter un lot de plus ?
+     Mesure directe, parce que l observateur, lui, ne redira rien tant que
+     l etat ne change pas. */
+  function approche(racine) {
+    if (!sentinelle.getBoundingClientRect) return false;
+    const bas = racine && racine.getBoundingClientRect
+      ? racine.getBoundingClientRect().bottom
+      : (typeof innerHeight === 'number' ? innerHeight : 0);
+    return sentinelle.getBoundingClientRect().top <= bas + MARGE;
+  }
+
+  /* Pose des lots tant que la sentinelle reste dans la zone. Sans cette
+     boucle, un lot qui ne la fait pas sortir arretait la liste pour de bon :
+     l observateur n avait plus aucun changement a signaler. */
+  function poserJusquASortie(racine) {
+    let lots = 0;
+    do { poser(); } while (rendus < total && ++lots < LOTS_MAX && approche(racine));
+  }
+
   let observateur = null;
   function retirer() {
     if (observateur) { observateur.disconnect(); observateur = null; }
@@ -58,16 +95,19 @@ export function listeProgressive(hote, elements, fabriquer, options = {}) {
   }
 
   hote.appendChild(sentinelle);
-  poser();                       // le premier lot est visible immediatement
+
+  /* Rien a poser : la sentinelle n a personne a attendre. Sans cela elle
+     restait dans le document, a observer le vide. */
+  if (!total) retirer();
+
+  const racine = options.defilant || ancetreDefilant(hote);
+  poserJusquASortie(racine);     // de quoi remplir l ecran, tout de suite
 
   if (rendus < total) {
-    const racine = options.defilant || ancetreDefilant(hote);
     if (typeof IntersectionObserver === 'function') {
       observateur = new IntersectionObserver(entrees => {
-        // Plusieurs lots d affilee si la sentinelle reste visible : cela arrive
-        // quand les elements sont courts et la fenetre haute.
-        for (const entree of entrees) if (entree.isIntersecting) poser();
-      }, { root: racine || null, rootMargin: '600px 0px' });
+        if (entrees.some(entree => entree.isIntersecting)) poserJusquASortie(racine);
+      }, { root: racine || null, rootMargin: MARGE + 'px 0px' });
       observateur.observe(sentinelle);
     } else {
       // Sans IntersectionObserver, on pose tout : mieux vaut une pause qu une

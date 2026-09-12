@@ -109,3 +109,16 @@ It gets read properly. Expect questions about *why*, more than about style — t
 above are easy to fix, and a change that solves the wrong problem is not.
 
 Licence: MIT, like the rest. By contributing, you agree your work ships under it.
+
+## Two checks that need a browser
+
+`npm test` runs six suites under Node with no browser. Two kinds of defect only exist once
+a layout engine is involved, so they live as tools:
+
+```bash
+node tools/defilement.mjs      # 20 000 rows scrolled for real: gaps, repeats, jumps
+node tools/affichage.mjs       # every view at 350, 700, 1100 and 1600 px
+```
+
+Run both before touching the table, the batch-rendered lists, or anything in
+`console.css`. Each prints a verdict and exits non-zero on a finding.

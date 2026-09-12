@@ -33,7 +33,12 @@ async function load() {
   loading = false;
   loaded = true;
   if (res.error) { toast(res.error, false); return; }
-  cache = res;
+  /* La reponse du noyau n est pas garantie : elle traverse un canal, et une
+     version plus ancienne peut ne pas porter le meme champ. `render` compte
+     ensuite `cache.findings.length` sans se poser de question — et une
+     reponse sans `findings` le faisait echouer au milieu du dessin, laissant
+     la vue Securite a moitie tracee. */
+  cache = { ...res, findings: Array.isArray(res.findings) ? res.findings : [] };
   render();
 }
 
