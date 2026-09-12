@@ -1,6 +1,6 @@
 {
   "name": "interceptor",
-  "version": "3.8.0",
+  "version": "3.9.0",
   "description": "A complete network supervision station for Firefox: total capture without duplicates, plain-language analysis, interception rules and replay. Created by NeoZ.",
   "author": "NeoZ",
   "license": "MIT",

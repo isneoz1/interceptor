@@ -87,7 +87,7 @@ const etat = {
   motif: '', options: 'gi', remplacement: '',
   cleXor: '', xorHex: false, xorCandidats: null, cleVigenere: '',
   base: 10, prefixeTest: '',
-  familleRef: 'statuts', questionRef: undefined,
+  familleRef: 'tout', questionRef: undefined,
   modeAes: 'AES-GCM', cleAes: '', formeCleAes: 'hex', ivAes: '', aadAes: '',
   sortieAes: null, erreurAes: null,
   mdpKdf: '', selKdf: '', iterations: '100000', hashKdf: 'SHA-256', bitsKdf: '256',

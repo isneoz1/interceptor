@@ -96,6 +96,49 @@ if (MODE_TEXTE) {
     + Object.values(texteParVue).reduce((n, l) => n + l.length, 0) + ' fragments)');
 }
 
+/* La reference, cherchee dans les quatorze tables a la fois. « timeout »
+   ramene 408, 504, l en-tete Timeout, SETTINGS_TIMEOUT et
+   NS_ERROR_NET_TIMEOUT : quatre tables dans une seule image. */
+if (!MODE_TEXTE) {
+  await page('Runtime.evaluate', { expression: 'window.__vue("tools")' });
+  await patienter(400);
+
+  const ouverture = await page('Runtime.evaluate', {
+    expression: '(() => {'
+      + ' const onglet = [...document.querySelectorAll("#view-tools .dtab")]'
+      + '   .find(b => /^(Reference|Référence)$/i.test(b.textContent.trim()));'
+      + ' if (!onglet) throw new Error("onglet Reference introuvable");'
+      + ' onglet.click();'
+      + '})()'
+  });
+  if (ouverture.exceptionDetails) {
+    throw new Error('reference : ' + (ouverture.exceptionDetails.exception
+      && ouverture.exceptionDetails.exception.description));
+  }
+  await patienter(400);
+
+  const frappe = await page('Runtime.evaluate', {
+    expression: '(() => {'
+      + ' const champ = [...document.querySelectorAll("#view-tools input.field")]'
+      + '   .find(i => /chercher|search/i.test(i.placeholder || ""));'
+      + ' if (!champ) throw new Error("champ de recherche introuvable");'
+      + ' champ.value = "timeout";'
+      + ' champ.dispatchEvent(new Event("input", { bubbles: true }));'
+      + '})()'
+  });
+  if (frappe.exceptionDetails) {
+    throw new Error('recherche : ' + (frappe.exceptionDetails.exception
+      && frappe.exceptionDetails.exception.description));
+  }
+  await patienter(500);
+
+  const { data } = await page('Page.captureScreenshot', { format: 'png' });
+  const chemin = path.join(SORTIE, 'console-reference.png');
+  fs.writeFileSync(chemin, Buffer.from(data, 'base64'));
+  console.log('  ' + path.relative(RACINE, chemin).replace(/\\/g, '/')
+    + '  (' + Math.round(fs.statSync(chemin).size / 1024) + ' Ko)');
+}
+
 /* La palette, ouverte et deja filtree : une capture vide ne montrerait ni le
    classement ni la mise en evidence des lettres tapees.
 

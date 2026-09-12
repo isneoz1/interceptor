@@ -440,6 +440,45 @@ for (const muette of muettes.slice(0, 10)) {
 }
 egal('chaque entree de palette retrouve sa ligne dans le panneau', muettes.length, 0);
 
+/* ------------ 8 quater. « Tout » : chercher sans savoir ou -------------- */
+/* La palette repond a celui qui connait le nom. « Tout » repond a celui qui
+   ne sait pas dans quelle table regarder — et c est lui qui a le plus besoin
+   d une reference. */
+function texteRendu(famille, question) {
+  return texteDe(panneauReference('', { familleRef: famille, questionRef: question },
+    () => {}));
+}
+
+verifier('« Tout » sans question annonce les 691 lignes',
+  texteRendu('tout', '').includes(String(lignesDeReference)),
+  'le total n apparait pas');
+
+const CHERCHES = [
+  ['429', '429  Too Many Requests', 'un code de statut'],
+  ['propfind', 'PROPFIND', 'une methode'],
+  ['cache-status', 'Cache-Status', 'un en-tete'],
+  ['1011', '1011', 'une fermeture WebSocket'],
+  ['NXDOMAIN', 'NXDomain', 'un code de reponse DNS']
+];
+for (const [question, attendu, quoi] of CHERCHES) {
+  verifier('« Tout » trouve ' + quoi + ' avec « ' + question + ' »',
+    texteRendu('tout', question).includes(attendu), 'absent du rendu');
+}
+
+/* Chercher par le sens, pas seulement par le nom : « ocsp » n apparait dans
+   aucun nom d alerte TLS, seulement dans la phrase qui l explique. */
+verifier('« Tout » cherche aussi dans les explications',
+  texteRendu('tout', 'ocsp').includes('bad_certificate_status_response'),
+  'la recherche ne porte que sur les noms');
+
+verifier('« Tout » le dit quand rien ne correspond',
+  texteRendu('tout', 'zzzzzzzz').includes('Aucune'), 'pas de message');
+
+/* Elle ne doit pas s enumerer elle-meme, sinon la palette proposerait les
+   691 entrees une seconde fois. */
+egal('« Tout » n ajoute aucune entree a la palette',
+  entrees.filter(e => e.famille === 'tout').length, 0);
+
 /* Le poids doit laisser les vues devant : « cookies » ouvre la vue, pas
    l en-tete du meme nom. Le classement lui-meme se teste dans avance. */
 const { filtrer: filtrerPalette } = await import('../ui/lib/palette.js');

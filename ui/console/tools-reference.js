@@ -5,7 +5,7 @@
  * ligne, et se cherchent depuis le texte de travail ou depuis le champ.
  */
 import { el, frag, kv, sec, add, button } from '../lib/dom.js';
-import { t } from '../lib/i18n.js';
+import { t, tp } from '../lib/i18n.js';
 import { STATUTS, METHODES, familleStatut } from '../lib/ref-http.js';
 import { ENTETES, chercherEntetes } from '../lib/ref-entetes.js';
 import { TYPES_MEDIA, chercherTypes } from '../lib/ref-mime.js';
@@ -28,34 +28,38 @@ import { ALERTES_TLS, ERREURS_H3, ERREURS_QUIC, TYPES_DNS, RCODES_DNS }
  * introuvables dans une documentation. Les fermetures WebSocket font
  * exception : leurs noms sont des phrases, et le dictionnaire les a. */
 const FAMILLES = [
+  /* « Tout » n a pas de table a elle : elle cherche dans les quatorze autres.
+     C est la famille par defaut, parce que celui qui arrive ici avec une
+     valeur en main ne sait pas toujours de quelle table elle releve. */
+  ['tout', 'Tout', null, null],
   ['statuts', 'Codes de statut', () => STATUTS,
-    s => [s.code + '  ' + s.nom, String(s.code)]],
+    s => [s.code + '  ' + s.nom, String(s.code), t(s.sens)]],
   ['methodes', 'Methodes', () => METHODES,
-    m => [m.nom, m.nom]],
+    m => [m.nom, m.nom, t(m.sens)]],
   ['entetes', 'Entetes', () => ENTETES,
-    h => [h.nom, h.nom]],
+    h => [h.nom, h.nom, t(h.sens) + '  ·  ' + t(h.description)]],
   ['types', 'Types de media', () => TYPES_MEDIA,
-    m => [m.type, m.type]],
+    m => [m.type, m.type, t(m.description) + (m.extensions ? '  ·  ' + m.extensions : '')]],
   ['ports', 'Ports', () => PORTS,
-    p => [p.numero + '  ' + t(p.service), String(p.numero)]],
+    p => [p.numero + '  ' + t(p.service), String(p.numero), p.protocole + '  ·  ' + t(p.note)]],
   ['tls', 'Suites TLS', () => SUITES_TLS,
-    s => [s.nom, s.nom]],
+    s => [s.nom, s.nom, s.version + '  ·  ' + t(s.chiffrement) + '  ·  ' + t(s.solidite)]],
   ['ws', 'Fermetures WebSocket', () => FERMETURES_WS,
-    e => [e.code + '  ' + t(e.nom), String(e.code)]],
+    e => [e.code + '  ' + t(e.nom), String(e.code), t(e.sens)]],
   ['h2', 'Erreurs HTTP/2', () => ERREURS_H2,
-    e => [e.nom, e.nom]],
+    e => [e.nom, e.nom, t(e.sens)]],
   ['h3', 'Erreurs HTTP/3', () => ERREURS_H3,
-    e => [e.nom, e.nom]],
+    e => [e.nom, e.nom, t(e.sens)]],
   ['quic', 'Erreurs QUIC', () => ERREURS_QUIC,
-    e => [e.nom, e.nom]],
+    e => [e.nom, e.nom, t(e.sens)]],
   ['alertes', 'Alertes TLS', () => ALERTES_TLS,
-    e => [e.nom, e.nom]],
+    e => [e.nom, e.nom, t(e.sens)]],
   ['dns', 'Types DNS', () => TYPES_DNS,
-    e => [e.nom, e.nom]],
+    e => [e.nom, e.nom, t(e.sens)]],
   ['rcodes', 'Codes de reponse DNS', () => RCODES_DNS,
-    e => [e.nom, e.nom]],
+    e => [e.nom, e.nom, t(e.sens)]],
   ['erreurs', 'Erreurs reseau', () => ERREURS_FIREFOX,
-    e => [e.code, e.code]]
+    e => [e.code, e.code, t(e.sens)]]
 ];
 
 /**
@@ -68,6 +72,7 @@ const FAMILLES = [
 export function entreesReference() {
   const sortie = [];
   for (const [cle, titre, table, etiqueter] of FAMILLES) {
+    if (!table) continue;   /* « Tout » n enumere rien : elle agrege. */
     for (const ligne of table()) {
       const [libelle, question] = etiqueter(ligne);
       sortie.push({ famille: cle, groupe: titre, libelle: String(libelle), question });
@@ -78,7 +83,7 @@ export function entreesReference() {
 
 export function panneauReference(entree, etat, redessiner) {
   const box = frag();
-  const famille = etat.familleRef || 'statuts';
+  const famille = etat.familleRef || 'tout';
   const question = etat.questionRef === undefined ? String(entree || '').trim() : etat.questionRef;
 
   box.appendChild(sec('Reference', 'tables completes, hors ligne'));
@@ -97,6 +102,7 @@ export function panneauReference(entree, etat, redessiner) {
   champ.addEventListener('input', () => { etat.questionRef = champ.value; redessiner(); });
   box.appendChild(el('div', { class: 'actions' }, [champ]));
 
+  if (famille === 'tout') return ecrireTout(box, question);
   if (famille === 'statuts') return ecrireStatuts(box, question);
   if (famille === 'methodes') return ecrireMethodes(box, question);
   if (famille === 'entetes') return ecrireEntetes(box, question);
@@ -111,6 +117,62 @@ export function panneauReference(entree, etat, redessiner) {
   if (famille === 'rcodes') return ecrireListe(box, question, RCODES_DNS, 'Codes de reponse DNS', ['code', 'nom', 'sens']);
   if (famille === 'erreurs') return ecrireListe(box, question, ERREURS_FIREFOX, 'Erreurs reseau', ['code', 'sens']);
   return ecrirePorts(box, question);
+}
+
+/* Nombre de resultats affiches par « Tout ». Au-dela, la liste cesse d etre
+   une reponse et redevient un tableau a parcourir : mieux vaut dire combien
+   il en reste et laisser preciser la recherche. */
+const MAX_TOUT = 60;
+
+/** Les quatorze tables a la fois, pour qui ne sait pas dans laquelle chercher. */
+function ecrireTout(box, question) {
+  const q = String(question || '').trim().toLowerCase();
+  const lignes = [];
+  let total = 0;
+
+  for (const [, titre, table, etiqueter] of FAMILLES) {
+    if (!table) continue;
+    for (const entree of table()) {
+      total++;
+      const [libelle, , explication] = etiqueter(entree);
+      if (!q) continue;
+      if (!String(libelle).toLowerCase().includes(q)
+        && !String(explication).toLowerCase().includes(q)) continue;
+      lignes.push({ titre, libelle: String(libelle), explication: String(explication) });
+    }
+  }
+
+  /* Sans question, une liste de six cent quatre-vingt-onze lignes n apprend
+     rien. On dit ce qu il y a, et ce qu il faut taper pour y arriver. */
+  if (!q) {
+    box.appendChild(sec('Tout', tp('{n} lignes, quatorze tables', { n: total })));
+    box.appendChild(el('p', { class: 'note',
+      text: t('Tapez un nom, un code ou un mot : les quatorze tables sont cherchees en meme temps. Ctrl+K fait la meme chose depuis n importe quelle vue.') }));
+    for (const [, titre, table] of FAMILLES) {
+      if (!table) continue;
+      box.appendChild(kv(titre, table().length));
+    }
+    return box;
+  }
+
+  box.appendChild(sec('Tout', lignes.length + ' / ' + total));
+  if (!lignes.length) {
+    box.appendChild(el('p', { class: 'note', text: t('Aucune entree ne correspond.') }));
+    return box;
+  }
+
+  for (const ligne of lignes.slice(0, MAX_TOUT)) {
+    box.appendChild(el('div', { class: 'find info' }, [
+      el('h4', { text: ligne.libelle + '   ·   ' + t(ligne.titre) }),
+      el('p', { class: 'note', text: ligne.explication })
+    ]));
+  }
+  if (lignes.length > MAX_TOUT) {
+    box.appendChild(el('p', { class: 'note',
+      text: tp('{n} autres entrees correspondent : precisez la recherche, ou choisissez une table.',
+        { n: lignes.length - MAX_TOUT }) }));
+  }
+  return box;
 }
 
 function filtrer(liste, question, champs) {

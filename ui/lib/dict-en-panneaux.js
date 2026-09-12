@@ -227,6 +227,14 @@ export const EN_PANNEAUX = {
   'Types de media': 'Media types',
   'Ports': 'Ports',
   'Aucun code ne correspond.': 'No code matches.',
+
+  /* La famille « Tout » de la reference : chercher dans les quatorze tables
+     sans avoir a deviner laquelle repond. */
+  '{n} lignes, quatorze tables': '{n} lines, fourteen tables',
+  'Tapez un nom, un code ou un mot : les quatorze tables sont cherchees en meme temps. Ctrl+K fait la meme chose depuis n importe quelle vue.':
+    'Type a name, a code or a word: all fourteen tables are searched at once. Ctrl+K does the same from any view.',
+  '{n} autres entrees correspondent : precisez la recherche, ou choisissez une table.':
+    '{n} more entries match: narrow the search, or pick a table.',
   'Aucune methode ne correspond.': 'No method matches.',
   'Aucun entete ne correspond.': 'No header matches.',
   'Aucun type ne correspond.': 'No media type matches.',

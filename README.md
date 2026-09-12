@@ -14,7 +14,7 @@ Created by **NeoZ**
 ![Manifest V2](https://img.shields.io/badge/Manifest-V2-444?style=flat)
 [![MIT licence](https://img.shields.io/badge/Licence-MIT-00DDFF?style=flat)](LICENSE)
 ![No dependencies](https://img.shields.io/badge/Dependencies-none-2ea043?style=flat)
-![1140 assertions](https://img.shields.io/badge/Assertions-1140-2ea043?style=flat)
+![1149 assertions](https://img.shields.io/badge/Assertions-1149-2ea043?style=flat)
 ![English and French](https://img.shields.io/badge/UI-EN%20%2F%20FR-444?style=flat)
 
 [**Try it in 60 seconds**](#try-it-in-60-seconds) · [**Why not the built-in panel?**](#firefox-already-has-a-network-panel-why-this) · [**Screenshots**](#2-screenshots) · [**How it works**](#4-how-it-works-the-capture-layers) · [**Changelog**](CHANGELOG.md)
@@ -149,7 +149,7 @@ specific points:
 happens inside your Firefox, on your machine.
 
 **By the numbers**: 170 JavaScript modules, ~33,300 lines, zero external dependencies,
-1140 automated assertions, English and French interface.
+1149 automated assertions, English and French interface.
 
 ---
 
@@ -227,6 +227,16 @@ What exists on the visited sites, host by host, reconstructed from observed traf
 computed locally, nothing leaves the machine.
 
 ![Toolbox](docs/images/console-outils.png)
+
+### The reference
+
+Fourteen tables, 691 lines, offline. **All** searches every one of them at once, so you do
+not have to know which table answers your question — type `timeout` and get the two status
+codes, the header, the HTTP/2 error and the network error together. It searches the
+explanations as well as the names: `ocsp` finds the TLS alert that mentions a stapled OCSP
+response, which is nowhere in its name.
+
+![Reference tables](docs/images/console-reference.png)
 
 ### Rules
 
@@ -580,7 +590,7 @@ own secret and tracker patterns in the settings.
 | **Compare** | Line-by-line and word-by-word diff, Levenshtein distance, similarity |
 | **URL** | Every part of the URL, RFC 3986 canonical form, known service on the port, **homograph detection** (a Cyrillic "а" inside a Latin word is flagged) |
 | **IP address** | IPv4 and IPv6: mask, network, broadcast, usable range, category, subnetting, summarising a prefix list, range to prefixes, enumeration, reverse names `in-addr.arpa` / `ip6.arpa` (read both ways) |
-| **Reference** | The complete tables, offline: 63 statuses, 40 methods, **229 headers (the entire IANA permanent registry)**, 70 media types, 83 ports, 31 TLS cipher suites, WebSocket close codes, HTTP/2 errors, **HTTP/3 and QPACK errors**, **QUIC transport errors**, **TLS alerts**, **DNS record types**, **DNS response codes**, Firefox network errors |
+| **Reference** | The complete tables, offline, with an **All** search across the fourteen of them at once: 63 statuses, 40 methods, **229 headers (the entire IANA permanent registry)**, 70 media types, 83 ports, 31 TLS cipher suites, WebSocket close codes, HTTP/2 errors, **HTTP/3 and QPACK errors**, **QUIC transport errors**, **TLS alerts**, **DNS record types**, **DNS response codes**, Firefox network errors |
 | **Generate** | UUID v3/v4/v5/v7, ULID, nanoid, passwords with strength calculation, MAC addresses, random hex and base64 |
 | **Import a request** | Paste a `curl` command and turn it back into a replayable request |
 
@@ -809,7 +819,7 @@ ui/                        The interface — one page for all four surfaces
 ├── console/               One view per file, plus the detail panel
 └── lib/                   Codecs, digests, network, reference tables, i18n
 
-tests/                     1140 assertions, no browser required
+tests/                     1149 assertions, no browser required
 tools/captures.mjs         Generates the documentation screenshots
 tools/banniere.mjs         Generates the social preview card (docs/images)
 tools/vitrine.mjs          Composes the showcase images at the top of this file
@@ -864,7 +874,7 @@ French at the flip of a setting.
 npm test
 ```
 
-1140 assertions, with no browser and no dependencies. The kernel and interface modules are
+1149 assertions, with no browser and no dependencies. The kernel and interface modules are
 written for Firefox; `tests/harnais.mjs` supplies the minimum WebExtension API and DOM they
 need to import and run under Node. **The logic under test is exactly the logic that runs in
 the browser, with no rewriting.**
@@ -873,7 +883,7 @@ the browser, with no rewriting.**
 |---|---|---|
 | `core.test.mjs` | 228 | URL normalisation, correlation signatures, the store, the rule engine (both ways: what matches **and** what must not), the security analyser rule by rule, HAR export, curl import, all 39 code generators |
 | `avance.test.mjs` | 469 | WebSocket and HTTP/2 frames, CSP, RFC 9111 freshness, multipart, canonical URLs and homographs, protocol tables, binary structures, rare digests, generators |
-| `ui-load.test.mjs` | 215 | Actual loading of the 128 interface modules, complete module graph (no dead import, no file outside the graph), consistency with the HTML pages and the manifest, **full translation coverage** — every displayed string must have a dictionary entry — and **measured contrast**: every colour pair in both themes is checked against the WCAG 2.1 thresholds |
+| `ui-load.test.mjs` | 224 | Actual loading of the 128 interface modules, complete module graph (no dead import, no file outside the graph), consistency with the HTML pages and the manifest, **full translation coverage** — every displayed string must have a dictionary entry — and **measured contrast**: every colour pair in both themes is checked against the WCAG 2.1 thresholds |
 | `detail-coverage.test.mjs` | 120 | Each of a record's 60 fields is displayed, each tab has a render function, each searchable field exists |
 | `outils.test.mjs` | 108 | The toolbox, against published vectors |
 
@@ -915,7 +925,7 @@ the file. It contains internal errors and the command log — not your traffic.
 Before opening a pull request:
 
 ```bash
-npm test              # all 1140 assertions must pass
+npm test              # all 1149 assertions must pass
 .\build.ps1 -Verify   # the build must be green
 ```
 
