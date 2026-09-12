@@ -7,7 +7,7 @@
  * capture. Ici : erreurs internes, commandes et leur duree, evenements du
  * noyau. Le contenu se rafraichit a chaque battement de statistiques.
  */
-import { $, el, clear, sec, button, kv, add } from '../lib/dom.js';
+import { $, el, clear, sec, button, kv, add, vide } from '../lib/dom.js';
 import { clock, ms } from '../lib/format.js';
 import { t } from '../lib/i18n.js';
 import { state, cmd, toast, copy } from '../app.js';
@@ -56,10 +56,8 @@ export function render() {
   }
 
   if (!cache.actif) {
-    box.appendChild(el('div', { class: 'empty' }, [
-      el('b', { text: 'Journal desactive' }),
-      t('Activez « Journal interne » dans Reglages -> Journal interne pour enregistrer les erreurs et les commandes du noyau.')
-    ]));
+    box.appendChild(vide('Journal desactive',
+      'Activez « Journal interne » dans Reglages -> Journal interne pour enregistrer les erreurs et les commandes du noyau.'));
     return;
   }
 
@@ -165,10 +163,8 @@ export function render() {
   box.appendChild(sec('Journal', entrees.length + ' / ' + cache.total + ' ligne(s)'));
 
   if (!entrees.length) {
-    box.appendChild(el('div', { class: 'empty' }, [
-      el('b', { text: 'Journal vide' }),
-      t('Rien a signaler : aucune erreur interne, ou les filtres ecartent tout.')
-    ]));
+    box.appendChild(vide('Journal vide',
+      'Rien a signaler : aucune erreur interne, ou les filtres ecartent tout.'));
     return;
   }
 

@@ -3,7 +3,7 @@
  * Editeur visuel : chaque regle se construit avec des champs et des boutons.
  * Le mode JSON reste disponible pour les cas avances et les copier-coller.
  */
-import { $, el, clear, sec, button } from '../lib/dom.js';
+import { $, el, clear, sec, button, vide } from '../lib/dom.js';
 import { t, tp } from '../lib/i18n.js';
 import { RESOURCE_TYPES } from '../lib/format.js';
 import { state, toast, saveConfig, copy } from '../app.js';
@@ -160,10 +160,8 @@ export function render() {
   if (jsonMode) { box.appendChild(jsonEditor(list)); return; }
 
   if (!list.length) {
-    box.appendChild(el('div', { class: 'empty' }, [
-      el('b', { text: 'Aucune regle' }),
-      'Ajoutez une regle vierge, ou partez d un des modeles ci-dessus.'
-    ]));
+    box.appendChild(vide('Aucune regle',
+      'Ajoutez une regle vierge, ou partez d un des modeles ci-dessus.'));
     return;
   }
   list.forEach((rule, index) => box.appendChild(ruleCard(rule, index, list)));

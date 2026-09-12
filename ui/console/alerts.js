@@ -1,5 +1,5 @@
 /* Vue « Securite » — toutes les alertes de la capture — INTERCEPTOR (by NeoZ) */
-import { $, el, clear, sec, button } from '../lib/dom.js';
+import { $, el, clear, sec, button, vide } from '../lib/dom.js';
 import { clock, middle, preuveLisible } from '../lib/format.js';
 import { state, cmd, toast, copy } from '../app.js';
 import { t } from '../lib/i18n.js';
@@ -87,10 +87,9 @@ export function render() {
   box.appendChild(actions);
 
   if (!cache.findings.length) {
-    box.appendChild(el('div', { class: 'empty' }, [
-      el('b', { text: 'Aucune alerte' }),
-      loading ? 'Lecture en cours…' : 'Aucune alerte sur le perimetre observe. Cliquez sur « Actualiser » apres avoir navigue.'
-    ]));
+    box.appendChild(vide('Aucune alerte', loading
+      ? 'Lecture en cours…'
+      : 'Aucune alerte sur le perimetre observe. Cliquez sur « Actualiser » apres avoir navigue.'));
     if (!loading && !loaded) load();
     return;
   }

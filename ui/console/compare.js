@@ -4,7 +4,7 @@
  * Les entetes et les corps sont confrontes ligne a ligne : ce qui est identique
  * est grise, ce qui change est marque. Rien n est resume ni tronque en silence.
  */
-import { $, el, clear, sec, button, kv, add } from '../lib/dom.js';
+import { $, el, clear, sec, button, kv, add, vide } from '../lib/dom.js';
 import { bytes, ms, clock, middle, pretty } from '../lib/format.js';
 import { t } from '../lib/i18n.js';
 import { state, cmd, toast, copy } from '../app.js';
@@ -110,7 +110,7 @@ export function render() {
   const actions = el('div', { class: 'actions' });
   actions.appendChild(button('Reprendre la selection', loadSelection, { class: 'accent' }));
   if (left && right) {
-    actions.appendChild(button('Echanger', () => { const t = left; left = right; right = t; render(); }));
+    actions.appendChild(button('Echanger', () => { const garde = left; left = right; right = garde; render(); }));
     actions.appendChild(button('Ouvrir la gauche', () =>
       document.dispatchEvent(new CustomEvent('ic:goto', { detail: { view: 'requests', id: left.id } }))));
     actions.appendChild(button('Ouvrir la droite', () =>
@@ -122,11 +122,8 @@ export function render() {
   if (loading) { box.appendChild(el('p', { class: 'note', text: 'Lecture des deux enregistrements…' })); return; }
 
   if (!left || !right) {
-    box.appendChild(el('div', { class: 'empty' }, [
-      el('b', { text: 'Selectionnez deux lignes' }),
-      'Dans le tableau : Ctrl+clic sur une premiere ligne, Ctrl+clic sur une seconde, ' +
-      'puis cliquez sur « Comparer ». Vous pouvez aussi comparer une requete avec son rejeu.'
-    ]));
+    box.appendChild(vide('Selectionnez deux lignes',
+      'Dans le tableau : Ctrl+clic sur une premiere ligne, Ctrl+clic sur une seconde, puis cliquez sur « Comparer ». Vous pouvez aussi comparer une requete avec son rejeu.'));
     return;
   }
 

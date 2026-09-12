@@ -138,7 +138,7 @@ export function analysis(rec) {
   if (a.tags.length) {
     box.appendChild(sec('Marqueurs', a.tags.length));
     const wrap = el('div');
-    for (const t of a.tags) wrap.appendChild(el('span', { class: 'tag', text: t }));
+    for (const marqueur of a.tags) wrap.appendChild(el('span', { class: 'tag', text: marqueur }));
     box.appendChild(wrap);
   }
   add(box, kv('Analysee le', clock(a.at)));
@@ -190,13 +190,18 @@ export function timeline(rec) {
   const box = frag();
 
   if (rec.perf && rec.perf.timings) {
-    const t = rec.perf.timings;
+    /* Surtout pas `t` : c est le nom de la fonction de traduction importee en
+       tete de fichier. La nommer ainsi ici la masquait, et l appel a `t(label)`
+       deux lignes plus bas invoquait l objet des temps. L onglet se vidait des
+       qu une requete portait un chronometrage — c est-a-dire a chaque import
+       de fichier HAR, DevTools, Charles et Fiddler l ecrivant tous. */
+    const temps = rec.perf.timings;
     const labels = { blocked: 'Attente', dns: 'DNS', connect: 'Connexion', ssl: 'TLS', send: 'Envoi', wait: 'Reponse', receive: 'Reception' };
-    const total = Object.values(t).reduce((a, b) => a + (b > 0 ? b : 0), 0) || 1;
+    const total = Object.values(temps).reduce((a, b) => a + (b > 0 ? b : 0), 0) || 1;
     box.appendChild(sec('Chronometrage reseau', ms(Math.round(total))));
     const bars = el('div', { class: 'bars' });
     for (const [key, label] of Object.entries(labels)) {
-      const value = t[key];
+      const value = temps[key];
       if (value == null || value < 0) continue;
       bars.appendChild(el('span', { text: t(label) }));
       bars.appendChild(el('div', { class: 'track' }, el('div', { class: 'fill', style: 'width:' + Math.max(1, (value / total) * 100) + '%' })));

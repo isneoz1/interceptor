@@ -107,14 +107,14 @@ function buildField([key, label, type, extra, hint]) {
   } else if (type === 'types') {
     const grid = el('div', { class: 'checks' });
     const current = new Set(value || []);
-    for (const t of RESOURCE_TYPES) {
+    for (const ressource of RESOURCE_TYPES) {
       const input = el('input', { type: 'checkbox' });
-      input.checked = current.has(t);
+      input.checked = current.has(ressource);
       input.addEventListener('change', () => {
-        if (input.checked) current.add(t); else current.delete(t);
+        if (input.checked) current.add(ressource); else current.delete(ressource);
         saveConfig({ [key]: [...current] });
       });
-      grid.appendChild(el('label', {}, [input, t]));
+      grid.appendChild(el('label', {}, [input, ressource]));
     }
     return el('div', { class: 'opt', style: 'display:block' }, [text, grid]);
   }

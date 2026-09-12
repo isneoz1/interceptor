@@ -4,7 +4,7 @@
  * sont construites, ce qui permet de garder des centaines de milliers
  * d enregistrements a l ecran sans jamais en masquer un seul.
  */
-import { $, el, clear, frag } from '../lib/dom.js';
+import { $, el, clear, frag, vide } from '../lib/dom.js';
 import { parseQuery } from '../lib/filters.js';
 import { COLUMNS, COLUMN_ORDER, normalize, template, columnLabel, columnTitle } from '../lib/columns.js';
 import { t } from '../lib/i18n.js';
@@ -279,12 +279,10 @@ export function renderRows(depuisDefilement = false) {
     clear(body);
     body.style.paddingTop = '0px';
     body.style.paddingBottom = '0px';
-    body.appendChild(el('div', { class: 'empty' }, [
-      el('b', { text: t('Aucune requete') }),
+    body.appendChild(vide('Aucune requete',
       state.query || state.facets.size
-        ? t('Aucune ligne ne correspond au filtre. Videz la recherche ou changez de perimetre.')
-        : t('Naviguez sur un site : les requetes apparaissent ici en direct.')
-    ]));
+        ? 'Aucune ligne ne correspond au filtre. Videz la recherche ou changez de perimetre.'
+        : 'Naviguez sur un site : les requetes apparaissent ici en direct.'));
     return;
   }
 

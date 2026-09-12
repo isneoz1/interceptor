@@ -8,9 +8,9 @@
  * Aucune requete n est emise : l arborescence n est faite que de ce qui a
  * reellement ete observe.
  */
-import { $, el, clear, sec, button, kv, add } from '../lib/dom.js';
+import { $, el, clear, sec, button, kv, add, vide } from '../lib/dom.js';
 import { bytes } from '../lib/format.js';
-import { t } from '../lib/i18n.js';
+import { t, tp } from '../lib/i18n.js';
 import { listeProgressive } from '../lib/liste-progressive.js';
 import { state, inScope, copy, toast } from '../app.js';
 
@@ -140,14 +140,12 @@ export function render() {
   box.appendChild(tuiles);
 
   if (!hotes.length) {
-    box.appendChild(el('div', { class: 'empty' }, [
-      el('b', { text: 'Aucun hote' }),
-      t('Rien a montrer sur le perimetre observe. Naviguez, ou elargissez le perimetre en haut a droite.')
-    ]));
+    box.appendChild(vide('Aucun hote',
+      'Rien a montrer sur le perimetre observe. Naviguez, ou elargissez le perimetre en haut a droite.'));
     return;
   }
 
-  box.appendChild(sec('Arborescence', hotes.length + ' hote(s)'));
+  box.appendChild(sec('Arborescence', tp('{n} hote(s)', { n: hotes.length })));
   for (const hote of hotes) box.appendChild(rendreNoeud(hote, true));
 }
 

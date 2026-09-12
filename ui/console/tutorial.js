@@ -6,7 +6,7 @@
  * La progression est conservee dans les reglages (`tutorialDone`).
  */
 import { $, el, clear, sec, button } from '../lib/dom.js';
-import { t } from '../lib/i18n.js';
+import { t, tp } from '../lib/i18n.js';
 import { state, toast, saveConfig } from '../app.js';
 import { lang } from '../lib/i18n.js';
 import { LESSONS as LESSONS_EN } from './content-en.js';
@@ -37,7 +37,8 @@ export function render() {
   const lesson = localized(LESSONS[Math.min(current, LESSONS.length - 1)]);
   const percent = Math.round((finished.size / LESSONS.length) * 100);
 
-  box.appendChild(sec('Tutoriel', finished.size + ' / ' + LESSONS.length + ' lecons terminees'));
+  box.appendChild(sec('Tutoriel',
+    tp('{n} / {total} lecons terminees', { n: finished.size, total: LESSONS.length })));
   box.appendChild(el('div', { class: 'progress' }, el('i', { style: 'width:' + percent + '%' })));
 
   const steps = el('div', { class: 'tuto-steps' });

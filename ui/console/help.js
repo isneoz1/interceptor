@@ -266,16 +266,16 @@ export function render() {
 }
 
 function table(head, rows) {
-  const t = el('table');
+  const hote = el('table');
   if (head && head.some(Boolean)) {
     const tr = el('tr');
     for (const h of head) tr.appendChild(el('th', { text: h }));
-    t.appendChild(tr);
+    hote.appendChild(tr);
   }
   for (const row of rows) {
     const tr = el('tr');
     for (const cell of row) tr.appendChild(el('td', { text: cell }));
-    t.appendChild(tr);
+    hote.appendChild(tr);
   }
-  return t;
+  return hote;
 }

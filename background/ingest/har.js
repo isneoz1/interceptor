@@ -12,31 +12,55 @@ import { store } from '../core/store.js';
 import { analyze } from '../core/analyzer.js';
 import { hostOf, pathOf, schemeOf } from '../lib/util.js';
 
+/* ------------------------- Ce qui vient du fichier ------------------------ */
+/* Un HAR est ecrit par quelqu un d autre : un autre outil, une version
+   anterieure d INTERCEPTOR, ou une main. Rien n y garantit qu une liste soit
+   une liste. Et une forme inattendue ne se voit pas a l import — elle se voit
+   trois clics plus tard, quand un onglet du detail refuse de s afficher.
+   On ramene donc chaque valeur a la forme attendue ici, une fois, plutot que
+   de s en defendre a chaque endroit qui la lit. */
+const listeObjets = v =>
+  Array.isArray(v) ? v.filter(x => x && typeof x === 'object' && !Array.isArray(x)) : [];
+const objet = v => (v && typeof v === 'object' && !Array.isArray(v)) ? v : null;
+const listeTextes = v => Array.isArray(v) ? v.filter(x => typeof x === 'string' && x) : [];
+const entier = (v, defaut) => Number.isFinite(Number(v)) ? Number(v) : defaut;
+
+/* Les deux flux portent une liste que l interface compte sans la verifier :
+   un `websocket` valant `{}` vidait l onglet Flux au lieu de l afficher. */
+function flux(v, cleListe) {
+  const o = objet(v);
+  if (!o) return null;
+  const sortie = { ...o, [cleListe]: listeObjets(o[cleListe]) };
+  if (cleListe === 'frames') sortie.protocols = listeTextes(o.protocols);
+  return sortie;
+}
+
 function headerList(list) {
-  return (list || []).map(h => ({ name: String(h.name || ''), value: String(h.value ?? '') }));
+  return listeObjets(list).map(h => ({ name: String(h.name || ''), value: String(h.value ?? '') }));
 }
 
 function bodyFromPostData(post) {
-  if (!post) return null;
+  if (!objet(post)) return null;
   const text = post.text || '';
   const formData = {};
-  for (const p of post.params || []) {
+  const params = listeObjets(post.params);
+  for (const p of params) {
     const key = String(p.name || '');
     if (!key) continue;
     (formData[key] = formData[key] || []).push(String(p.value ?? ''));
   }
   return {
-    kind: post.params && post.params.length ? 'formData' : 'raw',
+    kind: params.length ? 'formData' : 'raw',
     text,
     size: text.length,
     truncated: false,
     contentType: post.mimeType || '',
-    formData: post.params && post.params.length ? formData : undefined
+    formData: params.length ? formData : undefined
   };
 }
 
 function bodyFromContent(content) {
-  if (!content) return null;
+  if (!objet(content)) return null;
   const text = content.encoding === 'base64' ? '' : (content.text || '');
   return {
     kind: content.encoding === 'base64' ? 'binary' : 'text',
@@ -69,9 +93,13 @@ export function importHar(har) {
   const errors = [];
 
   for (const entry of log.entries) {
+    /* `store.create` inscrit la ligne des sa creation. Une erreur a mi-chemin
+       en laissait donc une a moitie remplie dans le tableau — comptee comme
+       ignoree, et pourtant bien visible. On garde de quoi la retirer. */
+    let rec = null;
     try {
-      const req = entry.request || {};
-      const res = entry.response || {};
+      const req = objet(entry && entry.request) || {};
+      const res = objet(entry && entry.response) || {};
       const url = req.url || '';
       if (!url) { skipped++; continue; }
 
@@ -79,15 +107,15 @@ export function importHar(har) {
       const started = Date.parse(entry.startedDateTime || '') || Date.now();
       const duration = typeof entry.time === 'number' && entry.time >= 0 ? Math.round(entry.time) : null;
 
-      const rec = store.create({
+      rec = store.create({
         requestId: null,
-        sources: ['import', ...(extra.sources || [])].filter((v, i, a) => a.indexOf(v) === i),
+        sources: ['import', ...listeTextes(extra.sources)].filter((v, i, a) => a.indexOf(v) === i),
         url,
         finalUrl: url,
         method: String(req.method || 'GET').toUpperCase(),
         type: extra.type || 'other',
-        tabId: extra.tabId != null ? extra.tabId : -1,
-        frameId: extra.frameId != null ? extra.frameId : -1,
+        tabId: entier(extra.tabId, -1),
+        frameId: entier(extra.frameId, -1),
         thirdParty: !!extra.thirdParty,
         startTime: started,
         imported: true
@@ -110,45 +138,50 @@ export function importHar(har) {
       rec.fromCache = !!extra.fromCache;
       rec.networkless = !!extra.networkless;
 
-      if (entry.timings) {
+      if (objet(entry.timings)) {
         rec.perf = {
           initiatorType: null,
           nextHopProtocol: res.httpVersion || null,
-          transferSize: extra.transferSize ?? null,
+          transferSize: Number.isFinite(Number(extra.transferSize))
+            ? Number(extra.transferSize) : null,
           encodedBodySize: null, decodedBodySize: null,
-          duration, startTime: null, redirectCount: (extra.redirects || []).length,
+          duration, startTime: null, redirectCount: listeObjets(extra.redirects).length,
           renderBlockingStatus: null, deliveryType: null, serverTiming: null,
-          timings: entry.timings, workerStart: null
+          timings: objet(entry.timings), workerStart: null
         };
       }
 
       // Extensions INTERCEPTOR : restauration fidele de nos propres exports.
-      rec.dns = extra.dns || null;
-      rec.security = extra.security || null;
-      rec.proxy = extra.proxy || null;
-      rec.auth = extra.auth || null;
-      rec.redirects = extra.redirects || [];
-      rec.stack = extra.stack || null;
-      rec.ws = extra.websocket || null;
-      rec.sse = extra.sse || null;
-      rec.rulesApplied = extra.rulesApplied || [];
-      rec.urlClassification = extra.urlClassification || null;
-      rec.frameAncestors = extra.frameAncestors || null;
-      if (extra.cookiesChanged) rec.cookies.changed = extra.cookiesChanged;
-      for (const c of res.cookies || []) {
+      rec.dns = objet(extra.dns);
+      rec.security = objet(extra.security);
+      rec.proxy = objet(extra.proxy);
+      rec.auth = objet(extra.auth);
+      rec.redirects = listeObjets(extra.redirects);
+      rec.stack = objet(extra.stack);
+      rec.ws = flux(extra.websocket, 'frames');
+      rec.sse = flux(extra.sse, 'messages');
+      rec.rulesApplied = listeObjets(extra.rulesApplied);
+      rec.urlClassification = objet(extra.urlClassification);
+      /* `null` et non `[]` : l interface n affiche la ligne « Cadres parents »
+         que s il y en a, et une liste vide dirait qu on a regarde. */
+      rec.frameAncestors = listeObjets(extra.frameAncestors).length
+        ? listeObjets(extra.frameAncestors) : null;
+      if (extra.cookiesChanged) rec.cookies.changed = listeObjets(extra.cookiesChanged);
+      for (const c of listeObjets(res.cookies)) {
         rec.cookies.set.push({
           raw: c.name + '=' + (c.value ?? ''), name: c.name, value: c.value ?? '',
           domain: c.domain || null, path: c.path || null, expires: c.expires || null,
           maxAge: null, secure: !!c.secure, httpOnly: !!c.httpOnly, sameSite: c.sameSite || null
         });
       }
-      for (const t of extra.timeline || []) store.mark(rec, t.event, t.ts, t.detail);
+      for (const t of listeObjets(extra.timeline)) store.mark(rec, t.event, t.ts, t.detail);
 
       store.mark(rec, 'import:har', started, { fichier: log.creator ? log.creator.name : 'inconnu' });
       rec.state = res.status ? 'complete' : 'error';
       analyze(rec, { force: true });
       imported++;
     } catch (e) {
+      if (rec) store.remove([rec.id]);
       errors.push(String(e && e.message || e));
       skipped++;
     }

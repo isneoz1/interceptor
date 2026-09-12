@@ -4,7 +4,7 @@
  * perimetre choisi. Aucune estimation, aucune extrapolation : si une donnee
  * n a pas ete capturee, elle n apparait pas.
  */
-import { $, el, clear, sec, button } from '../lib/dom.js';
+import { $, el, clear, sec, button, vide } from '../lib/dom.js';
 import { t, tp } from '../lib/i18n.js';
 import { bytes, ms, clock, middle, typeLabel } from '../lib/format.js';
 import { state, inScope, copy } from '../app.js';
@@ -60,9 +60,9 @@ function openRecord(id) {
 
 function rankList(title, rows, describe) {
   const box = el('div');
-  box.appendChild(sec(title, rows.length ? rows.length + ' lignes' : ''));
+  box.appendChild(sec(title, rows.length ? tp('{n} lignes', { n: rows.length }) : ''));
   if (!rows.length) {
-    box.appendChild(el('p', { class: 'note', text: 'Rien a signaler sur ce perimetre.' }));
+    box.appendChild(el('p', { class: 'note', text: t('Rien a signaler sur ce perimetre.') }));
     return box;
   }
   for (const rec of rows) {
@@ -85,10 +85,8 @@ export function render() {
   box.appendChild(sec('Synthese du perimetre', tp('{n} requetes observees', { n: list.length })));
 
   if (!list.length) {
-    box.appendChild(el('div', { class: 'empty' }, [
-      el('b', { text: 'Rien a resumer' }),
-      'Naviguez sur un site, ou basculez le perimetre sur « Tout Firefox ».'
-    ]));
+    box.appendChild(vide('Rien a resumer',
+      'Naviguez sur un site, ou basculez le perimetre sur « Tout Firefox ».'));
     return;
   }
 
@@ -148,7 +146,8 @@ export function render() {
   left.appendChild(chart(tally(list, r => typeLabel(r.type))));
 
   left.appendChild(sec('Protocoles observes'));
-  left.appendChild(chart(tally(list, r => r.protocol || (r.scheme ? r.scheme + ' (protocole non mesure)' : null))));
+  left.appendChild(chart(tally(list, r => r.protocol
+    || (r.scheme ? tp('{s} (protocole non mesure)', { s: r.scheme }) : null))));
 
   left.appendChild(sec('Couches de capture'));
   const layers = new Map();
@@ -169,10 +168,10 @@ export function render() {
 
   right.appendChild(sec('Marqueurs de l analyse'));
   const tags = new Map();
-  for (const rec of list) for (const t of rec.tags || []) tags.set(t, (tags.get(t) || 0) + 1);
+  for (const rec of list) for (const marqueur of rec.tags || []) tags.set(marqueur, (tags.get(marqueur) || 0) + 1);
   const tagRows = [...tags.entries()].sort((a, b) => b[1] - a[1]).slice(0, TOP);
   right.appendChild(tagRows.length ? chart(tagRows)
-    : el('p', { class: 'note', text: 'Aucun marqueur pose sur ce perimetre.' }));
+    : el('p', { class: 'note', text: t('Aucun marqueur pose sur ce perimetre.') }));
 
   /* ------------------------------- Debit ---------------------------------- */
   const first = Math.min(...list.map(r => r.startTime || Date.now()));
@@ -186,7 +185,8 @@ export function render() {
     counts[i]++;
   }
   box.appendChild(sec('Requetes dans le temps',
-    clock(first) + '  →  ' + clock(last) + '  ·  ' + Math.round(width) + ' ms par barre'));
+    tp('{debut}  →  {fin}  ·  {ms} ms par barre',
+      { debut: clock(first), fin: clock(last), ms: Math.round(width) })));
   const spark = el('div', { class: 'spark', style: 'width:100%;height:64px' });
   const maxCount = Math.max(...counts, 1);
   for (const n of counts) {

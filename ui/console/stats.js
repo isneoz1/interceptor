@@ -1,7 +1,7 @@
 /* Vue « Diagnostic » — INTERCEPTOR (by NeoZ)
  * Chiffres lus en direct dans le noyau : rien n est simule, rien n est estime.
  */
-import { $, el, clear, sec, grid, button } from '../lib/dom.js';
+import { $, el, clear, sec, grid, button, vide } from '../lib/dom.js';
 import { t, tp } from '../lib/i18n.js';
 import { bytes, uptime, ms } from '../lib/format.js';
 import { state, cmd, toast } from '../app.js';
@@ -55,8 +55,7 @@ export function render() {
     cmd('about', {}).then(res => { if (res && !res.error) { about = res; if (state.view === 'stats') render(); } });
   }
   if (!s) {
-    box.appendChild(el('div', { class: 'empty' },
-      [el('b', { text: t('En attente du noyau') }), t('Connexion en cours…')]));
+    box.appendChild(vide('En attente du noyau', 'Connexion en cours…'));
     return;
   }
 

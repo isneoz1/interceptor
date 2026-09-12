@@ -11,6 +11,9 @@
  */
 
 /* ------------------------------ Assertions -------------------------------- */
+import fs from 'node:fs';
+import path from 'node:path';
+
 let total = 0;
 let echecs = 0;
 const details = [];
@@ -190,6 +193,25 @@ class Noeud {
     this.textContent = '';
     this.hidden = false;
     this.parentElement = null;
+    /* Une geometrie plausible plutot que des zeros. Le tableau des requetes
+       calcule sa fenetre virtuelle a partir de `clientHeight` et de la hauteur
+       d une ligne : avec des zeros partout il n en dessinait aucune, et la vue
+       la plus employee de la console restait hors de portee des tests. */
+    this.scrollTop = 0;
+    this.scrollLeft = 0;
+    this.clientWidth = 1200;
+    this.clientHeight = 800;
+    this.offsetWidth = 1200;
+    this.offsetHeight = 800;
+  }
+  /* `el` pose les classes avec `className`, le selecteur les lit dans
+     `classList` : sans ce pont, les deux ne parlaient pas de la meme chose. */
+  get className() { return [...this.classList._set].join(' '); }
+  set className(valeur) {
+    this.classList._set.clear();
+    for (const c of String(valeur == null ? '' : valeur).split(/\s+/)) {
+      if (c) this.classList._set.add(c);
+    }
   }
   appendChild(n) {
     if (n == null) return n;
@@ -199,6 +221,17 @@ class Noeud {
     return n;
   }
   append(...n) { for (const x of n) this.appendChild(x); }
+  /* `liste-progressive.js` insere ses lots avant la sentinelle plutot que de
+     redessiner : sans cette methode, la carte des sites ne se rendait pas. */
+  insertBefore(n, reference) {
+    if (n == null) return n;
+    const i = reference == null ? -1 : this.childNodes.indexOf(reference);
+    if (i < 0) return this.appendChild(n);
+    this.children.splice(i, 0, n);
+    this.childNodes.splice(i, 0, n);
+    n.parentElement = this;
+    return n;
+  }
   /* `clear` boucle sur firstChild jusqu au vide : sans lui, il ne vidait rien
      et deux rendus successifs s empilaient. */
   get firstChild() { return this.childNodes.length ? this.childNodes[0] : null; }
@@ -214,15 +247,59 @@ class Noeud {
   addEventListener() {}
   removeEventListener() {}
   dispatchEvent() { return true; }
-  querySelector() { return null; }
-  querySelectorAll() { return []; }
-  closest() { return null; }
+  querySelector(selecteur) { return chercherDans(this, selecteur)[0] || null; }
+  querySelectorAll(selecteur) { return chercherDans(this, selecteur); }
+  closest(selecteur) {
+    for (let n = this; n; n = n.parentElement) if (correspond(n, selecteur)) return n;
+    return null;
+  }
   matches() { return false; }
   contains() { return false; }
   focus() {}
   click() {}
   scrollTo() {}
-  getBoundingClientRect() { return { top: 0, left: 0, right: 0, bottom: 0, width: 0, height: 0 }; }
+  /* La hauteur rendue est celle d une ligne de tableau : c est ce que
+     `rowsize.js` mesure pour en deduire combien de lignes tiennent. */
+  getBoundingClientRect() {
+    return { top: 0, left: 0, right: 1200, bottom: 26, width: 1200, height: 26 };
+  }
+}
+
+/* Un selecteur simple : « input », « .trow », « #pal-q », « div.kv ». Les
+   combinaisons descendantes ne sont pas gerees — l interface n en cherche
+   aucune dans un noeud qu elle vient de construire. Un selecteur qui
+   depasserait cette grammaire ne doit pas rendre un faux negatif en silence,
+   il doit se voir : d ou l erreur. */
+function correspond(noeud, selecteur) {
+  const brut = String(selecteur == null ? '' : selecteur).trim();
+  if (!brut) return false;
+  if (/[\s>+~[\]:,()]/.test(brut)) {
+    throw new Error('selecteur trop riche pour le DOM du harnais : ' + brut);
+  }
+  for (const partie of brut.split(/(?=[.#])/)) {
+    if (!partie) continue;
+    if (partie[0] === '.') {
+      if (!noeud.classList.contains(partie.slice(1))) return false;
+    } else if (partie[0] === '#') {
+      if (noeud.getAttribute('id') !== partie.slice(1)) return false;
+    } else if (noeud.nodeName !== partie.toUpperCase()) {
+      return false;
+    }
+  }
+  return true;
+}
+
+/* En profondeur d abord, dans l ordre du document : c est l ordre que rend un
+   vrai querySelectorAll, et le premier resultat doit etre le meme. */
+function chercherDans(racine, selecteur) {
+  const trouves = [];
+  (function parcourir(n) {
+    for (const enfant of n.children || []) {
+      if (correspond(enfant, selecteur)) trouves.push(enfant);
+      parcourir(enfant);
+    }
+  })(racine);
+  return trouves;
 }
 
 function ensembleDeClasses(noeud) {
@@ -305,6 +382,49 @@ export function installerDom() {
 export function installerTout() {
   installerNavigateur();
   installerDom();
+}
+
+/**
+ * Pose dans le document les identifiants que les pages HTML declarent, pour
+ * que les vues puissent se rendre pour de bon.
+ *
+ * Les vues commencent toutes par `clear($('#view-...'))` : sans ces noeuds,
+ * elles levaient une erreur avant leur premiere ligne et aucun test ne
+ * pouvait les executer. Les identifiants sont lus dans les fichiers reels —
+ * jamais recopies — donc un renommage dans la page arrive ici le jour meme.
+ *
+ * @param racine  la racine du depot
+ * @param pages   les pages a lire (par defaut la console et la popup)
+ * @returns la carte identifiant -> noeud, pour inspecter un rendu
+ */
+export function installerPage(racine, pages = ['ui/console.html', 'ui/popup.html']) {
+  const parId = new Map();
+  for (const page of pages) {
+    let source;
+    try { source = fs.readFileSync(path.join(racine, page), 'utf8'); }
+    catch { continue; }
+    for (const m of source.matchAll(/\sid="([^"]+)"/g)) {
+      if (parId.has(m[1])) continue;
+      const noeud = new Noeud('div');
+      noeud.setAttribute('id', m[1]);
+      parId.set(m[1], noeud);
+      document.body.appendChild(noeud);
+    }
+  }
+
+  /* Seuls les selecteurs par identifiant sont resolus : c est ce que `$`
+     cherche dans la page, et pretendre resoudre davantage donnerait un faux
+     sentiment de fidelite. */
+  document.getElementById = id => parId.get(id) || null;
+  document.querySelector = selecteur => {
+    const brut = String(selecteur || '').trim();
+    return brut[0] === '#' ? (parId.get(brut.slice(1)) || null) : null;
+  };
+  document.querySelectorAll = selecteur => {
+    const trouve = document.querySelector(selecteur);
+    return trouve ? [trouve] : [];
+  };
+  return parId;
 }
 
 /* --------------------------- Donnees d exemple ---------------------------- */

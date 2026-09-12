@@ -73,12 +73,12 @@ export function statusText(rec) {
 }
 
 export function pretty(text, mime) {
-  const t = String(text ?? '');
+  const texte = String(text ?? '');
   const m = String(mime || '');
-  if (/json/i.test(m) || /^\s*[[{]/.test(t.slice(0, 200))) {
-    try { return JSON.stringify(JSON.parse(t), null, 2); } catch { return t; }
+  if (/json/i.test(m) || /^\s*[[{]/.test(texte.slice(0, 200))) {
+    try { return JSON.stringify(JSON.parse(texte), null, 2); } catch { return texte; }
   }
-  return t;
+  return texte;
 }
 
 /** Raccourcit au milieu : garde le debut et la fin, plus parlant qu une coupe. */

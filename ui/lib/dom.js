@@ -85,6 +85,21 @@ export function sec(title, aside) {
   ]);
 }
 
+/**
+ * Bloc « rien a montrer » : un titre, une phrase qui dit quoi faire.
+ *
+ * Les deux passent par la traduction. Ecrit treize fois a la main, il l etait
+ * huit fois sans — et ces ecrans sont les premiers que voit quelqu un qui
+ * vient d installer : une console vide, en francais, quelle que soit la
+ * langue choisie.
+ */
+export function vide(titre, phrase) {
+  return el('div', { class: 'empty' }, [
+    el('b', { text: t(titre) }),
+    phrase == null || phrase === '' ? null : t(String(phrase))
+  ]);
+}
+
 /** Bloc « definition list » compact pour les statistiques. */
 export function grid(pairs, columns = '1fr auto') {
   const dl = el('dl', { class: 'grid', style: 'grid-template-columns:' + columns });

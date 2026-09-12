@@ -7,7 +7,7 @@
  * surprises : l interception ne fonctionne que console ouverte, une echeance
  * relache toujours la requete, et fermer la console relache tout.
  */
-import { $, el, clear, sec, button, kv, add } from '../lib/dom.js';
+import { $, el, clear, sec, button, kv, add, vide } from '../lib/dom.js';
 import { clock, middle } from '../lib/format.js';
 import { t } from '../lib/i18n.js';
 import { state, cmd, toast, saveConfig } from '../app.js';
@@ -72,10 +72,8 @@ export function render() {
     'L interception ne retient une requete que si cette console est ouverte. Une echeance la relache automatiquement, et fermer la console relache tout : une navigation ne peut pas rester bloquee.') }));
 
   if (!actif) {
-    box.appendChild(el('div', { class: 'empty' }, [
-      el('b', { text: 'Interception inactive' }),
-      t('Demarrez l interception pour suspendre les requetes et les modifier avant leur depart.')
-    ]));
+    box.appendChild(vide('Interception inactive',
+      'Demarrez l interception pour suspendre les requetes et les modifier avant leur depart.'));
     box.appendChild(reglagesRapides(config));
     return;
   }
@@ -94,10 +92,8 @@ export function render() {
 
   /* --------------------------------- File -------------------------------- */
   if (!file.pending.length) {
-    box.appendChild(el('div', { class: 'empty' }, [
-      el('b', { text: 'Aucune requete suspendue' }),
-      t('Naviguez : la prochaine requete correspondant au filtre s arretera ici.')
-    ]));
+    box.appendChild(vide('Aucune requete suspendue',
+      'Naviguez : la prochaine requete correspondant au filtre s arretera ici.'));
     return;
   }
 

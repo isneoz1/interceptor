@@ -3,10 +3,10 @@
  * Les trames arrivent en continu : cette vue suit un flux choisi et affiche
  * chaque message dans l ordre, sans en masquer aucun.
  */
-import { $, el, clear, sec, button, kv, add } from '../lib/dom.js';
+import { $, el, clear, sec, button, kv, add, vide } from '../lib/dom.js';
 import { bytes, clock, middle } from '../lib/format.js';
 import { state, cmd, toast, copy } from '../app.js';
-import { t } from '../lib/i18n.js';
+import { t, tp } from '../lib/i18n.js';
 import { listeProgressive } from '../lib/liste-progressive.js';
 import { decrireFermetureWs } from '../lib/ref-reseau.js';
 import { resumerTrame } from '../lib/sous-protocoles.js';
@@ -52,13 +52,11 @@ export function render() {
   pane.appendChild(box);
 
   const rows = streamRows();
-  box.appendChild(sec('Flux ouverts et fermes', rows.length + ' flux'));
+  box.appendChild(sec('Flux ouverts et fermes', tp('{n} flux', { n: rows.length })));
 
   if (!rows.length) {
-    box.appendChild(el('div', { class: 'empty' }, [
-      el('b', { text: 'Aucun flux' }),
-      'Aucun WebSocket ni Server-Sent Event sur le perimetre observe.'
-    ]));
+    box.appendChild(vide('Aucun flux',
+      'Aucun WebSocket ni Server-Sent Event sur le perimetre observe.'));
     return;
   }
 

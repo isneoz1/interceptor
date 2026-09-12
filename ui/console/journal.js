@@ -3,7 +3,7 @@
  * Trois journaux tenus par le noyau, affiches ici en entier : chaque entree
  * est visible, avec son heure exacte et son detail complet.
  */
-import { $, el, clear, sec, button } from '../lib/dom.js';
+import { $, el, clear, sec, button, vide } from '../lib/dom.js';
 import { t } from '../lib/i18n.js';
 import { listeProgressive } from '../lib/liste-progressive.js';
 import { clock, middle } from '../lib/format.js';
@@ -75,10 +75,9 @@ export function render(kind) {
 
   const list = shown(kind);
   if (!list.length) {
-    box.appendChild(el('div', { class: 'empty' }, [
-      el('b', { text: 'Journal vide' }),
-      entries.length ? 'Aucune entree ne correspond au filtre.' : 'Aucun evenement de ce type pour le moment.'
-    ]));
+    box.appendChild(vide('Journal vide', entries.length
+      ? 'Aucune entree ne correspond au filtre.'
+      : 'Aucun evenement de ce type pour le moment.'));
     return;
   }
 

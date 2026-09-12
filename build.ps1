@@ -205,7 +205,9 @@ if ($node) {
     @{ titre = 'Boite a outils';              fichier = 'tests/outils.test.mjs';
        echec = 'Un outil ne rend pas la valeur attendue' },
     @{ titre = 'Outils avances';              fichier = 'tests/avance.test.mjs';
-       echec = 'Un outil avance ne rend pas la valeur attendue' }
+       echec = 'Un outil avance ne rend pas la valeur attendue' },
+    @{ titre = 'Rendu de l interface';        fichier = 'tests/rendu.test.mjs';
+       echec = 'Une vue, un onglet ou un panneau ne se rend pas' }
   )
 
   $totalAssertions = 0

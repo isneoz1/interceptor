@@ -206,5 +206,33 @@ export const EN_CONSOLE = {
   'Suivante ▶': 'Next ▶',
   'Tout marquer comme lu': 'Mark everything as read',
   'Recommencer a zero': 'Start over',
-  'Aide de reference': 'Reference help'
+  'Aide de reference': 'Reference help',
+
+  /* ------------------------ Les ecrans « rien a montrer » ------------------ */
+  /* Huit phrases posees en clair dans les vues, jamais traduites : ce sont
+     pourtant les premiers ecrans que voit quelqu un qui vient d installer. */
+  'Lecture en cours…': 'Reading…',
+  'Aucune alerte sur le perimetre observe. Cliquez sur « Actualiser » apres avoir navigue.':
+    'No finding on the scope being watched. Click "Refresh" once you have browsed.',
+  'Dans le tableau : Ctrl+clic sur une premiere ligne, Ctrl+clic sur une seconde, puis cliquez sur « Comparer ». Vous pouvez aussi comparer une requete avec son rejeu.':
+    'In the table: Ctrl+click a first row, Ctrl+click a second one, then click "Compare". You can also compare a request with its replay.',
+  'Aucune entree ne correspond au filtre.': 'No entry matches the filter.',
+  'Aucun evenement de ce type pour le moment.': 'No event of this kind so far.',
+  'Ajoutez une regle vierge, ou partez d un des modeles ci-dessus.':
+    'Add a blank rule, or start from one of the templates above.',
+  'Aucun WebSocket ni Server-Sent Event sur le perimetre observe.':
+    'No WebSocket and no Server-Sent Event on the scope being watched.',
+  'Naviguez sur un site, ou basculez le perimetre sur « Tout Firefox ».':
+    'Browse a site, or switch the scope to "All of Firefox".',
+
+  /* ---------------- Les notes assemblees a l execution --------------------- */
+  /* Un texte fabrique par concatenation ne peut jamais etre une cle : il
+     fallait des gabarits. Sans eux, « 12 lignes », « 1 hote(s) » et l echelle
+     du chronogramme restaient francais en anglais. */
+  '{n} lignes': '{n} rows',
+  '{n} hote(s)': '{n} host(s)',
+  '{s} (protocole non mesure)': '{s} (protocol not measured)',
+  '{debut}  →  {fin}  ·  {ms} ms par barre': '{debut}  →  {fin}  ·  {ms} ms per bar',
+  'Rien a signaler sur ce perimetre.': 'Nothing to report on this scope.',
+  'Aucun marqueur pose sur ce perimetre.': 'No tag set on this scope.'
 };
