@@ -158,8 +158,154 @@ const T = [
   ['Reporting-Endpoints', 'reponse', 'Points de collecte nommes, forme actuelle.'],
   ['NEL', 'reponse', 'Journalisation des erreurs reseau par le navigateur.'],
   ['Sunset', 'reponse', 'Date d arret annoncee pour la ressource.'],
-  ['Idempotency-Key', 'requete', 'Cle qui rend un envoi rejouable sans double effet.']
-];
+  ['Idempotency-Key', 'requete', 'Cle qui rend un envoi rejouable sans double effet.'],
+  /* ===================================================================== */
+  /* Complement du registre permanent de l IANA. Chaque entree est decrite  */
+  /* d apres la specification que l IANA lui associe.                       */
+  /* ===================================================================== */
+
+  /* ------------------- Negociation de contenu transparente ---------------- */
+  /* RFC 2295 : une negociation menee par le client plutot que par le serveur.
+     Rare en pratique, mais toujours au registre. */
+  ['Accept-Features', 'requete', 'Capacites du client, pour la negociation transparente (RFC 2295).'],
+  ['Alternates', 'reponse', 'Variantes disponibles de la ressource (RFC 2295).'],
+  ['Negotiate', 'requete', 'Mode de negociation transparente demande (RFC 2295).'],
+  ['TCN', 'reponse', 'Type de negociation transparente appliquee (RFC 2295).'],
+  ['Variant-Vary', 'reponse', 'Ce qui fait varier une variante donnee (RFC 2295).'],
+
+  /* --------------------------- Encodage delta ----------------------------- */
+  /* RFC 3229 : envoyer la difference avec une version deja detenue plutot que
+     la ressource entiere. */
+  ['A-IM', 'requete', 'Transformations d instance acceptees, pour l encodage delta (RFC 3229).'],
+  ['IM', 'reponse', 'Transformations d instance appliquees au corps (RFC 3229).'],
+  ['Delta-Base', 'reponse', 'ETag de la version servant de base au delta (RFC 3229).'],
+
+  /* ------------------------------- Caches --------------------------------- */
+  ['Cache-Status', 'reponse', 'Ce que chaque cache traverse a fait de la requete : trouve, absent, revalide (RFC 9211).'],
+  ['CDN-Cache-Control', 'reponse', 'Directives de cache destinees aux seuls CDN, ignorees du navigateur (RFC 9213).'],
+  ['CDN-Loop', 'requete', 'Marque laissee par chaque CDN traverse, pour detecter une boucle (RFC 8586).'],
+  ['Cache-Groups', 'reponse', 'Groupes auxquels la reponse appartient, pour une invalidation groupee (RFC 9875).'],
+  ['Cache-Group-Invalidation', 'reponse', 'Groupes de cache a invalider (RFC 9875).'],
+  ['Meter', 'les deux', 'Comptage des acces pour un cache mandataire (RFC 2227).'],
+
+  /* ------------------------ Dictionnaires de compression ------------------ */
+  /* RFC 9842 : compresser en s appuyant sur une ressource deja telechargee. */
+  ['Available-Dictionary', 'requete', 'Empreinte du dictionnaire de compression dont dispose le client (RFC 9842).'],
+  ['Use-As-Dictionary', 'reponse', 'Cette reponse peut servir de dictionnaire a de futures requetes (RFC 9842).'],
+  ['Dictionary-ID', 'les deux', 'Identifiant du dictionnaire de compression employe (RFC 9842).'],
+
+  /* -------------------------- Empreintes de corps ------------------------- */
+  ['Content-Digest', 'les deux', 'Empreinte des octets transmis. INTERCEPTOR la recalcule et dit si elle correspond (RFC 9530).'],
+  ['Repr-Digest', 'les deux', 'Empreinte de la representation, avant encodage de transfert (RFC 9530).'],
+  ['Want-Content-Digest', 'les deux', 'Empreintes souhaitees en retour ; un poids nul vaut refus (RFC 9530).'],
+  ['Want-Repr-Digest', 'les deux', 'Empreintes de representation souhaitees en retour (RFC 9530).'],
+  ['Unencoded-Digest', 'les deux', 'Empreinte du contenu avant tout encodage de contenu (brouillon httpbis).'],
+  ['Want-Unencoded-Digest', 'les deux', 'Empreinte non encodee souhaitee en retour (brouillon httpbis).'],
+
+  /* ------------------------- Signatures de message ------------------------ */
+  /* RFC 9421 : signer une requete ou une reponse, champ par champ. */
+  ['Signature', 'les deux', 'Signatures du message, en champ structure (RFC 9421).'],
+  ['Signature-Input', 'les deux', 'Ce que chaque signature couvre : champs, cle, algorithme, validite (RFC 9421).'],
+  ['Accept-Signature', 'les deux', 'Signatures que l autre partie souhaite recevoir (RFC 9421).'],
+
+  /* ------------------------ Authentification et jetons -------------------- */
+  ['Authentication-Info', 'reponse', 'Donnees finales d un echange d authentification (RFC 9110).'],
+  ['Proxy-Authentication-Info', 'reponse', 'Idem, pour un mandataire (RFC 9110).'],
+  ['Authentication-Control', 'reponse', 'Conduite attendue du client apres l authentification (RFC 8053).'],
+  ['Optional-WWW-Authenticate', 'reponse', 'Authentification proposee sans etre exigee (RFC 8053).'],
+  ['DPoP', 'requete', 'Preuve de possession de la cle liee au jeton OAuth (RFC 9449).'],
+  ['DPoP-Nonce', 'reponse', 'Nonce impose par le serveur pour la preuve suivante (RFC 9449).'],
+  ['Sec-Token-Binding', 'requete', 'Liaison du jeton a la connexion TLS (RFC 8473).'],
+  ['Include-Referred-Token-Binding-ID', 'requete', 'Demande d inclure la liaison de jeton referee (RFC 8473).'],
+  ['Concealed-Auth-Export', 'requete', 'Materiel exporte pour l authentification dissimulee (RFC 9729).'],
+  ['Hobareg', 'reponse', 'Etat d enregistrement HOBA, authentification liee a l origine (RFC 7486).'],
+  ['Detached-JWS', 'requete', 'Signature JWS detachee du corps, protocole GNAP (RFC 9635).'],
+  ['OSCORE', 'les deux', 'Securite objet pour environnements contraints (RFC 8613).'],
+
+  /* ------------------------------ Certificats ----------------------------- */
+  ['Client-Cert', 'requete', 'Certificat client, transmis par un mandataire qui a termine le TLS (RFC 9440).'],
+  ['Client-Cert-Chain', 'requete', 'Chaine du certificat client, transmise de meme (RFC 9440).'],
+  ['Cert-Not-After', 'les deux', 'Fin de validite demandee pour un certificat court ACME STAR (RFC 8739).'],
+  ['Cert-Not-Before', 'les deux', 'Debut de validite demande pour ce meme certificat (RFC 8739).'],
+  ['Replay-Nonce', 'reponse', 'Nonce anti-rejeu du protocole ACME (RFC 8555).'],
+  ['Public-Key-Pins', 'reponse', 'Epinglage de cle publique. Retire de tous les navigateurs (RFC 7469).'],
+  ['Public-Key-Pins-Report-Only', 'reponse', 'Epinglage en observation. Retire de meme (RFC 7469).'],
+
+  /* --------------------------- Mandataires et CDN ------------------------- */
+  ['Proxy-Status', 'reponse', 'Quel mandataire a fait quoi, et pourquoi la requete a echoue (RFC 9209).'],
+  ['Proxy-Public-Address', 'reponse', 'Adresse publique attribuee par le mandataire UDP (MASQUE).'],
+  ['Connect-UDP-Bind', 'requete', 'Demande de liaison UDP a travers un mandataire (MASQUE).'],
+  ['Capsule-Protocol', 'les deux', 'Le flux transporte des capsules, non un corps ordinaire (RFC 9297).'],
+  ['ALPN', 'reponse', 'Protocoles applicatifs offerts par un service alternatif (RFC 7639).'],
+  ['Alt-Used', 'requete', 'Service alternatif que le client a effectivement emprunte (RFC 7838).'],
+  ['Incremental', 'les deux', 'Le message peut etre transmis au fur et a mesure (RFC 10036).'],
+
+  /* ----------------------------- Cycle de vie ----------------------------- */
+  ['Deprecation', 'reponse', 'Cette ressource est obsolete, avec la date depuis laquelle (RFC 9745).'],
+  ['Prefer', 'requete', 'Comportement souhaite du serveur, sans l exiger (RFC 7240).'],
+  ['Preference-Applied', 'reponse', 'Quelles preferences le serveur a effectivement suivies (RFC 7240).'],
+  ['Accept-Patch', 'reponse', 'Formats de correctif acceptes par la methode PATCH (RFC 5789).'],
+  ['Accept-Post', 'reponse', 'Types de media acceptes sur cette ressource en POST (Linked Data Platform).'],
+  ['Accept-Query', 'reponse', 'Formats de requete acceptes par la methode QUERY (RFC 10008).'],
+
+  /* -------------------------- Archives et versions ------------------------ */
+  ['Accept-Datetime', 'requete', 'Etat de la ressource a une date donnee, protocole Memento (RFC 7089).'],
+  ['Memento-Datetime', 'reponse', 'Date de l etat archive effectivement renvoye (RFC 7089).'],
+
+  /* ------------------------------- Web Push ------------------------------- */
+  /* RFC 8030 : ce que le service de push transporte, et avec quelle urgence. */
+  ['TTL', 'requete', 'Duree de retention du message push s il ne peut etre remis (RFC 8030).'],
+  ['Urgency', 'requete', 'Urgence du message push, de « very-low » a « high » (RFC 8030).'],
+  ['Topic', 'requete', 'Sujet du message push : un nouveau remplace le precedent (RFC 8030).'],
+
+  /* ---------------------------- Cote navigateur --------------------------- */
+  ['Last-Event-ID', 'requete', 'Dernier evenement recu, pour reprendre un flux SSE ou il s est coupe (HTML).'],
+  ['Origin-Agent-Cluster', 'reponse', 'Demande d isoler cette origine dans son propre agent (HTML).'],
+  ['Ping-From', 'requete', 'Page d ou provient un ping d hyperlien (HTML).'],
+  ['Ping-To', 'requete', 'Destination annoncee de ce ping (HTML).'],
+  ['Cross-Origin-Embedder-Policy-Report-Only', 'reponse', 'Politique d integration en observation : rien n est bloque, tout est signale.'],
+  ['Cross-Origin-Opener-Policy-Report-Only', 'reponse', 'Politique d ouverture en observation, meme principe.'],
+
+  /* ------------------------------- HTTP/1.1 ------------------------------- */
+  ['Close', 'les deux', 'Option de connexion reservee ; ne doit pas etre envoyee (RFC 9112).'],
+  ['MIME-Version', 'les deux', 'Version MIME. Heritee du courrier, sans effet en HTTP (RFC 9112).'],
+
+  /* ------------------------- WebDAV et ses extensions --------------------- */
+  /* Un navigateur ne parle pas WebDAV : voir ces entetes dans une capture
+     signale un client tiers, ou un serveur qui les expose. */
+  ['DAV', 'reponse', 'Classes de conformite WebDAV du serveur (RFC 4918).'],
+  ['Depth', 'requete', 'Profondeur d application de la methode WebDAV (RFC 4918).'],
+  ['Destination', 'requete', 'Cible d un COPY ou d un MOVE WebDAV (RFC 4918).'],
+  ['If', 'requete', 'Condition WebDAV portant sur des etats et des verrous (RFC 4918).'],
+  ['Lock-Token', 'requete', 'Verrou WebDAV invoque ou libere (RFC 4918).'],
+  ['Overwrite', 'requete', 'Autorise ou non l ecrasement de la destination (RFC 4918).'],
+  ['Timeout', 'requete', 'Duree de verrou demandee, en secondes (RFC 4918).'],
+  ['Status-URI', 'reponse', 'Etat par ressource apres une operation WebDAV (RFC 2518).'],
+  ['DASL', 'reponse', 'Grammaires de recherche acceptees par SEARCH (RFC 5323).'],
+  ['Label', 'requete', 'Version etiquetee visee, versionnement WebDAV (RFC 3253).'],
+  ['Ordering-Type', 'les deux', 'Semantique d ordre d une collection ordonnee (RFC 3648).'],
+  ['Position', 'requete', 'Position demandee dans une collection ordonnee (RFC 3648).'],
+  ['Redirect-Ref', 'reponse', 'Cible d une ressource de redirection WebDAV (RFC 4437).'],
+  ['Apply-To-Redirect-Ref', 'requete', 'Appliquer la methode a la reference elle-meme (RFC 4437).'],
+
+  /* ------------------------------- CalDAV --------------------------------- */
+  ['CalDAV-Timezones', 'les deux', 'Prise en charge du service de fuseaux horaires CalDAV.'],
+  ['Cal-Managed-ID', 'reponse', 'Identifiant d une piece jointe geree par le serveur CalDAV.'],
+  ['Schedule-Reply', 'requete', 'Envoyer ou non une reponse de planification CalDAV.'],
+  ['Schedule-Tag', 'reponse', 'Etiquette d objet de planification CalDAV.'],
+  ['If-Schedule-Tag-Match', 'requete', 'Condition portant sur cette etiquette de planification.'],
+
+  /* ------------------------ Autres protocoles applicatifs ----------------- */
+  ['SLUG', 'requete', 'Nom suggere pour la ressource creee, protocole Atom (RFC 5023).'],
+  ['SoapAction', 'requete', 'Intention de la requete SOAP 1.1, avant SOAP 1.2.'],
+  ['OData-Version', 'les deux', 'Version du protocole OData employee.'],
+  ['OData-MaxVersion', 'requete', 'Version OData maximale que le client sait lire.'],
+  ['OData-EntityId', 'reponse', 'Identifiant de l entite creee ou modifiee, OData.'],
+  ['OData-Isolation', 'requete', 'Niveau d isolation demande pour la lecture, OData.'],
+  ['OSLC-Core-Version', 'les deux', 'Version du noyau OSLC employee.'],
+  ['Set-Txn', 'les deux', 'Jeton d evenement de securite, profil SCIM (RFC 9967).'],
+  ['Link-Template', 'reponse', 'Liens dont la cible est un gabarit d URI (RFC 9652).'],
+  ['Accept-Additions', 'requete', 'Ajouts acceptes a la boisson. Protocole HTCPCP, poisson d avril (RFC 2324).'],];
 
 export const ENTETES = T.map(([nom, sens, description]) => ({ nom, sens, description }));
 

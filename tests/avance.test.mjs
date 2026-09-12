@@ -1033,4 +1033,82 @@ verifier('le resume signale le depassement',
   resumerServerTiming(lireServerTiming('a;dur=500'), 100).some(m => m.cle.includes('chevauchent')));
 egal('aucun resume sans mesure', resumerServerTiming([], 100).length, 0);
 
+/* ------------- Couverture du registre des en-tetes de l IANA -------------- */
+/* Le registre des noms de champs HTTP tenu par l IANA compte 187 entrees
+   permanentes. C est la seule definition verifiable de « tous les en-tetes » :
+   une liste officielle, enumerable, et qui bouge.
+
+   La liste ci-dessous a ete relevee sur
+   https://www.iana.org/assignments/http-fields/field-names.csv
+   en septembre 2026, en ne gardant que les entrees de statut « permanent ».
+
+   Quand l IANA en ajoutera une, ce test echouera — c est le but. Un chiffre
+   qu on ne recompte pas finit toujours par mentir. */
+const REGISTRE_IANA = `A-IM Accept Accept-Additions Accept-Datetime Accept-Encoding
+Accept-Features Accept-Language Accept-Patch Accept-Post Accept-Query Accept-Ranges
+Accept-Signature Access-Control-Allow-Credentials Access-Control-Allow-Headers
+Access-Control-Allow-Methods Access-Control-Allow-Origin Access-Control-Expose-Headers
+Access-Control-Max-Age Access-Control-Request-Headers Access-Control-Request-Method Age Allow
+ALPN Alt-Svc Alt-Used Alternates Apply-To-Redirect-Ref Authentication-Control
+Authentication-Info Authorization Available-Dictionary Cache-Control
+Cache-Group-Invalidation Cache-Groups Cache-Status Cal-Managed-ID CalDAV-Timezones
+Capsule-Protocol CDN-Cache-Control CDN-Loop Cert-Not-After Cert-Not-Before Clear-Site-Data
+Client-Cert Client-Cert-Chain Close Concealed-Auth-Export Connect-UDP-Bind Connection
+Content-Digest Content-Disposition Content-Encoding Content-Language Content-Length
+Content-Location Content-Range Content-Security-Policy Content-Security-Policy-Report-Only
+Content-Type Cookie Cross-Origin-Embedder-Policy Cross-Origin-Embedder-Policy-Report-Only
+Cross-Origin-Opener-Policy Cross-Origin-Opener-Policy-Report-Only Cross-Origin-Resource-Policy
+DASL Date DAV Delta-Base Deprecation Depth Destination Detached-JWS Dictionary-ID DPoP
+DPoP-Nonce Early-Data ETag Expect Expires Forwarded From Hobareg Host If If-Match
+If-Modified-Since If-None-Match If-Range If-Schedule-Tag-Match If-Unmodified-Since IM
+Include-Referred-Token-Binding-ID Incremental Keep-Alive Label Last-Event-ID Last-Modified
+Link Link-Template Location Lock-Token Max-Forwards Memento-Datetime Meter MIME-Version
+Negotiate NEL OData-EntityId OData-Isolation OData-MaxVersion OData-Version
+Optional-WWW-Authenticate Ordering-Type Origin Origin-Agent-Cluster OSCORE OSLC-Core-Version
+Overwrite Ping-From Ping-To Position Prefer Preference-Applied Priority Proxy-Authenticate
+Proxy-Authentication-Info Proxy-Authorization Proxy-Public-Address Proxy-Status
+Public-Key-Pins Public-Key-Pins-Report-Only Range Redirect-Ref Referer Referrer-Policy Refresh
+Replay-Nonce Repr-Digest Retry-After Schedule-Reply Schedule-Tag Sec-Fetch-Dest Sec-Fetch-Mode
+Sec-Fetch-Site Sec-Fetch-User Sec-Purpose Sec-Token-Binding Sec-WebSocket-Accept
+Sec-WebSocket-Extensions Sec-WebSocket-Key Sec-WebSocket-Protocol Sec-WebSocket-Version Server
+Server-Timing Set-Cookie Set-Txn Signature Signature-Input SLUG SoapAction Status-URI
+Strict-Transport-Security Sunset TCN TE Timeout Topic Traceparent Tracestate Trailer
+Transfer-Encoding TTL Unencoded-Digest Upgrade Urgency Use-As-Dictionary User-Agent
+Variant-Vary Vary Via Want-Content-Digest Want-Repr-Digest Want-Unencoded-Digest
+WWW-Authenticate X-Content-Type-Options X-Frame-Options`.split(/\s+/).filter(Boolean);
+
+const { ENTETES } = await import('../ui/lib/ref-entetes.js');
+const nomsConnus = new Set(ENTETES.map(e => String(e.nom).toLowerCase()));
+
+egal('le releve du registre compte bien 187 entrees', REGISTRE_IANA.length, 187);
+const absents = REGISTRE_IANA.filter(n => !nomsConnus.has(n.toLowerCase()));
+for (const n of absents) {
+  verifier('l en-tete « ' + n +' » du registre IANA est decrit', false, 'absent de ref-entetes.js');
+}
+egal('le registre permanent de l IANA est couvert entierement', absents.length, 0);
+
+/* Chaque entree doit etre utilisable : un sens de circulation valide et une
+   description qui dit quelque chose. Une ligne ajoutee a la hate se verrait. */
+const sensValides = new Set(['requete', 'reponse', 'les deux']);
+egal('chaque en-tete porte un sens de circulation valide',
+  ENTETES.filter(e => !sensValides.has(e.sens)).length, 0);
+egal('chaque en-tete porte une description',
+  ENTETES.filter(e => !e.description || e.description.trim().length < 10).length, 0);
+
+/* Un nom decrit deux fois donnerait deux reponses a la meme question. */
+const vusEntetes = new Set();
+const doublesEntetes = [];
+for (const e of ENTETES) {
+  const cle = String(e.nom).toLowerCase();
+  if (vusEntetes.has(cle)) doublesEntetes.push(e.nom);
+  vusEntetes.add(cle);
+}
+egal('aucun en-tete decrit deux fois', doublesEntetes.join(', '), '');
+
+/* Au-dela du registre, la table decrit aussi ce que le trafic reel porte sans
+   que l IANA l ait enregistre : X-Forwarded-For, CF-Ray, RateLimit, Sec-GPC. */
+verifier('la table depasse le registre avec les en-tetes de fait',
+  ENTETES.length > REGISTRE_IANA.length,
+  ENTETES.length + ' entrees pour ' + REGISTRE_IANA.length + ' au registre');
+
 bilan('Outils avances');

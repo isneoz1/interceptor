@@ -34,7 +34,7 @@ body:
     attributes:
       label: INTERCEPTOR version
       description: Shown in Settings, or the release you downloaded.
-      placeholder: "3.6.0"
+      placeholder: "3.7.0"
     validations:
       required: true
 

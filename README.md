@@ -14,7 +14,7 @@ Created by **NeoZ**
 ![Manifest V2](https://img.shields.io/badge/Manifest-V2-444?style=flat)
 [![MIT licence](https://img.shields.io/badge/Licence-MIT-00DDFF?style=flat)](LICENSE)
 ![No dependencies](https://img.shields.io/badge/Dependencies-none-2ea043?style=flat)
-![1098 assertions](https://img.shields.io/badge/Assertions-1098-2ea043?style=flat)
+![1104 assertions](https://img.shields.io/badge/Assertions-1104-2ea043?style=flat)
 ![English and French](https://img.shields.io/badge/UI-EN%20%2F%20FR-444?style=flat)
 
 [**Try it in 60 seconds**](#try-it-in-60-seconds) · [**Why not the built-in panel?**](#firefox-already-has-a-network-panel-why-this) · [**Screenshots**](#2-screenshots) · [**How it works**](#4-how-it-works-the-capture-layers) · [**Changelog**](CHANGELOG.md)
@@ -142,14 +142,14 @@ specific points:
 | **It finds the cause, not the symptom** | When a CORS request fails, the browser shows the error on *that* request — while the cause sits in the `OPTIONS` preflight a few rows above. INTERCEPTOR pairs the two and says which header blocked it: a missing `Access-Control-Allow-Methods`, an origin that does not match, or the classic `*` with credentials, which no browser accepts. |
 | **It misses nothing** | Eight capture layers run in parallel: `webRequest`, response bodies via `StreamFilter`, TLS via `securityInfo`, DNS resolution, navigation, cookies, page probes (`fetch`, `XHR`, WebSocket, SSE, Beacon, WebRTC, `PerformanceObserver`), and an optional passive proxy. What one layer misses, another sees. |
 | **It never counts twice** | A correlator pairs observations coming from different layers. One real request produces **one** row, even when five layers saw it. Two identical polling `GET`s stay two separate rows. |
-| **It explains** | 62 status codes, 129 headers, 70 media types, 83 ports, 31 TLS cipher suites, TLS alerts, QUIC and HTTP/3 errors, DNS record types — all described in the tool, offline. |
+| **It explains** | 62 status codes, **229 headers — the whole of the IANA permanent registry, checked by a test**, plus the de-facto ones the registry has never taken in (`X-Forwarded-For`, `CF-Ray`, `RateLimit`, `Sec-GPC`) — 70 media types, 83 ports, 31 TLS cipher suites, TLS alerts, QUIC and HTTP/3 errors, DNS record types. All described in the tool, offline. |
 | **It never guesses** | The security analyser only reports what is **provable** from what was captured. Every finding carries its evidence. A missing hardening header is not a vulnerability, so it is not reported. |
 
 **What it is not**: not a proxy, not a vulnerability scanner, not an attack tool. Everything
 happens inside your Firefox, on your machine.
 
 **By the numbers**: 169 JavaScript modules, ~33,300 lines, zero external dependencies,
-1098 automated assertions, English and French interface.
+1104 automated assertions, English and French interface.
 
 ---
 
@@ -571,7 +571,7 @@ own secret and tracker patterns in the settings.
 | **Compare** | Line-by-line and word-by-word diff, Levenshtein distance, similarity |
 | **URL** | Every part of the URL, RFC 3986 canonical form, known service on the port, **homograph detection** (a Cyrillic "а" inside a Latin word is flagged) |
 | **IP address** | IPv4 and IPv6: mask, network, broadcast, usable range, category, subnetting, summarising a prefix list, range to prefixes, enumeration, reverse names `in-addr.arpa` / `ip6.arpa` (read both ways) |
-| **Reference** | The complete tables, offline: 62 statuses, 9 methods, 129 headers, 70 media types, 83 ports, 31 TLS cipher suites, WebSocket close codes, HTTP/2 errors, **HTTP/3 and QPACK errors**, **QUIC transport errors**, **TLS alerts**, **DNS record types**, **DNS response codes**, Firefox network errors |
+| **Reference** | The complete tables, offline: 62 statuses, 9 methods, **229 headers (the entire IANA permanent registry)**, 70 media types, 83 ports, 31 TLS cipher suites, WebSocket close codes, HTTP/2 errors, **HTTP/3 and QPACK errors**, **QUIC transport errors**, **TLS alerts**, **DNS record types**, **DNS response codes**, Firefox network errors |
 | **Generate** | UUID v3/v4/v5/v7, ULID, nanoid, passwords with strength calculation, MAC addresses, random hex and base64 |
 | **Import a request** | Paste a `curl` command and turn it back into a replayable request |
 
@@ -800,7 +800,7 @@ ui/                        The interface — one page for all four surfaces
 ├── console/               One view per file, plus the detail panel
 └── lib/                   Codecs, digests, network, reference tables, i18n
 
-tests/                     1098 assertions, no browser required
+tests/                     1104 assertions, no browser required
 tools/captures.mjs         Generates the documentation screenshots
 tools/banniere.mjs         Generates the social preview card (docs/images)
 tools/vitrine.mjs          Composes the showcase images at the top of this file
@@ -855,7 +855,7 @@ French at the flip of a setting.
 npm test
 ```
 
-1098 assertions, with no browser and no dependencies. The kernel and interface modules are
+1104 assertions, with no browser and no dependencies. The kernel and interface modules are
 written for Firefox; `tests/harnais.mjs` supplies the minimum WebExtension API and DOM they
 need to import and run under Node. **The logic under test is exactly the logic that runs in
 the browser, with no rewriting.**
@@ -863,7 +863,7 @@ the browser, with no rewriting.**
 | Suite | Assertions | What it covers |
 |---|---|---|
 | `core.test.mjs` | 228 | URL normalisation, correlation signatures, the store, the rule engine (both ways: what matches **and** what must not), the security analyser rule by rule, HAR export, curl import, all 39 code generators |
-| `avance.test.mjs` | 458 | WebSocket and HTTP/2 frames, CSP, RFC 9111 freshness, multipart, canonical URLs and homographs, protocol tables, binary structures, rare digests, generators |
+| `avance.test.mjs` | 464 | WebSocket and HTTP/2 frames, CSP, RFC 9111 freshness, multipart, canonical URLs and homographs, protocol tables, binary structures, rare digests, generators |
 | `ui-load.test.mjs` | 184 | Actual loading of the 127 interface modules, complete module graph (no dead import, no file outside the graph), consistency with the HTML pages and the manifest, **full translation coverage** — every displayed string must have a dictionary entry — and **measured contrast**: every colour pair in both themes is checked against the WCAG 2.1 thresholds |
 | `detail-coverage.test.mjs` | 120 | Each of a record's 60 fields is displayed, each tab has a render function, each searchable field exists |
 | `outils.test.mjs` | 108 | The toolbox, against published vectors |
@@ -906,7 +906,7 @@ the file. It contains internal errors and the command log — not your traffic.
 Before opening a pull request:
 
 ```bash
-npm test              # all 1098 assertions must pass
+npm test              # all 1104 assertions must pass
 .\build.ps1 -Verify   # the build must be green
 ```
 
