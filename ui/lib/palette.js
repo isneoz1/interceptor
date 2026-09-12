@@ -1,9 +1,10 @@
 /* Palette de commandes — INTERCEPTOR (by NeoZ)
  *
- * Dix-sept vues, vingt-trois outils, une trentaine d actions d en-tete : tout
- * cela s atteint a la souris, mais il faut savoir ou regarder. La palette
- * repond a l autre question — « je sais ce que je veux faire, ou est-ce ? » —
- * en laissant taper le nom au lieu de le chercher.
+ * Dix-sept vues, vingt-trois outils, une trentaine d actions d en-tete et les
+ * sept cents lignes des tables de reference : tout cela s atteint a la souris,
+ * mais il faut savoir ou regarder. La palette repond a l autre question —
+ * « je sais ce que je cherche, ou est-ce ? » — en laissant taper le nom au
+ * lieu de le chercher.
  *
  * Le filtrage est du sous-sequencage : « ctp » trouve « Comparer », « chemin »
  * trouve « Sites et chemins ». Les lettres doivent apparaitre dans l ordre,
@@ -74,7 +75,12 @@ function normaliser(texte) {
  * mot. Le meilleur des deux scores l emporte, celui du groupe minore pour que
  * le libelle reste prioritaire.
  *
- * @param commandes [{ id, libelle, groupe, ... }]
+ * Une commande peut porter un `poids` : il se retranche du score, ce qui la
+ * recule a correspondance egale sans jamais la cacher. Les sept cents lignes
+ * de reference s en servent pour laisser passer les vues et les outils —
+ * « cookies » propose la vue Cookies avant l en-tete Cookie.
+ *
+ * @param commandes [{ id, libelle, groupe, poids, ... }]
  * @param requete   ce qui est tape
  * @param limite    nombre maximal de resultats
  */
@@ -97,7 +103,7 @@ export function filtrer(commandes, requete, limite = 40) {
     trouves.push({
       commande,
       rang,
-      score: Math.max(parLibelle, parGroupe),
+      score: Math.max(parLibelle, parGroupe) - (commande.poids || 0),
       positions: parLibelle >= parGroupe && surLibelle ? surLibelle.positions : []
     });
   }

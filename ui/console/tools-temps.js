@@ -107,7 +107,7 @@ function ecrireFormats(box, f) {
   add(box, kv('Semaine ISO', f.semaineIso));
   add(box, kv('Jour de l annee', f.jourAnnee, { always: true }));
   add(box, kv('Trimestre', f.trimestre));
-  add(box, kv('Annee bissextile', f.bissextile ? 'oui' : 'non'));
+  add(box, kv('Annee bissextile', f.bissextile ? t('oui') : t('non')));
 }
 
 /* --------------------------------- Nombres -------------------------------- */
@@ -154,7 +154,7 @@ export function panneauNombres(entree, etat, redessiner) {
   add(box, kv('Signe', n < 0n ? 'negatif' : n === 0n ? 'nul' : 'positif'));
   add(box, kv('Bits necessaires', (n < 0n ? -n : n).toString(2).length, { always: true }));
   add(box, kv('Parite', n % 2n === 0n ? 'pair' : 'impair'));
-  add(box, kv('Tient dans un entier sur 32 bits', n >= -2147483648n && n <= 2147483647n ? 'oui' : 'non'));
+  add(box, kv('Tient dans un entier sur 32 bits', n >= -2147483648n && n <= 2147483647n ? t('oui') : t('non')));
   add(box, kv('Tient dans un nombre JavaScript sur', n >= -9007199254740991n && n <= 9007199254740991n
     ? 'oui, exactement' : 'non, la precision serait perdue'));
   if (n >= 0n && n <= 4294967295n) {

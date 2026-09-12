@@ -118,5 +118,74 @@ export const EN_REF_HTTP = {
   'Demander les capacites : c est la requete preliminaire CORS.':
     'Ask for capabilities: this is the CORS preflight request.',
   'Renvoyer la requete telle que recue. Souvent desactivee.':
-    'Echo the request as received. Often disabled.'
+    'Echo the request as received. Often disabled.',
+
+  /* ------------------------------ Statut 104 ------------------------------ */
+  'Le serveur accepte de reprendre un televersement interrompu.':
+    'The server is willing to resume an interrupted upload.',
+
+  /* ------------------ Le reste du registre des methodes ------------------- */
+  /* WebDAV (RFC 4918) */
+  'Lire les proprietes d une ressource WebDAV.':
+    'Read the properties of a WebDAV resource.',
+  'Modifier les proprietes d une ressource WebDAV.':
+    'Change the properties of a WebDAV resource.',
+  'Creer une collection, l equivalent WebDAV d un dossier.':
+    'Create a collection, the WebDAV equivalent of a folder.',
+  'Copier une ressource vers la destination annoncee.':
+    'Copy a resource to the announced destination.',
+  'Deplacer une ressource vers la destination annoncee.':
+    'Move a resource to the announced destination.',
+  'Poser un verrou. Non idempotente : chaque appel cree un verrou.':
+    'Take a lock. Not idempotent: every call creates another one.',
+  'Liberer un verrou WebDAV.': 'Release a WebDAV lock.',
+
+  /* Versionnement WebDAV (RFC 3253) */
+  'Placer une ressource sous controle de version.':
+    'Put a resource under version control.',
+  'Demander un rapport au serveur de versions.':
+    'Ask the versioning server for a report.',
+  'Rendre une version modifiable.': 'Make a version editable.',
+  'Figer les modifications en une nouvelle version.':
+    'Freeze the changes into a new version.',
+  'Abandonner les modifications en cours.': 'Discard the changes in progress.',
+  'Creer un espace de travail versionne.': 'Create a versioned workspace.',
+  'Aligner une ressource sur une version donnee.':
+    'Bring a resource in line with a given version.',
+  'Poser ou retirer une etiquette de version.':
+    'Add or remove a version label.',
+  'Fusionner deux lignes de version.': 'Merge two lines of versions.',
+  'Placer une collection sous controle de reference.':
+    'Put a collection under baseline control.',
+  'Creer une activite, qui regroupe des modifications.':
+    'Create an activity, which groups changes together.',
+
+  /* Liaisons, collections, acces */
+  'Lier un nouveau nom a une ressource existante (RFC 5842).':
+    'Bind a new name to an existing resource (RFC 5842).',
+  'Retirer un nom lie a une ressource (RFC 5842).':
+    'Remove a name bound to a resource (RFC 5842).',
+  'Deplacer une liaison d un nom vers un autre (RFC 5842).':
+    'Move a binding from one name to another (RFC 5842).',
+  'Reordonner les membres d une collection (RFC 3648).':
+    'Reorder the members of a collection (RFC 3648).',
+  'Modifier la liste de controle d acces (RFC 3744).':
+    'Change the access control list (RFC 3744).',
+  'Creer une ressource de redirection (RFC 4437).':
+    'Create a redirect reference resource (RFC 4437).',
+  'Changer la cible d une redirection (RFC 4437).':
+    'Change the target of a redirect reference (RFC 4437).',
+
+  /* Le reste */
+  'Creer un calendrier CalDAV (RFC 4791).': 'Create a CalDAV calendar (RFC 4791).',
+  'Chercher dans une arborescence, methode DASL (RFC 5323).':
+    'Search a tree of resources, the DASL method (RFC 5323).',
+  'Interroger avec un corps, sans les effets d un POST (RFC 10008).':
+    'Query with a body, without a POST and its side effects (RFC 10008).',
+  'Ne s emet jamais : elle ne sert qu au preambule de connexion HTTP/2 (RFC 9113).':
+    'Never actually sent: it only exists in the HTTP/2 connection preface (RFC 9113).',
+  'Etablir une relation entre deux ressources. Retiree de HTTP/1.1 (RFC 2068).':
+    'Establish a relation between two resources. Dropped from HTTP/1.1 (RFC 2068).',
+  'Rompre cette relation. Retiree de meme (RFC 2068).':
+    'Break that relation. Dropped in the same way (RFC 2068).'
 };

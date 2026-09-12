@@ -825,6 +825,26 @@ egal('aucun caractere perdu au decoupage',
   morceaux('Sites et chemins', apparier('Sites et chemins', 'chemin').positions)
     .map(m => m.texte).join(''), 'Sites et chemins');
 
+/* Les sept cents lignes des tables de reference entrent dans la meme liste
+   que les commandes. Sans precaution elles passeraient devant : un libelle
+   court marque davantage, et « Cookie » est plus court que « Cookies ». Le
+   poids corrige cela sans rien cacher. */
+const PESEES = [
+  { id: 'vue', libelle: 'Cookies', groupe: 'Vues' },
+  { id: 'entete', libelle: 'Cookie', groupe: 'En-tete HTTP', poids: 15 }
+];
+egal('sans poids, le libelle le plus court gagnerait',
+  filtrer([PESEES[0], { ...PESEES[1], poids: 0 }], 'cookie')[0].commande.id, 'entete');
+egal('le poids rend la vue prioritaire',
+  filtrer(PESEES, 'cookie')[0].commande.id, 'vue');
+egal('la ligne de reference reste proposee malgre son poids',
+  filtrer(PESEES, 'cookie').length, 2);
+egal('une reference que rien ne concurrence reste premiere',
+  filtrer(PESEES.concat({ id: 'cs', libelle: 'Cache-Status', groupe: 'En-tete HTTP', poids: 15 }),
+    'cache-status')[0].commande.id, 'cs');
+egal('un poids absent ne change rien au classement d avant',
+  filtrer(COMMANDES, 'tri')[0].commande.id, 'b');
+
 egal('la selection boucle vers le haut', deplacer(0, -1, 3), 2);
 egal('la selection boucle vers le bas', deplacer(2, 1, 3), 0);
 egal('liste vide sans deplacement', deplacer(0, 1, 0), 0);

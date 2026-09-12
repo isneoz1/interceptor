@@ -17,7 +17,7 @@ import { panneauHorodatage, panneauNombres } from './tools-temps.js';
 import { panneauGenerateurs } from './tools-generer.js';
 import { panneauImport } from './tools-import.js';
 import { panneauUrl, panneauAdresse } from './tools-reseau.js';
-import { panneauReference } from './tools-reference.js';
+import { panneauReference, entreesReference } from './tools-reference.js';
 import { panneauCles, panneauIdentifier } from './tools-chiffres.js';
 import { panneauChiffrement } from './tools-crypto.js';
 import { panneauBinaire } from './tools-binaire.js';
@@ -105,11 +105,25 @@ const etat = {
   otpResultat: null, otpVoisins: null, otpCompteur: 0
 };
 
+/** Ouvre la reference sur une question deja posee : la famille et le mot
+ *  cherche arrivent ensemble, donc la reponse est a l ecran sans un clic de
+ *  plus. C est ce dont la palette se sert pour repondre en une frappe. */
+export function ouvrirReference(famille, question) {
+  etat.familleRef = famille;
+  etat.questionRef = String(question == null ? '' : question);
+  onglet = 'reference';
+  document.dispatchEvent(new CustomEvent('ic:goto', { detail: { view: 'tools' } }));
+}
+
 /** Ouvre la boite a outils sur un onglet precis, sans toucher a l entree. */
 export function ouvrir(cle) {
   if (ONGLETS.some(([id]) => id === cle)) onglet = cle;
   document.dispatchEvent(new CustomEvent('ic:goto', { detail: { view: 'tools' } }));
 }
+
+/* La palette a besoin des lignes de reference ; elle les prend ici plutot
+   que d aller fouiller le panneau. */
+export { entreesReference };
 
 /** Charge un texte dans la boite a outils depuis n importe quelle autre vue. */
 export function poser(texte, { bascule = true, vers = null } = {}) {

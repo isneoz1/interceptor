@@ -216,7 +216,17 @@ await taper('tool');
 await tenir(0.7);
 await agir(toucheDansPalette('Enter'), 1.0);
 await exigerVue('Toolbox');
-await tenir(2.4);
+await tenir(2.0);
+
+/* 5 bis. La meme boite repond aussi aux questions. « 429 », Entree, et la
+      reference s ouvre sur ce code-la, deja explique. Trois lettres au lieu
+      d un onglet a trouver puis d un tableau a choisir. */
+await agir(touche('k', 'ctrlKey: true'), 0.5);
+await taper('429');
+await tenir(0.9);
+await agir(toucheDansPalette('Enter'), 1.0);
+await exigerVue('Toolbox');
+await tenir(2.6);
 
 /* 6. Retour au tableau, puis le carton de fin. Une demonstration qui
       s arrete net laisse le spectateur sans rien a faire de ce qu il vient

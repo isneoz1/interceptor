@@ -44,8 +44,9 @@ const VITRINES = [
     fichier: 'vitrine-palette',
     source: 'console-palette.png',
     titre: 'Ctrl+K, then type',
-    phrase: 'Seventeen views, twenty-three tools and every action, reachable by name. Three '
-      + 'letters are usually enough, and the ranking never changes under you.',
+    phrase: 'Seventeen views, twenty-three tools, every action and the 691 reference lines, '
+      + 'reachable by name. Ask where a screen is, or what a header means — same box. '
+      + 'Commands still come first.',
     cadre: { x: 24, y: 6, largeur: 52, hauteur: 58 }
   },
   {

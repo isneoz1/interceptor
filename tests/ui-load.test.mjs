@@ -348,15 +348,123 @@ verifier('les tables de donnees verifiees ne sont pas vides',
   GROUPS.length + ' sections, ' + PROFILES.length + ' profils, ' +
   TRANSFORMATIONS.length + ' transformations');
 
+/* ------------ 8 bis. Les tables de reference, en anglais aussi ------------ */
+/* Le panneau de reference appelle bien `t` sur chaque description, mais rien
+   ne verifiait que le dictionnaire les avait. Il lui en manquait 250 : les
+   alertes TLS, les erreurs HTTP/3 et QUIC, les types DNS et leurs codes de
+   reponse s affichaient entierement en francais dans une interface reglee sur
+   l anglais, comme les cent en-tetes et les trente et une methodes ajoutes
+   pour couvrir les registres de l IANA.
+
+   Le controle porte sur les phrases — ce qu une table explique — et non sur
+   les noms du protocole : « PROTOCOL_ERROR », « AAAA » ou « PostgreSQL »
+   s ecrivent pareil partout, et les traduire les rendrait introuvables. */
+const { STATUTS: REF_STATUTS, METHODES: REF_METHODES } = await import('../ui/lib/ref-http.js');
+const { ENTETES: REF_ENTETES } = await import('../ui/lib/ref-entetes.js');
+const { TYPES_MEDIA: REF_MEDIA } = await import('../ui/lib/ref-mime.js');
+const { PORTS: REF_PORTS } = await import('../ui/lib/ref-ports.js');
+const { SUITES_TLS: REF_TLS, FERMETURES_WS: REF_WS, ERREURS_H2: REF_H2,
+        ERREURS_FIREFOX: REF_FF } = await import('../ui/lib/ref-reseau.js');
+const { ALERTES_TLS: REF_ALERTES, ERREURS_H3: REF_H3, ERREURS_QUIC: REF_QUIC,
+        TYPES_DNS: REF_DNS, RCODES_DNS: REF_RCODES } = await import('../ui/lib/ref-protocoles.js');
+
+const TABLES_DE_REFERENCE = [
+  ['codes de statut', REF_STATUTS, ['sens']],
+  ['methodes', REF_METHODES, ['sens']],
+  ['en-tetes', REF_ENTETES, ['description', 'sens']],
+  ['types de media', REF_MEDIA, ['description']],
+  ['ports', REF_PORTS, ['note']],
+  ['suites TLS', REF_TLS, ['authentification', 'solidite']],
+  ['fermetures WebSocket', REF_WS, ['nom', 'sens']],
+  ['erreurs HTTP/2', REF_H2, ['sens']],
+  ['erreurs reseau', REF_FF, ['sens']],
+  ['alertes TLS', REF_ALERTES, ['sens']],
+  ['erreurs HTTP/3', REF_H3, ['sens']],
+  ['erreurs QUIC', REF_QUIC, ['sens']],
+  ['types DNS', REF_DNS, ['sens']],
+  ['codes de reponse DNS', REF_RCODES, ['sens']]
+];
+
+let lignesDeReference = 0;
+const refSansTraduction = [];
+for (const [quoi, table, champs] of TABLES_DE_REFERENCE) {
+  verifier('la table « ' + quoi + ' » n est pas vide', table.length > 0);
+  lignesDeReference += table.length;
+  for (const ligne of table) {
+    for (const champ of champs) {
+      const texte = ligne[champ];
+      if (typeof texte !== 'string' || !texte.trim()) continue;
+      if (EN[texte] === undefined) refSansTraduction.push(quoi + ' : ' + texte.slice(0, 70));
+    }
+  }
+}
+for (const manque of refSansTraduction.slice(0, 20)) {
+  verifier('la phrase de reference a une traduction anglaise', false, manque);
+}
+egal('les quatorze tables de reference sont traduites entierement',
+  refSansTraduction.length, 0);
+verifier('les tables de reference comptent plus de six cents lignes',
+  lignesDeReference > 600, lignesDeReference + ' lignes');
+
+/* ------------- 8 ter. La palette atteint vraiment la reference ------------ */
+/* Ctrl+K propose desormais chaque ligne de reference. Encore faut-il que la
+   ligne proposee mene a la bonne reponse : la palette passe une famille et un
+   mot cherche au panneau, qui doit retrouver l entree. Ce test ouvre les sept
+   cents entrees une a une et regarde ce qui s affiche. */
+const { entreesReference, panneauReference } = await import('../ui/console/tools-reference.js');
+const entrees = entreesReference();
+
+egal('la palette propose autant d entrees que les tables en comptent',
+  entrees.length, lignesDeReference);
+egal('chaque entree porte un libelle', entrees.filter(e => !e.libelle).length, 0);
+egal('chaque entree porte un mot a chercher',
+  entrees.filter(e => !String(e.question || '').trim()).length, 0);
+
+function texteDe(noeud) {
+  if (!noeud) return '';
+  let out = String(noeud.textContent || '');
+  for (const enfant of noeud.children || []) out += ' ' + texteDe(enfant);
+  return out;
+}
+
+const muettes = [];
+for (const entree of entrees) {
+  const rendu = panneauReference('', { familleRef: entree.famille, questionRef: entree.question },
+    () => {});
+  if (!texteDe(rendu).includes(String(entree.question))) {
+    muettes.push(entree.famille + ' / ' + entree.libelle);
+  }
+}
+for (const muette of muettes.slice(0, 10)) {
+  verifier('l entree de palette ouvre bien sa ligne', false, muette);
+}
+egal('chaque entree de palette retrouve sa ligne dans le panneau', muettes.length, 0);
+
+/* Le poids doit laisser les vues devant : « cookies » ouvre la vue, pas
+   l en-tete du meme nom. Le classement lui-meme se teste dans avance. */
+const { filtrer: filtrerPalette } = await import('../ui/lib/palette.js');
+const registreExemple = [
+  { id: 'vue:cookies', libelle: 'Cookies', groupe: 'Vues' },
+  ...entrees.map(e => ({ id: 'ref:' + e.question, libelle: e.libelle, groupe: e.groupe, poids: 15 }))
+];
+egal('la vue passe devant l en-tete du meme nom',
+  filtrerPalette(registreExemple, 'cookie')[0].commande.id, 'vue:cookies');
+verifier('un en-tete que rien ne concurrence sort en tete',
+  filtrerPalette(registreExemple, 'cache-status')[0].commande.libelle === 'Cache-Status');
+
 /* ------------------ 9. Les chiffres annonces par le README ---------------- */
 /* Le README avancait 144 modules quand il y en avait 153, et 101 modules
    d interface pour 113. Aucun de ces chiffres n etait faux le jour ou il a
    ete ecrit : ils ont derive en silence. On les recompte donc ici. */
 const readme = fs.readFileSync(path.join(racine, 'README.md'), 'utf8');
 
-function chiffreAnnonce(motif) {
-  const m = readme.match(motif);
-  return m ? Number(m[1]) : null;
+/* Le meme chiffre apparait souvent deux fois dans le README — une fois dans
+   le tableau d accroche, une fois dans la description de l outil. Ne lire que
+   le premier laissait le second deriver sans que rien ne le signale : on les
+   releve donc tous, et ils doivent tous dire la meme chose. */
+function chiffresAnnonces(motif) {
+  const trouves = [...readme.matchAll(motif)].map(m => Number(m[1]));
+  return trouves.length ? trouves : null;
 }
 
 function compterJs(depuis) {
@@ -380,19 +488,42 @@ const blocVues = sourceConsole.slice(sourceConsole.indexOf('const VIEWS = {'));
 const nombreDeVues = (blocVues.match(/^  [a-z]+:\s*\{/gm) || []).length;
 
 const ANNONCES = [
-  ['modules JavaScript', /([0-9]+) JavaScript modules/, compterJs(racine)],
-  ['modules d interface', /([0-9]+) interface modules/, compterJs(path.join(racine, 'ui'))],
-  ['transformations', /([0-9]+) transformations/, TRANSFORMATIONS.length],
-  ['generateurs de code', /([0-9]+) code generators/, GENERATOR_LABELS.length],
-  ['champs d un enregistrement', /([0-9]+) fields/, Object.keys(newRecord()).length],
-  ['vues', /([0-9]+) views/, nombreDeVues]
+  ['modules JavaScript', /([0-9]+) JavaScript modules/g, compterJs(racine)],
+  ['modules d interface', /([0-9]+) interface modules/g, compterJs(path.join(racine, 'ui'))],
+  ['transformations', /([0-9]+) transformations/g, TRANSFORMATIONS.length],
+  ['generateurs de code', /([0-9]+) code generators/g, GENERATOR_LABELS.length],
+  ['champs d un enregistrement', /([0-9]+) fields/g, Object.keys(newRecord()).length],
+  ['vues', /([0-9]+) views/g, nombreDeVues],
+  /* Les tables de reference : le README annoncait encore 62 statuts et
+     9 methodes quand elles en comptaient 63 et 40. */
+  ['codes de statut', /([0-9]+) status(?:es| codes)/g, REF_STATUTS.length],
+  ['methodes', /([0-9]+) methods/g, REF_METHODES.length],
+  ['en-tetes', /([0-9]+) headers/g, REF_ENTETES.length],
+  ['types de media', /([0-9]+) media types/g, REF_MEDIA.length],
+  ['ports', /([0-9]+) ports/g, REF_PORTS.length],
+  ['suites TLS', /([0-9]+) TLS cipher suites/g, REF_TLS.length],
+  /* Le total que la palette propose : il se recompte, il ne se recopie pas. */
+  ['lignes de reference', /([0-9]+) reference lines/g, lignesDeReference]
 ];
 
 for (const [quoi, motif, reel] of ANNONCES) {
-  const annonce = chiffreAnnonce(motif);
-  verifier('le README annonce le bon nombre de ' + quoi, annonce === reel,
-    annonce === null ? 'aucun chiffre trouve dans le README'
-                     : 'README ' + annonce + ', reel ' + reel);
+  const annonces = chiffresAnnonces(motif);
+  verifier('le README annonce le bon nombre de ' + quoi,
+    annonces !== null && annonces.every(n => n === reel),
+    annonces === null ? 'aucun chiffre trouve dans le README'
+                      : 'README ' + annonces.join(' et ') + ', reel ' + reel);
 }
+
+/* Le nombre total d assertions apparait cinq fois dans le README : le badge,
+   l accroche, l arborescence, le tableau des suites et la commande a lancer.
+   Aucun test ne peut le calculer — les suites tournent dans des processus
+   separes — mais rien n empeche de verifier qu elles disent toutes la meme
+   chose. C est exactement ce qui avait derive : un chiffre mis a jour, quatre
+   laisses derriere. */
+const totauxAnnonces = [...readme.matchAll(/Assertions-([0-9]+)|([0-9]+) assertions/g)]
+  .map(m => Number(m[1] || m[2]));
+verifier('le README annonce partout le meme nombre d assertions',
+  totauxAnnonces.length >= 4 && new Set(totauxAnnonces).size === 1,
+  totauxAnnonces.join(', '));
 
 bilan('Chargement de l interface');

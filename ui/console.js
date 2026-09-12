@@ -204,7 +204,7 @@ const SHORTCUTS = [
   ['C', 'Comparer les deux lignes selectionnees'],
   ['S', 'Enregistrer le filtre courant'],
   ['1 a 9', 'Basculer sur une vue'],
-  ['Ctrl+K', 'Ouvrir la palette de commandes'],
+  ['Ctrl+K', 'Palette : une vue, un outil, ou un nom du protocole a expliquer'],
   ['?', 'Afficher cette aide'],
   ['Ctrl+clic', 'Ajouter une ligne a la selection'],
   ['Maj+clic', 'Selectionner une plage de lignes'],
@@ -300,6 +300,9 @@ function bindKeyboard() {
     outils: tools.FAMILLES,
     allerVue: setView,
     allerOutil: cle => tools.ouvrir(cle),
+    /* Une fonction, pas une liste : les libelles suivent la langue courante. */
+    reference: () => tools.entreesReference(),
+    allerReference: (famille, question) => tools.ouvrirReference(famille, question),
     actions: [
       { id: 'pause', libelle: 'Mettre la capture en pause ou la reprendre',
         groupe: 'Capture', faire: () => $('#capture').click() },

@@ -176,6 +176,11 @@ export function installerNavigateur() {
 class Noeud {
   constructor(nom) {
     this.nodeName = String(nom).toUpperCase();
+    /* `append` de ui/lib/dom.js reconnait un noeud a son `nodeType` : sans
+       lui, chaque enfant devenait la chaine « [object Object] » et tout ce
+       qui etait imbrique disparaissait du rendu sans erreur. Les valeurs
+       sont celles du DOM : 1 element, 3 texte, 11 fragment. */
+    this.nodeType = nom === '#text' ? 3 : (nom === '#fragment' ? 11 : 1);
     this.children = [];
     this.childNodes = [];
     this.attributes = new Map();
@@ -194,6 +199,9 @@ class Noeud {
     return n;
   }
   append(...n) { for (const x of n) this.appendChild(x); }
+  /* `clear` boucle sur firstChild jusqu au vide : sans lui, il ne vidait rien
+     et deux rendus successifs s empilaient. */
+  get firstChild() { return this.childNodes.length ? this.childNodes[0] : null; }
   removeChild(n) {
     const i = this.children.indexOf(n);
     if (i >= 0) { this.children.splice(i, 1); this.childNodes.splice(i, 1); }

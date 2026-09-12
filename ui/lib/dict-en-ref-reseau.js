@@ -172,5 +172,21 @@ export const EN_REF_RESEAU = {
   'port enregistre (1024 a 49151)': 'registered port (1024 to 49151)',
   'port dynamique ou prive (49152 a 65535)': 'dynamic or private port (49152 to 65535)',
   'reserve': 'reserved',
-  'hors plage': 'out of range'
+  'hors plage': 'out of range',
+
+  /* ------------------------- Noms de service des ports -------------------- */
+  /* La plupart sont des sigles qui s ecrivent pareil partout — FTP, SSH,
+     PostgreSQL. Seuls ceux qui portent un mot francais ont une entree. */
+  'FTP donnees': 'FTP data',
+  'FTPS donnees': 'FTPS data',
+  'DHCP serveur': 'DHCP server',
+  'DHCPv6 serveur': 'DHCPv6 server',
+  'NetBIOS noms': 'NetBIOS names',
+  'SMTP soumission': 'SMTP submission',
+  'Serveur de developpement': 'Development server',
+  'HTTP alternatif': 'Alternative HTTP',
+  'HTTPS alternatif': 'Alternative HTTPS',
+
+  /* ----------------------------- Suites TLS ------------------------------- */
+  'AES-128-CCM court': 'AES-128-CCM short'
 };

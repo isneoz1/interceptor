@@ -6,6 +6,7 @@
  */
 import { $, el, clear, sec, button, kv, add } from '../lib/dom.js';
 import { bytes, ms, clock, middle, pretty } from '../lib/format.js';
+import { t } from '../lib/i18n.js';
 import { state, cmd, toast, copy } from '../app.js';
 
 const MAX_DIFF_LINES = 1200;
@@ -155,8 +156,8 @@ export function render() {
   const deltaSize = (left.size || 0) - (right.size || 0);
   add(box, kv('Difference de duree', (deltaDuration >= 0 ? '+' : '−') + ms(Math.abs(deltaDuration))));
   add(box, kv('Difference de taille', (deltaSize >= 0 ? '+' : '−') + bytes(Math.abs(deltaSize))));
-  add(box, kv('Meme URL', (left.finalUrl || left.url) === (right.finalUrl || right.url) ? 'oui' : 'non', { hl: true }));
-  add(box, kv('Meme statut', left.statusCode === right.statusCode ? 'oui' : 'non', { hl: true }));
+  add(box, kv('Meme URL', (left.finalUrl || left.url) === (right.finalUrl || right.url) ? t('oui') : t('non'), { hl: true }));
+  add(box, kv('Meme statut', left.statusCode === right.statusCode ? t('oui') : t('non'), { hl: true }));
 
   /* --- Entetes --- */
   renderHeaderDiff(box, 'Entetes envoyees', left.requestHeaders, right.requestHeaders);

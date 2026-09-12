@@ -14,14 +14,14 @@ Created by **NeoZ**
 ![Manifest V2](https://img.shields.io/badge/Manifest-V2-444?style=flat)
 [![MIT licence](https://img.shields.io/badge/Licence-MIT-00DDFF?style=flat)](LICENSE)
 ![No dependencies](https://img.shields.io/badge/Dependencies-none-2ea043?style=flat)
-![1104 assertions](https://img.shields.io/badge/Assertions-1104-2ea043?style=flat)
+![1140 assertions](https://img.shields.io/badge/Assertions-1140-2ea043?style=flat)
 ![English and French](https://img.shields.io/badge/UI-EN%20%2F%20FR-444?style=flat)
 
 [**Try it in 60 seconds**](#try-it-in-60-seconds) · [**Why not the built-in panel?**](#firefox-already-has-a-network-panel-why-this) · [**Screenshots**](#2-screenshots) · [**How it works**](#4-how-it-works-the-capture-layers) · [**Changelog**](CHANGELOG.md)
 
-<img src="docs/demo.gif" alt="INTERCEPTOR in use: the request table, the command palette, the security findings and the detail panel" width="100%">
+<img src="docs/demo.gif" alt="INTERCEPTOR in use: the request table, the command palette, the security findings, the detail panel and a status code explained from the palette" width="100%">
 
-<sub>28 seconds, no narration needed. <a href="docs/demo.mp4">Full-resolution video</a> · every frame is
+<sub>33 seconds, no narration needed. <a href="docs/demo.mp4">Full-resolution video</a> · every frame is
 the running tool, driven the way you would drive it.</sub>
 
 </div>
@@ -135,21 +135,21 @@ specific points:
 
 | | What INTERCEPTOR does |
 |---|---|
-| **You never hunt for a feature** | `Ctrl+K` opens a command palette over every view, every tool and every action. Type three letters — `chm` finds *Sites and paths*, `cook` finds *Cookies* — and press Enter. The registry is built from the real tables, so anything added later appears in it without anyone remembering to register it. |
+| **You never hunt for a feature** | `Ctrl+K` opens a command palette over every view, every tool and every action — **and over the 691 reference lines**. Type three letters — `chm` finds *Sites and paths*, `cook` finds *Cookies* — or type `cache-status`, `429`, `PROPFIND` and get the explanation itself. The registry is built from the real tables, so anything added later appears in it without anyone remembering to register it. |
 | **It reads what the browser cannot** | A `application/grpc-web+proto` body is a run of length-prefixed frames, and its **real verdict lives in the trailers** — a gRPC-Web call can answer HTTP 200 and still have failed. The detail panel decodes the frames, the protobuf inside them, and the `grpc-status` that actually decides. |
 | **It checks, rather than repeats** | When a server announces `Content-Digest: sha-256=…`, INTERCEPTOR has the body — so it **recomputes the digest and says whether it matches**, showing both values when it does not. No browser does this. RFC 9530 and the older RFC 3230 form, plus `Content-MD5`. |
 | **It says where the time went** | `Server-Timing` next to the duration actually measured: the server claims 100 of the 214 ms, and the other 114 are network, queueing, or time it does not count. |
 | **It finds the cause, not the symptom** | When a CORS request fails, the browser shows the error on *that* request — while the cause sits in the `OPTIONS` preflight a few rows above. INTERCEPTOR pairs the two and says which header blocked it: a missing `Access-Control-Allow-Methods`, an origin that does not match, or the classic `*` with credentials, which no browser accepts. |
 | **It misses nothing** | Eight capture layers run in parallel: `webRequest`, response bodies via `StreamFilter`, TLS via `securityInfo`, DNS resolution, navigation, cookies, page probes (`fetch`, `XHR`, WebSocket, SSE, Beacon, WebRTC, `PerformanceObserver`), and an optional passive proxy. What one layer misses, another sees. |
 | **It never counts twice** | A correlator pairs observations coming from different layers. One real request produces **one** row, even when five layers saw it. Two identical polling `GET`s stay two separate rows. |
-| **It explains** | 62 status codes, **229 headers — the whole of the IANA permanent registry, checked by a test**, plus the de-facto ones the registry has never taken in (`X-Forwarded-For`, `CF-Ray`, `RateLimit`, `Sec-GPC`) — 70 media types, 83 ports, 31 TLS cipher suites, TLS alerts, QUIC and HTTP/3 errors, DNS record types. All described in the tool, offline. |
+| **It explains** | 63 status codes, 40 methods, **229 headers — the whole of the IANA permanent registry, checked by a test**, plus the de-facto ones the registry has never taken in (`X-Forwarded-For`, `CF-Ray`, `RateLimit`, `Sec-GPC`) — 70 media types, 83 ports, 31 TLS cipher suites, TLS alerts, QUIC and HTTP/3 errors, DNS record types. All described in the tool, offline. |
 | **It never guesses** | The security analyser only reports what is **provable** from what was captured. Every finding carries its evidence. A missing hardening header is not a vulnerability, so it is not reported. |
 
 **What it is not**: not a proxy, not a vulnerability scanner, not an attack tool. Everything
 happens inside your Firefox, on your machine.
 
-**By the numbers**: 169 JavaScript modules, ~33,300 lines, zero external dependencies,
-1104 automated assertions, English and French interface.
+**By the numbers**: 170 JavaScript modules, ~33,300 lines, zero external dependencies,
+1140 automated assertions, English and French interface.
 
 ---
 
@@ -173,6 +173,15 @@ scrolling (the table stays fluid at tens of thousands of rows).
 themselves; the letters you typed are highlighted so you can see why a result matched. The
 list is built from the real view and tool tables, so it never falls out of step with what
 the extension can actually do.
+
+**It answers questions too, not just "where is that screen".** The same box searches all
+691 reference lines — every header, status code, method, media type, port, TLS cipher
+suite, TLS alert, HTTP/2, HTTP/3, QUIC error, DNS record type and DNS response code.
+Type `cache-status`, `429` or `PROPFIND` and press Enter: the reference opens on that
+exact entry, already explained. No tab to find, no table to pick first.
+
+Commands still come first when both match — `cookies` offers the Cookies view before the
+`Cookie` header — so the palette never becomes harder to use as the tables grow.
 
 ![Command palette](docs/images/console-palette.png)
 
@@ -571,7 +580,7 @@ own secret and tracker patterns in the settings.
 | **Compare** | Line-by-line and word-by-word diff, Levenshtein distance, similarity |
 | **URL** | Every part of the URL, RFC 3986 canonical form, known service on the port, **homograph detection** (a Cyrillic "а" inside a Latin word is flagged) |
 | **IP address** | IPv4 and IPv6: mask, network, broadcast, usable range, category, subnetting, summarising a prefix list, range to prefixes, enumeration, reverse names `in-addr.arpa` / `ip6.arpa` (read both ways) |
-| **Reference** | The complete tables, offline: 62 statuses, 9 methods, **229 headers (the entire IANA permanent registry)**, 70 media types, 83 ports, 31 TLS cipher suites, WebSocket close codes, HTTP/2 errors, **HTTP/3 and QPACK errors**, **QUIC transport errors**, **TLS alerts**, **DNS record types**, **DNS response codes**, Firefox network errors |
+| **Reference** | The complete tables, offline: 63 statuses, 40 methods, **229 headers (the entire IANA permanent registry)**, 70 media types, 83 ports, 31 TLS cipher suites, WebSocket close codes, HTTP/2 errors, **HTTP/3 and QPACK errors**, **QUIC transport errors**, **TLS alerts**, **DNS record types**, **DNS response codes**, Firefox network errors |
 | **Generate** | UUID v3/v4/v5/v7, ULID, nanoid, passwords with strength calculation, MAC addresses, random hex and base64 |
 | **Import a request** | Paste a `curl` command and turn it back into a replayable request |
 
@@ -710,7 +719,7 @@ interface exists in the configuration. No decorative settings.**
 
 | Key | Effect |
 |---|---|
-| `Ctrl+K` | Open the command palette — every view, tool and action by name |
+| `Ctrl+K` | Open the command palette — every view, tool and action by name, and every reference entry by its protocol name |
 | `/` | Focus the search box |
 | `↑` `↓` | Previous / next request |
 | `Esc` | Close the detail panel, a menu, or this window |
@@ -800,7 +809,7 @@ ui/                        The interface — one page for all four surfaces
 ├── console/               One view per file, plus the detail panel
 └── lib/                   Codecs, digests, network, reference tables, i18n
 
-tests/                     1104 assertions, no browser required
+tests/                     1140 assertions, no browser required
 tools/captures.mjs         Generates the documentation screenshots
 tools/banniere.mjs         Generates the social preview card (docs/images)
 tools/vitrine.mjs          Composes the showcase images at the top of this file
@@ -855,7 +864,7 @@ French at the flip of a setting.
 npm test
 ```
 
-1104 assertions, with no browser and no dependencies. The kernel and interface modules are
+1140 assertions, with no browser and no dependencies. The kernel and interface modules are
 written for Firefox; `tests/harnais.mjs` supplies the minimum WebExtension API and DOM they
 need to import and run under Node. **The logic under test is exactly the logic that runs in
 the browser, with no rewriting.**
@@ -863,8 +872,8 @@ the browser, with no rewriting.**
 | Suite | Assertions | What it covers |
 |---|---|---|
 | `core.test.mjs` | 228 | URL normalisation, correlation signatures, the store, the rule engine (both ways: what matches **and** what must not), the security analyser rule by rule, HAR export, curl import, all 39 code generators |
-| `avance.test.mjs` | 464 | WebSocket and HTTP/2 frames, CSP, RFC 9111 freshness, multipart, canonical URLs and homographs, protocol tables, binary structures, rare digests, generators |
-| `ui-load.test.mjs` | 184 | Actual loading of the 127 interface modules, complete module graph (no dead import, no file outside the graph), consistency with the HTML pages and the manifest, **full translation coverage** — every displayed string must have a dictionary entry — and **measured contrast**: every colour pair in both themes is checked against the WCAG 2.1 thresholds |
+| `avance.test.mjs` | 469 | WebSocket and HTTP/2 frames, CSP, RFC 9111 freshness, multipart, canonical URLs and homographs, protocol tables, binary structures, rare digests, generators |
+| `ui-load.test.mjs` | 215 | Actual loading of the 128 interface modules, complete module graph (no dead import, no file outside the graph), consistency with the HTML pages and the manifest, **full translation coverage** — every displayed string must have a dictionary entry — and **measured contrast**: every colour pair in both themes is checked against the WCAG 2.1 thresholds |
 | `detail-coverage.test.mjs` | 120 | Each of a record's 60 fields is displayed, each tab has a render function, each searchable field exists |
 | `outils.test.mjs` | 108 | The toolbox, against published vectors |
 
@@ -906,7 +915,7 @@ the file. It contains internal errors and the command log — not your traffic.
 Before opening a pull request:
 
 ```bash
-npm test              # all 1104 assertions must pass
+npm test              # all 1140 assertions must pass
 .\build.ps1 -Verify   # the build must be green
 ```
 

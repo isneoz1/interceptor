@@ -15,22 +15,66 @@ import { SUITES_TLS, chercherSuitesTls, FERMETURES_WS, ERREURS_H2, ERREURS_FIREF
 import { ALERTES_TLS, ERREURS_H3, ERREURS_QUIC, TYPES_DNS, RCODES_DNS }
   from '../lib/ref-protocoles.js';
 
+/* Les quatorze familles, dans l ordre des boutons.
+ *
+ * Chaque ligne porte aussi sa table et de quoi etiqueter une entree : le
+ * libelle qu on lit, et le mot qui la retrouve dans le champ de recherche.
+ * C est ce qui permet a la palette de proposer les sept cents lignes sans
+ * qu aucune liste soit recopiee — ajouter une table ici la rend cherchable
+ * depuis Ctrl+K le jour meme.
+ *
+ * Les noms du protocole ne passent pas par `t` : « PROTOCOL_ERROR » ou « A »
+ * s ecrivent pareil dans toutes les langues, et les traduire les rendrait
+ * introuvables dans une documentation. Les fermetures WebSocket font
+ * exception : leurs noms sont des phrases, et le dictionnaire les a. */
 const FAMILLES = [
-  ['statuts', 'Codes de statut'],
-  ['methodes', 'Methodes'],
-  ['entetes', 'Entetes'],
-  ['types', 'Types de media'],
-  ['ports', 'Ports'],
-  ['tls', 'Suites TLS'],
-  ['ws', 'Fermetures WebSocket'],
-  ['h2', 'Erreurs HTTP/2'],
-  ['h3', 'Erreurs HTTP/3'],
-  ['quic', 'Erreurs QUIC'],
-  ['alertes', 'Alertes TLS'],
-  ['dns', 'Types DNS'],
-  ['rcodes', 'Codes de reponse DNS'],
-  ['erreurs', 'Erreurs reseau']
+  ['statuts', 'Codes de statut', () => STATUTS,
+    s => [s.code + '  ' + s.nom, String(s.code)]],
+  ['methodes', 'Methodes', () => METHODES,
+    m => [m.nom, m.nom]],
+  ['entetes', 'Entetes', () => ENTETES,
+    h => [h.nom, h.nom]],
+  ['types', 'Types de media', () => TYPES_MEDIA,
+    m => [m.type, m.type]],
+  ['ports', 'Ports', () => PORTS,
+    p => [p.numero + '  ' + t(p.service), String(p.numero)]],
+  ['tls', 'Suites TLS', () => SUITES_TLS,
+    s => [s.nom, s.nom]],
+  ['ws', 'Fermetures WebSocket', () => FERMETURES_WS,
+    e => [e.code + '  ' + t(e.nom), String(e.code)]],
+  ['h2', 'Erreurs HTTP/2', () => ERREURS_H2,
+    e => [e.nom, e.nom]],
+  ['h3', 'Erreurs HTTP/3', () => ERREURS_H3,
+    e => [e.nom, e.nom]],
+  ['quic', 'Erreurs QUIC', () => ERREURS_QUIC,
+    e => [e.nom, e.nom]],
+  ['alertes', 'Alertes TLS', () => ALERTES_TLS,
+    e => [e.nom, e.nom]],
+  ['dns', 'Types DNS', () => TYPES_DNS,
+    e => [e.nom, e.nom]],
+  ['rcodes', 'Codes de reponse DNS', () => RCODES_DNS,
+    e => [e.nom, e.nom]],
+  ['erreurs', 'Erreurs reseau', () => ERREURS_FIREFOX,
+    e => [e.code, e.code]]
 ];
+
+/**
+ * Toutes les lignes de reference, a plat, telles que la palette doit pouvoir
+ * les atteindre.
+ *
+ * @returns [{ famille, groupe, libelle, question }] — `question` est ce qu on
+ *          ecrit dans le champ de recherche pour retomber sur cette ligne.
+ */
+export function entreesReference() {
+  const sortie = [];
+  for (const [cle, titre, table, etiqueter] of FAMILLES) {
+    for (const ligne of table()) {
+      const [libelle, question] = etiqueter(ligne);
+      sortie.push({ famille: cle, groupe: titre, libelle: String(libelle), question });
+    }
+  }
+  return sortie;
+}
 
 export function panneauReference(entree, etat, redessiner) {
   const box = frag();
@@ -102,9 +146,9 @@ function ecrireMethodes(box, question) {
       el('h4', { text: m.nom }),
       el('p', { class: 'note', text: t(m.sens) })
     ]);
-    add(carte, kv('Sure (ne modifie rien)', m.sure ? 'oui' : 'non'));
-    add(carte, kv('Idempotente', m.idempotente ? 'oui' : 'non'));
-    add(carte, kv('Reponse cachable', m.cachable ? 'oui' : 'non'));
+    add(carte, kv('Sure (ne modifie rien)', m.sure ? t('oui') : t('non')));
+    add(carte, kv('Idempotente', m.idempotente ? t('oui') : t('non')));
+    add(carte, kv('Reponse cachable', m.cachable ? t('oui') : t('non')));
     box.appendChild(carte);
   }
   if (!trouves.length) box.appendChild(el('p', { class: 'note', text: t('Aucune methode ne correspond.') }));
@@ -154,10 +198,10 @@ function ecrirePorts(box, question) {
   }
   for (const p of trouves) {
     const carte = el('div', { class: 'find info' }, [
-      el('h4', { text: p.numero + '  ' + p.service + '   ·   ' + p.protocole }),
+      el('h4', { text: p.numero + '  ' + t(p.service) + '   ·   ' + p.protocole }),
       el('p', { class: 'note', text: t(p.note) })
     ]);
-    add(carte, kv('Plage', plagePort(p.numero)));
+    add(carte, kv('Plage', t(plagePort(p.numero))));
     box.appendChild(carte);
   }
   return box;
@@ -177,8 +221,11 @@ function ecrireTls(box, question) {
     ]);
     add(carte, kv('Version', s.version));
     add(carte, kv('Echange de cle', s.echange));
-    add(carte, kv('Authentification', s.authentification));
-    add(carte, kv('Chiffrement', s.chiffrement));
+    /* « certificat » et « AES-128-CCM court » sont les deux seules valeurs
+       de cette table qui portent un mot de langue ; les autres sont des noms
+       d algorithme, identiques partout, que `t` laisse passer tels quels. */
+    add(carte, kv('Authentification', t(s.authentification)));
+    add(carte, kv('Chiffrement', t(s.chiffrement)));
     add(carte, kv('Integrite', s.integrite));
     add(carte, kv('Solidite', t(s.solidite), { hl: true }));
     add(carte, kv('Confidentialite persistante', s.pfs ? t('oui') : t('non')));
@@ -196,8 +243,12 @@ function ecrireListe(box, question, table, titre, champs) {
     return box;
   }
   for (const e of trouves) {
-    const tete = e.nom
-      ? (typeof e.code === 'number' ? e.code + (e.hex ? '  ' + e.hex : '') + '  ' + e.nom : e.nom)
+    /* Le nom se traduit quand le dictionnaire le connait : « Fermeture
+       normale » a une entree, « PROTOCOL_ERROR » n en a pas et n en veut pas.
+       Sans ce `t`, la table des fermetures WebSocket restait en francais. */
+    const nom = e.nom ? t(e.nom) : null;
+    const tete = nom
+      ? (typeof e.code === 'number' ? e.code + (e.hex ? '  ' + e.hex : '') + '  ' + nom : nom)
       : String(e.code);
     box.appendChild(el('div', { class: 'find info' }, [
       el('h4', { text: tete }),

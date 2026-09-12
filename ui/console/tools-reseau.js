@@ -82,7 +82,7 @@ export function panneauUrl(entree) {
   add(box, kv('Port declare', u.port));
   add(box, kv('Port effectif', u.portEffectif, { always: true }));
   if (service) add(box, kv('Service connu sur ce port', service.service + ' — ' + service.note));
-  if (u.portEffectif) add(box, kv('Plage du port', plagePort(u.portEffectif)));
+  if (u.portEffectif) add(box, kv('Plage du port', t(plagePort(u.portEffectif))));
 
   add(box, kv('Origine', u.origine, { copy: true }));
   add(box, kv('Chemin', u.chemin, { copy: true }));

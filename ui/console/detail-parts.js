@@ -243,7 +243,7 @@ function fraicheur(rec) {
   } catch { return box; }
 
   box.appendChild(sec('Fraicheur HTTP', t(resumerFraicheur(r))));
-  add(box, kv('Stockable en cache', r.stockable ? 'oui' : 'non', { hl: !r.stockable }));
+  add(box, kv('Stockable en cache', r.stockable ? t('oui') : t('non'), { hl: !r.stockable }));
   add(box, kv('Duree de fraicheur', r.duree != null ? r.duree + ' s' : null));
   add(box, kv('Determinee par', r.source ? t(r.source) : null));
   add(box, kv('Age courant', r.ageCourant + ' s', { always: true }));
@@ -663,7 +663,7 @@ function partiesMultipart(texte, contentType) {
   const box = frag();
   box.appendChild(sec('Parties du formulaire', lu.parties.length));
   add(box, kv('Frontiere', lu.frontiere, { copy: true }));
-  add(box, kv('Marqueur de fin present', lu.termine ? 'oui' : 'non', { hl: !lu.termine }));
+  add(box, kv('Marqueur de fin present', lu.termine ? t('oui') : t('non'), { hl: !lu.termine }));
 
   for (const partie of lu.parties) {
     const carte = el('div', { class: 'find info' }, [

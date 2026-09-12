@@ -13,6 +13,7 @@ import { EN_ALERTES } from './dict-en-alertes.js';
 import { EN_REF_HTTP } from './dict-en-ref-http.js';
 import { EN_REF_ENTETES } from './dict-en-ref-entetes.js';
 import { EN_REF_RESEAU } from './dict-en-ref-reseau.js';
+import { EN_REF_PROTOCOLES } from './dict-en-ref-protocoles.js';
 import { EN_CODE } from './dict-en-code.js';
 import { EN_ANALYSE } from './dict-en-analyse.js';
 
@@ -256,5 +257,6 @@ export const EN_TOOLS = {
   ...EN_REF_HTTP,
   ...EN_REF_ENTETES,
   ...EN_REF_RESEAU,
+  ...EN_REF_PROTOCOLES,
   ...EN_CODE
 };

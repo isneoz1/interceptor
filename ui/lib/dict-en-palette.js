@@ -2,15 +2,18 @@
  *
  * La palette n a que trois textes a elle : son invite, sa ligne d aide et le
  * message quand rien ne correspond. Tout le reste — noms de vues, d outils,
- * d actions — vient des tables reelles, deja traduites la ou elles vivent.
+ * d actions, et les sept cents lignes de reference — vient des tables
+ * reelles, deja traduites la ou elles vivent.
  */
 export const EN_PALETTE = {
   'Palette de commandes': 'Command palette',
-  'Chercher une vue, un outil, une action…': 'Search a view, a tool, an action…',
+  'Chercher une vue, un outil, un en-tete, un code, une methode…':
+    'Search a view, a tool, a header, a code, a method…',
   'Fleches pour choisir · Entree pour lancer · Echap pour fermer':
     'Arrows to choose · Enter to run · Esc to close',
   'Aucune commande ne correspond.': 'No command matches.',
-  'Ouvrir la palette de commandes': 'Open the command palette',
+  'Palette : une vue, un outil, ou un nom du protocole a expliquer':
+    'Palette: a view, a tool, or a protocol name to explain',
 
   /* Les actions que la palette ajoute aux vues et aux outils. Elles vivent
      dans une table de console.js, comme les vues : leur texte doit donc etre

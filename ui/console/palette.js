@@ -4,6 +4,10 @@
  * outils et les actions de l en-tete deviennent atteignables sans savoir ou
  * elles se trouvent.
  *
+ * Les tables de reference y sont aussi : taper « cache-status », « 429 » ou
+ * « PROPFIND » ouvre la reference sur cette ligne-la. Sept cents reponses a
+ * une frappe, au lieu de quatre clics pour arriver au bon tableau.
+ *
  * Le registre se construit a partir des tables reelles — VIEWS de console.js,
  * FAMILLES de tools.js — et jamais d une liste recopiee : une vue ajoutee
  * apparait ici sans que personne y pense, et une vue retiree en disparait.
@@ -12,7 +16,7 @@
  * testent sans navigateur. Ce fichier ne fait que l habillage et le clavier.
  */
 import { $, el, clear } from '../lib/dom.js';
-import { t } from '../lib/i18n.js';
+import { t, lang } from '../lib/i18n.js';
 import { filtrer, morceaux, deplacer } from '../lib/palette.js';
 
 let ouverte = false;
@@ -20,16 +24,33 @@ let resultats = [];
 let choisi = 0;
 let fabriquerCommandes = () => [];
 
+/* Le registre complet depasse sept cents entrees. Le refabriquer entre deux
+   frappes serait du gaspillage : on le garde, et on ne le refait que si la
+   langue a change — c est la seule chose qui puisse en modifier les libelles. */
+let registre = null;
+let registreLangue = null;
+
+/* Ce qu une ligne de reference concede aux commandes a correspondance egale.
+   Quinze points valent environ trois lettres : assez pour que « cookies »
+   propose la vue avant l en-tete, trop peu pour cacher « Cache-Status », que
+   rien d autre ne porte. */
+const POIDS_REFERENCE = 15;
+
 /* --------------------------- Le registre ---------------------------------- */
 /**
- * @param sources.vues     { cle: { label, group, hidden } } — les vues reelles
- * @param sources.outils   [[famille, [[id, libelle], ...]], ...]
- * @param sources.actions  [{ libelle, groupe, faire }] — en-tete et capture
- * @param sources.allerVue (cle) -> void
+ * @param sources.vues       { cle: { label, group, hidden } } — les vues reelles
+ * @param sources.outils     [[famille, [[id, libelle], ...]], ...]
+ * @param sources.actions    [{ libelle, groupe, faire }] — en-tete et capture
+ * @param sources.reference  () -> [{ famille, groupe, libelle, question }] —
+ *                           une fonction, car les libelles changent avec la langue
+ * @param sources.allerVue   (cle) -> void
  * @param sources.allerOutil (id) -> void
+ * @param sources.allerReference (famille, question) -> void
  */
 export function definirSources(sources) {
+  registre = null;
   fabriquerCommandes = () => {
+    if (registre && registreLangue === lang()) return registre;
     const liste = [];
 
     for (const [cle, vue] of Object.entries(sources.vues || {})) {
@@ -64,6 +85,27 @@ export function definirSources(sources) {
         faire: action.faire
       });
     }
+
+    /* Les tables de reference en dernier, et minorees par leur poids : elles
+       repondent a « qu est-ce que Cache-Status ? » sans jamais s interposer
+       devant « ou est la vue Cookies ? ».
+
+       Leurs libelles sont deja dans la langue voulue — la famille sait si son
+       nom se traduit ou s il s ecrit pareil partout — donc pas de `t` ici. */
+    const lignes = typeof sources.reference === 'function'
+      ? sources.reference() : (sources.reference || []);
+    for (const ligne of lignes) {
+      liste.push({
+        id: 'ref:' + ligne.famille + ':' + ligne.question,
+        libelle: ligne.libelle,
+        groupe: t(ligne.groupe),
+        poids: POIDS_REFERENCE,
+        faire: () => sources.allerReference(ligne.famille, ligne.question)
+      });
+    }
+
+    registreLangue = lang();
+    registre = liste;
     return liste;
   };
 }

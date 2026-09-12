@@ -113,7 +113,7 @@ function applyStaticLabels() {
   /* La palette : son invite et sa ligne d aide, poses ici comme le reste des
      libelles statiques, pour qu ils suivent la langue sans rechargement. */
   const invite = $('#pal-q');
-  if (invite) invite.placeholder = t('Chercher une vue, un outil, une action…');
+  if (invite) invite.placeholder = t('Chercher une vue, un outil, un en-tete, un code, une methode…');
   const aidePalette = $('#pal-aide');
   if (aidePalette) aidePalette.textContent = t('Fleches pour choisir · Entree pour lancer · Echap pour fermer');
   $('#scope').title = t('Perimetre observe');

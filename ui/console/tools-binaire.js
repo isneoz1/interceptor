@@ -322,7 +322,7 @@ function ecrireDer(box, entree, etat, redessiner) {
     } else if (resume.joursRestants != null) {
       add(box, kv('Jours restants', resume.joursRestants, { always: true }));
     }
-    add(box, kv('Autorite de certification', resume.autorite === null ? null : (resume.autorite ? 'oui' : 'non')));
+    add(box, kv('Autorite de certification', resume.autorite === null ? null : (resume.autorite ? t('oui') : t('non'))));
     if (resume.noms.length) {
       box.appendChild(sec('Noms couverts', resume.noms.length));
       for (const nom of resume.noms) add(box, kv('nom', nom, { copy: true }));

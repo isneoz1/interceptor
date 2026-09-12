@@ -97,7 +97,12 @@ if (MODE_TEXTE) {
 }
 
 /* La palette, ouverte et deja filtree : une capture vide ne montrerait ni le
-   classement ni la mise en evidence des lettres tapees. */
+   classement ni la mise en evidence des lettres tapees.
+
+   « cookie » est choisi pour montrer les deux moities du registre a la fois,
+   et la regle qui les departage : la vue Cookies passe devant l en-tete
+   Cookie, puis viennent les lignes de reference que la palette explique
+   depuis qu elle porte aussi les tables. */
 if (!MODE_TEXTE) {
   await page('Runtime.evaluate', { expression: 'window.__vue("requests")' });
   await patienter(300);
@@ -107,8 +112,10 @@ if (!MODE_TEXTE) {
   });
   await patienter(400);
   await page('Runtime.evaluate', {
-    expression: 'const c = document.getElementById("pal-q");'
-      + ' c.value = "co"; c.dispatchEvent(new Event("input", { bubbles: true }));'
+    /* Enveloppe dans une fonction : deux Runtime.evaluate partagent le meme
+       contexte, et un `const` redeclare ferait echouer le second en silence. */
+    expression: '(() => { const c = document.getElementById("pal-q");'
+      + ' c.value = "cookie"; c.dispatchEvent(new Event("input", { bubbles: true })); })()'
   });
   await patienter(400);
   const { data } = await page('Page.captureScreenshot', { format: 'png' });

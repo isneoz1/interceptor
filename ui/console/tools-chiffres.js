@@ -173,13 +173,13 @@ export function panneauIdentifier(entree) {
 
   box.appendChild(sec('Formes reconnues', 'lecture directe'));
   add(box, kv('Longueur', brut.length, { always: true }));
-  add(box, kv('Uniquement hexadecimal', /^[0-9a-fA-F]+$/.test(brut) ? 'oui' : 'non'));
-  add(box, kv('Alphabet base64', /^[A-Za-z0-9+/]+={0,2}$/.test(brut) ? 'oui' : 'non'));
-  add(box, kv('Alphabet base64 URL', /^[A-Za-z0-9_-]+$/.test(brut) ? 'oui' : 'non'));
-  add(box, kv('Trois parties separees par des points', brut.split('.').length === 3 ? 'oui' : 'non'));
+  add(box, kv('Uniquement hexadecimal', /^[0-9a-fA-F]+$/.test(brut) ? t('oui') : t('non')));
+  add(box, kv('Alphabet base64', /^[A-Za-z0-9+/]+={0,2}$/.test(brut) ? t('oui') : t('non')));
+  add(box, kv('Alphabet base64 URL', /^[A-Za-z0-9_-]+$/.test(brut) ? t('oui') : t('non')));
+  add(box, kv('Trois parties separees par des points', brut.split('.').length === 3 ? t('oui') : t('non')));
   add(box, kv('Forme d UUID',
-    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(brut) ? 'oui' : 'non'));
-  add(box, kv('Chiffres seulement', /^\d+$/.test(brut) ? 'oui' : 'non'));
-  add(box, kv('Commence par un accolade ou un crochet', /^[{[]/.test(brut) ? 'oui' : 'non'));
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(brut) ? t('oui') : t('non')));
+  add(box, kv('Chiffres seulement', /^\d+$/.test(brut) ? t('oui') : t('non')));
+  add(box, kv('Commence par un accolade ou un crochet', /^[{[]/.test(brut) ? t('oui') : t('non')));
   return box;
 }

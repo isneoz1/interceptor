@@ -13,6 +13,7 @@ export const STATUTS = [
   [101, 'Switching Protocols', 'Changement de protocole accepte : c est ainsi que demarre un WebSocket.'],
   [102, 'Processing', 'Traitement en cours (WebDAV), la reponse finale viendra plus tard.'],
   [103, 'Early Hints', 'Entetes envoyes en avance pour precharger des ressources.'],
+  [104, 'Upload Resumption Supported', 'Le serveur accepte de reprendre un televersement interrompu.'],
 
   [200, 'OK', 'Succes. Le corps porte le resultat demande.'],
   [201, 'Created', 'Ressource creee. L entete Location indique ou.'],
@@ -103,7 +104,50 @@ export const METHODES = [
   ['DELETE', 'Supprimer une ressource.', false, true, false],
   ['CONNECT', 'Ouvrir un tunnel a travers un mandataire.', false, false, false],
   ['OPTIONS', 'Demander les capacites : c est la requete preliminaire CORS.', true, true, true],
-  ['TRACE', 'Renvoyer la requete telle que recue. Souvent desactivee.', true, true, false]
+  ['TRACE', 'Renvoyer la requete telle que recue. Souvent desactivee.', true, true, false],
+
+  /* Le reste du registre de l IANA. Un navigateur n en emet aucune : elles
+     apparaissent dans une capture importee, ou dans le trafic d un client
+     tiers. Les proprietes sont celles que le registre declare. */
+
+  /* --- WebDAV (RFC 4918) --- */
+  ['PROPFIND', 'Lire les proprietes d une ressource WebDAV.', true, true, false],
+  ['PROPPATCH', 'Modifier les proprietes d une ressource WebDAV.', false, true, false],
+  ['MKCOL', 'Creer une collection, l equivalent WebDAV d un dossier.', false, true, false],
+  ['COPY', 'Copier une ressource vers la destination annoncee.', false, true, false],
+  ['MOVE', 'Deplacer une ressource vers la destination annoncee.', false, true, false],
+  ['LOCK', 'Poser un verrou. Non idempotente : chaque appel cree un verrou.', false, false, false],
+  ['UNLOCK', 'Liberer un verrou WebDAV.', false, true, false],
+
+  /* --- Versionnement WebDAV (RFC 3253) --- */
+  ['VERSION-CONTROL', 'Placer une ressource sous controle de version.', false, true, false],
+  ['REPORT', 'Demander un rapport au serveur de versions.', true, true, false],
+  ['CHECKOUT', 'Rendre une version modifiable.', false, true, false],
+  ['CHECKIN', 'Figer les modifications en une nouvelle version.', false, true, false],
+  ['UNCHECKOUT', 'Abandonner les modifications en cours.', false, true, false],
+  ['MKWORKSPACE', 'Creer un espace de travail versionne.', false, true, false],
+  ['UPDATE', 'Aligner une ressource sur une version donnee.', false, true, false],
+  ['LABEL', 'Poser ou retirer une etiquette de version.', false, true, false],
+  ['MERGE', 'Fusionner deux lignes de version.', false, true, false],
+  ['BASELINE-CONTROL', 'Placer une collection sous controle de reference.', false, true, false],
+  ['MKACTIVITY', 'Creer une activite, qui regroupe des modifications.', false, true, false],
+
+  /* --- Liaisons, collections, acces --- */
+  ['BIND', 'Lier un nouveau nom a une ressource existante (RFC 5842).', false, true, false],
+  ['UNBIND', 'Retirer un nom lie a une ressource (RFC 5842).', false, true, false],
+  ['REBIND', 'Deplacer une liaison d un nom vers un autre (RFC 5842).', false, true, false],
+  ['ORDERPATCH', 'Reordonner les membres d une collection (RFC 3648).', false, true, false],
+  ['ACL', 'Modifier la liste de controle d acces (RFC 3744).', false, true, false],
+  ['MKREDIRECTREF', 'Creer une ressource de redirection (RFC 4437).', false, true, false],
+  ['UPDATEREDIRECTREF', 'Changer la cible d une redirection (RFC 4437).', false, true, false],
+
+  /* --- Le reste --- */
+  ['MKCALENDAR', 'Creer un calendrier CalDAV (RFC 4791).', false, true, false],
+  ['SEARCH', 'Chercher dans une arborescence, methode DASL (RFC 5323).', true, true, false],
+  ['QUERY', 'Interroger avec un corps, sans les effets d un POST (RFC 10008).', true, true, true],
+  ['PRI', 'Ne s emet jamais : elle ne sert qu au preambule de connexion HTTP/2 (RFC 9113).', true, true, false],
+  ['LINK', 'Etablir une relation entre deux ressources. Retiree de HTTP/1.1 (RFC 2068).', false, true, false],
+  ['UNLINK', 'Rompre cette relation. Retiree de meme (RFC 2068).', false, true, false]
 ].map(([nom, sens, sure, idempotente, cachable]) => ({ nom, sens, sure, idempotente, cachable }));
 
 export function decrireMethode(nom) {
