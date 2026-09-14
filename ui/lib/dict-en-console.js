@@ -238,5 +238,10 @@ export const EN_CONSOLE = {
 
   /* La vue « Journal interne » quand le noyau ne repond pas. */
   'Journal indisponible': 'Log unavailable',
-  'Reessayer': 'Try again'
+  'Reessayer': 'Try again',
+
+  /* Un corps trop gros pour etre pose d un coup dans la page. */
+  '{vus} caracteres affiches sur {total}. Le corps entier est conserve : « Copier » et « Boite a outils » travaillent dessus.':
+    '{vus} characters shown out of {total}. The whole body is kept: "Copy" and "Toolbox" work on all of it.',
+  'Tout afficher': 'Show all'
 };

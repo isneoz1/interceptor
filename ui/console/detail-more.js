@@ -4,6 +4,7 @@
  * Suite de detail-parts.js : meme principe, tout champ present est affiche.
  */
 import { el, frag, kv, sec, jsonTree, add } from '../lib/dom.js';
+import { listeProgressive } from '../lib/liste-progressive.js';
 import { bytes, ms, clock, middle, preuveLisible } from '../lib/format.js';
 import { copy, cmd, toast } from '../app.js';
 import { allRows } from './detail-parts.js';
@@ -11,6 +12,30 @@ import { t } from '../lib/i18n.js';
 import { decrireSuiteTls } from '../lib/ref-reseau.js';
 
 function clearNode(node) { while (node.firstChild) node.removeChild(node.firstChild); return node; }
+
+/* Les trois listes sans plafond de ce panneau : trames WebSocket, messages SSE
+   et evenements de la chronologie. Aucune n est bornee par les reglages —
+   `maxWebSocketFrames` vaut zero, c est-a-dire sans limite — et une session
+   longue en compte des dizaines de milliers. Les construire toutes d un coup
+   coutait 92 ms et soixante mille noeuds a l ouverture de l onglet.
+
+   Le rendu par lots efface cet a-coup sans rien ecarter : la suite arrive au
+   defilement.
+
+   Le cadre qui defile est trouve tout seul : le module attend que l onglet
+   soit insere avant de brancher son observateur, parce qu une racine qui
+   n est pas encore un ancetre rend « jamais visible » pour de bon. */
+let enCoursDeRendu = [];
+function parLots(hote, elements, fabriquer) {
+  enCoursDeRendu.push(listeProgressive(hote, elements, fabriquer));
+}
+
+/** A appeler avant de redessiner un onglet : coupe les observateurs laisses
+ *  par le precedent, qui n ont plus rien a observer. */
+export function arreterListes() {
+  for (const liste of enCoursDeRendu) liste.arreter();
+  enCoursDeRendu = [];
+}
 
 const SEV_ORDER = { critical: 0, high: 1, medium: 2, low: 3, info: 4 };
 
@@ -159,24 +184,25 @@ export function streams(rec) {
     add(box, kv('Octets recus', bytes(w.bytesReceived)));
 
     box.appendChild(sec('Trames', w.frames.length));
-    for (const f of w.frames) {
-      box.appendChild(el('div', { class: 'frame ' + (f.dir === 'send' ? 'send' : 'recv') }, [
-        el('b', { text: (f.dir === 'send' ? '↑ ' : '↓ ') + clock(f.ts) }),
-        el('span', { text: (f.data != null ? f.data : '[' + f.opcode + ' ' + bytes(f.size) + ']') + (f.truncated ? ' …tronque' : '') })
-      ]));
-    }
+    const trames = el('div');
+    box.appendChild(trames);
+    parLots(trames, w.frames, f => el('div', {
+      class: 'frame ' + (f.dir === 'send' ? 'send' : 'recv') }, [
+      el('b', { text: (f.dir === 'send' ? '↑ ' : '↓ ') + clock(f.ts) }),
+      el('span', { text: (f.data != null ? f.data : '[' + f.opcode + ' ' + bytes(f.size) + ']') + (f.truncated ? ' …tronque' : '') })
+    ]));
   }
   if (rec.sse) {
     box.appendChild(sec('Server-Sent Events', rec.sse.messages.length + (rec.sse.dropped ? ' (+' + rec.sse.dropped + ' non conserves)' : '')));
     add(box, kv('Ouverte', rec.sse.openedAt ? clock(rec.sse.openedAt) : null));
     add(box, kv('Fermee', rec.sse.closedAt ? clock(rec.sse.closedAt) : null));
     add(box, kv('Avec credentials', rec.sse.withCredentials ? 'oui' : null));
-    for (const m of rec.sse.messages) {
-      box.appendChild(el('div', { class: 'frame recv' }, [
-        el('b', { text: m.event }),
-        el('span', { text: m.data + (m.lastEventId ? '  (id ' + m.lastEventId + ')' : '') })
-      ]));
-    }
+    const messages = el('div');
+    box.appendChild(messages);
+    parLots(messages, rec.sse.messages, m => el('div', { class: 'frame recv' }, [
+      el('b', { text: m.event }),
+      el('span', { text: m.data + (m.lastEventId ? '  (id ' + m.lastEventId + ')' : '') })
+    ]));
   }
   if (!rec.ws && !rec.sse) {
     box.appendChild(sec('Flux'));
@@ -224,12 +250,15 @@ export function timeline(rec) {
     }
   }
 
-  box.appendChild(sec('Evenements observes', (rec.timeline || []).length));
-  const t0 = rec.timeline && rec.timeline.length ? rec.timeline[0].ts : 0;
-  for (const ev of rec.timeline || []) {
+  const evenements = Array.isArray(rec.timeline) ? rec.timeline : [];
+  box.appendChild(sec('Evenements observes', evenements.length));
+  const t0 = evenements.length ? evenements[0].ts : 0;
+  const liste = el('div');
+  box.appendChild(liste);
+  parLots(liste, evenements, ev => {
     const detailText = ev.detail ? '  ' + JSON.stringify(ev.detail) : '';
-    add(box, kv('+' + (ev.ts - t0) + ' ms', ev.event + detailText));
-  }
+    return kv('+' + (ev.ts - t0) + ' ms', ev.event + detailText);
+  });
   return box;
 }
 

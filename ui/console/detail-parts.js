@@ -500,6 +500,18 @@ function serverTiming(rec) {
 }
 
 /* -------------------------------- 3. Corps -------------------------------- */
+/* Combien de caracteres d un corps on affiche d emblee.
+ *
+ * Mesure dans Chrome, panneau ouvert : le cout d un `<pre>` est lineaire, un
+ * quart de milliseconde par kilo-octet. A deux cent mille caracteres on est a
+ * trente millisecondes — le panneau reste vif. Au-dela, cela se sent : cinq
+ * megaoctets figeaient tout pendant plus de deux secondes.
+ *
+ * Ce n est pas une troncature : le compte exact est affiche, un bouton montre
+ * la suite, et « Copier » comme « Boite a outils » travaillent de toute facon
+ * sur le corps entier. */
+const LIMITE_AFFICHAGE = 200000;
+
 function bodyViewer(body, title, mimeHint) {
   const box = frag();
   if (!body) {
@@ -561,22 +573,54 @@ function bodyViewer(body, title, mimeHint) {
     const wrap = el('div');
     const bar = el('div', { class: 'actions' });
     const pre = el('pre', { class: 'pre' });
+    const avis = el('p', { class: 'note' });
     const wrapMode = !state.config || state.config.wrapBodies;
     const prettyMode = !state.config || state.config.prettyJson;
-    let mode = prettyMode ? 'pretty' : 'raw';
+    let tout = text.length <= LIMITE_AFFICHAGE;
+    /* La mise en forme relit et reecrit le corps ENTIER, meme si on n en
+       montre qu une part : sur cinq megaoctets elle coute a elle seule
+       cinquante millisecondes. Au-dela du seuil on affiche donc le brut, et
+       « Mise en forme » reste a un clic pour qui la veut vraiment. */
+    let mode = prettyMode && tout ? 'pretty' : 'raw';
+
+    /* La mise en forme relit et reecrit tout le corps : sur cinq megaoctets
+       elle coute a elle seule cinquante millisecondes. On ne la refait pas a
+       chaque bascule. */
+    let embelli = null;
+    const source = () => {
+      if (mode !== 'pretty') return text;
+      if (embelli === null) embelli = pretty(text, mime);
+      return embelli;
+    };
+
+    const montrerTout = el('button', { class: 'btn sm', type: 'button' }, 'Tout afficher');
 
     const paint = () => {
-      pre.textContent = mode === 'pretty' ? pretty(text, mime) : text;
+      const complet = source();
+      pre.textContent = tout ? complet : complet.slice(0, LIMITE_AFFICHAGE);
       pre.classList.toggle('nowrap', !wrapMode);
+      const borne = !tout && complet.length > LIMITE_AFFICHAGE;
+      avis.hidden = !borne;
+      montrerTout.hidden = !borne;
+      if (borne) {
+        avis.textContent = tp(
+          '{vus} caracteres affiches sur {total}. Le corps entier est conserve : « Copier » et « Boite a outils » travaillent dessus.',
+          { vus: LIMITE_AFFICHAGE.toLocaleString('fr-FR'),
+            total: complet.length.toLocaleString('fr-FR') });
+      }
     };
+    montrerTout.addEventListener('click', () => { tout = true; paint(); });
+
     bar.appendChild(el('button', { class: 'btn sm', type: 'button', on: { click: () => { mode = 'pretty'; paint(); } } }, 'Mise en forme'));
     bar.appendChild(el('button', { class: 'btn sm', type: 'button', on: { click: () => { mode = 'raw'; paint(); } } }, 'Brut'));
     bar.appendChild(el('button', { class: 'btn sm', type: 'button', on: { click: () => copy(text, 'Corps copie') } }, 'Copier'));
     bar.appendChild(el('button', { class: 'btn sm', type: 'button',
       title: 'Decoder, hacher, mesurer ce corps dans la boite a outils',
       on: { click: () => poser(text) } }, 'Boite a outils'));
+    bar.appendChild(montrerTout);
     paint();
     wrap.appendChild(bar);
+    wrap.appendChild(avis);
     wrap.appendChild(pre);
     box.appendChild(wrap);
   }

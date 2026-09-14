@@ -73,6 +73,11 @@ export function listeProgressive(hote, elements, fabriquer, options = {}) {
      Mesure directe, parce que l observateur, lui, ne redira rien tant que
      l etat ne change pas. */
   function approche(racine) {
+    /* Un hote pas encore insere dans la page ne mesure rien : tout y vaut
+       zero, et chainer sur cette base reviendrait a tout poser d un coup —
+       ce que cette liste existe justement pour eviter. On pose un lot, et
+       l observateur prend le relais des que le noeud entre dans la page. */
+    if (sentinelle.isConnected === false) return false;
     if (!sentinelle.getBoundingClientRect) return false;
     const bas = racine && racine.getBoundingClientRect
       ? racine.getBoundingClientRect().bottom
@@ -100,15 +105,42 @@ export function listeProgressive(hote, elements, fabriquer, options = {}) {
      restait dans le document, a observer le vide. */
   if (!total) retirer();
 
-  const racine = options.defilant || ancetreDefilant(hote);
-  poserJusquASortie(racine);     // de quoi remplir l ecran, tout de suite
+  /* Un premier lot tout de suite, avec ce qu on peut mesurer maintenant. */
+  poserJusquASortie(options.defilant || ancetreDefilant(hote));
+
+  /** Branche l observation sur le cadre defilant REEL, une fois connu. */
+  function brancher() {
+    if (arrete || rendus >= total) return;
+    const racine = options.defilant || ancetreDefilant(hote);
+    observateur = new IntersectionObserver(entrees => {
+      if (entrees.some(entree => entree.isIntersecting)) poserJusquASortie(racine);
+    }, { root: racine || null, rootMargin: MARGE + 'px 0px' });
+    observateur.observe(sentinelle);
+    /* Le cadre est peut-etre plus haut que ce qu on avait suppose : on
+       complete jusqu a sortir de la zone. */
+    poserJusquASortie(racine);
+  }
 
   if (rendus < total) {
     if (typeof IntersectionObserver === 'function') {
-      observateur = new IntersectionObserver(entrees => {
-        if (entrees.some(entree => entree.isIntersecting)) poserJusquASortie(racine);
-      }, { root: racine || null, rootMargin: MARGE + 'px 0px' });
-      observateur.observe(sentinelle);
+      /* Un noeud pas encore dans la page n a pas encore son cadre defilant
+         pour ancetre, et un IntersectionObserver dont la racine n est pas un
+         ancetre rend « jamais visible » DEFINITIVEMENT — l intersection ne se
+         recalcule pas quand l ancetre le devient. On attend donc l insertion,
+         que les onglets du panneau de detail font juste apres ce retour. */
+      if (sentinelle.isConnected === false && typeof requestAnimationFrame === 'function') {
+        let essais = 0;
+        const attendre = () => {
+          if (arrete) return;
+          /* Jamais insere au bout de deux secondes : on branche quand meme,
+             plutot que d abandonner une liste a son premier lot. */
+          if (sentinelle.isConnected || ++essais > 120) return brancher();
+          requestAnimationFrame(attendre);
+        };
+        requestAnimationFrame(attendre);
+      } else {
+        brancher();
+      }
     } else {
       // Sans IntersectionObserver, on pose tout : mieux vaut une pause qu une
       // liste tronquee sans que personne le sache.

@@ -180,6 +180,7 @@ function rendreNoeud(n, estHote) {
   ].filter(Boolean).join('  ·  ');
 
   const bloc = el('details', { open: ouverts.has(n.chemin) || estHote && ouverts.has(n.chemin) });
+  const corps = el('div', { class: 'tree' });
   const titre = el('summary', {
     class: n.alertes ? 'risque' : null,
     text: (estHote ? n.nom : '/' + n.nom) + '   —   ' + resume
@@ -188,11 +189,27 @@ function rendreNoeud(n, estHote) {
     // L etat d ouverture survit au redessin : sans cela, chaque battement de
     // statistiques refermerait l arbre sous les doigts.
     if (ouverts.has(n.chemin)) ouverts.delete(n.chemin); else ouverts.add(n.chemin);
+    // Remplir ICI, et non sur `toggle` : le clic est synchrone, donc le
+    // contenu existe avant que le navigateur peigne la branche ouverte.
+    // Sur `toggle` seul, on verrait une boite vide pendant une image.
+    remplir();
   });
   bloc.appendChild(titre);
 
-  const corps = el('div', { class: 'tree' });
+  /* Un `<details>` ferme ne montre rien : le batir coute pour rien. Sur vingt
+     mille requetes, construire l arbre entier prenait 126 ms — la seule vue a
+     depasser les cent millisecondes. On remplit donc a la premiere ouverture.
 
+     L etat vient de `ouverts`, pas de `bloc.open` : c est la meme source que
+     celle qui survit au redessin, et elle est lisible partout. */
+  let rempli = false;
+  const remplir = () => {
+    if (rempli) return;
+    rempli = true;
+    batir();
+  };
+
+  function batir() {
   if (estHote) {
     add(corps, kv('Methodes', [...n.methodes].join(', ')));
     add(corps, kv('Statuts', [...n.statuts].sort((a, b) => a - b).join(', ')));
@@ -233,6 +250,11 @@ function rendreNoeud(n, estHote) {
   }
 
   for (const enfant of enfants) corps.appendChild(rendreNoeud(enfant, false));
+  }
+
+  if (ouverts.has(n.chemin)) remplir();
+  else bloc.addEventListener('toggle', remplir, { once: true });
+
   bloc.appendChild(corps);
   return bloc;
 }

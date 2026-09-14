@@ -550,4 +550,42 @@ verifier('les commandes restent en nombre raisonnable',
 verifier('les vues parlent bien au noyau', appels.size > 0,
   [...appels.keys()].join(', '));
 
+/* ============ 8. Un corps enorme ne doit pas figer le panneau ============= */
+/* Le visualiseur posait le corps ENTIER dans un seul `<pre>`. Mesure dans
+   Chrome, panneau ouvert : un quart de milliseconde par kilo-octet, soit plus
+   de deux secondes de gel pour cinq megaoctets.
+
+   Il en affiche desormais les deux cent mille premiers caracteres en disant
+   combien il y en a. Ce qui compte ici : la VUE est bornee, jamais la donnee —
+   « Copier » et « Boite a outils » continuent de travailler sur le tout. */
+setLang('fr');
+const corpsEnorme = 'x'.repeat(900000);
+const recEnorme = enregistrementExemple({ id: 950 });
+recEnorme.mime = 'text/plain';
+recEnorme.responseBody = { kind: 'texte', text: corpsEnorme, size: corpsEnorme.length,
+  stored: corpsEnorme.length, source: 'streamFilter', mime: 'text/plain' };
+
+const rendu = parts.responseBody(recEnorme);
+const fragments = texteDe(rendu);
+const leBloc = fragments.find(f => f.length > 100000) || '';
+verifier('un corps enorme n est pas pose en entier dans la page',
+  leBloc.length <= 200000, leBloc.length + ' caracteres poses');
+verifier('le compte exact est annonce',
+  fragments.some(f => /900\s?000|900000/.test(f.replace(/ | /g, ' '))),
+  fragments.filter(f => /caracteres|characters/.test(f)).join(' | ').slice(0, 120));
+verifier('un bouton permet de tout afficher',
+  fragments.some(f => f === 'Tout afficher'), fragments.slice(-6).join(' | '));
+
+/* Un corps ordinaire, lui, s affiche entier et sans avertissement. */
+const petit = 'y'.repeat(1000);
+const recPetit = enregistrementExemple({ id: 951 });
+recPetit.mime = 'text/plain';
+recPetit.responseBody = { kind: 'texte', text: petit, size: petit.length,
+  stored: petit.length, source: 'streamFilter', mime: 'text/plain' };
+const fragmentsPetit = texteDe(parts.responseBody(recPetit));
+verifier('un corps ordinaire s affiche en entier',
+  fragmentsPetit.some(f => f === petit), 'le corps complet n est pas affiche');
+egal('aucun avertissement sur un corps ordinaire',
+  fragmentsPetit.filter(f => /caracteres affiches sur/.test(f)).length, 0);
+
 bilan('Rendu de l interface');

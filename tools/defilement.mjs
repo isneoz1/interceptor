@@ -16,7 +16,9 @@
  *   2. elles couvrent toute la zone visible, du haut au bas de l ecran ;
  *   3. `scrollHeight` ne bouge pas d une image a l autre — c est lui qui fait
  *      sauter la barre de defilement quand il change ;
- *   4. les listes rendues par lots finissent par tout poser, sans se bloquer.
+ *   4. les listes rendues par lots finissent par tout poser, sans se bloquer ;
+ *   5. le panneau de detail — la surface la plus lourde — s ouvre sans a-coup
+ *      sur vingt mille trames et sur un corps de cinq megaoctets.
  *
  * Il ne produit aucune image : il rend un verdict, et un code de sortie.
  */
@@ -176,12 +178,28 @@ await dans('window.__vue("sitemap"); return true;');
 await patienter(1500);
 
 /* On deplie tout : la liste par lots vit dans les noeuds ouverts. */
+/* Les branches se batissent a leur ouverture : ouvrir en une passe ne
+   revelerait que le premier niveau. On recommence tant qu il en apparait. */
+/* Les branches se batissent a leur ouverture. Un clic les remplit sur-le-champ ;
+   une ouverture PROGRAMMEE passe par l evenement `toggle`, qui arrive une tache
+   plus tard. On rend donc la main entre deux passes, et on recommence tant
+   qu il apparait de nouvelles branches. */
 const deplies = await dans(`
-  const vue = document.getElementById('view-sitemap');
-  if (!vue) return -1;
-  let n = 0;
-  for (const d of vue.querySelectorAll('details')) { if (!d.open) { d.open = true; n++; } }
-  return n;
+  return (async () => {
+    const vue = document.getElementById('view-sitemap');
+    if (!vue) return -1;
+    let n = 0;
+    for (let passe = 0; passe < 60; passe++) {
+      let ouverts = 0;
+      for (const d of vue.querySelectorAll('details')) {
+        if (!d.open) { d.open = true; ouverts++; }
+      }
+      n += ouverts;
+      await new Promise(r => setTimeout(r, 30));
+      if (!ouverts) break;
+    }
+    return n;
+  })();
 `);
 console.log('  carte des sites : ' + deplies + ' noeud(s) deplie(s)');
 await patienter(1200);
@@ -221,6 +239,103 @@ for (let i = 0; i < 30 && apres.sentinelles; i++) {
 }
 console.log('  carte des sites : ' + avant.elements + ' elements au depart, '
   + apres.elements + ' apres defilement, ' + apres.sentinelles + ' sentinelle(s) restante(s)');
+
+/* ============= 4. Le panneau de detail, la surface la plus lourde ========= */
+/* Trois listes sans plafond y vivent — trames WebSocket, messages SSE,
+   evenements de chronologie — et un corps de reponse qui peut peser plusieurs
+   megaoctets. Le panneau doit etre OUVERT pour que la mesure veuille dire
+   quelque chose : masque, le navigateur saute la mise en page et tout parait
+   instantane. */
+const detail = await dans(`
+  return (async () => {
+    const more = await import('/ui/console/detail-more.js');
+    const parts = await import('/ui/console/detail-parts.js');
+    document.getElementById('detail').hidden = false;
+    const hote = document.getElementById('dbody');
+    const mesures = [];
+
+    const base = () => ({
+      id: 1, method: 'GET', url: 'wss://exemple.test/socket',
+      finalUrl: 'wss://exemple.test/socket', statusCode: 101,
+      requestHeaders: [], responseHeaders: [], cookies: { set: [], changed: [] },
+      timeline: [], redirects: [], sources: ['webRequest'], state: 'complete'
+    });
+
+    const chrono = (quoi, rendre) => {
+      hote.textContent = '';
+      const t0 = performance.now();
+      hote.appendChild(rendre());
+      void hote.scrollHeight;
+      mesures.push({ quoi, ms: Math.round(performance.now() - t0),
+        noeuds: hote.querySelectorAll('*').length });
+    };
+
+    const avecTrames = base();
+    avecTrames.ws = { sent: 10000, received: 10000, protocols: ['chat'],
+      bytesSent: 0, bytesReceived: 0, frames: [] };
+    for (let i = 0; i < 20000; i++) {
+      avecTrames.ws.frames.push({ dir: i % 2 ? 'send' : 'recv', ts: 1700000000000 + i,
+        opcode: 1, size: 42, data: '{"ref":"REF-' + i + '","reste":' + (i % 97) + '}' });
+    }
+    chrono('onglet Flux, 20 000 trames', () => more.streams(avecTrames));
+
+    const avecTemps = base();
+    for (let i = 0; i < 5000; i++) {
+      avecTemps.timeline.push({ event: 'evenement:' + (i % 20),
+        ts: 1700000000000 + i * 3, detail: { i } });
+    }
+    chrono('onglet Chronologie, 5 000 evenements', () => more.timeline(avecTemps));
+
+    const item = '{"ref":"REF-0000","nom":"Article de catalogue","prix":1234},';
+    let gros = '[';
+    while (gros.length < 5 * 1024 * 1024) gros += item;
+    gros = gros.slice(0, -1) + ']';
+    const avecCorps = base();
+    avecCorps.mime = 'application/json';
+    avecCorps.responseBody = { kind: 'texte', text: gros, size: gros.length,
+      stored: gros.length, source: 'streamFilter', mime: 'application/json' };
+    chrono('onglet Reponse, corps de 5 Mo', () => parts.responseBody(avecCorps));
+
+    /* Rien ne doit etre ECARTE : on descend jusqu au bout et on recompte. Un
+       a-coup echange contre une liste tronquee serait un mauvais marche. */
+    hote.textContent = '';
+    hote.appendChild(more.streams(avecTrames));
+    void hote.scrollHeight;
+    const premierLot = hote.querySelectorAll('.frame').length;
+    let stagnant = 0;
+    let precedent = premierLot;
+    for (let i = 0; i < 900 && hote.querySelectorAll('.frame').length < 20000; i++) {
+      hote.scrollTop = hote.scrollHeight;
+      await new Promise(r => setTimeout(r, 8));
+      const n = hote.querySelectorAll('.frame').length;
+      stagnant = n === precedent ? stagnant + 1 : 0;
+      precedent = n;
+      if (stagnant > 60) break;
+    }
+    const posees = hote.querySelectorAll('.frame').length;
+    hote.textContent = '';
+    return { mesures, premierLot, posees };
+  })();
+`);
+
+console.log('  panneau de detail :');
+for (const m of detail.mesures) {
+  console.log('    ' + String(m.ms).padStart(5) + ' ms  ' + String(m.noeuds).padStart(6)
+    + ' noeuds   ' + m.quoi);
+  /* Cent millisecondes, c est le seuil au-dela duquel une ouverture d onglet
+     cesse de paraitre immediate. */
+  if (m.ms > 100) noter('panneau de detail', m.quoi + ' : ' + m.ms + ' ms');
+}
+console.log('    premier lot : ' + detail.premierLot + ' trames, '
+  + detail.posees + ' apres defilement (sur 20 000)');
+if (detail.premierLot > 400) {
+  noter('panneau de detail', 'le premier lot pose ' + detail.premierLot
+    + ' trames : ce n est plus un lot');
+}
+if (detail.posees < 20000) {
+  noter('panneau de detail', 'le defilement ne pose que ' + detail.posees
+    + ' trames sur 20 000');
+}
 
 navigateur.fermer();
 scene.fermer();

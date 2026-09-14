@@ -141,6 +141,9 @@ function paint() {
   }
 
   const def = TABS.find(t => t.key === tab) || TABS[0];
+  /* Les listes par lots du precedent onglet observent un noeud qu on vient de
+     jeter : on les coupe avant d en poser d autres. */
+  more.arreterListes();
   const body = clear($('#dbody'));
   body.appendChild(def.render(rec));
 }
