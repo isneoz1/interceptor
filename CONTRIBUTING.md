@@ -118,7 +118,8 @@ a layout engine is involved, so they live as tools:
 ```bash
 node tools/defilement.mjs      # 20 000 rows scrolled for real: gaps, repeats, jumps
 node tools/affichage.mjs       # every view at 350, 700, 1100 and 1600 px
+node tools/sockets.mjs         # WebSocket in page/worker/shared worker, WebRTC channel
 ```
 
-Run both before touching the table, the batch-rendered lists, or anything in
-`console.css`. Each prints a verdict and exits non-zero on a finding.
+Run the first two before touching the table, the batch-rendered lists, or anything in
+`console.css`; run `sockets.mjs` before touching `content/hooks.js`. Each prints a verdict and exits non-zero on a finding.

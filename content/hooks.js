@@ -19,7 +19,8 @@
 
   var CFG = { wsFrames: true, maxFrameBytes: 0, maxBodyBytes: 0, perf: true,
                 stacks: true, sse: true, rtc: true, workers: true,
-                jsCookies: true, webTransport: true, vitals: true };
+                jsCookies: true, webTransport: true, vitals: true,
+                workerFrames: false };
   try { if (script.dataset.icCfg) CFG = Object.assign(CFG, JSON.parse(script.dataset.icCfg)); } catch (e) {}
 
   try { document.documentElement.setAttribute('data-interceptor-ready', '1'); } catch (e) {}
@@ -30,7 +31,10 @@
   var pid = 0;
 
   function post(ev) {
-    ev.ts = Date.now();
+    /* Un evenement lu en differe — les octets d un Blob, par exemple — porte
+       deja l instant ou il s est produit. L ecraser fausserait l ordre des
+       trames. */
+    if (ev.ts == null) ev.ts = Date.now();
     queue.push(ev);
     if (queue.length >= 40) flush();
     else if (!flushTimer) flushTimer = setTimeout(flush, 100);
@@ -125,18 +129,75 @@
     } catch (e) { return null; }
   }
 
+  /* Les octets d une trame binaire, en base64, bornes par le meme reglage que
+     le texte. Par morceaux de huit mille : `String.fromCharCode.apply` sur un
+     tableau de plusieurs megaoctets depasse la pile des arguments. */
+  function base64Octets(octets, limite) {
+    var max = cap(limite);
+    var n = octets.length > max ? max : octets.length;
+    var s = '';
+    for (var i = 0; i < n; i += 8192) {
+      var fin = i + 8192 > n ? n : i + 8192;
+      s += String.fromCharCode.apply(null, octets.subarray(i, fin));
+    }
+    return { base64: btoa(s), truncated: octets.length > n };
+  }
+
   function frameData(data) {
     try {
       if (typeof data === 'string') {
         var c = clip(data, CFG.maxFrameBytes);
         return { opcode: 'text', data: c.text, size: c.size, truncated: c.truncated };
       }
-      if (data instanceof ArrayBuffer) return { opcode: 'binary', data: null, size: data.byteLength, truncated: false };
-      if (ArrayBuffer.isView(data)) return { opcode: 'binary', data: null, size: data.byteLength, truncated: false };
-      if (typeof Blob !== 'undefined' && data instanceof Blob) return { opcode: 'blob', data: null, size: data.size, truncated: false };
+      /* Les octets sont gardes, pas seulement comptes : sans eux, un protocole
+         binaire — protobuf, MessagePack, CBOR — ne laissait qu une taille,
+         alors que la boite a outils sait lire les trois. */
+      if (data instanceof ArrayBuffer) {
+        var ab = base64Octets(new Uint8Array(data), CFG.maxFrameBytes);
+        return { opcode: 'binary', data: null, base64: ab.base64,
+                 size: data.byteLength, truncated: ab.truncated };
+      }
+      if (ArrayBuffer.isView(data)) {
+        var vue = new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
+        var av = base64Octets(vue, CFG.maxFrameBytes);
+        return { opcode: 'binary', data: null, base64: av.base64,
+                 size: data.byteLength, truncated: av.truncated };
+      }
+      /* Un Blob ne se lit pas sur-le-champ : `posterTrame` s en charge. */
+      if (typeof Blob !== 'undefined' && data instanceof Blob) {
+        return { opcode: 'blob', data: null, size: data.size, truncated: false, blob: data };
+      }
       var s = String(data); var c2 = clip(s, CFG.maxFrameBytes);
       return { opcode: 'text', data: c2.text, size: c2.size, truncated: c2.truncated };
     } catch (e) { return { opcode: 'unknown', data: null, size: 0, truncated: false }; }
+  }
+
+  /**
+   * Emet une trame, en lisant les octets d un Blob si besoin.
+   *
+   * @param id   identifiant de la connexion
+   * @param dir  « send » ou « recv »
+   * @param data ce que la page a envoye ou recu, tel quel
+   */
+  function posterTrame(id, dir, data) {
+    var ts = Date.now();
+    var f = frameData(data);
+    if (f.blob && typeof f.blob.arrayBuffer === 'function') {
+      var blob = f.blob;
+      blob.arrayBuffer().then(function (tampon) {
+        var b = base64Octets(new Uint8Array(tampon), CFG.maxFrameBytes);
+        post({ t: 'ws:frame', ts: ts, pid: id, dir: dir, opcode: 'binary',
+               data: null, base64: b.base64, size: blob.size, truncated: b.truncated });
+      }, function () {
+        /* Blob illisible — revoque, ou venu d un autre contexte : on garde au
+           moins la trace de la trame et sa taille. */
+        post({ t: 'ws:frame', ts: ts, pid: id, dir: dir, opcode: 'blob',
+               data: null, size: blob.size, truncated: false });
+      });
+      return;
+    }
+    post({ t: 'ws:frame', ts: ts, pid: id, dir: dir, opcode: f.opcode,
+           data: f.data, base64: f.base64 || null, size: f.size, truncated: f.truncated });
   }
 
   /* ============================ fetch ============================ */
@@ -309,10 +370,7 @@
     Native.prototype.send = function (data) {
       try {
         var id = ids.get(this);
-        if (id && CFG.wsFrames) {
-          var f = frameData(data);
-          post({ t: 'ws:frame', pid: id, dir: 'send', opcode: f.opcode, data: f.data, size: f.size, truncated: f.truncated });
-        }
+        if (id && CFG.wsFrames) posterTrame(id, 'send', data);
       } catch (e) {}
       return nativeSend.apply(this, arguments);
     };
@@ -323,10 +381,7 @@
       post({ t: 'ws:open', pid: id, api: 'ws', url: abs(url), method: 'GET', protocols: protocols || null, stack: stack() });
       ws.addEventListener('message', function (ev) {
         if (!CFG.wsFrames) return;
-        try {
-          var f = frameData(ev.data);
-          post({ t: 'ws:frame', pid: id, dir: 'recv', opcode: f.opcode, data: f.data, size: f.size, truncated: f.truncated });
-        } catch (e) {}
+        try { posterTrame(id, 'recv', ev.data); } catch (e) {}
       }, true);
       /* Le serveur choisit le sous-protocole parmi ceux proposes, et son
          choix n est lisible qu une fois la connexion ouverte. C est lui qui
@@ -394,6 +449,183 @@
     });
   })();
 
+  /* ===================== WebSocket dans un worker ================ *
+   * `webRequest` voit deja la poignee de main de toute WebSocket, d ou
+   * qu elle vienne. Ce qui manque hors du contexte de la page, ce sont les
+   * TRAMES : la sonde remplace `window.WebSocket`, et un worker a son propre
+   * `self.WebSocket`.
+   *
+   * Pour y entrer, on charge le script du worker depuis un Blob qui installe
+   * d abord la sonde, puis importe l original. Une chose change et se voit :
+   * `self.location` devient l URL du Blob. Les resolutions relatives sont
+   * rattrapees ci-dessous ; un worker qui lit `self.location` lui-meme, non.
+   * D ou un reglage eteint par defaut.                                      */
+  var noWorker = 0;
+
+  /** Le prelude pose dans le worker : sonde WebSocket, puis le vrai script. */
+  function preludeWorker(origine, estModule) {
+    var chargement = estModule
+      ? 'import(' + JSON.stringify(origine) + ');'
+      : 'self.importScripts(' + JSON.stringify(origine) + ');';
+    return [
+      '(function () {',
+      '  var BASE = ' + JSON.stringify(origine) + ';',
+      '  var JETON = ' + JSON.stringify(TOKEN) + ';',
+      '  var n = 0;',
+      '  var lot = [];',
+      '  var minuteur = null;',
+      /* Un SharedWorker n a pas de `self.postMessage` : chaque page qui s y
+         connecte recoit un port, et c est par la que tout passe. On garde
+         ceux qu on voit, sans jamais appeler `start()` — demarrer un port
+         avant que la page n y attache son gestionnaire lui ferait perdre ses
+         propres messages. */
+      '  var ports = [];',
+      '  if (typeof self.postMessage !== "function") {',
+      '    self.addEventListener("connect", function (e) {',
+      '      try { var p = e.ports && e.ports[0]; if (p) ports.push(p); } catch (x) {}',
+      '    }, true);',
+      '  }',
+      '  function vider() {',
+      '    if (minuteur) { clearTimeout(minuteur); minuteur = null; }',
+      '    if (!lot.length) return;',
+      '    var envoi = lot; lot = [];',
+      '    var message = { __ic: JETON, batch: envoi };',
+      '    if (typeof self.postMessage === "function") {',
+      '      try { self.postMessage(message); } catch (e) {}',
+      '      return;',
+      '    }',
+      '    for (var i = 0; i < ports.length; i++) {',
+      '      try { ports[i].postMessage(message); } catch (e) {}',
+      '    }',
+      '  }',
+      '  function poser(ev) {',
+      '    ev.ts = ev.ts || Date.now();',
+      '    lot.push(ev);',
+      '    if (lot.length >= 40) vider(); else if (!minuteur) minuteur = setTimeout(vider, 100);',
+      '  }',
+      /* Le worker est charge depuis un Blob : ses URL relatives resolvaient
+         contre celle du Blob, et echouaient. On les ramene sur l original. */
+      '  try {',
+      '    var natifImport = self.importScripts;',
+      '    if (typeof natifImport === "function") {',
+      '      self.importScripts = function () {',
+      '        var a = [];',
+      '        for (var i = 0; i < arguments.length; i++) {',
+      '          try { a.push(new URL(arguments[i], BASE).href); } catch (e) { a.push(arguments[i]); }',
+      '        }',
+      '        return natifImport.apply(self, a);',
+      '      };',
+      '    }',
+      '    var natifFetch = self.fetch;',
+      '    if (typeof natifFetch === "function") {',
+      '      self.fetch = function (e, i) {',
+      '        try { if (typeof e === "string") e = new URL(e, BASE).href; } catch (x) {}',
+      '        return natifFetch.call(self, e, i);',
+      '      };',
+      '    }',
+      '    if (self.XMLHttpRequest && self.XMLHttpRequest.prototype) {',
+      '      var pxhr = self.XMLHttpRequest.prototype, ouvrir = pxhr.open;',
+      '      pxhr.open = function (m, u) {',
+      '        try { arguments[1] = new URL(u, BASE).href; } catch (x) {}',
+      '        return ouvrir.apply(this, arguments);',
+      '      };',
+      '    }',
+      '  } catch (e) {}',
+      /* La sonde elle-meme : meme forme que celle de la page. */
+      '  try {',
+      '    var Natif = self.WebSocket;',
+      '    if (Natif) {',
+      '      var ids = new WeakMap();',
+      '      function b64(o) {',
+      '        var s = "";',
+      '        for (var i = 0; i < o.length; i += 8192) {',
+      '          s += String.fromCharCode.apply(null, o.subarray(i, Math.min(i + 8192, o.length)));',
+      '        }',
+      '        try { return self.btoa(s); } catch (e) { return null; }',
+      '      }',
+      '      function trame(id, dir, d) {',
+      '        var ts = Date.now();',
+      '        try {',
+      '          if (typeof d === "string") {',
+      '            poser({ t: "ws:frame", ts: ts, pid: id, dir: dir, opcode: "text", data: d, size: d.length, truncated: false });',
+      '          } else if (d instanceof ArrayBuffer) {',
+      '            poser({ t: "ws:frame", ts: ts, pid: id, dir: dir, opcode: "binary", data: null, base64: b64(new Uint8Array(d)), size: d.byteLength, truncated: false });',
+      '          } else if (ArrayBuffer.isView(d)) {',
+      '            poser({ t: "ws:frame", ts: ts, pid: id, dir: dir, opcode: "binary", data: null, base64: b64(new Uint8Array(d.buffer, d.byteOffset, d.byteLength)), size: d.byteLength, truncated: false });',
+      '          } else if (typeof Blob !== "undefined" && d instanceof Blob && d.arrayBuffer) {',
+      '            d.arrayBuffer().then(function (t) {',
+      '              poser({ t: "ws:frame", ts: ts, pid: id, dir: dir, opcode: "binary", data: null, base64: b64(new Uint8Array(t)), size: d.size, truncated: false });',
+      '            }, function () {});',
+      '          } else {',
+      '            var s2 = String(d);',
+      '            poser({ t: "ws:frame", ts: ts, pid: id, dir: dir, opcode: "text", data: s2, size: s2.length, truncated: false });',
+      '          }',
+      '        } catch (e) {}',
+      '      }',
+      '      var envoyer = Natif.prototype.send;',
+      '      Natif.prototype.send = function (d) {',
+      '        try { var id = ids.get(this); if (id) trame(id, "send", d); } catch (e) {}',
+      '        return envoyer.apply(this, arguments);',
+      '      };',
+      '      self.WebSocket = new Proxy(Natif, {',
+      '        construct: function (cible, args, neuf) {',
+      '          var ws = Reflect.construct(cible, args, neuf);',
+      '          try {',
+      '            var id = ++n;',
+      '            ids.set(ws, id);',
+      '            var url = String(args[0]);',
+      '            try { url = new URL(args[0], BASE).href; } catch (e) {}',
+      '            poser({ t: "ws:open", pid: id, api: "ws", url: url, method: "GET", protocols: args[1] || null });',
+      '            ws.addEventListener("message", function (ev) { trame(id, "recv", ev.data); }, true);',
+      '            ws.addEventListener("open", function () { if (ws.protocol) poser({ t: "ws:protocol", pid: id, protocol: ws.protocol }); }, true);',
+      '            ws.addEventListener("close", function (ev) { poser({ t: "ws:close", pid: id, code: ev.code, reason: ev.reason, wasClean: ev.wasClean }); }, true);',
+      '          } catch (e) {}',
+      '          return ws;',
+      '        }',
+      '      });',
+      '    }',
+      '  } catch (e) {}',
+      '  self.addEventListener("close", vider);',
+      '  ' + chargement,
+      '})();'
+    ].join('\n');
+  }
+
+  /**
+   * Remplace l URL d un worker par un Blob qui pose la sonde avant le script.
+   *
+   * @returns l URL a utiliser, ou null si rien ne doit changer.
+   */
+  function urlSondee(url, options) {
+    try {
+      var origine = abs(url);
+      /* Un worker deja construit depuis un Blob ou une data: URL garde son
+         propre contexte : on n y touche pas, on ne saurait pas le recomposer. */
+      if (/^(blob|data):/i.test(origine)) return null;
+      var estModule = !!(options && options.type === 'module');
+      var lame = new Blob([preludeWorker(origine, estModule)],
+        { type: 'text/javascript' });
+      return URL.createObjectURL(lame);
+    } catch (e) { return null; }
+  }
+
+  /** Relaie les observations d un worker, sans que la page les voie. */
+  function ecouterWorker(cible, numero) {
+    cible.addEventListener('message', function (ev) {
+      var d = ev && ev.data;
+      if (!d || d.__ic !== TOKEN || !d.batch) return;
+      /* Les identifiants du worker partent de un, comme ceux de la page :
+         on les prefixe pour qu ils ne se confondent pas. */
+      for (var i = 0; i < d.batch.length; i++) {
+        var e = d.batch[i];
+        if (e && e.pid != null) e.pid = 'w' + numero + ':' + e.pid;
+        post(e);
+      }
+      /* La page n a rien a faire de nos messages : on les arrete ici. */
+      ev.stopImmediatePropagation();
+    }, true);
+  }
+
   /* ========================== sendBeacon ========================= */
   (function hookBeacon() {
     if (!navigator || typeof navigator.sendBeacon !== 'function') return;
@@ -425,6 +657,39 @@
           try {
             if (CFG.workers) post({ t: 'ctx', kind: name.toLowerCase() + ':create', url: abs(args[0]), stack: stack() });
           } catch (e) {}
+
+          /* Sonder l interieur du worker, si c est demande. Le reglage est
+             eteint par defaut : voir le prelude plus haut pour ce que cela
+             change. */
+          if (CFG.workerFrames && CFG.wsFrames) {
+            var sondee = urlSondee(args[0], args[1]);
+            if (sondee) {
+              var numero = ++noWorker;
+              try {
+                var avecSonde = Reflect.construct(
+                  target, [sondee].concat(Array.prototype.slice.call(args, 1)), newTarget);
+                /* Un SharedWorker ne parle que par son port : c est lui qu il
+                   faut ecouter, et demarrer. */
+                var canal = name === 'SharedWorker' ? avecSonde.port : avecSonde;
+                /* On ecoute, mais on ne DEMARRE pas le port : c est a la page
+                   de le faire, et le demarrer avant elle lui ferait perdre les
+                   messages arrives entre-temps. Tant qu elle ne l a pas
+                   demarre, rien ne circule — exactement comme sans nous. */
+                ecouterWorker(canal, numero);
+                return avecSonde;
+              } catch (e) {
+                /* Blob refuse — une politique `worker-src` stricte, le plus
+                   souvent. On repart sur l original : mieux vaut une
+                   observation incomplete qu un site casse. */
+                post({ t: 'ctx', kind: name.toLowerCase() + ':sonde-refusee',
+                       url: abs(args[0]),
+                       detail: { raison: String((e && e.message) || e) } });
+              } finally {
+                /* L URL du Blob a fait son office des la construction. */
+                try { URL.revokeObjectURL(sondee); } catch (e) {}
+              }
+            }
+          }
           return Reflect.construct(target, args, newTarget);
         }
       });
@@ -454,6 +719,57 @@
     var Native = window.RTCPeerConnection || window.webkitRTCPeerConnection;
     if (!Native) return;
 
+    /* Les canaux suivis, et l identifiant de leur ligne. */
+    var idsCanal = new WeakMap();
+    var envoiPatche = false;
+
+    /* `send` vit sur le prototype : on ne le remplace qu une fois, et le
+       WeakMap dit lesquels nous interessent. */
+    function patcherEnvoi(canal) {
+      if (envoiPatche) return;
+      var proto = Object.getPrototypeOf(canal);
+      if (!proto || typeof proto.send !== 'function') return;
+      envoiPatche = true;
+      var natif = proto.send;
+      proto.send = function (donnees) {
+        try {
+          var id = idsCanal.get(this);
+          if (id && CFG.wsFrames) posterTrame(id, 'send', donnees);
+        } catch (e) {}
+        return natif.apply(this, arguments);
+      };
+    }
+
+    /**
+     * Suit un canal de donnees : ouverture, trames des deux sens, fermeture.
+     *
+     * Les deux bouts comptent — celui qu on cree et celui que le pair ouvre —
+     * donc cette fonction est appelee des deux cotes.
+     */
+    function suivreCanal(canal) {
+      if (!canal || idsCanal.has(canal)) return;
+      var id = ++pid;
+      idsCanal.set(canal, id);
+      patcherEnvoi(canal);
+      try {
+        post({ t: 'ws:open', pid: id, api: 'rtc', transport: 'rtc',
+               url: 'webrtc:' + (canal.label || ''), method: 'GET',
+               protocols: canal.protocol ? [canal.protocol] : null, stack: stack() });
+        canal.addEventListener('message', function (ev) {
+          if (!CFG.wsFrames) return;
+          try { posterTrame(id, 'recv', ev.data); } catch (e) {}
+        }, true);
+        canal.addEventListener('close', function () {
+          post({ t: 'ws:close', pid: id, code: 0, reason: 'canal ferme', wasClean: true });
+        }, true);
+        canal.addEventListener('error', function (ev) {
+          post({ t: 'ctx', kind: 'rtc:datachannel:error', url: location.href,
+                 detail: { label: canal.label,
+                           erreur: String((ev && ev.error && ev.error.message) || '') } });
+        }, true);
+      } catch (e) {}
+    }
+
     function instrument(pc, cfg) {
       if (!CFG.rtc) return;
       try {
@@ -464,6 +780,8 @@
         }, true);
         pc.addEventListener('datachannel', function (ev) {
           post({ t: 'ctx', kind: 'rtc:datachannel', url: location.href, detail: { label: ev.channel && ev.channel.label } });
+          /* Le canal ouvert par le PAIR compte autant que le notre. */
+          suivreCanal(ev.channel);
         }, true);
         pc.addEventListener('connectionstatechange', function () {
           post({ t: 'ctx', kind: 'rtc:state', url: location.href, detail: { state: pc.connectionState } });
@@ -472,7 +790,9 @@
         if (createDc) {
           pc.createDataChannel = function (label) {
             post({ t: 'ctx', kind: 'rtc:datachannel:open', url: location.href, detail: { label: String(label) } });
-            return createDc.apply(this, arguments);
+            var canal = createDc.apply(this, arguments);
+            suivreCanal(canal);
+            return canal;
           };
         }
       } catch (e) {}
@@ -573,17 +893,88 @@
     if (typeof window.WebTransport === 'undefined') return;
     var Native = window.WebTransport;
 
+    /* Les datagrammes SORTANTS : on enveloppe l ecrivain rendu par
+       `datagrams.writable.getWriter()`. La page ecrit comme d habitude. */
+    function suivreEnvois(wt, id) {
+      try {
+        var writable = wt.datagrams && wt.datagrams.writable;
+        if (!writable || typeof writable.getWriter !== 'function') return;
+        var natif = writable.getWriter;
+        writable.getWriter = function () {
+          var ecrivain = natif.apply(this, arguments);
+          var ecrire = ecrivain.write;
+          if (typeof ecrire === 'function') {
+            ecrivain.write = function (donnees) {
+              try { if (CFG.wsFrames) posterTrame(id, 'send', donnees); } catch (e) {}
+              return ecrire.apply(this, arguments);
+            };
+          }
+          return ecrivain;
+        };
+      } catch (e) {}
+    }
+
+    /* Les datagrammes ENTRANTS : `tee()` dedouble le flux, la page recoit
+       exactement ce qu elle aurait recu sans nous. Lire directement le
+       `readable` le consommerait et casserait l application. */
+    function suivreReceptions(wt, id) {
+      try {
+        var readable = wt.datagrams && wt.datagrams.readable;
+        if (!readable || typeof readable.tee !== 'function') return;
+        var deux = readable.tee();
+        try { Object.defineProperty(wt.datagrams, 'readable', { value: deux[0], configurable: true }); }
+        catch (e) { return; }
+        var lecteur = deux[1].getReader();
+        (function lire() {
+          lecteur.read().then(function (r) {
+            if (r.done) return;
+            try { if (CFG.wsFrames) posterTrame(id, 'recv', r.value); } catch (e) {}
+            lire();
+          }, function () { /* flux ferme : rien de plus a lire */ });
+        })();
+      } catch (e) {}
+    }
+
+    /* Les flux ouverts : leur nombre et leur sens. Leur CONTENU n est pas lu —
+       ce sont des flux que la page consomme elle-meme, et les dedoubler tous
+       couterait plus que cela n apprend. */
+    function suivreFlux(wt, url) {
+      for (var i = 0; i < 2; i++) {
+        (function (nom) {
+          try {
+            var natif = wt[nom];
+            if (typeof natif !== 'function') return;
+            wt[nom] = function () {
+              post({ t: 'ctx', kind: 'webtransport:stream', url: url,
+                     detail: { sens: nom === 'createBidirectionalStream' ? 'bidirectionnel' : 'sortant' } });
+              return natif.apply(this, arguments);
+            };
+          } catch (e) {}
+        })(i === 0 ? 'createBidirectionalStream' : 'createUnidirectionalStream');
+      }
+    }
+
     window.WebTransport = new Proxy(Native, {
       construct: function (target, args, newTarget) {
         var wt = Reflect.construct(target, args, newTarget);
         try {
           if (CFG.webTransport) {
             var url = abs(args[0]);
+            var id = ++pid;
+            post({ t: 'ws:open', pid: id, api: 'webtransport', transport: 'webtransport',
+                   url: url, method: 'CONNECT', protocols: null, stack: stack() });
             post({ t: 'ctx', kind: 'webtransport:open', url: url, stack: stack() });
+            suivreEnvois(wt, id);
+            suivreReceptions(wt, id);
+            suivreFlux(wt, url);
             if (wt.closed && typeof wt.closed.then === 'function') {
               wt.closed.then(function (info) {
+                post({ t: 'ws:close', pid: id, code: (info && info.closeCode) || 0,
+                       reason: (info && info.reason) || '', wasClean: true });
                 post({ t: 'ctx', kind: 'webtransport:close', url: url, detail: info || null });
               }, function (err) {
+                post({ t: 'ws:close', pid: id, code: 0,
+                       reason: String((err && err.message) || err), wasClean: false });
                 post({ t: 'ctx', kind: 'webtransport:error', url: url, detail: { erreur: String(err && err.message || err) } });
               });
             }

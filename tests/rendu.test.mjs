@@ -588,4 +588,47 @@ verifier('un corps ordinaire s affiche en entier',
 egal('aucun avertissement sur un corps ordinaire',
   fragmentsPetit.filter(f => /caracteres affiches sur/.test(f)).length, 0);
 
+/* ============= 9. Une trame binaire se lit, pas seulement se compte ======= */
+/* La sonde ne gardait que la TAILLE d une trame binaire : « binaire, 42 o »,
+   rien d autre. Pour un protocole binaire — protobuf, MessagePack, CBOR, tous
+   courants sur WebSocket — c etait tout ce qu on obtenait, alors que la boite
+   a outils sait lire les trois. Les octets sont desormais captures, et lus. */
+setLang('en');
+const recTrames = enregistrementExemple({ id: 960 });
+recTrames.ws = {
+  sent: 1, received: 3, protocols: [], bytesSent: 4, bytesReceived: 13, frames: [
+    /* Champ 1, varint, 150 : le premier exemple de la specification protobuf. */
+    { dir: 'recv', ts: 1, opcode: 'binary', size: 3, base64: 'CJYB', truncated: false },
+    /* { "a": 1 } en MessagePack. */
+    { dir: 'send', ts: 2, opcode: 'binary', size: 4, base64: 'gaFhAQ==', truncated: false },
+    /* Des octets qui ne relevent d aucun des trois : on ne doit rien inventer. */
+    { dir: 'recv', ts: 3, opcode: 'binary', size: 5, base64: 'AAECAwQ=', truncated: false },
+    { dir: 'recv', ts: 4, opcode: 'text', size: 5, data: 'salut', truncated: false }
+  ]
+};
+const lignesTrames = texteDe(more.streams(recTrames));
+const toutesTrames = lignesTrames.join(' | ');
+
+verifier('une trame protobuf est reconnue',
+  /Protocol Buffers/.test(toutesTrames), toutesTrames.slice(0, 160));
+verifier('une trame MessagePack est reconnue',
+  /MessagePack/.test(toutesTrames), toutesTrames.slice(0, 160));
+verifier('les octets sont montres en hexadecimal',
+  /08 96 01/.test(toutesTrames), toutesTrames.slice(0, 160));
+verifier('une trame qu aucun lecteur ne reconnait n invente pas de format',
+  lignesTrames.some(l => /00 01 02 03 04/.test(l)
+    && !/Protocol Buffers|MessagePack|CBOR/.test(l)),
+  lignesTrames.filter(l => /00 01/.test(l)).join(' | '));
+verifier('une trame texte reste affichee telle quelle',
+  lignesTrames.some(l => l === 'salut'), 'le texte de la trame a change');
+
+/* Un canal de donnees WebRTC emprunte le meme chemin, sous son vrai nom. */
+const recCanal = enregistrementExemple({ id: 961 });
+recCanal.ws = { transport: 'rtc', sent: 1, received: 0, protocols: ['essai'],
+  bytesSent: 5, bytesReceived: 0,
+  frames: [{ dir: 'send', ts: 1, opcode: 'text', size: 5, data: 'salut', truncated: false }] };
+const lignesCanal = texteDe(more.streams(recCanal)).join(' | ');
+verifier('un canal WebRTC ne se presente pas comme un WebSocket',
+  /WebRTC/.test(lignesCanal) && !/^WebSocket/.test(lignesCanal), lignesCanal.slice(0, 120));
+
 bilan('Rendu de l interface');

@@ -14,7 +14,7 @@ Created by **NeoZ**
 ![Manifest V2](https://img.shields.io/badge/Manifest-V2-444?style=flat)
 [![MIT licence](https://img.shields.io/badge/Licence-MIT-00DDFF?style=flat)](LICENSE)
 ![No dependencies](https://img.shields.io/badge/Dependencies-none-2ea043?style=flat)
-![1185 assertions](https://img.shields.io/badge/Assertions-1185-2ea043?style=flat)
+![1191 assertions](https://img.shields.io/badge/Assertions-1191-2ea043?style=flat)
 ![English and French](https://img.shields.io/badge/UI-EN%20%2F%20FR-444?style=flat)
 
 [**Try it in 60 seconds**](#try-it-in-60-seconds) · [**Why not the built-in panel?**](#firefox-already-has-a-network-panel-why-this) · [**Screenshots**](#2-screenshots) · [**How it works**](#4-how-it-works-the-capture-layers) · [**Changelog**](CHANGELOG.md)
@@ -149,7 +149,7 @@ specific points:
 happens inside your Firefox, on your machine.
 
 **By the numbers**: 171 JavaScript modules, ~33,300 lines, zero external dependencies,
-1185 automated assertions, English and French interface.
+1191 automated assertions, English and French interface.
 
 ---
 
@@ -469,7 +469,7 @@ previous or next request **in displayed order**, filters included.
 | **Cookies** | Cookies set and changed by this request, with all attributes detailed. |
 | **Security** | Certificate, chain, TLS version, cipher suite, forward secrecy, certificate transparency. |
 | **Alerts** | The analyser's findings for this request, each with its evidence. |
-| **Streams** | The WebSocket frames or SSE messages of this connection. |
+| **Streams** | The WebSocket frames, SSE messages, WebRTC data-channel messages or WebTransport datagrams of this connection. **A binary frame keeps its bytes**: the format is named when protobuf, MessagePack or CBOR recognises it, the opening bytes are shown in hex, and a click sends the frame to the toolbox. |
 | **Timeline** | Every step, timestamped, from first observation to last. |
 | **JS stack** | The JavaScript call stack that triggered the request, when the page probe was able to capture it. |
 | **Replay** | See [section 13](#13-replaying-a-request). |
@@ -713,7 +713,7 @@ interface exists in the configuration. No decorative settings.**
   to WebTransport and page vitals
 - **Bodies** — request and response body capture, byte caps, binary bodies, resource types
   to skip
-- **Streams** — WebSocket frames, SSE messages, caps
+- **Streams** — WebSocket frames (text and binary), SSE messages, WebRTC data channels, WebTransport datagrams, caps
 - **Analysis** — analyser on/off, secrets, transport, cookies, CORS, secret masking, custom
   secret and tracker patterns
 - **Interface** — auto-scroll, default scope, body wrapping, JSON formatting, icon click
@@ -819,7 +819,8 @@ ui/                        The interface — one page for all four surfaces
 ├── console/               One view per file, plus the detail panel
 └── lib/                   Codecs, digests, network, reference tables, i18n
 
-tests/                     1185 assertions, no browser required
+tests/                     1191 assertions, no browser required
+tools/sockets.mjs          Real WebSockets against a real server: page, worker, WebRTC
 tools/defilement.mjs       Scrolls 20 000 rows in a real browser, looking for holes
 tools/affichage.mjs        Opens every view at four widths, looking for overflow
 tools/captures.mjs         Generates the documentation screenshots
@@ -876,7 +877,7 @@ French at the flip of a setting.
 npm test
 ```
 
-1185 assertions, with no browser and no dependencies. The kernel and interface modules are
+1191 assertions, with no browser and no dependencies. The kernel and interface modules are
 written for Firefox; `tests/harnais.mjs` supplies the minimum WebExtension API and DOM they
 need to import and run under Node. **The logic under test is exactly the logic that runs in
 the browser, with no rewriting.**
@@ -888,7 +889,7 @@ the browser, with no rewriting.**
 | `ui-load.test.mjs` | 224 | Actual loading of the 129 interface modules, complete module graph (no dead import, no file outside the graph), consistency with the HTML pages and the manifest, **full translation coverage** — every displayed string must have a dictionary entry — and **measured contrast**: every colour pair in both themes is checked against the WCAG 2.1 thresholds |
 | `detail-coverage.test.mjs` | 120 | Each of a record's 60 fields is displayed, each tab has a render function, each searchable field exists |
 | `outils.test.mjs` | 108 | The toolbox, against published vectors |
-| `rendu.test.mjs` | 35 | The interface **actually rendered**: sixteen views against three captures, the eleven detail tabs, the twenty-two toolbox panels against thirty-two hostile inputs, and 264 deliberately malformed HAR files — then a fragment-by-fragment comparison of both languages, so nothing can stay in French on an English screen. It also counts the commands each view sends the kernel: **a view that re-renders itself in a loop is caught in a second instead of freezing the tab** |
+| `rendu.test.mjs` | 41 | The interface **actually rendered**: sixteen views against three captures, the eleven detail tabs, the twenty-two toolbox panels against thirty-two hostile inputs, and 264 deliberately malformed HAR files — then a fragment-by-fragment comparison of both languages, so nothing can stay in French on an English screen. It also counts the commands each view sends the kernel: **a view that re-renders itself in a loop is caught in a second instead of freezing the tab** |
 
 Expected values come from published sources: RFC vectors (4226, 6238, 6455, 4231, 7541, 9113,
 3986, 7578, 9111, 8187, 2231, 2047, 6266, 7638, 8941, and ZeroMQ RFC 32), standard check values (all 20 CRC variants are verified against their
@@ -925,6 +926,7 @@ involved — so they live as tools, and each prints a verdict and an exit code:
 ```bash
 node tools/defilement.mjs            # 20 000 rows, scrolled for real
 node tools/affichage.mjs             # every view at 350, 700, 1100 and 1600 px
+node tools/sockets.mjs               # every kind of socket, against a real server
 ```
 
 **`defilement.mjs`** fills the store with 20 000 requests, then scrolls the table down and
@@ -940,6 +942,14 @@ sidebar, and looks for a page that overflows horizontally, an element wider than
 with nothing able to scroll it into view, two siblings that overlap when they should stack,
 and text cut off with nothing to say so.
 
+**`sockets.mjs`** starts a real WebSocket server — RFC 6455 handshake and framing, fifty
+lines, no dependency — then opens real connections from a page, from a `Worker`, from a
+`SharedWorker`, and a WebRTC data channel between two peer connections. It checks that every
+connection, every text frame, every **binary frame with its bytes**, the negotiated
+sub-protocol and the close code are captured — and that the page is not disturbed: its
+worker still receives its own messages, and a relative `importScripts` inside that worker
+still resolves.
+
 ---
 
 ## 22. Contributing
@@ -952,7 +962,7 @@ the file. It contains internal errors and the command log — not your traffic.
 Before opening a pull request:
 
 ```bash
-npm test              # all 1185 assertions must pass
+npm test              # all 1191 assertions must pass
 .\build.ps1 -Verify   # the build must be green
 ```
 

@@ -211,6 +211,12 @@ function onWsOpen(ev, ctx) {
     pidToRecord.set(key, rec.id);
     rec.ws = rec.ws || { frames: [], protocols: ev.protocols || null, openedAt: null, closedAt: null, close: null, sent: 0, received: 0, bytesSent: 0, bytesReceived: 0 };
     rec.ws.protocols = ev.protocols || rec.ws.protocols;
+    /* Un canal de donnees WebRTC passe par le meme chemin qu un WebSocket :
+       memes trames, memes compteurs. Le transport dit lequel des deux c est,
+       pour que l affichage ne raconte pas « WebSocket » a propos d un canal
+       pair-a-pair. */
+    rec.ws.transport = ev.transport === 'rtc' || ev.transport === 'webtransport'
+      ? ev.transport : (rec.ws.transport || 'websocket');
     rec.ws.openedAt = ev.ts;
     if (ev.stack && !rec.stack) rec.stack = ev.stack;
     store.mark(rec, 'ws:open', ev.ts, { url: ev.url });
@@ -250,6 +256,9 @@ function onWsFrame(ev, ctx) {
       opcode: ev.opcode || 'text',
       size: ev.size || 0,
       data: ev.data != null ? ev.data : null,
+      /* Les octets d une trame binaire, tels que la page les a vus. C est ce
+         qui permet de la decoder au lieu de n en montrer que la taille. */
+      base64: typeof ev.base64 === 'string' && ev.base64 ? ev.base64 : null,
       truncated: !!ev.truncated
     };
     if (rec.ws.frames.length < limit) rec.ws.frames.push(frame);

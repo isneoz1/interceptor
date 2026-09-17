@@ -136,5 +136,11 @@ export const EN_REGLAGES = {
   'Expression reguliere. Vide = toutes les requetes, ce qui est vite ingerable.':
     'A regular expression. Empty = every request, which quickly becomes unmanageable.',
   'Passe ce delai, la requete repart seule. Ne peut jamais etre illimitee.':
-    'Past this delay the request leaves on its own. It can never be unlimited.'
+    'Past this delay the request leaves on its own. It can never be unlimited.',
+
+  /* Entrer dans les workers pour y lire les trames : ce que cela apporte, et
+     ce que cela change. */
+  'Trames WebSocket dans les workers': 'WebSocket frames inside workers',
+  'La poignee de main de toute WebSocket est deja vue, d ou qu elle vienne. Ceci ajoute le CONTENU des trames de celles ouvertes dans un Worker ou un SharedWorker. Le script du worker est alors charge depuis un Blob : ses URL relatives sont rattrapees, mais un worker qui lit lui-meme self.location y verra une autre valeur. Eteint par defaut pour cette raison.':
+    'The handshake of every WebSocket is already seen, wherever it was opened. This adds the CONTENT of the frames for those opened inside a Worker or a SharedWorker. The worker script is then loaded from a Blob: its relative URLs are corrected, but a worker that reads self.location itself will see a different value. Off by default for that reason.'
 };

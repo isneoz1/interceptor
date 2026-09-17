@@ -243,5 +243,15 @@ export const EN_CONSOLE = {
   /* Un corps trop gros pour etre pose d un coup dans la page. */
   '{vus} caracteres affiches sur {total}. Le corps entier est conserve : « Copier » et « Boite a outils » travaillent dessus.':
     '{vus} characters shown out of {total}. The whole body is kept: "Copy" and "Toolbox" work on all of it.',
-  'Tout afficher': 'Show all'
+  'Tout afficher': 'Show all',
+
+  /* Une trame binaire, desormais lisible. */
+  'Cliquer pour ouvrir cette trame dans la boite a outils':
+    'Click to open this frame in the toolbox',
+
+  /* Un canal de donnees WebRTC : meme affichage qu un WebSocket, autre nom. */
+  'Canal de donnees WebRTC': 'WebRTC data channel',
+  'Sous-protocole du canal': 'Channel sub-protocol',
+  '{envoyees} envoyees / {recues} recues': '{envoyees} sent / {recues} received',
+  'WebTransport — datagrammes': 'WebTransport — datagrams'
 };

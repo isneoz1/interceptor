@@ -24,6 +24,11 @@ export const DEFAULTS = Object.freeze({
   capturePageHooks: true,
   captureWebSocketFrames: true,
   maxWebSocketFrames: 0,
+  /* Entrer dans les workers pour y capturer les trames WebSocket suppose de
+     charger leur script depuis un Blob : `self.location` change alors de
+     valeur. Eteint par defaut — une sonde qui modifie ce qu elle observe
+     doit etre demandee. */
+  captureWorkerFrames: false,
   maxFrameBytes: 0,
   captureSse: true,
   maxSseMessages: 0,
@@ -194,6 +199,7 @@ class Config extends Emitter {
       sse: this.values.captureSse,
       rtc: this.values.captureWebRtc,
       workers: this.values.captureWorkers,
+      workerFrames: this.values.captureWorkerFrames,
       jsCookies: this.values.captureJsCookies,
       webTransport: this.values.captureWebTransport,
       vitals: this.values.capturePageVitals

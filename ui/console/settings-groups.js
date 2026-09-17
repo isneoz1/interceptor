@@ -46,6 +46,12 @@ export const GROUPS = [
       ['captureStacks', 'Piles d appel JavaScript', 'bool', 'Montre quelle ligne de code declenche chaque requete.'],
       ['captureWebRtc', 'WebRTC', 'bool', 'Pairs, candidats ICE, canaux de donnees.'],
       ['captureWorkers', 'Workers et Service Workers', 'bool'],
+      ['captureWorkerFrames', 'Trames WebSocket dans les workers', 'bool',
+        'La poignee de main de toute WebSocket est deja vue, d ou qu elle vienne. '
+        + 'Ceci ajoute le CONTENU des trames de celles ouvertes dans un Worker ou un '
+        + 'SharedWorker. Le script du worker est alors charge depuis un Blob : ses URL '
+        + 'relatives sont rattrapees, mais un worker qui lit lui-meme self.location y '
+        + 'verra une autre valeur. Eteint par defaut pour cette raison.'],
       ['captureJsCookies', 'Cookies poses en JavaScript', 'bool', 'Ajoute la pile d appel : on voit quelle ligne de code ecrit le cookie.'],
       ['captureWebTransport', 'WebTransport (HTTP/3)', 'bool', 'Sonde posee seulement si l API existe dans ce Firefox.'],
       ['capturePageVitals', 'Mesures de perception de page', 'bool', 'Premier affichage, plus grand element, decalages de mise en page, taches longues.'],

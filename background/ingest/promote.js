@@ -49,7 +49,7 @@ function baseRecord(url, method, ctx, ts, extra) {
 }
 
 function createFromPageEvent(ev, ctx) {
-  const type = ev.api === 'ws' ? 'websocket'
+  const type = ev.api === 'ws' || ev.api === 'rtc' || ev.api === 'webtransport' ? 'websocket'
              : ev.api === 'sse' ? 'xmlhttprequest'
              : ev.api === 'beacon' ? 'beacon'
              : 'xmlhttprequest';

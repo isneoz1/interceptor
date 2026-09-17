@@ -20,7 +20,8 @@
 
   var TOKEN = makeToken();
   var CFG = { wsFrames: true, maxFrameBytes: 0, maxBodyBytes: 0, perf: true,
-                stacks: true, sse: true, rtc: true, workers: true };
+                stacks: true, sse: true, rtc: true, workers: true,
+                workerFrames: false };
   var alive = true;
   var mode = 'pending';
 

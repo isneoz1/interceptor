@@ -5,10 +5,13 @@
  */
 import { el, frag, kv, sec, jsonTree, add } from '../lib/dom.js';
 import { listeProgressive } from '../lib/liste-progressive.js';
+import { base64VersOctets, octetsVersHex } from '../lib/bytes.js';
+import { essayerFormats } from '../lib/binaires.js';
+import { poser } from './tools.js';
 import { bytes, ms, clock, middle, preuveLisible } from '../lib/format.js';
 import { copy, cmd, toast } from '../app.js';
 import { allRows } from './detail-parts.js';
-import { t } from '../lib/i18n.js';
+import { t, tp } from '../lib/i18n.js';
 import { decrireSuiteTls } from '../lib/ref-reseau.js';
 
 function clearNode(node) { while (node.firstChild) node.removeChild(node.firstChild); return node; }
@@ -38,6 +41,46 @@ export function arreterListes() {
 }
 
 const SEV_ORDER = { critical: 0, high: 1, medium: 2, low: 3, info: 4 };
+
+/* Au-dela, on ne tente plus de reconnaitre le format d une trame : le cout se
+   sent au defilement, et une trame de cette taille ne se lit pas du coin de
+   l oeil — la boite a outils est la pour cela. */
+const MAX_DECODAGE = 8192;
+
+/**
+ * Ce qu on peut dire d une trame binaire sans quitter le panneau.
+ *
+ * @returns { format, apercu, octets } — `format` est null si aucun des trois
+ *          lecteurs ne reconnait la trame.
+ */
+function lireTrameBinaire(base64) {
+  try {
+    const octets = base64VersOctets(base64);
+    const apercu = octetsVersHex(octets.subarray(0, 24), ' ')
+      + (octets.length > 24 ? ' …' : '');
+    if (octets.length > MAX_DECODAGE) return { format: null, apercu, octets };
+    const trouves = essayerFormats(octets);
+    return { format: trouves.length ? trouves[0].format : null, apercu, octets };
+  } catch {
+    /* Base64 illisible : la trame reste comptee, on ne pretend rien de plus. */
+    return { format: null, apercu: null, octets: null };
+  }
+}
+
+/** Le corps d une ligne de trame : texte tel quel, ou lecture du binaire. */
+function corpsDeTrame(f) {
+  if (f.data != null) {
+    return { texte: f.data + (f.truncated ? ' …tronque' : ''), base64: null, format: null };
+  }
+  if (f.base64) {
+    const lu = lireTrameBinaire(f.base64);
+    const tete = '[' + f.opcode + ' ' + bytes(f.size)
+      + (lu.format ? '  ·  ' + lu.format : '') + (f.truncated ? '  ·  tronque' : '') + ']';
+    return { texte: tete + (lu.apercu ? '   ' + lu.apercu : ''), base64: f.base64, format: lu.format };
+  }
+  return { texte: '[' + f.opcode + ' ' + bytes(f.size) + ']'
+    + (f.truncated ? ' …tronque' : ''), base64: null, format: null };
+}
 
 /* ------------------------------- 4. Cookies -------------------------------- */
 export function cookies(rec) {
@@ -175,8 +218,17 @@ export function streams(rec) {
   const box = frag();
   if (rec.ws) {
     const w = rec.ws;
-    box.appendChild(sec('WebSocket', w.sent + ' envoyees / ' + w.received + ' recues'));
-    add(box, kv('Protocoles', Array.isArray(w.protocols) ? w.protocols.join(', ') : w.protocols));
+    /* Un canal de donnees WebRTC emprunte le meme chemin que le WebSocket :
+       memes trames, memes compteurs. Dire « WebSocket » a son propos serait
+       faux — le transport le distingue. */
+    const canalRtc = w.transport === 'rtc';
+    const titreFlux = w.transport === 'rtc' ? 'Canal de donnees WebRTC'
+      : w.transport === 'webtransport' ? 'WebTransport — datagrammes'
+      : 'WebSocket';
+    box.appendChild(sec(titreFlux,
+      tp('{envoyees} envoyees / {recues} recues', { envoyees: w.sent, recues: w.received })));
+    add(box, kv(canalRtc ? 'Sous-protocole du canal' : 'Protocoles',
+      Array.isArray(w.protocols) ? w.protocols.join(', ') : w.protocols));
     add(box, kv('Ouverte', w.openedAt ? clock(w.openedAt) : null));
     add(box, kv('Fermee', w.closedAt ? clock(w.closedAt) : null));
     if (w.close) add(box, kv('Fermeture', 'code ' + w.close.code + (w.close.reason ? ' · ' + w.close.reason : '') + (w.close.wasClean ? ' · propre' : ' · brutale')));
@@ -186,11 +238,23 @@ export function streams(rec) {
     box.appendChild(sec('Trames', w.frames.length));
     const trames = el('div');
     box.appendChild(trames);
-    parLots(trames, w.frames, f => el('div', {
-      class: 'frame ' + (f.dir === 'send' ? 'send' : 'recv') }, [
-      el('b', { text: (f.dir === 'send' ? '↑ ' : '↓ ') + clock(f.ts) }),
-      el('span', { text: (f.data != null ? f.data : '[' + f.opcode + ' ' + bytes(f.size) + ']') + (f.truncated ? ' …tronque' : '') })
-    ]));
+    parLots(trames, w.frames, f => {
+      const corps = corpsDeTrame(f);
+      const ligne = el('div', {
+        class: 'frame ' + (f.dir === 'send' ? 'send' : 'recv')
+          + (corps.base64 ? ' copyable' : ''),
+        title: corps.base64 ? t('Cliquer pour ouvrir cette trame dans la boite a outils') : null
+      }, [
+        el('b', { text: (f.dir === 'send' ? '↑ ' : '↓ ') + clock(f.ts) }),
+        el('span', { text: corps.texte })
+      ]);
+      /* Une trame binaire s ouvre dans la boite a outils, ou l hexadecimal,
+         les empreintes et les trois lecteurs binaires l attendent deja. */
+      if (corps.base64) {
+        ligne.addEventListener('click', () => poser(corps.base64, { vers: 'binaire' }));
+      }
+      return ligne;
+    });
   }
   if (rec.sse) {
     box.appendChild(sec('Server-Sent Events', rec.sse.messages.length + (rec.sse.dropped ? ' (+' + rec.sse.dropped + ' non conserves)' : '')));
