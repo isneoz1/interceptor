@@ -328,7 +328,13 @@ function bindKeyboard() {
   detail.init({ onChange: () => requests.renderRows() });
 
   connect({
-    onDelta: () => { refreshBadges(); if (state.view === 'requests' || state.view === 'streams' || state.view === 'alerts') scheduleRender(); },
+    onDelta: records => {
+      refreshBadges();
+      /* Le panneau ouvert suit la ligne qu il affiche : une session qui recoit
+         encore doit se voir grandir sans qu on la referme. */
+      detail.surDelta(records);
+      if (state.view === 'requests' || state.view === 'streams' || state.view === 'alerts') scheduleRender();
+    },
     onStats: () => { renderFoot(); renderSpark(); refreshBadges(); debugview.tick(); intercept.charger();
                      if (state.view === 'stats') scheduleRender(); },
     // Une requete suspendue doit apparaitre tout de suite, pas a la seconde suivante.

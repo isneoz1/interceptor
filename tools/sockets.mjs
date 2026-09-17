@@ -80,8 +80,22 @@ window.addEventListener('message', function (ev) {
   }
 }, false);
 </script>
-<script src="/content/hooks.js" data-ic-token="jeton-de-test"
-        data-ic-cfg='{"wsFrames":true,"workers":true,"workerFrames":true,"rtc":true,"stacks":false,"perf":false,"vitals":false,"sse":false}'></script>
+<script>
+/* Une connexion ouverte AVANT la sonde : le Proxy du constructeur ne la verra
+   jamais naitre. Elle doit quand meme etre adoptee des qu elle sert. */
+window.__avant = new WebSocket('ws://127.0.0.1:__PORT__/echo');
+window.__avant.binaryType = 'arraybuffer';
+window.__avantRecu = [];
+window.__poserLaSonde = function () {
+  var el = document.createElement('script');
+  el.async = false;
+  el.dataset.icToken = 'jeton-de-test';
+  el.dataset.icCfg = JSON.stringify({ wsFrames: true, workers: true, workerFrames: true,
+    rtc: true, stacks: false, perf: false, vitals: false, sse: false });
+  el.src = '/content/hooks.js';
+  document.documentElement.appendChild(el);
+};
+</script>
 </body>`;
 
 /* Un worker classique : il importe un voisin PAR CHEMIN RELATIF, ce qui est
@@ -112,7 +126,7 @@ const serveur = http.createServer((req, res) => {
   let chemin = decodeURIComponent(req.url.split('?')[0]);
   if (chemin === '/' || chemin === '/index.html') {
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-    return res.end(PAGE);
+    return res.end(PAGE.replace('__PORT__', String(port)));
   }
   if (chemin === '/worker.js') {
     res.writeHead(200, { 'Content-Type': 'text/javascript' });
@@ -168,7 +182,7 @@ await new Promise(resoudre => serveur.listen(0, '127.0.0.1', () => {
 const navigateur = await ouvrirChrome({ largeur: 1000, hauteur: 700, echelle: 1 });
 const page = navigateur.page;
 await page('Page.navigate', { url: 'http://127.0.0.1:' + port + '/' });
-await patienter(1200);
+await patienter(900);
 
 async function dans(expression) {
   const { result, exceptionDetails } = await page('Runtime.evaluate', {
@@ -183,6 +197,22 @@ async function dans(expression) {
 
 const ennuis = [];
 const noter = (quoi, detail) => ennuis.push(quoi + ' — ' + detail);
+
+/* --- 0. Une connexion nee AVANT la sonde --- */
+/* Le Proxy du constructeur ne voit que ce qui nait apres lui. Celle-ci existe
+   deja : elle doit etre adoptee des qu elle sert, sinon « tout capturer » est
+   faux pour toute page dont un script court plus vite que l injection. */
+await dans('window.__poserLaSonde(); return true;');
+await patienter(700);
+const ancienneOk = await dans(`
+  const ws = window.__avant;
+  ws.addEventListener('message', e => window.__avantRecu.push(e.data));
+  if (ws.readyState !== 1) await new Promise(r => ws.addEventListener('open', r, { once: true }));
+  ws.send('nee-avant-la-sonde');
+  await new Promise(r => setTimeout(r, 400));
+  return { etat: ws.readyState, recus: window.__avantRecu.length };
+`);
+console.log('avant     : ' + JSON.stringify(ancienneOk));
 
 /* --- 1. Une WebSocket ouverte par la page --- */
 const pageOk = await dans(`
@@ -274,6 +304,8 @@ function exige(condition, quoi, detail) {
   if (!condition) noter(quoi, detail);
 }
 
+exige(trames.some(t => t.data === 'nee-avant-la-sonde'),
+  'adoption', 'une connexion ouverte avant la sonde n est pas adoptee');
 exige(ouvertures.some(e => /\/echo$/.test(String(e.url)) && !String(e.pid).startsWith('w')),
   'page', 'aucune WebSocket de page vue');
 exige(trames.some(t => t.data === 'bonjour'), 'page', 'la trame texte envoyee n est pas vue');

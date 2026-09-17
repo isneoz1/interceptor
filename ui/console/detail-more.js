@@ -29,8 +29,31 @@ function clearNode(node) { while (node.firstChild) node.removeChild(node.firstCh
    soit insere avant de brancher son observateur, parce qu une racine qui
    n est pas encore un ancetre rend « jamais visible » pour de bon. */
 let enCoursDeRendu = [];
+/* La liste des trames du dernier rendu, et combien en comptait alors
+   l enregistrement : c est ce qui permet d ajouter la suite sans redessiner. */
+let listeTrames = null;
+let tramesRendues = 0;
+
 function parLots(hote, elements, fabriquer) {
-  enCoursDeRendu.push(listeProgressive(hote, elements, fabriquer));
+  const liste = listeProgressive(hote, elements, fabriquer);
+  enCoursDeRendu.push(liste);
+  return liste;
+}
+
+/**
+ * Ajoute au panneau les trames arrivees depuis son dessin.
+ *
+ * @param rec  l enregistrement, rafraichi
+ * @returns le nombre de trames ajoutees
+ */
+export function suivreTrames(rec) {
+  if (!listeTrames) return 0;
+  const trames = rec && rec.ws && Array.isArray(rec.ws.frames) ? rec.ws.frames : null;
+  if (!trames || trames.length <= tramesRendues) return 0;
+  const nouvelles = trames.slice(tramesRendues);
+  tramesRendues = trames.length;
+  listeTrames.ajouter(nouvelles);
+  return nouvelles.length;
 }
 
 /** A appeler avant de redessiner un onglet : coupe les observateurs laisses
@@ -38,6 +61,8 @@ function parLots(hote, elements, fabriquer) {
 export function arreterListes() {
   for (const liste of enCoursDeRendu) liste.arreter();
   enCoursDeRendu = [];
+  listeTrames = null;
+  tramesRendues = 0;
 }
 
 const SEV_ORDER = { critical: 0, high: 1, medium: 2, low: 3, info: 4 };
@@ -238,7 +263,8 @@ export function streams(rec) {
     box.appendChild(sec('Trames', w.frames.length));
     const trames = el('div');
     box.appendChild(trames);
-    parLots(trames, w.frames, f => {
+    tramesRendues = w.frames.length;
+    listeTrames = parLots(trames, w.frames, f => {
       const corps = corpsDeTrame(f);
       const ligne = el('div', {
         class: 'frame ' + (f.dir === 'send' ? 'send' : 'recv')

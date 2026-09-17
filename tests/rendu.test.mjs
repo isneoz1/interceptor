@@ -631,4 +631,58 @@ const lignesCanal = texteDe(more.streams(recCanal)).join(' | ');
 verifier('un canal WebRTC ne se presente pas comme un WebSocket',
   /WebRTC/.test(lignesCanal) && !/^WebSocket/.test(lignesCanal), lignesCanal.slice(0, 120));
 
+/* ========== 10. Une session ouverte doit se voir grandir en direct ======== */
+/* Une WebSocket qui recoit encore — un jeu, un flux de marche — n avait aucun
+   moyen de se montrer : le panneau se dessinait a l ouverture, et rien ne le
+   rafraichissait. Il fallait refermer la ligne et la rouvrir.
+
+   Tout redessiner ne conviendrait pas : la liste est rendue par lots, donc un
+   redessin renverrait le lecteur au premier lot. On ajoute a la suite. */
+const hoteSuivi = document.createElement('div');
+document.body.appendChild(hoteSuivi);
+const listeSuivie = listeProgressive(hoteSuivi, Array.from({ length: 200 }, (_, i) => i),
+  i => document.createElement('div'));
+const avantAjout = listeSuivie.rendus;
+verifier('la liste pose ce qu on lui donne au depart', avantAjout === 200,
+  avantAjout + ' sur 200');
+
+listeSuivie.ajouter(Array.from({ length: 50 }, (_, i) => 200 + i));
+egal('la liste s allonge sans etre redessinee', listeSuivie.total, 250);
+egal('les nouveaux elements sont poses', listeSuivie.rendus, 250);
+egal('rien n est perdu au passage', hoteSuivi.querySelectorAll('div').length, 250);
+
+listeSuivie.ajouter([]);
+egal('ajouter rien ne change rien', listeSuivie.total, 250);
+listeSuivie.arreter();
+egal('apres arreter, ajouter ne pose plus rien', listeSuivie.ajouter([1, 2, 3]), 0);
+
+/* Et de bout en bout : l onglet Flux d un enregistrement qui grandit. */
+setLang('fr');
+const sessionOuverte = enregistrementExemple({ id: 970 });
+sessionOuverte.ws = { sent: 0, received: 2, protocols: [], bytesSent: 0, bytesReceived: 2,
+  frames: [
+    { dir: 'recv', ts: 1, opcode: 'text', size: 2, data: 't1', truncated: false },
+    { dir: 'recv', ts: 2, opcode: 'text', size: 2, data: 't2', truncated: false }
+  ] };
+const panneauFlux = more.streams(sessionOuverte);
+const hoteFlux = document.createElement('div');
+hoteFlux.appendChild(panneauFlux);
+egal('les trames du depart sont dessinees',
+  hoteFlux.querySelectorAll('.frame').length, 2);
+
+/* Le noyau renvoie l enregistrement avec deux trames de plus. */
+const sessionPlusTard = { ...sessionOuverte, ws: { ...sessionOuverte.ws, frames: [
+  ...sessionOuverte.ws.frames,
+  { dir: 'recv', ts: 3, opcode: 'text', size: 2, data: 't3', truncated: false },
+  { dir: 'send', ts: 4, opcode: 'text', size: 2, data: 't4', truncated: false }
+] } };
+egal('deux trames de plus sont ajoutees', more.suivreTrames(sessionPlusTard), 2);
+egal('elles sont bien dans le panneau',
+  hoteFlux.querySelectorAll('.frame').length, 4);
+const textesFlux = texteDe(hoteFlux);
+verifier('la derniere trame arrivee est visible',
+  textesFlux.some(t => t === 't4'), textesFlux.slice(-4).join(' | '));
+egal('rappeler le suivi sans nouveaute n ajoute rien',
+  more.suivreTrames(sessionPlusTard), 0);
+
 bilan('Rendu de l interface');

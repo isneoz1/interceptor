@@ -43,11 +43,14 @@ const LOTS_MAX = 200;
  * @param options.defilant  element dont on observe le defilement ; par defaut
  *                          l ancetre defilant de `hote`
  * @param options.compteur  (rendus, total) -> void, pour afficher la progression
- * @returns { arreter } pour couper l observation quand la vue change
+ * @returns { arreter, ajouter, rendus, total } — `ajouter` sert aux listes qui
+ *          continuent de s allonger pendant qu on les regarde
  */
 export function listeProgressive(hote, elements, fabriquer, options = {}) {
   const lot = Math.max(1, options.lot || LOT);
-  const total = elements.length;
+  /* La source peut grandir : une session WebSocket ouverte recoit encore. */
+  const source = elements.slice();
+  let total = source.length;
   let rendus = 0;
   let arrete = false;
 
@@ -60,7 +63,7 @@ export function listeProgressive(hote, elements, fabriquer, options = {}) {
     const fin = Math.min(total, rendus + lot);
     const fragment = document.createDocumentFragment();
     for (let i = rendus; i < fin; i++) {
-      const noeud = fabriquer(elements[i], i);
+      const noeud = fabriquer(source[i], i);
       if (noeud) fragment.appendChild(noeud);
     }
     hote.insertBefore(fragment, sentinelle);
@@ -150,6 +153,29 @@ export function listeProgressive(hote, elements, fabriquer, options = {}) {
 
   return {
     arreter() { arrete = true; retirer(); },
+
+    /**
+     * Allonge la liste sans rien redessiner.
+     *
+     * Redessiner renverrait le lecteur au premier lot : sur une session de
+     * cinquante mille trames, « suivre » l aurait ramene au debut a chaque
+     * nouvelle arrivee. On ajoute donc a la suite.
+     *
+     * @param nouveaux  les elements a poser apres ceux deja la
+     * @returns le nombre d elements effectivement poses
+     */
+    ajouter(nouveaux) {
+      if (arrete || !nouveaux || !nouveaux.length) return 0;
+      const avant = rendus;
+      for (const element of nouveaux) source.push(element);
+      total = source.length;
+      /* La sentinelle avait ete retiree quand la liste etait complete : elle a
+         de nouveau quelqu un a attendre. */
+      if (!sentinelle.parentNode) hote.appendChild(sentinelle);
+      poserJusquASortie(options.defilant || ancetreDefilant(hote));
+      if (rendus < total && !observateur) brancher();
+      return rendus - avant;
+    },
     get rendus() { return rendus; },
     get total() { return total; }
   };

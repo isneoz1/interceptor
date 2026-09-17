@@ -98,6 +98,44 @@ export async function open(id) {
   onChange && onChange();
 }
 
+/* ---------------------- Suivi d une session ouverte ----------------------- */
+/* Une WebSocket qui recoit encore doit se voir grandir sans qu on referme la
+   ligne. Deux precautions :
+   - on n ajoute que si le lecteur est deja au BAS du panneau. Quelqu un qui
+     lit plus haut ne doit pas etre deplace sous ses yeux ;
+   - on ajoute au lieu de redessiner : la liste etant rendue par lots, un
+     redessin renverrait au premier lot. */
+const MARGE_BAS = 40;      // px : « au bas », a la souris pres
+const REPOS_SUIVI = 300;   // ms : trois rafraichissements par seconde au plus
+let suiviEnAttente = false;
+
+/** A appeler quand le noyau annonce des changements. */
+export function surDelta(records) {
+  if (state.selected == null || !current || suiviEnAttente) return;
+  if (!Array.isArray(records) || !records.some(r => r && r.id === state.selected)) return;
+  if (!auBasDuPanneau()) return;
+  suiviEnAttente = true;
+  setTimeout(suivre, REPOS_SUIVI);
+}
+
+function auBasDuPanneau() {
+  const corps = $('#dbody');
+  if (!corps) return false;
+  return corps.scrollHeight - corps.scrollTop - corps.clientHeight <= MARGE_BAS;
+}
+
+async function suivre() {
+  suiviEnAttente = false;
+  if (state.selected == null || !auBasDuPanneau()) return;
+  const res = await cmd('record', { id: state.selected });
+  if (res.error || !res.record || res.record.id !== state.selected) return;
+  current = res.record;
+  const ajoutees = more.suivreTrames(current);
+  if (!ajoutees) return;
+  const corps = $('#dbody');
+  if (corps) corps.scrollTop = corps.scrollHeight;
+}
+
 /** Recharge l enregistrement courant (apres un rejeu ou une reanalyse). */
 export async function refresh() {
   if (state.selected == null) return;

@@ -179,11 +179,107 @@
       }, win);
     } catch (e) {}
 
+    /* --- WebSocket --- */
+    /* On ne remplace pas le constructeur : une fonction exportee appelee avec
+       `new` ne rendrait pas un vrai WebSocket. On n en a pas besoin. Pour
+       recevoir, une page doit poser un gestionnaire — `onmessage` ou
+       `addEventListener('message')` — et pour envoyer elle passe par `send`.
+       Ces trois portes sont sur le prototype, et suffisent. */
+    try {
+      var WS = win.WebSocket;
+      var protoWs = WS && WS.prototype;
+      if (protoWs) {
+        var idsWs = new WeakMap();
+
+        /* Les octets d une trame binaire, quand le compartiment de la page les
+           laisse lire. Sinon on garde la taille, sans pretendre au reste. */
+        function octetsXray(donnees) {
+          try {
+            var vue = new Uint8Array(donnees);
+            var n = vue.length;
+            var texte = '';
+            for (var i = 0; i < n; i += 8192) {
+              texte += String.fromCharCode.apply(null, vue.subarray(i, Math.min(i + 8192, n)));
+            }
+            return { base64: btoa(texte), taille: n };
+          } catch (e) { return null; }
+        }
+
+        function trameXray(id, dir, donnees) {
+          try {
+            if (typeof donnees === 'string') {
+              emit({ t: 'ws:frame', pid: id, dir: dir, opcode: 'text',
+                     data: donnees, size: donnees.length, truncated: false });
+              return;
+            }
+            var lus = octetsXray(donnees);
+            if (lus) {
+              emit({ t: 'ws:frame', pid: id, dir: dir, opcode: 'binary',
+                     data: null, base64: lus.base64, size: lus.taille, truncated: false });
+              return;
+            }
+            var taille = 0;
+            try { taille = donnees.byteLength || donnees.size || 0; } catch (e) {}
+            emit({ t: 'ws:frame', pid: id, dir: dir, opcode: 'binary',
+                   data: null, size: taille, truncated: false });
+          } catch (e) {}
+        }
+
+        function adopterXray(ws) {
+          var id = idsWs.get(ws);
+          if (id) return id;
+          id = ++pid;
+          idsWs.set(ws, id);
+          try {
+            emit({ t: 'ws:open', pid: id, api: 'ws', url: abs(ws.url),
+                   method: 'GET', protocols: null, probe: 'xray' });
+            if (ws.readyState >= 1 && ws.protocol) {
+              emit({ t: 'ws:protocol', pid: id, protocol: String(ws.protocol) });
+            }
+            ws.addEventListener('message', exportFunction(function (ev) {
+              trameXray(id, 'recv', ev.data);
+            }, win), true);
+            ws.addEventListener('close', exportFunction(function (ev) {
+              emit({ t: 'ws:close', pid: id, code: ev.code,
+                     reason: String(ev.reason || ''), wasClean: !!ev.wasClean });
+            }, win), true);
+          } catch (e) {}
+          return id;
+        }
+
+        var envoiWs = protoWs.send;
+        protoWs.send = exportFunction(function (donnees) {
+          try { if (CFG.wsFrames) trameXray(adopterXray(this), 'send', donnees); } catch (e) {}
+          return envoiWs.apply(this, arguments);
+        }, win);
+
+        var ajoutWs = protoWs.addEventListener;
+        protoWs.addEventListener = exportFunction(function (type) {
+          try { if (type === 'message' && CFG.wsFrames) adopterXray(this); } catch (e) {}
+          return ajoutWs.apply(this, arguments);
+        }, win);
+
+        var descWs = Object.getOwnPropertyDescriptor(protoWs, 'onmessage');
+        if (descWs && typeof descWs.set === 'function') {
+          var poseurWs = descWs.set;
+          Object.defineProperty(protoWs, 'onmessage', {
+            configurable: true,
+            enumerable: descWs.enumerable,
+            get: descWs.get,
+            set: exportFunction(function (gestionnaire) {
+              try { if (CFG.wsFrames) adopterXray(this); } catch (e) {}
+              return poseurWs.call(this, gestionnaire);
+            }, win)
+          });
+        }
+      }
+    } catch (e) {}
+
     emit({
       t: 'ctx', kind: 'probe:xray', url: location.href,
       detail: {
         reason: reason,
-        couverture: 'fetch, XHR, sendBeacon — trames WebSocket indisponibles sur ce document'
+        couverture: 'fetch, XHR, sendBeacon, trames WebSocket'
       }
     });
   }

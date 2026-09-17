@@ -423,7 +423,7 @@
     var nativeSend = Native.prototype.send;
     Native.prototype.send = deguiser(commeMethode(function (data) {
       try {
-        var id = ids.get(this);
+        var id = adopter(this);
         if (id && CFG.wsFrames) posterTrame(id, 'send', data);
       } catch (e) {}
       return nativeSend.apply(this, arguments);
@@ -433,6 +433,11 @@
       var id = ++pid;
       ids.set(ws, id);
       post({ t: 'ws:open', pid: id, api: 'ws', url: abs(url), method: 'GET', protocols: protocols || null, stack: stack() });
+      /* Deja ouverte quand on l adopte : l evenement `open` ne reviendra pas,
+         et c est lui qui porte d ordinaire le sous-protocole negocie. */
+      try {
+        if (ws.readyState >= 1 && ws.protocol) post({ t: 'ws:protocol', pid: id, protocol: ws.protocol });
+      } catch (e) {}
       ws.addEventListener('message', function (ev) {
         if (!CFG.wsFrames) return;
         try { posterTrame(id, 'recv', ev.data); } catch (e) {}
@@ -452,6 +457,45 @@
         post({ t: 'ctx', kind: 'ws:error', url: abs(url) });
       }, true);
     }
+
+    /**
+     * Adopte une connexion, qu on l ait vue naitre ou non.
+     *
+     * @returns son identifiant de ligne
+     */
+    function adopter(ws) {
+      if (!ws) return null;
+      var id = ids.get(ws);
+      if (id) return id;
+      try { track(ws, ws.url, null); } catch (e) { return null; }
+      return ids.get(ws) || null;
+    }
+
+    /* Les deux seules portes par lesquelles une page peut recevoir : on les
+       garde toutes les deux, pour que l age de la connexion n y change rien. */
+    var natifAjout = Native.prototype.addEventListener;
+    if (typeof natifAjout === 'function') {
+      Native.prototype.addEventListener = deguiser(commeMethode(function (type) {
+        try { if (type === 'message' && CFG.wsFrames) adopter(this); } catch (e) {}
+        return natifAjout.apply(this, arguments);
+      }), natifAjout);
+    }
+
+    try {
+      var desc = Object.getOwnPropertyDescriptor(Native.prototype, 'onmessage');
+      if (desc && typeof desc.set === 'function') {
+        var poseur = desc.set;
+        Object.defineProperty(Native.prototype, 'onmessage', {
+          configurable: true,
+          enumerable: desc.enumerable,
+          get: desc.get,
+          set: deguiser(commeMethode(function (gestionnaire) {
+            try { if (CFG.wsFrames) adopter(this); } catch (e) {}
+            return poseur.call(this, gestionnaire);
+          }), poseur)
+        });
+      }
+    } catch (e) {}
 
     window.WebSocket = new Proxy(Native, {
       construct: function (target, args, newTarget) {
