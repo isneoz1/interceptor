@@ -161,6 +161,14 @@ serveur.on('upgrade', (req, socket) => {
   if (protocoles.length) tetes.push('Sec-WebSocket-Protocol: ' + protocoles[0]);
   socket.write(tetes.join('\r\n') + '\r\n\r\n');
 
+  /* Le serveur POUSSE, sans etre sollicite : c est ce que fait un jeu quand il
+     envoie l etat du monde des la connexion. Un client qui n a encore rien
+     envoye doit voir ces trames — c est le cas d un Unity WebGL comme MSP2. */
+  if (String(req.url || '').split('?')[0] === '/push') {
+    socket.write(trameServeur(Buffer.from('pousse-du-serveur'), 0x1));
+    socket.write(trameServeur(Buffer.from([7, 7, 7]), 0x2));
+  }
+
   let tampon = Buffer.alloc(0);
   socket.on('data', morceau => {
     tampon = Buffer.concat([tampon, morceau]);
@@ -230,6 +238,24 @@ const pageOk = await dans(`
 `);
 console.log('page       : ' + pageOk.recus + ' message(s) recus, sous-protocole « '
   + pageOk.protocole + ' »');
+
+/* --- 1bis. Le motif exact d un jeu Unity WebGL (MSP2) --- */
+/* Unity pose son gestionnaire par `ws.onmessage = ...` — le mutateur, pas
+   addEventListener — et recoit des trames que le client n a pas sollicitees :
+   l etat du monde, pousse a la connexion. Aucun autre cas n eprouve ces deux
+   choses ensemble, et ce sont exactement celles d un jeu. */
+const jeuOk = await dans(`
+  const ws = new WebSocket('ws://127.0.0.1:${port}/push');
+  ws.binaryType = 'arraybuffer';
+  const recu = [];
+  ws.onmessage = e => recu.push(typeof e.data === 'string' ? e.data : new Uint8Array(e.data).join(','));
+  await new Promise(r => ws.addEventListener('open', r, { once: true }));
+  await new Promise(r => setTimeout(r, 400));
+  ws.send(new Uint8Array([8, 150, 1]).buffer);
+  await new Promise(r => setTimeout(r, 300));
+  return recu;
+`);
+console.log('jeu        : ' + JSON.stringify(jeuOk));
 
 /* --- 2. Une WebSocket ouverte dans un Worker --- */
 const workerOk = await dans(`
@@ -316,6 +342,13 @@ exige(trames.some(t => t.base64 === 'CJYB' && t.dir === 'recv'),
 exige(vus.some(e => e.t === 'ws:protocol' && e.protocol === 'chat'),
   'page', 'le sous-protocole negocie n est pas vu');
 exige(fermetures.some(e => e.code === 1000), 'page', 'la fermeture propre n est pas vue');
+
+exige(trames.some(t => t.dir === 'recv' && t.data === 'pousse-du-serveur'),
+  'jeu', 'une trame TEXTE poussee par le serveur (gestionnaire onmessage) n est pas vue');
+exige(trames.some(t => t.dir === 'recv' && t.base64 === 'BwcH'),
+  'jeu', 'les octets d une trame BINAIRE poussee par le serveur manquent');
+exige(Array.isArray(jeuOk) && jeuOk.includes('pousse-du-serveur') && jeuOk.includes('7,7,7'),
+  'jeu', 'la page elle-meme ne recoit plus ses trames poussees : ' + JSON.stringify(jeuOk));
 
 exige(trames.some(t => t.data === 'depuis-le-worker'),
   'worker', 'la trame envoyee depuis un Worker n est pas vue');
