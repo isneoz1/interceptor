@@ -15,7 +15,13 @@
   var script = document.currentScript;
   var TOKEN = script && script.dataset ? script.dataset.icToken : null;
   if (!TOKEN || window.__INTERCEPTOR__) return;
-  window.__INTERCEPTOR__ = true;
+  /* Le drapeau qui evite une double installation. Non enumerable : du code de
+     page qui parcourt `window` — certains le font — ne doit pas tomber sur
+     une propriete qui n etait pas la sans nous. */
+  try {
+    Object.defineProperty(window, '__INTERCEPTOR__',
+      { value: true, enumerable: false, configurable: true, writable: false });
+  } catch (e) { window.__INTERCEPTOR__ = true; }
 
   var CFG = { wsFrames: true, maxFrameBytes: 0, maxBodyBytes: 0, perf: true,
                 stacks: true, sse: true, rtc: true, workers: true,
@@ -53,6 +59,54 @@
   document.addEventListener('visibilitychange', function () {
     if (document.visibilityState === 'hidden') flush();
   }, true);
+
+  /* ------------------- Rendre une sonde indiscernable -------------- */
+  /* Ce fichier promet d etre PUREMENT passif. Une page qui s apercoit qu on a
+     remplace `fetch` n est plus observee : elle est modifiee. Beaucoup de
+     sites verifient exactement cela et changent alors de comportement. Une
+     sonde visible est donc un defaut, pas un detail d elegance. */
+  var originales = new WeakMap();
+
+  /* Une methode courte n a pas de `prototype` ; une fonction ordinaire si.
+     C est la difference la plus facile a reperer entre une sonde et une
+     methode native — et `delete f.prototype` echoue, la propriete n etant pas
+     configurable. On fabrique donc la sonde sous une forme qui n en a jamais. */
+  function commeMethode(fn) {
+    var porteur = {
+      sonde() { return fn.apply(this, arguments); }
+    };
+    return porteur.sonde;
+  }
+
+  /**
+   * Donne a une sonde le nom, la longueur et le texte de ce qu elle remplace.
+   *
+   * @param sonde      la fonction posee a la place
+   * @param originale  celle qui etait la
+   */
+  function deguiser(sonde, originale) {
+    try {
+      originales.set(sonde, originale);
+      Object.defineProperty(sonde, 'name', { value: originale.name, configurable: true });
+      Object.defineProperty(sonde, 'length', { value: originale.length, configurable: true });
+    } catch (e) {}
+    return sonde;
+  }
+
+  /* `toString` doit rendre le texte de l original, sinon « [native code] »
+     disparait — c est precisement ce que lisent les scripts qui cherchent une
+     fonction alteree. La sonde de `toString` se deguise elle-meme. */
+  (function masquerToString() {
+    try {
+      var natif = Function.prototype.toString;
+      var sonde = commeMethode(function () {
+        var vraie = originales.get(this);
+        return natif.call(vraie || this);
+      });
+      deguiser(sonde, natif);
+      Function.prototype.toString = sonde;
+    } catch (e) {}
+  })();
 
   /* ---------------------------- Outils ---------------------------- */
   function cap(n) { return (!n || n <= 0) ? Infinity : n; }
@@ -205,7 +259,7 @@
     if (typeof window.fetch !== 'function') return;
     var nativeFetch = window.fetch;
 
-    window.fetch = function (input, init) {
+    window.fetch = deguiser(commeMethode(function (input, init) {
       var id = ++pid;
       var url, method = 'GET', headers = [], body = null, meta = {};
       try {
@@ -280,7 +334,7 @@
         post({ t: 'req:end', pid: id, error: String(err && err.message || err), duration: Date.now() - t0 });
         throw err;
       });
-    };
+    }), nativeFetch);
     try { window.fetch.toString = function () { return 'function fetch() { [native code] }'; }; } catch (e) {}
   })();
 
@@ -291,7 +345,7 @@
     var open = P.open, send = P.send, setHeader = P.setRequestHeader;
     var store = new WeakMap();
 
-    P.open = function (method, url, async) {
+    P.open = deguiser(commeMethode(function (method, url, async) {
       try {
         store.set(this, {
           id: ++pid, method: String(method || 'GET').toUpperCase(), url: abs(url),
@@ -299,14 +353,14 @@
         });
       } catch (e) {}
       return open.apply(this, arguments);
-    };
+    }), open);
 
     P.setRequestHeader = function (name, value) {
       try { var m = store.get(this); if (m) m.headers.push({ name: String(name), value: String(value) }); } catch (e) {}
       return setHeader.apply(this, arguments);
     };
 
-    P.send = function (body) {
+    P.send = deguiser(commeMethode(function (body) {
       var m = store.get(this);
       if (m) {
         m.t0 = Date.now();
@@ -354,7 +408,7 @@
         this.addEventListener('abort', function () { finish('abort'); }, { once: true });
       }
       return send.apply(this, arguments);
-    };
+    }), send);
 
     function safeCall(fn) { try { return fn(); } catch (e) { return null; } }
     function safeJson(v) { try { return typeof v === 'string' ? v : JSON.stringify(v); } catch (e) { return null; } }
@@ -367,13 +421,13 @@
     var ids = new WeakMap();
 
     var nativeSend = Native.prototype.send;
-    Native.prototype.send = function (data) {
+    Native.prototype.send = deguiser(commeMethode(function (data) {
       try {
         var id = ids.get(this);
         if (id && CFG.wsFrames) posterTrame(id, 'send', data);
       } catch (e) {}
       return nativeSend.apply(this, arguments);
-    };
+    }), nativeSend);
 
     function track(ws, url, protocols) {
       var id = ++pid;
@@ -633,7 +687,7 @@
     var proto = Object.getPrototypeOf(navigator);
     var target = (proto && proto.sendBeacon === native) ? proto : navigator;
 
-    target.sendBeacon = function (url, data) {
+    target.sendBeacon = deguiser(commeMethode(function (url, data) {
       var id = ++pid;
       try {
         post({
@@ -644,7 +698,7 @@
       var ok = native.apply(this, arguments);
       try { post({ t: 'req:end', pid: id, status: ok ? 202 : 0, statusText: ok ? 'queued' : 'refused', error: ok ? null : 'sendBeacon refuse' }); } catch (e) {}
       return ok;
-    };
+    }), native);
   })();
 
   /* ================= Workers / Service Workers ================== */
@@ -731,13 +785,13 @@
       if (!proto || typeof proto.send !== 'function') return;
       envoiPatche = true;
       var natif = proto.send;
-      proto.send = function (donnees) {
+      proto.send = deguiser(commeMethode(function (donnees) {
         try {
           var id = idsCanal.get(this);
           if (id && CFG.wsFrames) posterTrame(id, 'send', donnees);
         } catch (e) {}
         return natif.apply(this, arguments);
-      };
+      }), natif);
     }
 
     /**

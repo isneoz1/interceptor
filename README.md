@@ -821,6 +821,7 @@ ui/                        The interface — one page for all four surfaces
 
 tests/                     1191 assertions, no browser required
 tools/sockets.mjs          Real WebSockets against a real server: page, worker, WebRTC
+tools/transparence.mjs     What a page can tell about the probes — it should be nothing
 tools/defilement.mjs       Scrolls 20 000 rows in a real browser, looking for holes
 tools/affichage.mjs        Opens every view at four widths, looking for overflow
 tools/captures.mjs         Generates the documentation screenshots
@@ -927,6 +928,7 @@ involved — so they live as tools, and each prints a verdict and an exit code:
 node tools/defilement.mjs            # 20 000 rows, scrolled for real
 node tools/affichage.mjs             # every view at 350, 700, 1100 and 1600 px
 node tools/sockets.mjs               # every kind of socket, against a real server
+node tools/transparence.mjs          # what a page can tell about the probes
 ```
 
 **`defilement.mjs`** fills the store with 20 000 requests, then scrolls the table down and
@@ -941,6 +943,15 @@ and a 5 MB response body, and measures both.
 sidebar, and looks for a page that overflows horizontally, an element wider than its frame
 with nothing able to scroll it into view, two siblings that overlap when they should stack,
 and text cut off with nothing to say so.
+
+**`transparence.mjs`** is the one that guards the promise at the top of
+`content/hooks.js`: the probes are *purely passive*. A page that notices `fetch` has been
+replaced is no longer being observed — it is being **changed**, and plenty of sites check
+exactly that and behave differently when they find it. The tool has a page measure itself,
+installs the probes, has it measure itself again, and compares 42 observations: the name,
+length and prototype of every replaced function, `instanceof` and prototype chains,
+`Function.prototype.toString` — the `[native code]` check — property descriptors, the type
+of error thrown by malformed calls, and subclassing. Anything that differs is a finding.
 
 **`sockets.mjs`** starts a real WebSocket server — RFC 6455 handshake and framing, fifty
 lines, no dependency — then opens real connections from a page, from a `Worker`, from a
