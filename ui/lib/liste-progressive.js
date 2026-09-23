@@ -35,6 +35,23 @@ const MARGE = 600;
    tout mesure zero — ne fige pas la page. */
 const LOTS_MAX = 200;
 
+/* Position a rejoindre pendant un redessin (en px depuis le haut du cadre
+   defilant), ou 0. Une vue qui se redessine recree son cadre : sans cela, la
+   liste n en posait que ce qu il faut pour remplir le HAUT de l ecran, le
+   cadre trop court ramenait le lecteur en haut, et il perdait sa place a
+   chaque changement du trafic. */
+let aRejoindre = 0;
+
+/**
+ * Execute `rendre` en demandant aux listes creees pendant ce temps de poser
+ * d emblee assez d elements pour atteindre `haut`.
+ */
+export function rejoindre(haut, rendre) {
+  const avant = aRejoindre;
+  aRejoindre = Math.max(0, Number(haut) || 0);
+  try { return rendre(); } finally { aRejoindre = avant; }
+}
+
 /**
  * @param hote        element qui recoit les elements rendus
  * @param elements    tableau des donnees a afficher
@@ -85,7 +102,10 @@ export function listeProgressive(hote, elements, fabriquer, options = {}) {
     const bas = racine && racine.getBoundingClientRect
       ? racine.getBoundingClientRect().bottom
       : (typeof innerHeight === 'number' ? innerHeight : 0);
-    return sentinelle.getBoundingClientRect().top <= bas + MARGE;
+    /* Pendant un redessin, la zone a remplir descend jusqu a la position que
+       le lecteur occupait : le cadre sera ramene la juste apres. */
+    const enPlus = aRejoindre && racine ? aRejoindre - (racine.scrollTop || 0) : 0;
+    return sentinelle.getBoundingClientRect().top <= bas + MARGE + Math.max(0, enPlus);
   }
 
   /* Pose des lots tant que la sentinelle reste dans la zone. Sans cette

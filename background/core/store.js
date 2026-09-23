@@ -220,8 +220,22 @@ class Store extends Emitter {
   all() { return this.order.map(id => this.records.get(id)).filter(Boolean); }
 }
 
+/** Les noms d entetes, en minuscules, separes par un saut de ligne. */
+function nomsEntetes(liste) {
+  if (!Array.isArray(liste) || !liste.length) return '';
+  return liste.map(h => String((h && h.name) || '').toLowerCase()).filter(Boolean).join('\n');
+}
+
 /** Resume envoye a l interface : tout ce que le tableau sait afficher, sans
- *  jamais transporter les corps ni les entetes (demandes a la selection). */
+ *  transporter les corps ni les valeurs d entetes (demandes a la selection).
+ *
+ *  Une exception, deliberee : le nom, le domaine et la VALEUR des cookies que
+ *  la reponse pose. Les criteres set-cookie-name:, set-cookie-domain: et
+ *  set-cookie-value: du moniteur reseau de Firefox filtrent le tableau ligne a
+ *  ligne, sans aller-retour vers le noyau. Ce resume ne quitte jamais les
+ *  pages de l extension, qui montrent deja ces valeurs a la selection ; aucun
+ *  export ne le lit — CSV, HAR et JSON sont batis par le noyau depuis les
+ *  enregistrements complets. */
 export function summarize(rec) {
   return {
     id: rec.id,
@@ -265,6 +279,18 @@ export function summarize(rec) {
     hasAuth: !!rec.auth,
     hasProxy: !!rec.proxy,
     setCookies: rec.cookies.set.length,
+    /* Pour les filtres du moniteur reseau de Firefox (has-response-header:,
+       set-cookie-name:...) : les NOMS d entetes seulement, jamais leurs
+       valeurs, et les Set-Cookie de la reponse. Un saut de ligne ne peut
+       figurer ni dans un nom d entete ni dans un cookie : il separe sans
+       risque de fausse correspondance a cheval sur deux elements. */
+    reqHeaders: nomsEntetes(rec.requestHeaders),
+    resHeaders: nomsEntetes(rec.responseHeaders),
+    setCookieNames: rec.cookies.set.map(c => c.name).join('\n'),
+    /* Sans attribut Domain, un cookie appartient a l hote qui l a pose :
+       c est aussi la regle du filtre set-cookie-domain de Firefox. */
+    setCookieDomains: rec.cookies.set.map(c => c.domain || rec.host || '').join('\n'),
+    setCookieValues: rec.cookies.set.map(c => c.value).join('\n'),
     tls: rec.security ? rec.security.state : null,
     tlsVersion: rec.security ? rec.security.protocolVersion : null,
     wsFrames: rec.ws ? rec.ws.frames.length : 0,

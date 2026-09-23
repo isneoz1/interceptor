@@ -350,8 +350,16 @@ function onPerf(ev, ctx) {
         deliveryType: entry.deliveryType || null,
         serverTiming: entry.serverTiming || null,
         timings: entry.timings || null,
-        workerStart: entry.workerStart ?? null
+        workerStart: entry.workerStart ?? null,
+        /* false : le navigateur a masque phases et tailles (ressource d une
+           autre origine sans Timing-Allow-Origin). Absent sur les sondes
+           anterieures, qui ne faisaient pas la difference. */
+        phasesFournies: typeof entry.phasesFournies === 'boolean' ? entry.phasesFournies : null,
+        responseStatus: entry.responseStatus ?? null
       };
+      /* Une reponse servie par le cache ou un Service Worker n a parfois
+         aucune trace webRequest : le statut vu par la page est alors le seul. */
+      if (rec.statusCode == null && entry.responseStatus) rec.statusCode = entry.responseStatus;
       if (!rec.size && entry.transferSize) rec.size = entry.transferSize;
       if (rec.duration == null && entry.duration) rec.duration = Math.round(entry.duration);
       if (entry.workerStart) store.mark(rec, 'serviceWorker:handled', ev.ts);

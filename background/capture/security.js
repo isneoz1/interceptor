@@ -8,6 +8,19 @@ const seenHosts = new Map();   // host -> resume TLS (evite de re-interroger a c
 
 export const securityStats = { queried: 0, cached: 0, failed: 0 };
 
+/* Les octets DER du certificat, en base64. Firefox les rend en tableau
+   d entiers ; c est ce qui permet de lire le certificat entier — noms
+   alternatifs, usages, OCSP, politique, preuves de transparence — et pas
+   seulement le resume que l API en donne. */
+function derEnBase64(tableau) {
+  if (!Array.isArray(tableau) || !tableau.length) return null;
+  let binaire = '';
+  for (let i = 0; i < tableau.length; i += 8192) {
+    binaire += String.fromCharCode.apply(null, tableau.slice(i, i + 8192));
+  }
+  return btoa(binaire);
+}
+
 export async function captureSecurity(rec, details) {
   try {
     const cached = seenHosts.get(rec.host);
@@ -22,7 +35,7 @@ export async function captureSecurity(rec, details) {
 
     const info = await B.webRequest.getSecurityInfo(details.requestId, {
       certificateChain: true,
-      rawDER: false
+      rawDER: true
     });
     securityStats.queried++;
     if (!info) return;
@@ -55,7 +68,8 @@ export async function captureSecurity(rec, details) {
         validityEnd: c.validity ? c.validity.end : null,
         subjectPublicKeyInfoDigest: c.subjectPublicKeyInfoDigest
           ? c.subjectPublicKeyInfoDigest.sha256 : null,
-        isBuiltInRoot: !!c.isBuiltInRoot
+        isBuiltInRoot: !!c.isBuiltInRoot,
+        der: derEnBase64(c.rawDER)
       })),
       fromCache: false
     };

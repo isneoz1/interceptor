@@ -217,6 +217,24 @@ export async function ouvrirScene(options = {}) {
     console.log('Volume ajoute : ' + volume + ' requetes ordinaires.');
   }
 
+  /* --- Une longue session WebSocket, quand on veut eprouver sa lecture --- */
+  /* Des trames de la forme exacte que la sonde produit : c est sur une session
+     qui deborde de l ecran qu on voit si une vue garde la position du lecteur. */
+  const trames = Math.max(0, Number(options.trames) || 0);
+  if (trames) {
+    const session = requete({ url: 'wss://jeu.example.com/socket.io/?EIO=4&transport=websocket',
+      type: 'websocket', statut: 101, mime: '', taille: 0, duree: 0 });
+    session.ws = { protocol: '', protocols: [], sent: 0, received: 0, bytesSent: 0, bytesReceived: 0, frames: [] };
+    for (let i = 0; i < trames; i++) {
+      const dir = i % 3 === 0 ? 'send' : 'recv';
+      const data = '42["position",{"joueur":' + (i % 40) + ',"x":' + (i * 7 % 900) + ',"y":' + (i * 13 % 600) + '}]';
+      session.ws.frames.push({ dir, ts: horloge + i * 20, opcode: 'text', size: data.length, data, truncated: false });
+      session.ws[dir === 'send' ? 'sent' : 'received']++;
+    }
+    store.touch(session.id);
+    console.log('Session ajoutee : ' + trames + ' trames WebSocket.');
+  }
+
   /* Le vrai service de commandes du noyau, celui que la console interroge dans
      Firefox. La demo ne reimplemente rien : elle lui parle. */
   const { startRpc } = await import('../background/api/rpc.js');

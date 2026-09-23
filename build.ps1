@@ -93,6 +93,13 @@ $required = @(
   'ui/lib/crypto-outils.js',
   'ui/lib/binaires.js',
   'ui/lib/asn1.js',
+  'ui/lib/minutage.js',
+  'ui/lib/redessin.js',
+  'ui/lib/mqtt.js',
+  'ui/lib/sous-protocoles.js',
+  'ui/lib/sous-protocoles-plus.js',
+  'ui/lib/dict-en-lecture.js',
+  'ui/console/certificat.js',
   'ui/lib/charsets.js',
   'ui/lib/entetes-analyse.js',
   'ui/lib/net-plus.js',
@@ -207,7 +214,9 @@ if ($node) {
     @{ titre = 'Outils avances';              fichier = 'tests/avance.test.mjs';
        echec = 'Un outil avance ne rend pas la valeur attendue' },
     @{ titre = 'Rendu de l interface';        fichier = 'tests/rendu.test.mjs';
-       echec = 'Une vue, un onglet ou un panneau ne se rend pas' }
+       echec = 'Une vue, un onglet ou un panneau ne se rend pas' },
+    @{ titre = 'Lectures du trafic';          fichier = 'tests/lectures.test.mjs';
+       echec = 'Une lecture du trafic est fausse ou invente une valeur' }
   )
 
   $totalAssertions = 0

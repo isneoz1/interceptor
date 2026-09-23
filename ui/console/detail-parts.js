@@ -14,6 +14,7 @@ import { decrireStatut, familleStatut } from '../lib/ref-http.js';
 import { decrireEntete } from '../lib/ref-entetes.js';
 import { decrireType } from '../lib/ref-mime.js';
 import { decrireErreurReseau } from '../lib/ref-reseau.js';
+import { raisonMasque } from '../lib/minutage.js';
 import { analyserCsp } from '../lib/csp.js';
 import { analyserFraicheur, resumerFraicheur } from '../lib/cache-http.js';
 import { estGrpcWeb, estGrpcWebTexte, lireGrpcWeb, resumerGrpcWeb } from '../lib/grpc-web.js';
@@ -113,9 +114,15 @@ export function resume(rec) {
   add(box, kv('Emis sur le fil', rec.wireRequestSize ? bytes(rec.wireRequestSize) : null));
   add(box, kv('Recu sur le fil', rec.wireResponseSize ? bytes(rec.wireResponseSize) : null));
   if (rec.perf) {
+    /* Masquees, les tailles valent zero cote navigateur : ce n est pas une
+       mesure, et « 0 o » serait faux. On dit qu elles ne sont pas fournies. */
+    if (rec.perf.phasesFournies === false) {
+      add(box, kv('Tailles vues par la page', raisonMasque(rec)));
+    }
     add(box, kv('Transfere', rec.perf.transferSize != null ? bytes(rec.perf.transferSize) : null));
     add(box, kv('Encode', rec.perf.encodedBodySize != null ? bytes(rec.perf.encodedBodySize) : null));
     add(box, kv('Decode', rec.perf.decodedBodySize != null ? bytes(rec.perf.decodedBodySize) : null));
+    add(box, kv('Statut vu par la page', rec.perf.responseStatus != null ? String(rec.perf.responseStatus) : null));
     add(box, kv('Type d initiateur', rec.perf.initiatorType));
     add(box, kv('Blocage du rendu', rec.perf.renderBlockingStatus));
     add(box, kv('Mode de livraison', rec.perf.deliveryType));
@@ -242,7 +249,8 @@ function fraicheur(rec) {
     });
   } catch { return box; }
 
-  box.appendChild(sec('Fraicheur HTTP', t(resumerFraicheur(r))));
+  /* Deja dans la langue de l interface : la phrase est batie par tp(). */
+  box.appendChild(sec('Fraicheur HTTP', resumerFraicheur(r)));
   add(box, kv('Stockable en cache', r.stockable ? t('oui') : t('non'), { hl: !r.stockable }));
   add(box, kv('Duree de fraicheur', r.duree != null ? r.duree + ' s' : null));
   add(box, kv('Determinee par', r.source ? t(r.source) : null));
@@ -260,7 +268,7 @@ function fraicheur(rec) {
   const directives = Object.entries(r.directives)
     .map(([nom, valeur]) => valeur === true ? nom : nom + '=' + valeur);
   add(box, kv('Directives Cache-Control', directives.length ? directives.join('   ·   ') : null));
-  for (const fait of r.faits) box.appendChild(el('p', { class: 'note', text: t(fait) }));
+  for (const fait of r.faits) box.appendChild(el('p', { class: 'note', text: tp(fait.texte, fait.valeurs) }));
   return box;
 }
 
@@ -296,8 +304,10 @@ function politique(rec) {
     // la teinte d alerte serait alors trompeuse.
     const neutre = lu.faits.length === 1 && /aucune permission large/.test(lu.faits[0].texte);
     for (const fait of lu.faits) {
+      const valeurs = { ...fait.valeurs };
+      for (const cle of fait.aTraduire || []) valeurs[cle] = t(valeurs[cle]);
       box.appendChild(el('p', { class: neutre ? 'note' : 'note warn',
-        text: tp(fait.texte, fait.valeurs) }));
+        text: tp(fait.texte, valeurs) }));
     }
   }
   return box;

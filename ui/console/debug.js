@@ -8,6 +8,8 @@
  * noyau. Le contenu se rafraichit a chaque battement de statistiques.
  */
 import { $, el, clear, sec, button, kv, add, vide } from '../lib/dom.js';
+import { redessinerEnPlace } from '../lib/redessin.js';
+
 import { clock, ms } from '../lib/format.js';
 import { t } from '../lib/i18n.js';
 import { state, cmd, toast, copy } from '../app.js';
@@ -54,7 +56,13 @@ export function tick() {
   if (state.view === 'debug') charger({ silencieux: true });
 }
 
-export function render() {
+/* Redessiner recree le cadre qui defile et le champ de filtre :
+   redessinerEnPlace garde la position du lecteur, le focus et le curseur.
+   Sans cela, le lecteur remontait en haut a chaque redessin, et seule la
+   premiere lettre tapee dans le filtre comptait. */
+export function render() { return redessinerEnPlace($('#view-debug'), dessiner); }
+
+function dessiner() {
   const pane = clear($('#view-debug'));
   const box = el('div', { class: 'pane' });
   pane.appendChild(box);
@@ -99,7 +107,8 @@ export function render() {
   /* ------------------------------- Actions ------------------------------- */
   const champ = el('input', {
     type: 'search', class: 'field', spellcheck: 'false',
-    placeholder: t('Chercher dans le journal…'), value: recherche
+    placeholder: t('Chercher dans le journal…'), value: recherche,
+    dataset: { champ: 'debug-recherche' }
   });
   let minuteur = null;
   champ.addEventListener('input', () => {

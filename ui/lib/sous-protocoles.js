@@ -16,7 +16,18 @@
  * Rien n est devine : chaque decoupage suit la specification publiee du
  * protocole, et quand la forme ne correspond pas on le dit plutot que de
  * rendre une lecture inventee.
+ *
+ * Les autres familles — GraphQL, JSON-RPC, WAMP, SockJS, Phoenix, Action
+ * Cable, Pusher — vivent dans sous-protocoles-plus.js, MQTT dans mqtt.js. Le
+ * point d entree unique est plus bas : `lireSousProtocole` pour le texte,
+ * `lireSousProtocoleBinaire` pour les octets.
  */
+import { base64VersOctets } from './bytes.js';
+import { lireMqtt, niveauDuConnect, resumerMqtt } from './mqtt.js';
+import {
+  lireGraphqlWs, lireJsonRpc, lireWamp, lireSockJs, lirePhoenix, lireActionCable,
+  lirePusher, RESUMES_PLUS, resumerSockJs
+} from './sous-protocoles-plus.js';
 
 /* ------------------------------- Engine.IO -------------------------------- */
 /* https://github.com/socketio/engine.io-protocol — le premier caractere est
@@ -109,9 +120,23 @@ export function lireEngineIo(entree) {
   };
   const charge = texte.slice(1);
 
+  /* Les paquets de controle ont une forme fixe. Sans cette rigueur, un texte
+     comme « 2024-09-23 » ou le nombre « 3 » passait pour un ping ou un pong. */
+  if ((type === '1' || type === '5' || type === '6') && charge) {
+    throw new Error('le paquet Engine.IO « ' + ENGINE_IO[type] + ' » ne porte rien');
+  }
+  if ((type === '2' || type === '3') && charge && charge !== 'probe') {
+    throw new Error('ping et pong Engine.IO ne portent que « probe »');
+  }
+
   /* « open » transporte la poignee de main : identifiant de session, delais. */
-  if (type === '0' && charge) {
-    try { out.poignee = JSON.parse(charge); } catch { out.brut = charge; }
+  if (type === '0') {
+    let poignee;
+    try { poignee = JSON.parse(charge); } catch { poignee = null; }
+    if (!poignee || typeof poignee !== 'object' || typeof poignee.sid !== 'string') {
+      throw new Error('la poignee de main Engine.IO porte un objet JSON avec « sid »');
+    }
+    out.poignee = poignee;
     return out;
   }
 
@@ -148,17 +173,22 @@ export function lireStomp(entree) {
   if (!COMMANDES_STOMP.has(commande)) {
     throw new Error('« ' + commande.slice(0, 20) + ' » n est pas une commande STOMP');
   }
+  /* Une trame STOMP est « COMMANDE EOL *(entete EOL) EOL corps NUL » : la
+     ligne vide qui clot les entetes y est toujours. Sans elle, un message de
+     discussion valant « ERROR » ou « ABORT » passait pour du STOMP. */
+  const reste = texte.slice(finLigne + 1);
+  const separation = /(^|\r?\n)\r?\n/.exec(reste);
+  if (finLigne < 0 || !separation) {
+    throw new Error('trame STOMP sans la ligne vide qui clot ses entetes');
+  }
 
   const out = { protocole: 'STOMP', commande, entetes: {} };
-  if (finLigne < 0) return out;
+  const blocEntetes = reste.slice(0, separation.index);
+  out.corps = reste.slice(separation.index + separation[0].length);
+  if (!out.corps) delete out.corps;
 
-  /* Une ligne vide separe les entetes du corps. */
-  const reste = texte.slice(finLigne + 1);
-  const separation = reste.indexOf('\n\n');
-  const blocEntetes = separation < 0 ? reste : reste.slice(0, separation);
-  if (separation >= 0) out.corps = reste.slice(separation + 2);
-
-  for (const ligne of blocEntetes.split('\n')) {
+  for (const brute of blocEntetes.split('\n')) {
+    const ligne = brute.replace(/\r$/, '');       // STOMP 1.2 admet CRLF
     if (!ligne.trim()) continue;
     const deuxPoints = ligne.indexOf(':');
     if (deuxPoints < 0) continue;
@@ -187,7 +217,10 @@ const SIGNALR = {
   4: 'StreamInvocation',
   5: 'CancelInvocation',
   6: 'Ping',
-  7: 'Close'
+  7: 'Close',
+  /* Reconnexion avec etat (.NET 8) : accuse de reception et numero de suite. */
+  8: 'Ack',
+  9: 'Sequence'
 };
 
 export function lireSignalR(entree) {
@@ -201,14 +234,28 @@ export function lireSignalR(entree) {
     if (!morceau.trim()) continue;
     let objet;
     try { objet = JSON.parse(morceau); } catch { throw new Error('message SignalR illisible en JSON'); }
+    /* WAMP en lot separe aussi ses messages par 0x1E : un tableau, ou un
+       objet sans type SignalR connu, n est pas du SignalR. */
+    if (!objet || typeof objet !== 'object' || Array.isArray(objet)) {
+      throw new Error('un message SignalR est un objet JSON');
+    }
 
     /* La negociation initiale n a pas de champ « type » : elle annonce le
        protocole et sa version. */
-    if (objet && objet.protocol) {
+    if (typeof objet.protocol === 'string') {
       messages.push({ type: 'Handshake', protocole: objet.protocol, version: objet.version });
       continue;
     }
-    const message = { type: SIGNALR[objet.type] || ('type ' + objet.type), typeNumero: objet.type };
+    /* La reponse du serveur a cette negociation : un objet vide, ou une erreur. */
+    const cles = Object.keys(objet);
+    if (!cles.length || (cles.length === 1 && typeof objet.error === 'string')) {
+      messages.push({ type: 'HandshakeResponse', ...(objet.error ? { erreur: objet.error } : {}) });
+      continue;
+    }
+    if (!Number.isInteger(objet.type) || !SIGNALR[objet.type]) {
+      throw new Error('type de message SignalR inconnu');
+    }
+    const message = { type: SIGNALR[objet.type], typeNumero: objet.type };
     if (objet.target) message.cible = objet.target;
     if (objet.invocationId) message.invocation = objet.invocationId;
     if (objet.arguments) message.arguments = objet.arguments;
@@ -223,62 +270,253 @@ export function lireSignalR(entree) {
 
 /* --------------------------- Reconnaissance ------------------------------- */
 /**
- * Toutes les lectures possibles d une trame, sans en choisir aucune : c est a
- * l operateur de trancher, avec les decoupages sous les yeux. Une trame
- * « 2 » est un ping Engine.IO autant qu un texte quelconque.
+ * Ce que la connexion prouve d elle-meme : le sous-protocole negocie a la
+ * poignee de main, l URL, et pour MQTT le niveau ecrit dans le CONNECT.
  *
- * @param texte        la charge utile de la trame
- * @param sousProtocole valeur de Sec-WebSocket-Protocol, quand elle est connue
+ * @param contexte  une chaine (le sous-protocole, forme historique) ou
+ *                  { sousProtocole, url, niveauMqtt }
  */
-export function lireSousProtocole(texte, sousProtocole = '') {
-  const brut = String(texte == null ? '' : texte);
+/* Une connexion lit toutes ses trames avec le meme contexte : on ne relit pas
+   son URL a chaque trame. */
+const indicesParObjet = new WeakMap();
+const indicesParChaine = new Map();
+
+export function indicesDeContexte(contexte) {
+  if (contexte && typeof contexte === 'object') {
+    let deja = indicesParObjet.get(contexte);
+    if (!deja) { deja = calculerIndices(contexte); indicesParObjet.set(contexte, deja); }
+    return deja;
+  }
+  const cle = String(contexte || '');
+  let deja = indicesParChaine.get(cle);
+  if (!deja) {
+    if (indicesParChaine.size > 64) indicesParChaine.clear();
+    deja = calculerIndices({ sousProtocole: cle });
+    indicesParChaine.set(cle, deja);
+  }
+  return deja;
+}
+
+function calculerIndices(c) {
+  const sp = String(c.sousProtocole || '').trim().toLowerCase();
+  let chemin = '';
+  let parametres = new URLSearchParams();
+  try {
+    const u = new URL(String(c.url || ''));
+    chemin = u.pathname;
+    parametres = u.searchParams;
+  } catch { /* pas d URL : aucune preuve a en tirer */ }
+  return {
+    sp,
+    /* socket.io n annonce aucun sous-protocole : c est son URL qui le trahit,
+       « /socket.io/?EIO=4&transport=websocket ». */
+    engineIo: parametres.has('EIO') || /socket\.?io|engine\.?io/.test(sp),
+    /* sockjs-client : /<serveur sur 3 chiffres>/<session>/websocket */
+    sockJs: /\/\d{3}\/[^/]+\/websocket$/.test(chemin),
+    phoenix: /\/websocket$/.test(chemin) && parametres.has('vsn'),
+    pusher: /\/app\/[^/]+$/.test(chemin) && parametres.has('protocol'),
+    niveauMqtt: Number.isInteger(c.niveauMqtt) ? c.niveauMqtt : null
+  };
+}
+
+/**
+ * Le protocole que la connexion designe d elle-meme, et par quelle preuve.
+ * @returns { nom, preuve: 'sous-protocole' | 'url' } ou null
+ */
+export function protocoleDesigne(contexte) {
+  const indices = indicesDeContexte(contexte);
+  const nom = attenduPar(indices);
+  if (!nom) return null;
+  const parSousProtocole = indices.sp && attenduPar({ ...indices, engineIo: /socket\.?io|engine\.?io/.test(indices.sp),
+    sockJs: false, phoenix: false, pusher: false }) === nom;
+  return { nom, preuve: parSousProtocole ? 'sous-protocole' : 'url' };
+}
+
+/** Le protocole que le sous-protocole negocie designe, s il en designe un. */
+function attenduPar(indices) {
+  const sp = indices.sp;
+  if (sp.includes('stomp')) return 'STOMP';
+  if (sp.includes('signalr')) return 'SignalR';
+  if (/socket\.?io|engine\.?io/.test(sp)) return 'Engine.IO / socket.io';
+  if (sp.includes('graphql')) return 'GraphQL over WebSocket';
+  if (sp.startsWith('wamp.2.')) return 'WAMP';
+  if (sp.includes('actioncable')) return 'Action Cable';
+  if (sp.includes('jsonrpc') || sp.includes('json-rpc')) return 'JSON-RPC 2.0';
+  if (sp === 'mqtt' || sp.startsWith('mqttv')) return 'MQTT';
+  if (indices.engineIo) return 'Engine.IO / socket.io';
+  if (indices.sockJs) return 'SockJS';
+  if (indices.phoenix) return 'Phoenix Channels';
+  if (indices.pusher) return 'Pusher Channels';
+  return null;
+}
+
+/* Un paquet Engine.IO n est retenu sans preuve de contexte que s il ne peut
+   etre autre chose : une poignee de main avec « sid », ou un message
+   socket.io dont les donnees sont du JSON. « 40 » seul reste un nombre. */
+function engineIoRetenu(texte, indices) {
+  const l = lireEngineIo(texte);
+  if (indices.engineIo || l.type === 'open') return l;
+  return l.type === 'message' && l.socketIo && l.socketIo.donnees !== undefined ? l : null;
+}
+
+/* Le premier caractere non blanc : un lecteur JSON n a rien a faire d une
+   trame qui ne commence ni par « { » ni par « [ ». */
+function premierSignificatif(texte) {
+  for (let i = 0; i < texte.length && i < 64; i++) {
+    const c = texte.charCodeAt(i);
+    if (c !== 32 && c !== 9 && c !== 10 && c !== 13) return texte[i];
+  }
+  return '';
+}
+const commeJson = texte => { const c = premierSignificatif(texte); return c === '{' || c === '['; };
+
+/* Chaque lecteur est precede d une garde qui ne coute presque rien. Une trame
+   qui ne peut pas lui correspondre ne l atteint donc jamais — et surtout ne
+   lui fait pas lever d exception : une erreur levee capture sa pile, et vingt
+   mille trames de texte ordinaire coutaient ainsi pres de quatre secondes a
+   la vue « Flux direct », qui les resume toutes. */
+const LECTEURS_TEXTE = [
+  ['Engine.IO / socket.io', t => { const c = t.charCodeAt(0); return c >= 48 && c <= 54; }, engineIoRetenu],
+  ['STOMP', t => { const c = t.charCodeAt(0); return c >= 65 && c <= 90 && t.includes('\n'); }, t => lireStomp(t)],
+  ['SignalR', t => t.includes('\u001e'), t => lireSignalR(t)],
+  ['GraphQL over WebSocket', commeJson, lireGraphqlWs],
+  ['JSON-RPC 2.0', commeJson, t => lireJsonRpc(t)],
+  ['WAMP', (t, indices) => indices.sp.startsWith('wamp.2.json'), lireWamp],
+  ['Phoenix Channels', commeJson, lirePhoenix],
+  ['Action Cable', commeJson, lireActionCable],
+  ['Pusher Channels', commeJson, lirePusher],
+  /* SockJS enveloppe d autres protocoles — STOMP chez Spring, le plus
+     souvent : chaque message interieur est relu a son tour. */
+  ['SockJS', (t, indices) => indices.sockJs, (texte, indices) => lireSockJs(texte, indices,
+    interieur => lireAvecIndices(interieur, { ...indices, sockJs: false })[0] || null)]
+];
+
+function lireAvecIndices(brut, indices) {
   const lectures = [];
-  const essayer = (nom, fn) => {
+  if (!brut) return lectures;
+  for (const [nom, garde, lire] of LECTEURS_TEXTE) {
+    if (!garde(brut, indices)) continue;
     try {
-      const lu = fn();
+      const lu = lire(brut, indices);
       if (lu) lectures.push({ nom, ...lu });
     } catch { /* forme non reconnue */ }
-  };
+  }
+  return ordonner(lectures, indices);
+}
 
-  essayer('Engine.IO / socket.io', () => lireEngineIo(brut));
-  essayer('STOMP', () => lireStomp(brut));
-  essayer('SignalR', () => lireSignalR(brut));
-
-  /* Le sous-protocole annonce a la poignee de main tranche les ambiguites :
-     on remonte la lecture correspondante en tete. */
-  const annonce = String(sousProtocole || '').toLowerCase();
-  if (annonce) {
-    const attendu = annonce.includes('stomp') ? 'STOMP'
-      : annonce.includes('signalr') ? 'SignalR'
-      : /socket\.?io|engine\.?io/.test(annonce) ? 'Engine.IO / socket.io'
-      : null;
-    if (attendu) {
-      const i = lectures.findIndex(l => l.nom === attendu);
-      if (i > 0) lectures.unshift(lectures.splice(i, 1)[0]);
-      for (const l of lectures) l.annonce = l.nom === attendu;
-    }
+/* Le protocole que la connexion designe passe en tete, et chaque lecture dit
+   si elle repose sur cette preuve ou sur sa seule forme. */
+function ordonner(lectures, indices) {
+  const attendu = attenduPar(indices);
+  if (attendu) {
+    const i = lectures.findIndex(l => l.nom === attendu);
+    if (i > 0) lectures.unshift(lectures.splice(i, 1)[0]);
+  }
+  for (const l of lectures) {
+    l.annonce = !!attendu && l.nom === attendu;
+    l.preuve = l.annonce ? (indices.sp ? 'sous-protocole' : 'url') : 'forme';
   }
   return lectures;
 }
 
-/** Une ligne courte disant ce que la trame transporte, ou null. */
-export function resumerTrame(texte, sousProtocole = '') {
-  const [premiere] = lireSousProtocole(texte, sousProtocole);
-  if (!premiere) return null;
+/**
+ * Les lectures d une trame texte que quelque chose PROUVE : sa forme, le
+ * sous-protocole negocie ou l URL. Une forme ambigue sans preuve n en recoit
+ * aucune — « 2024 » n est pas un ping Engine.IO.
+ *
+ * @param texte     la charge utile de la trame
+ * @param contexte  le sous-protocole (chaine), ou { sousProtocole, url, niveauMqtt }
+ */
+export function lireSousProtocole(texte, contexte = '') {
+  return lireAvecIndices(String(texte == null ? '' : texte), indicesDeContexte(contexte));
+}
 
-  if (premiere.nom === 'Engine.IO / socket.io') {
-    const s = premiere.socketIo;
+/**
+ * Vrai si la connexion designe un protocole binaire que l on sait lire. Sans
+ * cela, decoder les octets d une trame ne servirait a rien : aucune lecture ne
+ * peut en sortir. Les vues s en servent pour ne pas decoder pour rien.
+ */
+export function lectureBinairePossible(contexte) {
+  const sp = indicesDeContexte(contexte).sp;
+  return sp === 'mqtt' || sp.startsWith('mqttv') || sp.startsWith('wamp.2.msgpack') || sp.startsWith('wamp.2.cbor');
+}
+
+/**
+ * Les lectures d une trame BINAIRE. Des octets ne prouvent rien par eux-memes :
+ * seul le sous-protocole negocie (mqtt, wamp.2.msgpack, wamp.2.cbor) autorise
+ * a les lire comme ce protocole.
+ */
+export function lireSousProtocoleBinaire(octets, contexte = '') {
+  const indices = indicesDeContexte(contexte);
+  const lectures = [];
+  if (indices.sp === 'mqtt' || indices.sp.startsWith('mqttv')) {
+    try { lectures.push({ nom: 'MQTT', ...lireMqtt(octets, indices.niveauMqtt) }); } catch { /* non conforme */ }
+  }
+  const wamp = lireWamp(octets, indices);
+  if (wamp) lectures.push({ nom: 'WAMP', ...wamp });
+  return ordonner(lectures, indices);
+}
+
+/** Une ligne courte disant ce que transporte une lecture. */
+export function resumerLecture(l) {
+  if (!l) return null;
+  if (l.nom === 'Engine.IO / socket.io') {
+    const s = l.socketIo;
     if (s && s.evenement) return 'socket.io ' + s.type + ' « ' + s.evenement + ' »';
     if (s) return 'socket.io ' + s.type;
-    return 'Engine.IO ' + premiere.type;
+    return 'Engine.IO ' + l.type;
   }
-  if (premiere.nom === 'STOMP') {
-    const destination = premiere.entetes && premiere.entetes.destination;
-    return 'STOMP ' + premiere.commande + (destination ? ' -> ' + destination : '');
+  if (l.nom === 'STOMP') {
+    const destination = l.entetes && l.entetes.destination;
+    return 'STOMP ' + l.commande + (destination ? ' -> ' + destination : '');
   }
-  if (premiere.nom === 'SignalR') {
-    const m = premiere.messages[0];
+  if (l.nom === 'SignalR') {
+    const m = l.messages[0];
     return 'SignalR ' + m.type + (m.cible ? ' « ' + m.cible + ' »' : '');
   }
-  return null;
+  if (l.nom === 'MQTT') return resumerMqtt(l);
+  if (l.nom === 'SockJS') return resumerSockJs(l, resumerLecture);
+  const resumer = RESUMES_PLUS[l.nom];
+  return resumer ? resumer(l) : null;
+}
+
+/** Une ligne courte disant ce que la trame texte transporte, ou null. */
+export function resumerTrame(texte, contexte = '') {
+  return resumerLecture(lireSousProtocole(texte, contexte)[0]);
+}
+
+/** Idem pour une trame binaire. */
+export function resumerTrameBinaire(octets, contexte = '') {
+  return resumerLecture(lireSousProtocoleBinaire(octets, contexte)[0]);
+}
+
+/* ----------------------- Contexte d une connexion ------------------------- */
+function entete(liste, nom) {
+  if (!Array.isArray(liste)) return '';
+  const h = liste.find(e => e && String(e.name).toLowerCase() === nom);
+  return h ? String(h.value || '') : '';
+}
+
+/**
+ * Ce qu un enregistrement WebSocket apporte pour lire ses trames.
+ *
+ * Le sous-protocole negocie vient de la page (`ws.protocol`) ou, a defaut, de
+ * l en-tete `Sec-WebSocket-Protocol` de la reponse 101. Pour MQTT, le niveau
+ * de protocole est lu dans le PREMIER paquet envoye, qui doit etre le CONNECT
+ * (MQTT 3.1.1, section 3.1) : s il n a pas ete capture, le niveau reste
+ * inconnu, et ce qui en depend n est pas lu.
+ */
+export function contexteDeConnexion(rec) {
+  const ws = rec && rec.ws;
+  const sousProtocole = (ws && ws.protocol) || entete(rec && rec.responseHeaders, 'sec-websocket-protocol');
+  const url = (rec && (rec.finalUrl || rec.url)) || '';
+  let niveauMqtt = null;
+  const sp = String(sousProtocole || '').toLowerCase();
+  if (ws && Array.isArray(ws.frames) && (sp === 'mqtt' || sp.startsWith('mqttv'))) {
+    const premier = ws.frames.find(f => f && f.dir === 'send');
+    if (premier && premier.base64) {
+      try { niveauMqtt = niveauDuConnect(base64VersOctets(premier.base64)); } catch { /* illisible */ }
+    }
+  }
+  return { sousProtocole, url, niveauMqtt };
 }

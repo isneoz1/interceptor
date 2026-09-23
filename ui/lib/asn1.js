@@ -7,7 +7,7 @@
  * Firefox donne deja la chaine du site visite ; cet outil sert a lire un
  * certificat qu on a sous la main, ou a comprendre une cle publique.
  */
-import { octetsVersHex, base64VersOctets } from './bytes.js';
+import { octetsVersHex, base64VersOctets, octetsVersBase64 } from './bytes.js';
 
 /* --------------------------------- Types ---------------------------------- */
 const TYPES = {
@@ -59,7 +59,21 @@ const OID = {
   '1.3.6.1.5.5.7.3.4': 'protection du courrier',
   '1.3.6.1.5.5.7.48.1': 'OCSP',
   '1.3.6.1.5.5.7.48.2': 'certificat de l autorite',
-  '1.3.6.1.4.1.11129.2.4.2': 'horodatages de transparence des certificats'
+  '1.3.6.1.4.1.11129.2.4.2': 'horodatages de transparence des certificats',
+  '1.3.6.1.4.1.11129.2.4.3': 'poison de precertificat',
+  '1.3.6.1.5.5.7.1.24': 'TLS Feature (OCSP Must-Staple)',
+  '2.5.29.30': 'contraintes de noms',
+  '2.5.29.32.0': 'anyPolicy',
+  /* Politiques du CA/Browser Forum : le niveau de verification reel. */
+  '2.23.140.1.1': 'EV (validation etendue)',
+  '2.23.140.1.2.1': 'DV (domaine valide)',
+  '2.23.140.1.2.2': 'OV (organisation validee)',
+  '2.23.140.1.2.3': 'IV (individu valide)'
+};
+
+/* Le niveau de validation que declare un certificat, par sa politique. */
+const VALIDATION = {
+  '2.23.140.1.1': 'EV', '2.23.140.1.2.1': 'DV', '2.23.140.1.2.2': 'OV', '2.23.140.1.2.3': 'IV'
 };
 
 /** Nom lisible d un identifiant d objet, ou l identifiant lui-meme. */
@@ -125,6 +139,11 @@ export function lireDer(octets, profondeur = 0) {
       : classe === 2 ? '[' + numero + ']'
       : 'classe ' + classe + ' type ' + numero;
     const noeud = { type: nom, construit, octets: taille };
+    /* Le contenu ENTIER, hors de l arbre affiche : `valeur` n en montre que
+       24 octets, et un nom DNS de 40 caracteres lu depuis `valeur` sortait
+       coupe comme s il etait complet. Non enumerable, il ne s ajoute pas au
+       JSON de l arbre. */
+    Object.defineProperty(noeud, 'contenu', { value: contenu, enumerable: false });
 
     if (construit) {
       noeud.enfants = lireDer(contenu, profondeur + 1);
@@ -230,9 +249,20 @@ export function resumerCertificat(octets) {
       ? nomOid(chercher([spki], [0, 0, 1]).oid) : null,
     tailleDeCle: null,
     noms: [],
+    adressesIp: [],
+    courriels: [],
+    uris: [],
     usages: [],
     usagesEtendus: [],
     autorite: null,
+    ocsp: [],
+    emetteurCa: [],
+    crl: [],
+    politiques: [],
+    validation: null,
+    identifiantCle: null,
+    identifiantCleAutorite: null,
+    sct: [],
     extensions: []
   };
 
@@ -254,21 +284,75 @@ export function resumerCertificat(octets) {
     resume.extensions.push({ oid, nom: nomOid(oid), critique });
     const valeur = parties[parties.length - 1];
 
-    if (oid === '2.5.29.17' && valeur.enfants) {
-      for (const nom of valeur.enfants[0] ? valeur.enfants[0].enfants || [] : []) {
-        if (nom.type === '[2]') resume.noms.push(new TextDecoder().decode(hexVers(nom.valeur)));
-        else if (nom.valeur) resume.noms.push(String(nom.valeur));
+    /* La valeur d une extension est du DER dans une OCTET STRING. Le lecteur
+       generique ne descend que dans un contenu de plus de deux octets : un
+       « CA:FALSE », code `30 00`, restait donc non lu — et « autorite de
+       certification : non » n apparaissait jamais. On relit ici le contenu. */
+    let interieur = valeur.enfants && valeur.enfants[0] ? valeur.enfants[0] : null;
+    if (!interieur && valeur.contenu && valeur.contenu.length) {
+      try { interieur = lireDer(valeur.contenu)[0] || null; } catch { interieur = null; }
+    }
+
+    /* RFC 5280, 4.2.1.6 : chaque GeneralName dit son type par son etiquette. */
+    if (oid === '2.5.29.17' && interieur) {
+      for (const nom of interieur.enfants || []) {
+        if (nom.type === '[2]') resume.noms.push(ascii(nom.contenu));
+        else if (nom.type === '[7]') resume.adressesIp.push(adresseIp(nom.contenu));
+        else if (nom.type === '[1]') resume.courriels.push(ascii(nom.contenu));
+        else if (nom.type === '[6]') resume.uris.push(ascii(nom.contenu));
       }
     }
-    if (oid === '2.5.29.19' && valeur.enfants && valeur.enfants[0]) {
-      const contraintes = valeur.enfants[0].enfants || [];
+    /* 4.2.2.1 : ou demander l etat de revocation (OCSP), et ou trouver le
+       certificat de l autorite qui a signe celui-ci. */
+    if (oid === '1.3.6.1.5.5.7.1.1' && interieur) {
+      for (const acces of interieur.enfants || []) {
+        const [methode, lieu] = acces.enfants || [];
+        if (!methode || !lieu || lieu.type !== '[6]') continue;
+        if (methode.oid === '1.3.6.1.5.5.7.48.1') resume.ocsp.push(ascii(lieu.contenu));
+        if (methode.oid === '1.3.6.1.5.5.7.48.2') resume.emetteurCa.push(ascii(lieu.contenu));
+      }
+    }
+    /* 4.2.1.13 : DistributionPoint > [0] distributionPoint > [0] fullName >
+       [6] URI. Seul ce chemin designe une liste de revocation. */
+    if (oid === '2.5.29.31' && interieur) {
+      for (const point of interieur.enfants || []) {
+        const nomPoint = (point.enfants || []).find(n => n.type === '[0]');
+        const complet = nomPoint && (nomPoint.enfants || []).find(n => n.type === '[0]');
+        for (const n of (complet && complet.enfants) || []) {
+          if (n.type === '[6]') resume.crl.push(ascii(n.contenu));
+        }
+      }
+    }
+    /* 4.2.1.4 : la politique dit le niveau de verification reel (DV, OV, EV). */
+    if (oid === '2.5.29.32' && interieur) {
+      for (const politique of interieur.enfants || []) {
+        const id = politique.enfants && politique.enfants[0] && politique.enfants[0].oid;
+        if (!id) continue;
+        resume.politiques.push({ oid: id, nom: nomOid(id) });
+        if (VALIDATION[id] && !resume.validation) resume.validation = VALIDATION[id];
+      }
+    }
+    if (oid === '2.5.29.14' && interieur && interieur.contenu) {
+      resume.identifiantCle = octetsVersHex(interieur.contenu, ':').toUpperCase();
+    }
+    if (oid === '2.5.29.35' && interieur) {
+      const id = (interieur.enfants || []).find(n => n.type === '[0]');
+      if (id) resume.identifiantCleAutorite = octetsVersHex(id.contenu, ':').toUpperCase();
+    }
+    /* RFC 6962, 3.3 : les preuves d inscription aux journaux de transparence,
+       dans une structure TLS glissee dans une OCTET STRING. */
+    if (oid === '1.3.6.1.4.1.11129.2.4.2' && interieur && interieur.contenu) {
+      resume.sct = lireListeSct(interieur.contenu);
+    }
+    if (oid === '2.5.29.19' && interieur) {
+      const contraintes = interieur.enfants || [];
       resume.autorite = contraintes.some(c => c.type === 'BOOLEAN' && c.valeur === 'true');
     }
-    if (oid === '2.5.29.37' && valeur.enfants && valeur.enfants[0]) {
-      for (const u of valeur.enfants[0].enfants || []) if (u.oid) resume.usagesEtendus.push(nomOid(u.oid));
+    if (oid === '2.5.29.37' && interieur) {
+      for (const u of interieur.enfants || []) if (u.oid) resume.usagesEtendus.push(nomOid(u.oid));
     }
-    if (oid === '2.5.29.15' && valeur.enfants && valeur.enfants[0]) {
-      resume.usages = lireUsages(valeur.enfants[0]);
+    if (oid === '2.5.29.15' && interieur) {
+      resume.usages = lireUsages(interieur);
     }
   }
   return resume;
@@ -302,6 +386,79 @@ function tailleCle(spki, courbe) {
     return (rsa.valeur.slice(2).replace(/^00/, '').length * 4) + ' bits (module RSA)';
   }
   return null;
+}
+
+/* IA5String : de l ASCII. Le contenu entier, jamais l apercu tronque. */
+function ascii(octets) { return new TextDecoder().decode(octets || new Uint8Array(0)); }
+
+/** Une adresse d un SAN : 4 octets en IPv4, 16 en IPv6 (forme RFC 5952). */
+function adresseIp(octets) {
+  if (!octets) return '';
+  if (octets.length === 4) return Array.from(octets).join('.');
+  if (octets.length !== 16) return octetsVersHex(octets, ':');
+  const groupes = [];
+  for (let i = 0; i < 16; i += 2) groupes.push(((octets[i] << 8) | octets[i + 1]).toString(16));
+  /* La plus longue suite d au moins deux groupes nuls devient « :: ». */
+  let debut = -1, longueur = 0;
+  for (let i = 0; i < 8;) {
+    if (groupes[i] !== '0') { i++; continue; }
+    let j = i;
+    while (j < 8 && groupes[j] === '0') j++;
+    if (j - i > longueur && j - i >= 2) { debut = i; longueur = j - i; }
+    i = j;
+  }
+  if (debut < 0) return groupes.join(':');
+  return groupes.slice(0, debut).join(':') + '::' + groupes.slice(debut + longueur).join(':');
+}
+
+const HACHAGES_TLS = { 0: 'none', 1: 'MD5', 2: 'SHA-1', 3: 'SHA-224', 4: 'SHA-256', 5: 'SHA-384', 6: 'SHA-512' };
+const SIGNATURES_TLS = { 0: 'anonymous', 1: 'RSA', 2: 'DSA', 3: 'ECDSA' };
+
+/**
+ * SignedCertificateTimestampList (RFC 6962, 3.3) : une longueur totale sur
+ * deux octets, puis chaque SCT precede de sa propre longueur. Un SCT v1 :
+ * version, identifiant du journal (32 octets), horodatage en millisecondes
+ * (8 octets), extensions, puis la signature.
+ */
+function lireListeSct(o) {
+  const liste = [];
+  if (!o || o.length < 2) return liste;
+  const total = (o[0] << 8) | o[1];
+  let i = 2;
+  const fin = Math.min(o.length, 2 + total);
+  while (i + 2 <= fin) {
+    const n = (o[i] << 8) | o[i + 1];
+    const debut = i + 2;
+    i = debut + n;
+    if (i > fin || n < 1) break;                   // liste tronquee : on s arrete
+    const s = o.subarray(debut, debut + n);
+    /* RFC 6962 ne definit que la version v1 (octet 0). Une autre valeur n a
+       pas de disposition connue : on la signale, sans lire ses octets avec
+       celle de la v1 — ce serait presenter comme lu ce qui ne l est pas. */
+    if (s[0] !== 0) {
+      liste.push({ version: null, octetDeVersion: s[0] });
+      continue;
+    }
+    /* Un SCT v1 compte au moins 47 octets : version, journal, horodatage,
+       extensions et en-tete de signature. En dessous, il est tronque. */
+    if (n < 47) {
+      liste.push({ version: 'v1', tronque: true });
+      continue;
+    }
+    let ms = 0;
+    for (let k = 33; k < 41; k++) ms = ms * 256 + s[k];
+    const ext = (s[41] << 8) | s[42];
+    const apres = 43 + ext;
+    liste.push({
+      version: 'v1',
+      journal: octetsVersBase64(s.subarray(1, 33)),
+      horodatage: new Date(ms).toISOString(),
+      signature: apres + 1 < s.length
+        ? (HACHAGES_TLS[s[apres]] || s[apres]) + ' / ' + (SIGNATURES_TLS[s[apres + 1]] || s[apres + 1])
+        : null
+    });
+  }
+  return liste;
 }
 
 /* Les noms DNS d un SAN sont rendus en hexadecimal par le lecteur generique :

@@ -112,7 +112,7 @@ Licence: MIT, like the rest. By contributing, you agree your work ships under it
 
 ## Two checks that need a browser
 
-`npm test` runs six suites under Node with no browser. Two kinds of defect only exist once
+`npm test` runs seven suites under Node with no browser. Two kinds of defect only exist once
 a layout engine is involved, so they live as tools:
 
 ```bash

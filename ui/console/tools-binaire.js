@@ -10,6 +10,7 @@ import { copy, toast } from '../app.js';
 import { base64VersOctets, hexVersOctets, octetsVersHex } from '../lib/bytes.js';
 import { decoderProtobuf, decoderMsgpack, decoderCbor, essayerFormats } from '../lib/binaires.js';
 import { lireDer, pemVersOctets, resumerCertificat } from '../lib/asn1.js';
+import { blocCertificat } from './certificat.js';
 import { essayerJeux, reparerMojibake, traceDeMojibake, jeuxDisponibles, decoderAvec } from '../lib/charsets.js';
 import { reconnaitreSignature } from '../lib/ref-mime.js';
 import { decoderTramesWs, decoderTramesH2, PREFACE_H2, entetesDeTrame } from '../lib/trames.js';
@@ -306,39 +307,9 @@ function ecrireDer(box, entree, etat, redessiner) {
   add(box, kv('Taille', octets.length + ' octets', { always: true }));
 
   try {
-    const resume = resumerCertificat(octets);
-    box.appendChild(sec('Certificat', resume.version));
-    add(box, kv('Sujet', resume.sujet, { copy: true, hl: true }));
-    add(box, kv('Emetteur', resume.emetteur, { copy: true }));
-    add(box, kv('Numero de serie', resume.numeroDeSerie, { copy: true }));
-    add(box, kv('Algorithme de signature', resume.algorithmeDeSignature));
-    add(box, kv('Algorithme de cle', resume.algorithmeDeCle));
-    add(box, kv('Taille de cle', resume.tailleDeCle));
-    add(box, kv('Courbe', resume.courbe));
-    add(box, kv('Valide a partir de', resume.valideDes));
-    add(box, kv('Valide jusqu au', resume.valideJusqua, { hl: true }));
-    if (resume.expire) {
-      box.appendChild(el('p', { class: 'note warn', text: t('Ce certificat est expire.') }));
-    } else if (resume.joursRestants != null) {
-      add(box, kv('Jours restants', resume.joursRestants, { always: true }));
-    }
-    add(box, kv('Autorite de certification', resume.autorite === null ? null : (resume.autorite ? t('oui') : t('non'))));
-    if (resume.noms.length) {
-      box.appendChild(sec('Noms couverts', resume.noms.length));
-      for (const nom of resume.noms) add(box, kv('nom', nom, { copy: true }));
-    }
-    if (resume.usages.length) {
-      box.appendChild(sec('Usages de la cle', resume.usages.length));
-      for (const u of resume.usages) add(box, kv('usage', t(u)));
-    }
-    if (resume.usagesEtendus.length) {
-      box.appendChild(sec('Usages etendus', resume.usagesEtendus.length));
-      for (const u of resume.usagesEtendus) add(box, kv('usage', t(u)));
-    }
-    box.appendChild(sec('Extensions', resume.extensions.length));
-    for (const ext of resume.extensions) {
-      add(box, kv(t(ext.nom), ext.oid + (ext.critique ? '   ·   ' + t('critique') : '')));
-    }
+    /* Meme rendu que l onglet Securite : un seul endroit decide de ce qu on
+       montre d un certificat. */
+    blocCertificat(box, resumerCertificat(octets));
   } catch (e) {
     box.appendChild(el('p', { class: 'note', text:
       t('Ce bloc n est pas un certificat : ') + String(e.message || e) }));

@@ -184,7 +184,12 @@ const chrono = texteDe(more.timeline(avecChrono)).join(' | ');
 verifier('la chronologie affiche le chronometrage reseau',
   /Network timing/i.test(chrono) || /Chronometrage/i.test(chrono), chrono.slice(0, 80));
 verifier('la chronologie traduit les etapes mesurees',
-  /Response|Reponse/.test(chrono) && /Connection|Connexion/.test(chrono), chrono.slice(0, 120));
+  /Waiting for the first byte/.test(chrono) && /TCP connection/.test(chrono) && /Blocked/.test(chrono),
+  chrono.slice(0, 120));
+/* « Attente », « Envoi », « Reception » arrivaient a `t` par une variable :
+   aucun controle ne les voyait, et ils restaient en francais. */
+verifier('aucune etape de la chronologie ne reste en francais',
+  !/\b(Attente|Envoi|Reception)\b/.test(chrono), chrono.slice(0, 160));
 
 /* ============== 3. Un fichier HAR deforme ne casse rien ================== */
 /* L import est la seule frontiere par ou des donnees ecrites ailleurs entrent
@@ -684,5 +689,76 @@ verifier('la derniere trame arrivee est visible',
   textesFlux.some(t => t === 't4'), textesFlux.slice(-4).join(' | '));
 egal('rappeler le suivi sans nouveaute n ajoute rien',
   more.suivreTrames(sessionPlusTard), 0);
+
+/* ====== 11. Aucune phrase francaise n arrive a `t` sans sa traduction ===== */
+/* Les deux autres controles lisent le source (appels litteraux a `t`) ou
+   comparent des vues. Aucun ne voit un texte qui arrive a `t` par une
+   VARIABLE : le sens d une directive CSP, un fait de fraicheur HTTP, un
+   libelle de table. C est ainsi que des dizaines de phrases restaient en
+   francais dans l interface anglaise. Ici, `t` signale lui-meme chaque texte
+   qu il n a pas trouve, pendant qu on rend TOUT en anglais : les vues, et
+   chaque onglet du detail pour des enregistrements riches.
+
+   Beaucoup de ces textes n ont rien a traduire — un nom d en-tete, un nombre,
+   une URL. Ce qu on cherche, ce sont des PHRASES francaises : plusieurs mots,
+   dont au moins un mot-outil que l anglais n emploie pas. */
+const { surManque } = await import('../ui/lib/i18n.js');
+const MOTS_FRANCAIS = /(^|[\s'(«])(de|du|des|la|le|les|un|une|et|est|pour|sans|avec|par|sur|dans|jamais|aucun|aucune|cette|depuis|apres|avant|entre|plus|moins|pas|qu|au|aux|leur|ou|ne|n|l|d)(\s|$)/i;
+const DER_ESSAI = 'MIIDoTCCA0agAwIBAgIUXau8nW0njgBTc9G4dFhQqeMxWq4wCgYIKoZIzj0EAwIwXDExMC8GA1UEAwwoYXBpLmxvbmctc3ViZG9tYWluLWZvci10ZXN0cy5leGFtcGxlLmNvbTEaMBgGA1UECgwRSU5URVJDRVBUT1IgVGVzdHMxCzAJBgNVBAYTAkZSMB4XDTI2MDkyMzAwMDY0MloXDTM2MDkyMDAwMDY0MlowXDExMC8GA1UEAwwoYXBpLmxvbmctc3ViZG9tYWluLWZvci10ZXN0cy5leGFtcGxlLmNvbTEaMBgGA1UECgwRSU5URVJDRVBUT1IgVGVzdHMxCzAJBgNVBAYTAkZSMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAESbBYB3c7JOI6ZzFCpQMT1hzObTf5B+kwztyOAWdRIsEOLJkQSfPsuvnl3e9q8DppeGTCdsbn3lK7c8FWqQtUj6OCAeQwggHgMAwGA1UdEwEB/wQCMAAwDgYDVR0PAQH/BAQDAgeAMB0GA1UdJQQWMBQGCCsGAQUFBwMBBggrBgEFBQcDAjCBiAYDVR0RBIGAMH6CKGFwaS5sb25nLXN1YmRvbWFpbi1mb3ItdGVzdHMuZXhhbXBsZS5jb22CESouY2RuLmV4YW1wbGUub3JnhwTAAAIshxAgAQ24AAAAAAAAAAAAAAABgQ9vcHNAZXhhbXBsZS5jb22GFmh0dHBzOi8vZXhhbXBsZS5jb20vaWQwZQYIKwYBBQUHAQEEWTBXMCcGCCsGAQUFBzABhhtodHRwOi8vb2NzcC5leGFtcGxlLWNhLnRlc3QwLAYIKwYBBQUHMAKGIGh0dHA6Ly9jYS5leGFtcGxlLWNhLnRlc3QvY2EuZGVyMDIGA1UdHwQrMCkwJ6AloCOGIWh0dHA6Ly9jcmwuZXhhbXBsZS1jYS50ZXN0L2NhLmNybDATBgNVHSAEDDAKMAgGBmeBDAECATAdBgNVHQ4EFgQUir6oQTHNl81+MsgzorT7s66Ph4AwRwYKKwYBBAHWeQIEAgQ5BDcANQAzAAECAwQFBgcICRAREhMUFRYXGBkgISIjJCUmJygpMDEyAAABki1fGoAAAAQDAAQKCwwNMAoGCCqGSM49BAMCA0kAMEYCIQCkwHnG+BpObBYvmRtZXZVw+WHIrIhNUUgt3revLVXn6QIhAJ0kkp4aiMWgMqSnCG8cMPgDfBpSR3cLiDHiNxSUhTLA';
+
+function enregistrementsRiches() {
+  const tls = enregistrementExemple({ id: 980 });
+  tls.security = { state: 'secure', protocolVersion: 'TLSv1.3', cipherSuite: 'TLS_AES_128_GCM_SHA256',
+    keaGroupName: 'x25519', signatureSchemeName: 'ecdsa_secp256r1_sha256', hsts: true, usedEch: true,
+    certificates: [{ subject: 'CN=x', issuer: 'CN=x', fingerprintSha256: 'AA', der: DER_ESSAI }] };
+  tls.perf = { phasesFournies: true, responseStatus: 200, transferSize: 300,
+    timings: { blocked: 1, dns: 2, connect: 3, ssl: 4, send: -1, wait: 200, receive: 3 } };
+  tls.responseHeaders = [...tls.responseHeaders,
+    { name: 'Cache-Control', value: 'max-age=60, stale-while-revalidate=30, immutable' },
+    { name: 'Content-Security-Policy', value: "default-src 'self'; referrer no-referrer; object-src *" }];
+  tls.pageMeta = { api: 'fetch', mode: 'cors', credentials: 'include', status: 200, fromServiceWorker: true };
+  tls.auth = { scheme: 'basic', realm: 'zone', isProxy: true, challenger: { host: 'p', port: 8080 } };
+
+  const masque = enregistrementExemple({ id: 981, documentUrl: 'https://page.test/' });
+  masque.perf = { phasesFournies: false, duration: 90,
+    timings: { blocked: -1, dns: -1, connect: -1, ssl: -1, send: -1, wait: -1, receive: -1 } };
+
+  const mqtt = enregistrementExemple({ id: 982, url: 'wss://objets.test/mqtt', type: 'websocket' });
+  mqtt.ws = { protocol: 'mqtt', protocols: ['mqtt'], sent: 2, received: 1, bytesSent: 40, bytesReceived: 4,
+    frames: [
+      { dir: 'send', ts: 1, opcode: 'binary', data: null, base64: 'EBUABE1RVFQEAgA8AAljbGllbnQtNDI=', size: 23 },
+      { dir: 'send', ts: 2, opcode: 'binary', data: null, base64: 'MAYAA2EvYiE=', size: 8 },
+      { dir: 'recv', ts: 3, opcode: 'text', data: '{"jsonrpc":"2.0","method":"x"}', size: 30 }
+    ] };
+  return [tls, masque, mqtt];
+}
+
+const phrasesManquantes = new Map();
+setLang('en');
+surManque(texte => {
+  const s = String(texte);
+  if (/\s/.test(s) && /[a-z]{3}/i.test(s) && MOTS_FRANCAIS.test(s) && !phrasesManquantes.has(s)) {
+    phrasesManquantes.set(s, true);
+  }
+});
+try {
+  poserCapture(captureVariee(12));
+  for (const [nom, rendre] of VUES) {
+    state.view = nom;
+    try { rendre(); } catch { /* le plantage est l affaire d un autre controle */ }
+  }
+  for (const rec of [...enregistrementsRiches(), ...captureVariee(3)]) {
+    for (const [, rendre] of ONGLETS) {
+      try { rendre(rec); } catch { /* idem */ }
+    }
+  }
+} finally {
+  surManque(null);
+  setLang('fr');
+}
+for (const phrase of [...phrasesManquantes.keys()].slice(0, 15)) {
+  verifier('la phrase a une traduction anglaise', false, phrase.slice(0, 110));
+}
+egal('aucune phrase francaise ne s affiche dans l interface anglaise', phrasesManquantes.size, 0);
 
 bilan('Rendu de l interface');

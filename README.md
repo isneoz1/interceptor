@@ -14,7 +14,7 @@ Created by **NeoZ**
 ![Manifest V2](https://img.shields.io/badge/Manifest-V2-444?style=flat)
 [![MIT licence](https://img.shields.io/badge/Licence-MIT-00DDFF?style=flat)](LICENSE)
 ![No dependencies](https://img.shields.io/badge/Dependencies-none-2ea043?style=flat)
-![1202 assertions](https://img.shields.io/badge/Assertions-1202-2ea043?style=flat)
+![1384 assertions](https://img.shields.io/badge/Assertions-1384-2ea043?style=flat)
 ![English and French](https://img.shields.io/badge/UI-EN%20%2F%20FR-444?style=flat)
 
 [**Try it in 60 seconds**](#try-it-in-60-seconds) · [**Why not the built-in panel?**](#firefox-already-has-a-network-panel-why-this) · [**Screenshots**](#2-screenshots) · [**How it works**](#4-how-it-works-the-capture-layers) · [**Changelog**](CHANGELOG.md)
@@ -85,7 +85,7 @@ is *why*.
 | Which line of my code caused this call? | — | The **JavaScript stack** behind every `fetch`, `XHR`, `sendBeacon` and WebSocket |
 | Why is my CORS request blocked? | An error on the wrong row | The `OPTIONS` preflight **paired with the request it authorised**, naming the header that refused |
 | Why is this cookie ignored? | The cookie, as sent | The **exact rule it breaks** — prefix, `SameSite`, `Secure`, domain |
-| What did that WebSocket frame mean? | `42["order",{…}]` | *socket.io EVENT "order"* — plus **STOMP** and **SignalR** |
+| What did that WebSocket frame mean? | `42["order",{…}]` | *socket.io EVENT "order"* — plus **GraphQL**, **JSON-RPC**, **MQTT**, **WAMP**, **STOMP**, **SignalR**, **SockJS**, **Phoenix**, **Action Cable** and **Pusher**, and **never a label without proof** |
 | Did my gRPC-Web call succeed? | HTTP 200 | The **`grpc-status` in the trailers**, which is what actually decides |
 | Is a secret leaking in this traffic? | — | Every finished request **audited on its own**, with the value masked in the report |
 | Can I change a request before it leaves? | — | **Pause it, edit it, release it** — or block, redirect and rewrite by rule |
@@ -148,8 +148,8 @@ specific points:
 **What it is not**: not a proxy, not a vulnerability scanner, not an attack tool. Everything
 happens inside your Firefox, on your machine.
 
-**By the numbers**: 171 JavaScript modules, ~33,300 lines, zero external dependencies,
-1202 automated assertions, English and French interface.
+**By the numbers**: 177 JavaScript modules, ~37,400 lines, zero external dependencies,
+1384 automated assertions, English and French interface.
 
 ---
 
@@ -414,7 +414,7 @@ advanced views and keeps only the essentials.
 | **Security** | The analyser's findings, grouped by severity, each with its evidence and a link to the request. Rendered in batches as you scroll, so nothing is capped and nothing freezes. The report can be exported as Markdown. |
 | **Summary** | The overall figures: requests, domains, volumes received and sent, median duration, errors, third-party share, encrypted share, cache, frames, cookies. Then the breakdowns: statuses, resource types, domains by volume and by count, real protocols, content types, capture layers. |
 | **Sites and paths** | The tree of what exists on each visited host, reconstructed from traffic. Useful to see an application's real surface. |
-| **Live streams** | WebSocket and Server-Sent Events, message by message, with direction (in/out), timestamp and payload. Frames riding a known subprotocol are also read: `42["order",{...}]` is shown as *socket.io EVENT "order"*, alongside the raw frame. **Engine.IO / socket.io**, **STOMP** and **SignalR** are decoded, and the subprotocol the server actually negotiated decides which reading applies. |
+| **Live streams** | WebSocket and Server-Sent Events, message by message, with direction (in/out), timestamp and payload. **It keeps your place while traffic keeps arriving**, and draws a long session in batches as you scroll, so nothing is left out and nothing freezes. Frames riding a known subprotocol are also read: `42["order",{...}]` is shown as *socket.io EVENT "order"*, alongside the raw frame. Eleven families are decoded, each by its published specification: **Engine.IO / socket.io**, **STOMP**, **SignalR**, **GraphQL over WebSocket** (both `graphql-transport-ws` and Apollo's older `graphql-ws`, with the operation name), **JSON-RPC 2.0** (web3, LSP), **WAMP** (JSON, batched, MessagePack, CBOR), **SockJS** (with the STOMP it usually carries), **Phoenix Channels**, **Action Cable**, **Pusher** and binary **MQTT 3.1.1 / 5**, packet by packet. **A frame gets a label only when something proves it**: its form cannot belong to anything else (`"jsonrpc":"2.0"`), or the connection says so — the subprotocol the server negotiated, or a URL such as `/socket.io/?EIO=4`. A text like `2024` or `3` is not called an Engine.IO ping, and binary bytes are never read as MQTT without the `mqtt` subprotocol. |
 | **Comparison** | Two requests side by side, line by line: headers, bodies, timings. Select two rows and press `C`. |
 
 ### Logs
@@ -467,10 +467,10 @@ previous or next request **in displayed order**, filters included.
 | **Request** | The body sent: nature, source, declared type, encoding, compression. Automatic JSON formatting, form fields broken out, and **`multipart/form-data` bodies decoded part by part** (field name, filename, type, content). |
 | **Response** | The body received, with the same treatment, plus image preview and hex rendering for binary. |
 | **Cookies** | Cookies set and changed by this request, with all attributes detailed. |
-| **Security** | Certificate, chain, TLS version, cipher suite, forward secrecy, certificate transparency. |
+| **Security** | TLS version, cipher suite, key exchange, forward secrecy, ECH, HSTS — and **every certificate of the chain read in full from its DER bytes**, like Firefox's certificate viewer: the names it covers (DNS, IP, email, URI), key algorithm and size, key usages, whether it is a certificate authority, the validation level it declares (DV, OV, IV or EV), where to check revocation (OCSP, CRL), the issuer's certificate, key identifiers, and the embedded Certificate Transparency proofs with their log and timestamp. One click copies the PEM or opens it in the toolbox. |
 | **Alerts** | The analyser's findings for this request, each with its evidence. |
 | **Streams** | The WebSocket frames, SSE messages, WebRTC data-channel messages or WebTransport datagrams of this connection. **A session that is still receiving grows as you watch it** — frames are appended, never redrawn, and only while you are at the bottom of the panel, so reading further up is never interrupted. **A binary frame keeps its bytes**: the format is named when protobuf, MessagePack or CBOR recognises it, the opening bytes are shown in hex, and a click sends the frame to the toolbox. |
-| **Timeline** | Every step, timestamped, from first observation to last. |
+| **Timeline** | The network phases the browser actually measured — blocked, DNS, TCP connection, TLS, waiting for the first byte, receiving — as disjoint bars, so their sum is right. **Nothing is filled in**: the browser does not expose when sending ends, so no "sending" figure is invented; and when it hides the detail of a resource from another origin (no `Timing-Allow-Origin`), the tab says so instead of showing 0 ms and 0 bytes. Then every step, timestamped, from first observation to last. |
 | **JS stack** | The JavaScript call stack that triggered the request, when the page probe was able to capture it. |
 | **Replay** | See [section 13](#13-replaying-a-request). |
 | **Raw** | The complete object as it exists in memory. This is the safety net: **no captured data can stay invisible**. An automated test (`tests/detail-coverage.test.mjs`) verifies that each of a record's 60 fields is displayed somewhere. |
@@ -504,6 +504,16 @@ Accept `>`, `<`, `>=`, `<=`, `=` and ranges.
 `stack:` (JS stack present) `private:` (private browsing) `replayed:` (replayed)
 `imported:` (came from an imported HAR)
 
+### Firefox Network Monitor criteria
+
+The filters you already use in Firefox's own network panel work here unchanged:
+
+`has-response-header:` and `has-request-header:` (a header with exactly that name),
+`set-cookie-name:` `set-cookie-domain:` `set-cookie-value:` (cookies set by the response),
+`larger-than:` (size in bytes), `is:running` `is:cached` `is:from-cache`, `regexp:` (on the URL).
+Firefox's names for criteria that already exist are accepted as synonyms: `status-code:`
+`domain:` `remote-ip:` `mime-type:` `protocol:` `transferred:`.
+
 ### Examples
 
 | Query | What it finds |
@@ -516,6 +526,8 @@ Accept `>`, `<`, `>=`, `<=`, `=` and ranges.
 | `third:true cookies:>0` | Third parties that set cookies |
 | `/\/api\/v[0-9]+\//` | Versioned API paths, by regular expression |
 | `tag:cleartext` | Everything travelling in the clear |
+| `-has-response-header:content-security-policy type:main_frame` | Pages served without a `Content-Security-Policy` header |
+| `set-cookie-domain:.example.com` | Responses that set a cookie whose domain contains `.example.com` |
 
 The **bodies** checkbox extends the search to bodies, headers, frames and stacks.
 The ★ button saves the current filter and recalls recent searches.
@@ -819,9 +831,11 @@ ui/                        The interface — one page for all four surfaces
 ├── console/               One view per file, plus the detail panel
 └── lib/                   Codecs, digests, network, reference tables, i18n
 
-tests/                     1202 assertions, no browser required
+tests/                     1384 assertions, no browser required
 tools/sockets.mjs          Real WebSockets against a real server: page, worker, WebRTC
 tools/transparence.mjs     What a page can tell about the probes — it should be nothing
+tools/minutage.mjs         Network timing phases in a real browser: only real measurements
+tools/interaction.mjs      Types into every filter and reads through redraws, in a real browser
 tools/defilement.mjs       Scrolls 20 000 rows in a real browser, looking for holes
 tools/affichage.mjs        Opens every view at four widths, looking for overflow
 tools/captures.mjs         Generates the documentation screenshots
@@ -878,7 +892,7 @@ French at the flip of a setting.
 npm test
 ```
 
-1202 assertions, with no browser and no dependencies. The kernel and interface modules are
+1384 assertions, with no browser and no dependencies. The kernel and interface modules are
 written for Firefox; `tests/harnais.mjs` supplies the minimum WebExtension API and DOM they
 need to import and run under Node. **The logic under test is exactly the logic that runs in
 the browser, with no rewriting.**
@@ -887,10 +901,11 @@ the browser, with no rewriting.**
 |---|---|---|
 | `core.test.mjs` | 228 | URL normalisation, correlation signatures, the store, the rule engine (both ways: what matches **and** what must not), the security analyser rule by rule, HAR export, curl import, all 39 code generators |
 | `avance.test.mjs` | 469 | WebSocket and HTTP/2 frames, CSP, RFC 9111 freshness, multipart, canonical URLs and homographs, protocol tables, binary structures, rare digests, generators |
-| `ui-load.test.mjs` | 224 | Actual loading of the 129 interface modules, complete module graph (no dead import, no file outside the graph), consistency with the HTML pages and the manifest, **full translation coverage** — every displayed string must have a dictionary entry — and **measured contrast**: every colour pair in both themes is checked against the WCAG 2.1 thresholds |
-| `detail-coverage.test.mjs` | 120 | Each of a record's 60 fields is displayed, each tab has a render function, each searchable field exists |
+| `ui-load.test.mjs` | 231 | Actual loading of the 135 interface modules, complete module graph (no dead import, no file outside the graph), consistency with the HTML pages and the manifest, **full translation coverage** — every displayed string must have a dictionary entry, including labels that reach the translator through a table (`allRows` labels, search help, CSP directive meanings) — and **measured contrast**: every colour pair in both themes is checked against the WCAG 2.1 thresholds |
+| `detail-coverage.test.mjs` | 128 | Each of a record's 60 fields is displayed, each tab has a render function, each searchable field exists |
 | `outils.test.mjs` | 108 | The toolbox, against published vectors |
-| `rendu.test.mjs` | 52 | The interface **actually rendered**: sixteen views against three captures, the eleven detail tabs, the twenty-two toolbox panels against thirty-two hostile inputs, and 264 deliberately malformed HAR files — then a fragment-by-fragment comparison of both languages, so nothing can stay in French on an English screen. It also counts the commands each view sends the kernel: **a view that re-renders itself in a loop is caught in a second instead of freezing the tab** |
+| `rendu.test.mjs` | 54 | The interface **actually rendered**: sixteen views against three captures, the eleven detail tabs, the twenty-two toolbox panels against thirty-two hostile inputs, and 264 deliberately malformed HAR files — then a fragment-by-fragment comparison of both languages, so nothing can stay in French on an English screen. It also counts the commands each view sends the kernel: **a view that re-renders itself in a loop is caught in a second instead of freezing the tab**. Finally the translator itself reports every text it could not translate while everything is rendered in English: a French sentence that arrives through a variable can no longer hide |
+| `lectures.test.mjs` | 166 | What 4.4 reads, checked against its sources: the HAR timing rules (TLS inside `connect`, counted once), every WebSocket subprotocol **and every text that must receive no label**, MQTT packet by packet, the certificate reader **cross-checked against the OpenSSL X.509 parser built into Node**, and the Firefox search criteria |
 
 Expected values come from published sources: RFC vectors (4226, 6238, 6455, 4231, 7541, 9113,
 3986, 7578, 9111, 8187, 2231, 2047, 6266, 7638, 8941, and ZeroMQ RFC 32), standard check values (all 20 CRC variants are verified against their
@@ -906,8 +921,8 @@ for UUIDs.
 .\build.ps1            # verify, test, then write dist/interceptor-<version>.xpi
 ```
 
-The script checks that the 146 required files are present and that every surface declared in
-the manifest exists on disk, then runs the five test suites. **If a test fails, the build
+The script checks that the 153 required files are present and that every surface declared in
+the manifest exists on disk, then runs the seven test suites. **If a test fails, the build
 stops.**
 
 Works with Windows PowerShell 5.1 as well as PowerShell 7.
@@ -918,9 +933,9 @@ To regenerate the documentation screenshots:
 node tools/captures.mjs
 ```
 
-### Two audits that need a real browser
+### Audits that need a real browser
 
-The six test suites run under Node with no browser, which is what lets them run everywhere.
+The seven test suites run under Node with no browser, which is what lets them run everywhere.
 Two things cannot be checked that way, because they only exist once a layout engine is
 involved — so they live as tools, and each prints a verdict and an exit code:
 
@@ -929,6 +944,8 @@ node tools/defilement.mjs            # 20 000 rows, scrolled for real
 node tools/affichage.mjs             # every view at 350, 700, 1100 and 1600 px
 node tools/sockets.mjs               # every kind of socket, against a real server
 node tools/transparence.mjs          # what a page can tell about the probes
+node tools/minutage.mjs              # network timing: only what the browser measured
+node tools/interaction.mjs           # typing into every filter, reading through redraws
 ```
 
 **`defilement.mjs`** fills the store with 20 000 requests, then scrolls the table down and
@@ -961,6 +978,23 @@ sub-protocol and the close code are captured — and that the page is not distur
 worker still receives its own messages, and a relative `importScripts` inside that worker
 still resolves.
 
+**`minutage.mjs`** loads, in a real browser, a same-origin resource served after a known
+delay and two resources from **another origin** — one without `Timing-Allow-Origin`, one
+with it — and checks what the real probe reports. The wait must reflect the server's delay,
+no "sending" time may be invented, the phases must not add up to more than the request
+lasted, and a resource whose detail the browser hid must be reported as hidden — not as
+0 ms of DNS, 0 bytes, and a "reception" equal to the absolute clock, which is what the
+previous probe reported (1219 ms for a 25-byte file).
+
+**`interaction.mjs`** checks two gestures that only a real browser and a real keyboard can
+catch. It types into every filter field of the console, **one key at a time**, and checks
+that the field kept the focus and everything typed — seven of them used to keep only the
+first letter, or lose the focus after a pause, because the view rebuilt the field it was
+typing into. Then it scrolls 6,000 px into a 3,000-frame WebSocket session and through a
+fully expanded site tree, makes the view redraw the way live traffic does, and checks the
+reader is still exactly where they were — they used to be sent back to the top several
+times a second.
+
 ---
 
 ## 22. Contributing
@@ -973,7 +1007,7 @@ the file. It contains internal errors and the command log — not your traffic.
 Before opening a pull request:
 
 ```bash
-npm test              # all 1202 assertions must pass
+npm test              # all 1384 assertions must pass
 .\build.ps1 -Verify   # the build must be green
 ```
 

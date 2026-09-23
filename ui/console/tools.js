@@ -8,6 +8,8 @@
  * Tout se passe en local : aucune de ces fonctions n emet de trafic.
  */
 import { $, el, clear, sec, button } from '../lib/dom.js';
+import { redessinerEnPlace } from '../lib/redessin.js';
+
 import { t, tp } from '../lib/i18n.js';
 import { toast, copy } from '../app.js';
 import { TRANSFORMATIONS, GROUPES, transformer, transformerAsync } from '../lib/catalogue.js';
@@ -126,8 +128,11 @@ export function ouvrir(cle) {
 export { entreesReference };
 
 /** Charge un texte dans la boite a outils depuis n importe quelle autre vue. */
-export function poser(texte, { bascule = true, vers = null } = {}) {
+export function poser(texte, { bascule = true, vers = null, famille = null } = {}) {
   entree = String(texte == null ? '' : texte);
+  /* Un certificat envoye depuis l onglet Securite s ouvre directement dans
+     le lecteur ASN.1, pas dans la reconnaissance generique. */
+  if (famille) etat.familleBinaire = famille;
   etat.empreintes = {};
   etat.hmac = null;
   etat.jwtVerdict = null;
@@ -139,7 +144,13 @@ export function poser(texte, { bascule = true, vers = null } = {}) {
   else render();
 }
 
-export function render() {
+/* Redessiner recree le cadre qui defile et le champ de filtre :
+   redessinerEnPlace garde la position du lecteur, le focus et le curseur.
+   Sans cela, le lecteur remontait en haut a chaque redessin, et seule la
+   premiere lettre tapee dans le filtre comptait. */
+export function render() { return redessinerEnPlace($('#view-tools'), dessiner); }
+
+function dessiner() {
   const pane = clear($('#view-tools'));
   const box = el('div', { class: 'pane' });
   pane.appendChild(box);

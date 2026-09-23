@@ -7,7 +7,14 @@
  *     residence ;
  *   - verdict : fraiche ou perimee, et pour combien de temps.
  * Chaque chiffre affiche sort de ces formules, rien n est estime a l oeil.
+ *
+ * Les faits sont des couples { texte, valeurs } : un gabarit constant,
+ * traduisible tel quel, et les valeurs qui s y inserent (meme convention que
+ * csp.js). Une phrase batie par concatenation — « perimee depuis 42 s » — ne
+ * pouvait jamais correspondre a une entree du dictionnaire, et restait en
+ * francais dans l interface anglaise.
  */
+import { t, tp } from './i18n.js';
 
 const DIRECTIVES = ['max-age', 's-maxage', 'no-cache', 'no-store', 'private', 'public',
   'must-revalidate', 'proxy-revalidate', 'immutable', 'stale-while-revalidate',
@@ -71,6 +78,7 @@ export function analyserFraicheur(options = {}) {
   const instantReponse = Number(options.instantReponse) || dateValeur || maintenant;
   const instantRequete = Number(options.instantRequete) || instantReponse;
   const faits = [];
+  const dire = (texte, valeurs) => faits.push({ texte, valeurs: valeurs || {} });
 
   /* ------------------------- Duree de fraicheur ------------------------- */
   let duree = null, source = '';
@@ -88,7 +96,7 @@ export function analyserFraicheur(options = {}) {
   } else if (lastModified != null && dateValeur != null && dateValeur > lastModified) {
     duree = Math.round((dateValeur - lastModified) / 1000 * 0.10);
     source = 'heuristique : 10 % de l ecart Date / Last-Modified';
-    faits.push('aucune duree explicite : un cache peut appliquer une heuristique, ici 10 % de l age du document');
+    dire('aucune duree explicite : un cache peut appliquer une heuristique, ici 10 % de l age du document');
   } else if (rep.expires && expires == null) {
     duree = 0; source = 'Expires invalide, donc deja perime';
   }
@@ -104,25 +112,33 @@ export function analyserFraicheur(options = {}) {
 
   /* -------------------------- Peut-on stocker ? ------------------------- */
   let stockable = true;
-  if (cc['no-store']) { stockable = false; faits.push('no-store : la reponse ne doit pas etre stockee du tout'); }
-  if (cc.private && partage) { stockable = false; faits.push('private : reservee au cache du navigateur, pas a un cache partage'); }
-  if (cc['no-cache']) faits.push('no-cache : stockable, mais a revalider aupres du serveur avant chaque reutilisation');
-  if (cc['must-revalidate']) faits.push('must-revalidate : une fois perimee, jamais servie sans revalidation');
-  if (cc['proxy-revalidate']) faits.push('proxy-revalidate : meme regle, pour les caches partages seulement');
-  if (cc.immutable) faits.push('immutable : le navigateur ne revalide pas tant que la reponse est fraiche, meme au rechargement');
-  if (cc.public) faits.push('public : stockable par un cache partage meme si la requete etait authentifiee');
-  if (cc['stale-while-revalidate'] != null) faits.push('stale-while-revalidate : sert la version perimee pendant ' + cc['stale-while-revalidate'] + ' s en revalidant en arriere-plan');
-  if (cc['stale-if-error'] != null) faits.push('stale-if-error : sert la version perimee pendant ' + cc['stale-if-error'] + ' s si le serveur repond en erreur');
-  if (cc['no-transform']) faits.push('no-transform : un intermediaire ne doit pas recompresser ni recoder le corps');
-  if (req.authorization && partage && !cc.public && sMaxAge == null && !cc['must-revalidate']) {
-    faits.push('requete authentifiee sans public/s-maxage/must-revalidate : un cache partage ne doit pas la stocker');
+  if (cc['no-store']) { stockable = false; dire('no-store : la reponse ne doit pas etre stockee du tout'); }
+  if (cc.private && partage) { stockable = false; dire('private : reservee au cache du navigateur, pas a un cache partage'); }
+  if (cc['no-cache']) dire('no-cache : stockable, mais a revalider aupres du serveur avant chaque reutilisation');
+  if (cc['must-revalidate']) dire('must-revalidate : une fois perimee, jamais servie sans revalidation');
+  if (cc['proxy-revalidate']) dire('proxy-revalidate : meme regle, pour les caches partages seulement');
+  if (cc.immutable) dire('immutable : le navigateur ne revalide pas tant que la reponse est fraiche, meme au rechargement');
+  if (cc.public) dire('public : stockable par un cache partage meme si la requete etait authentifiee');
+  if (cc['stale-while-revalidate'] != null) {
+    dire('stale-while-revalidate : sert la version perimee pendant {n} s en revalidant en arriere-plan',
+      { n: cc['stale-while-revalidate'] });
   }
-  if (rep.vary === '*') faits.push('Vary: * : aucune reponse stockee ne peut etre reutilisee sans revalidation');
-  if (ccReq['no-cache']) faits.push('la requete porte no-cache : le client exige une revalidation');
-  if (entier(ccReq['max-age']) != null) faits.push('la requete porte max-age=' + ccReq['max-age'] + ' : le client refuse une reponse plus agee');
+  if (cc['stale-if-error'] != null) {
+    dire('stale-if-error : sert la version perimee pendant {n} s si le serveur repond en erreur',
+      { n: cc['stale-if-error'] });
+  }
+  if (cc['no-transform']) dire('no-transform : un intermediaire ne doit pas recompresser ni recoder le corps');
+  if (req.authorization && partage && !cc.public && sMaxAge == null && !cc['must-revalidate']) {
+    dire('requete authentifiee sans public/s-maxage/must-revalidate : un cache partage ne doit pas la stocker');
+  }
+  if (rep.vary === '*') dire('Vary: * : aucune reponse stockee ne peut etre reutilisee sans revalidation');
+  if (ccReq['no-cache']) dire('la requete porte no-cache : le client exige une revalidation');
+  if (entier(ccReq['max-age']) != null) {
+    dire('la requete porte max-age={n} : le client refuse une reponse plus agee', { n: ccReq['max-age'] });
+  }
 
   const inconnues = Object.keys(cc).filter(d => !DIRECTIVES.includes(d));
-  if (inconnues.length) faits.push('directives non normalisees : ' + inconnues.join(', '));
+  if (inconnues.length) dire('directives non normalisees : {liste}', { liste: inconnues.join(', ') });
 
   /* ------------------------------- Verdict ------------------------------ */
   const fraiche = duree != null && duree > ageCourant;
@@ -139,11 +155,15 @@ export function analyserFraicheur(options = {}) {
   };
 }
 
-/** Une phrase, pour l affichage, a partir du resultat ci-dessus. */
+/** Une phrase, pour l affichage, dans la langue de l interface. */
 export function resumerFraicheur(r) {
-  if (!r.stockable) return 'non stockable';
-  if (r.duree == null) return 'aucune duree de fraicheur determinable : a revalider a chaque fois';
-  if (r.fraiche) return 'fraiche encore ' + r.restant + ' s (' + r.source + ')';
-  return 'perimee depuis ' + Math.abs(r.restant) + ' s (' + r.source + ')'
-    + (r.revalidable ? ' — revalidable avec ' + r.validateurs.join(' / ') : ' — aucun validateur, a retelecharger');
+  if (!r.stockable) return t('non stockable');
+  if (r.duree == null) return t('aucune duree de fraicheur determinable : a revalider a chaque fois');
+  const source = t(r.source);
+  if (r.fraiche) return tp('fraiche encore {n} s ({source})', { n: r.restant, source });
+  return r.revalidable
+    ? tp('perimee depuis {n} s ({source}) — revalidable avec {validateurs}',
+      { n: Math.abs(r.restant), source, validateurs: r.validateurs.join(' / ') })
+    : tp('perimee depuis {n} s ({source}) — aucun validateur, a retelecharger',
+      { n: Math.abs(r.restant), source });
 }

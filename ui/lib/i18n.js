@@ -8,14 +8,21 @@
 import { EN } from './dict-en.js';
 
 let current = 'fr';
+/* Appelee avec chaque texte que le dictionnaire n a pas. Seuls les tests la
+   posent : c est ainsi qu ils voient un libelle arrive par une variable —
+   `t(label)` — que la lecture du source ne peut pas voir. */
+let temoinManque = null;
 
 export function setLang(lang) { current = lang === 'en' ? 'en' : 'fr'; }
 export function lang() { return current; }
+export function surManque(fn) { temoinManque = typeof fn === 'function' ? fn : null; }
 
 /** Traduit une chaine. Sans entree, la chaine francaise est rendue telle quelle. */
 export function t(text) {
   if (current !== 'en') return text;
-  return EN[text] !== undefined ? EN[text] : text;
+  if (EN[text] !== undefined) return EN[text];
+  if (temoinManque) temoinManque(text);
+  return text;
 }
 
 /** Traduit une chaine a trous :  tp('{n} requetes', { n: 12 }) */

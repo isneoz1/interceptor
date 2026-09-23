@@ -4,12 +4,16 @@
  * chaque message dans l ordre, sans en masquer aucun.
  */
 import { $, el, clear, sec, button, kv, add, vide } from '../lib/dom.js';
+import { redessinerEnPlace } from '../lib/redessin.js';
+
 import { bytes, clock, middle } from '../lib/format.js';
 import { state, cmd, toast, copy } from '../app.js';
 import { t, tp } from '../lib/i18n.js';
 import { listeProgressive } from '../lib/liste-progressive.js';
 import { decrireFermetureWs } from '../lib/ref-reseau.js';
-import { resumerTrame } from '../lib/sous-protocoles.js';
+import { resumerTrame, resumerTrameBinaire, contexteDeConnexion, lectureBinairePossible }
+  from '../lib/sous-protocoles.js';
+import { base64VersOctets } from '../lib/bytes.js';
 
 let selected = null;
 let record = null;
@@ -42,11 +46,24 @@ async function load(force) {
   render();
 }
 
-/* Un seul rendu progressif a la fois : changer de perimetre coupe le precedent. */
+/* Un seul rendu progressif a la fois par liste : redessiner coupe le precedent.
+   Deux listes ici — les flux, puis les messages du flux choisi. */
 let rendu = null;
-function arreterRendu() { if (rendu) { rendu.arreter(); rendu = null; } }
+let renduMessages = null;
+function arreterRendu() {
+  if (rendu) { rendu.arreter(); rendu = null; }
+  if (renduMessages) { renduMessages.arreter(); renduMessages = null; }
+}
 
-export function render() {
+/* Redessiner recree le cadre qui defile et le champ de filtre :
+   redessinerEnPlace garde la position du lecteur, le focus et le curseur.
+   Sans cela, le lecteur remontait en haut a chaque redessin, et seule la
+   premiere lettre tapee dans le filtre comptait. */
+/* `enHaut` : l utilisateur change ce qu il regarde — un autre flux, une
+   autre direction, un autre filtre — et repart donc du debut. */
+export function render(enHaut = false) { return redessinerEnPlace($('#view-streams'), dessiner, enHaut === true); }
+
+function dessiner() {
   const pane = clear($('#view-streams'));
   const box = el('div', { class: 'pane' });
   pane.appendChild(box);
@@ -74,7 +91,7 @@ export function render() {
       el('label', { text: (rec.wsFrames ? 'trames · ' : 'messages · ') + middle(rec.host, 26) }),
       el('label', { text: middle(rec.path, 30) + '  ·  ' + rec.state })
     ]);
-    tile.addEventListener('click', () => { selected = rec.id; record = null; load(true); render(); });
+    tile.addEventListener('click', () => { selected = rec.id; record = null; load(true); render(true); });
     return tile;
   });
 
@@ -90,15 +107,16 @@ export function render() {
   }, { class: auto ? 'on' : '' });
   actions.appendChild(autoBtn);
   for (const [key, label] of [['all', 'Tout'], ['send', 'Envoyees'], ['recv', 'Recues']]) {
-    actions.appendChild(button(label, () => { dirFilter = key; render(); }, { class: dirFilter === key ? 'on' : '' }));
+    actions.appendChild(button(label, () => { dirFilter = key; render(true); }, { class: dirFilter === key ? 'on' : '' }));
   }
   actions.appendChild(button('Ouvrir la requete', () => {
     document.dispatchEvent(new CustomEvent('ic:goto', { detail: { view: 'requests', id: selected } }));
   }));
   box.appendChild(actions);
 
-  const search = el('input', { type: 'search', class: 'field', placeholder: 'Filtrer les messages…', value: needle });
-  search.addEventListener('input', () => { needle = search.value; render(); });
+  const search = el('input', { type: 'search', class: 'field', placeholder: 'Filtrer les messages…', value: needle,
+    dataset: { champ: 'flux-filtre' } });
+  search.addEventListener('input', () => { needle = search.value; render(true); });
   box.appendChild(search);
 
   if (auto) load(false);
@@ -131,29 +149,60 @@ export function render() {
     button('Copier les messages affiches', () =>
       copy(shown.map(f => (f.dir === 'send' ? '> ' : '< ') + f.text).join('\n'), shown.length + ' messages copies'))));
 
-  for (const f of shown) {
-    box.appendChild(el('div', { class: 'frame full ' + (f.dir === 'send' ? 'send' : 'recv') }, [
+  /* Par lots, comme l onglet Flux du detail : une session de dizaines de
+     milliers de messages ne fige pas la vue, et aucun n est ecarte — la suite
+     arrive au defilement. Le sous-protocole negocie et l URL levent les
+     ambiguites : sans eux, une trame « 2 » n est la preuve de rien. */
+  const contexte = contexteDeConnexion(record);
+  const messages = el('div');
+  box.appendChild(messages);
+  renduMessages = listeProgressive(messages, shown, f => {
+    const resume = f.brute ? lectureMemorisee(f, contexte) : null;
+    return el('div', { class: 'frame full ' + (f.dir === 'send' ? 'send' : 'recv') }, [
       el('b', { text: (f.dir === 'send' ? '↑ ' : '↓ ') + clock(f.ts) }),
       /* Le resume du sous-protocole precede la trame, qui reste entiere en
          dessous : on ajoute une lecture, on n en retire jamais. */
-      f.resume ? el('i', { class: 'sous-protocole', text: f.resume }) : null,
+      resume ? el('i', { class: 'sous-protocole', text: resume }) : null,
       el('span', { text: f.text })
-    ]));
-  }
+    ]);
+  });
 }
 
+/* La ligne de sous-protocole d une trame entiere, texte ou binaire. Une trame
+   tronquee a la capture n est pas lue : elle paraitrait incomplete par notre
+   fait. Au-dela de 8 Kio, un binaire ne se lit pas du coin de l oeil — et sans
+   sous-protocole binaire connu, ses octets ne sont meme pas decodes. */
+function lecture(f, contexte) {
+  if (f.truncated) return null;
+  if (f.data != null) return resumerTrame(f.data, contexte);
+  if (!f.base64 || f.size > 8192 || !lectureBinairePossible(contexte)) return null;
+  try { return resumerTrameBinaire(base64VersOctets(f.base64), contexte); } catch { return null; }
+}
+
+/* Une trame capturee ne change plus : sa lecture se calcule une fois. La vue
+   se redessine a chaque frappe dans le filtre et toutes les 900 ms en suivi
+   automatique ; sans ce cache, chaque redessin relisait toute la session. La
+   cle porte le contexte : un CONNECT MQTT arrive apres coup change la lecture. */
+let cacheLectures = new Map();
+let cleCache = '';
+
+function lectureMemorisee(f, contexte) {
+  const cle = record.id + '|' + contexte.sousProtocole + '|' + contexte.niveauMqtt + '|' + contexte.url;
+  if (cle !== cleCache) { cacheLectures = new Map(); cleCache = cle; }
+  if (!cacheLectures.has(f.index)) cacheLectures.set(f.index, lecture(f.brute, contexte));
+  return cacheLectures.get(f.index);
+}
+
+/* Ce dont le filtre a besoin, et rien d autre : la lecture du sous-protocole
+   n est calculee que pour les lignes reellement dessinees. */
 function collectFrames(rec) {
   const out = [];
-  /* Le sous-protocole negocie a la poignee de main leve les ambiguites : une
-     trame « 2 » est un ping Engine.IO autant qu un texte quelconque. */
-  const sousProtocole = (rec.ws && rec.ws.protocol) || '';
-  for (const f of (rec.ws && rec.ws.frames) || []) {
+  (rec.ws && rec.ws.frames || []).forEach((f, index) => {
     out.push({
-      dir: f.dir, ts: f.ts,
-      resume: f.data != null ? resumerTrame(f.data, sousProtocole) : null,
-      text: (f.data != null ? f.data : '[' + f.opcode + ' ' + bytes(f.size) + ']') + (f.truncated ? ' …tronque' : '')
+      dir: f.dir, ts: f.ts, index, brute: f,
+      text: (f.data != null ? f.data : '[' + f.opcode + ' ' + bytes(f.size) + ']') + (f.truncated ? ' …' + t('tronquee') : '')
     });
-  }
+  });
   for (const m of (rec.sse && rec.sse.messages) || []) {
     out.push({ dir: 'recv', ts: m.ts, text: '[' + m.event + '] ' + m.data });
   }

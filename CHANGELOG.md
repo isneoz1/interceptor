@@ -4,6 +4,102 @@ All notable changes to this project are documented here.
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning follows
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.4.0] — 2026-09-23
+
+Everything this release adds follows one rule: **show what the browser actually measured
+or sent, and say so when it did not**. Several things the console displayed were not true,
+and they are fixed here too.
+
+### Fixed — values that were not true
+
+- **Network timing invented a "sending" phase.** The probe computed `send` with the same
+  formula as `wait`, so the waiting time appeared twice and the total was wrong. The browser
+  does not expose when a request finishes sending; that phase is now reported as not
+  measured, and the tab says it is included in *Waiting for the first byte*.
+- **Resources from another origin showed 0 ms of DNS, 0 bytes, and seconds of "receiving".**
+  When a response carries no `Timing-Allow-Origin`, the browser zeroes the timestamps and
+  sizes it exposes to the page. Those zeros were displayed as measurements, and
+  `receive` became the absolute clock — 1219 ms for a 25-byte file in the new audit. The
+  probe now recognises the mask: the Timeline tab shows the total duration, which is always
+  provided, and states that the detail is hidden — naming the cause only when the captured
+  headers prove it.
+- **TLS was counted twice.** The connection phase already contained the TLS handshake, which
+  was then added again. Phases are now disjoint (TCP, then TLS); the HAR export puts TLS back
+  inside `connect` as HAR 1.2 requires and no longer adds it to the total, and the HAR import
+  does the reverse.
+- **A certificate's DNS names were cut at 24 characters.** The certificate summary read the
+  names from a 24-byte preview, so `api.long-subdomain-for-tests.example.com` appeared
+  truncated, as if it were complete. IP addresses appeared as hexadecimal.
+- **`CA:FALSE` was never shown.** It is encoded as two bytes that the reader skipped, so every
+  ordinary server certificate lost its "certificate authority: no".
+- **False WebSocket labels.** Any text starting with a digit from 0 to 6 was read as
+  Engine.IO: `2024-09-23` became a *ping*, `3` a *pong*. A chat message `ERROR` or `ABORT`
+  became a STOMP frame, and a batched WAMP frame became *SignalR type undefined*. Each reader
+  now requires the exact form its specification defines.
+- **Binary frames were given a single arbitrary format.** When several decoders accepted the
+  same bytes, only the first was named. All of them are now named, and on a connection whose
+  negotiated subprotocol is `mqtt` or `wamp.2.msgpack`, the frame is read as that protocol
+  instead.
+- **Seven filter fields kept only the first letter typed.** *Live streams*, the three logs,
+  *Sites and paths*, the internal log and the toolbox reference rebuilt their own filter
+  field on each keystroke: the focus left with the old field, so typing `abc` gave `a`, or
+  the field lost the focus after a pause. The focus and cursor are now kept across redraws.
+- **Reading a live session was impossible.** *Live streams* and *Security* redraw on every
+  traffic change, and *Live streams* also on every refresh while following a session; each
+  redraw recreated the scrolling pane, sending the reader back to the top several times a
+  second. The reading position is now kept — measured at 6,000 px into a 3,000-frame
+  session. Choosing another stream, direction or filter still starts from the top.
+- **Live streams slowed down on long sessions.** Every message was built at once, and every
+  redraw re-read every frame of the session. Messages are now drawn in batches as you
+  scroll, like the detail panel, and a frame's reading is computed once. Recognising
+  subprotocols is also cheaper: 20,000 plain-text frames now take 39 ms instead of 3.9 s,
+  because a reader that cannot match a frame no longer throws an exception to say so.
+- **Much of the English interface was still in French.** Text that reaches the translator
+  through a variable was invisible to the translation checks: the TLS session block, the
+  page-probe block, all 12 HTTP cache explanations, the freshness verdict, all 31 CSP
+  directive meanings and the timeline phase names. All are translated, and two new checks
+  make the gap impossible to reopen.
+
+### Added
+
+- **Eight more WebSocket subprotocols, read by their specification**: GraphQL over
+  WebSocket (`graphql-transport-ws` and Apollo's older `graphql-ws`, with the operation
+  name), JSON-RPC 2.0, WAMP (JSON, batched, MessagePack, CBOR), SockJS (and the STOMP it
+  carries), Phoenix Channels, Action Cable, Pusher, and binary **MQTT 3.1.1 / 5**, packet by
+  packet — the version is read from the connection's own `CONNECT`, and an MQTT password is
+  reported by its length, never its value.
+- **No label without proof.** A reading appears only when its form cannot belong to anything
+  else, or when the connection says so: the subprotocol the server negotiated, or a URL such
+  as `/socket.io/?EIO=4` or `/123/abc/websocket`. The Streams tab now also shows the
+  **negotiated subprotocol**, which the probe captured but the panel never displayed, and
+  which protocol the connection designates, and by what proof.
+- **Every certificate of the chain, read in full** from its DER bytes, like Firefox's own
+  certificate viewer: covered names by type, key algorithm and size, usages, CA flag, the
+  declared validation level (DV, OV, IV, EV), OCSP and CRL locations, the issuer's
+  certificate, key identifiers, and the embedded Certificate Transparency proofs with their
+  log and timestamp. The toolbox and the Security tab share one renderer; a click copies the
+  PEM or opens it in the toolbox.
+- **Firefox Network Monitor search criteria**: `has-response-header:`,
+  `has-request-header:`, `set-cookie-name:`, `set-cookie-domain:`, `set-cookie-value:`,
+  `larger-than:`, `is:running`, `is:cached`, `is:from-cache`, `regexp:`, plus Firefox's
+  names for criteria that already existed.
+- **The status seen by the page** (`responseStatus`), when the browser exposes it — the only
+  status available for a response served by the cache or a Service Worker.
+- **`tools/minutage.mjs`**, a browser audit: a same-origin resource with a known server
+  delay and two cross-origin resources, with and without `Timing-Allow-Origin`.
+- **`tools/interaction.mjs`**, a browser audit that types into every filter one key at a
+  time, and reads through redraws on a 3,000-frame session.
+
+### Tests
+
+- **`tests/lectures.test.mjs`** (166 assertions): HAR timing rules, every subprotocol and
+  **every text that must receive no label**, MQTT packet by packet, and the certificate
+  reader cross-checked against the OpenSSL X.509 parser built into Node.
+- The translator can now report every text it could not translate; the render suite uses it
+  while rendering everything in English.
+
+1384 assertions across seven suites, plus six browser audits.
+
 ## [4.3.0] — 2026-09-17
 
 ### Added
@@ -853,6 +949,7 @@ First public release.
 - Documentation screenshots are generated by `tools/captures.mjs`, which renders the real
   console against the real kernel rather than producing mockups.
 
+[4.4.0]: https://github.com/isneoz1/interceptor/releases/tag/v4.4.0
 [4.3.0]: https://github.com/isneoz1/interceptor/releases/tag/v4.3.0
 [4.2.0]: https://github.com/isneoz1/interceptor/releases/tag/v4.2.0
 [3.13.0]: https://github.com/isneoz1/interceptor/releases/tag/v3.13.0

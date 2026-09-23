@@ -330,6 +330,39 @@ for (const groupe of GROUPS) {
 }
 for (const tr of TRANSFORMATIONS) exigerTraduction('libelle de transformation', tr.libelle);
 
+/* L aide a la recherche est construite depuis FIELDS : chaque description y
+   passe par t(f.help), une variable que la lecture du source ne voit pas. */
+const { fieldHelp } = await import('../ui/lib/filters.js');
+for (const f of fieldHelp()) if (f.help) exigerTraduction('aide de recherche', f.help);
+
+/* Le sens de chaque directive CSP s affiche au survol, par t(d.sens) :
+   trente et une phrases restaient en francais dans l interface anglaise. */
+const { DIRECTIVES_CSP } = await import('../ui/lib/csp.js');
+for (const d of DIRECTIVES_CSP) exigerTraduction('sens de directive CSP', d.sens);
+
+/* Les tables d etiquettes passees a allRows(objet, { cle: 'Libelle' }) : allRows
+   les traduit par kv(label), donc par une variable. La session TLS et la sonde
+   de page ont ainsi affiche quarante-trois libelles en francais dans
+   l interface anglaise sans qu aucun controle ne le voie. */
+for (const rel of ['ui/console/detail-more.js', 'ui/console/detail-parts.js']) {
+  const source = fs.readFileSync(path.join(racine, rel), 'utf8');
+  let i = 0;
+  while ((i = source.indexOf('allRows(', i)) >= 0) {
+    const debut = source.indexOf('{', i);
+    if (debut < 0 || source.slice(i, debut).includes(')')) { i += 8; continue; }
+    let profondeur = 0;
+    let j = debut;
+    for (; j < source.length; j++) {
+      if (source[j] === '{') profondeur++;
+      if (source[j] === '}' && --profondeur === 0) break;
+    }
+    for (const m of source.slice(debut, j + 1).matchAll(/:\s*'((?:[^'\\]|\\.)*)'/g)) {
+      exigerTraduction('etiquette allRows (' + rel + ')', desechapper(m[1]));
+    }
+    i = j;
+  }
+}
+
 /* Les actions de la palette de commandes vivent dans une table de console.js,
    qui a besoin d un DOM pour s importer. On lit donc sa source : les cles
    `libelle` et `groupe` n apparaissent que dans ce registre. */

@@ -89,7 +89,10 @@ function sourcesDe(directives, nom) {
  */
 function faitsCsp(directives) {
   const f = [];
-  const dire = (texte, valeurs) => f.push({ texte, valeurs: valeurs || {} });
+  /* `aTraduire` nomme les valeurs qui sont elles-memes des phrases du
+     dictionnaire (le sens d une directive) : inserees telles quelles, elles
+     resteraient en francais dans une interface anglaise. */
+  const dire = (texte, valeurs, aTraduire) => f.push({ texte, valeurs: valeurs || {}, aTraduire: aTraduire || [] });
   const src = nom => sourcesDe(directives, nom);
   const scripts = src('script-src') ?? src('default-src');
   const scriptsVia = src('script-src') ? 'script-src' : (src('default-src') ? 'default-src' : null);
@@ -130,7 +133,7 @@ function faitsCsp(directives) {
 
   for (const d of directives) {
     if (!d.connu) dire('directive inconnue ignoree par les navigateurs : {n}', { n: d.nom });
-    else if (d.deprecie) dire('directive depreciee ou retiree : {n} ({s})', { n: d.nom, s: d.sens });
+    else if (d.deprecie) dire('directive depreciee ou retiree : {n} ({s})', { n: d.nom, s: d.sens }, ['s']);
     if (d.doublon) dire('directive en double, seule la premiere compte : {n}', { n: d.nom });
   }
   if (src('report-uri') && !src('report-to')) dire('report-uri seul : deprecie, mais encore lu ; report-to est la forme actuelle');

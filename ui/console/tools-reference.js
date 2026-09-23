@@ -97,7 +97,8 @@ export function panneauReference(entree, etat, redessiner) {
 
   const champ = el('input', {
     type: 'text', class: 'field', spellcheck: 'false',
-    placeholder: t('chercher un code, un nom, un mot'), value: question
+    placeholder: t('chercher un code, un nom, un mot'), value: question,
+    dataset: { champ: 'reference-question' }
   });
   champ.addEventListener('input', () => { etat.questionRef = champ.value; redessiner(); });
   box.appendChild(el('div', { class: 'actions' }, [champ]));

@@ -4,6 +4,8 @@
  * est visible, avec son heure exacte et son detail complet.
  */
 import { $, el, clear, sec, button, vide } from '../lib/dom.js';
+import { redessinerEnPlace } from '../lib/redessin.js';
+
 import { t } from '../lib/i18n.js';
 import { listeProgressive } from '../lib/liste-progressive.js';
 import { clock, middle } from '../lib/format.js';
@@ -34,7 +36,13 @@ async function load(kind) {
   render(kind);
 }
 
-export function render(kind) {
+/* Redessiner recree le cadre qui defile et le champ de filtre :
+   redessinerEnPlace garde la position du lecteur, le focus et le curseur.
+   Sans cela, le lecteur remontait en haut a chaque redessin, et seule la
+   premiere lettre tapee dans le filtre comptait. */
+export function render(kind) { return redessinerEnPlace($('#view-' + kind), () => dessiner(kind)); }
+
+function dessiner(kind) {
   const meta = KINDS[kind];
   if (!meta) return;
   const pane = clear($(meta.view));
@@ -62,7 +70,8 @@ export function render(kind) {
 
   const search = el('input', {
     type: 'search', class: 'field', placeholder: 'Filtrer ce journal…',
-    value: filters[kind] || ''
+    value: filters[kind] || '',
+    dataset: { champ: 'journal-filtre-' + kind }
   });
   search.addEventListener('input', () => { filters[kind] = search.value; render(kind); });
   box.appendChild(search);

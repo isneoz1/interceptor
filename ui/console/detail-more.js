@@ -3,7 +3,7 @@
  *
  * Suite de detail-parts.js : meme principe, tout champ present est affiche.
  */
-import { el, frag, kv, sec, jsonTree, add } from '../lib/dom.js';
+import { el, frag, kv, sec, jsonTree, add, button } from '../lib/dom.js';
 import { listeProgressive } from '../lib/liste-progressive.js';
 import { base64VersOctets, octetsVersHex } from '../lib/bytes.js';
 import { essayerFormats } from '../lib/binaires.js';
@@ -13,6 +13,11 @@ import { copy, cmd, toast } from '../app.js';
 import { allRows } from './detail-parts.js';
 import { t, tp } from '../lib/i18n.js';
 import { decrireSuiteTls } from '../lib/ref-reseau.js';
+import { raisonMasque } from '../lib/minutage.js';
+import { resumerCertificat } from '../lib/asn1.js';
+import { blocCertificat } from './certificat.js';
+import { resumerTrame, resumerLecture, lireSousProtocoleBinaire, contexteDeConnexion, protocoleDesigne }
+  from '../lib/sous-protocoles.js';
 
 function clearNode(node) { while (node.firstChild) node.removeChild(node.firstChild); return node; }
 
@@ -33,6 +38,8 @@ let enCoursDeRendu = [];
    l enregistrement : c est ce qui permet d ajouter la suite sans redessiner. */
 let listeTrames = null;
 let tramesRendues = 0;
+/* Sous-protocole, URL et version MQTT de la connexion affichee. */
+let contexteTrames = null;
 
 function parLots(hote, elements, fabriquer) {
   const liste = listeProgressive(hote, elements, fabriquer);
@@ -52,6 +59,9 @@ export function suivreTrames(rec) {
   if (!trames || trames.length <= tramesRendues) return 0;
   const nouvelles = trames.slice(tramesRendues);
   tramesRendues = trames.length;
+  /* Le CONNECT MQTT, ou l en-tete de sous-protocole, a pu arriver depuis le
+     dessin : les trames ajoutees sont lues avec ce que l on sait maintenant. */
+  if (contexteTrames && rec.ws.transport !== 'rtc') contexteTrames = contexteDeConnexion(rec);
   listeTrames.ajouter(nouvelles);
   return nouvelles.length;
 }
@@ -63,6 +73,7 @@ export function arreterListes() {
   enCoursDeRendu = [];
   listeTrames = null;
   tramesRendues = 0;
+  contexteTrames = null;
 }
 
 const SEV_ORDER = { critical: 0, high: 1, medium: 2, low: 3, info: 4 };
@@ -75,36 +86,46 @@ const MAX_DECODAGE = 8192;
 /**
  * Ce qu on peut dire d une trame binaire sans quitter le panneau.
  *
- * @returns { format, apercu, octets } — `format` est null si aucun des trois
- *          lecteurs ne reconnait la trame.
+ * Le sous-protocole negocie prime : des octets MQTT lus comme du protobuf
+ * seraient une fausse piste — « C0 00 », un PINGREQ, est aussi du CBOR valide.
+ * Sans lui, on nomme TOUS les decodeurs qui acceptent les octets, plutot que
+ * le premier : aucun n en fait la preuve a lui seul.
+ *
+ * @returns { format, apercu, octets, resume } — `format` est null si rien ne
+ *          lit la trame, `resume` la ligne du sous-protocole s il y en a un.
  */
-function lireTrameBinaire(base64) {
+function lireTrameBinaire(base64, contexte, entiere) {
   try {
     const octets = base64VersOctets(base64);
     const apercu = octetsVersHex(octets.subarray(0, 24), ' ')
       + (octets.length > 24 ? ' …' : '');
-    if (octets.length > MAX_DECODAGE) return { format: null, apercu, octets };
+    if (octets.length > MAX_DECODAGE) return { format: null, apercu, octets, resume: null };
+    /* Une trame tronquee a la capture n est pas lue comme un protocole : son
+       paquet paraitrait « incomplet » par notre fait, pas par le sien. */
+    const lecture = entiere ? lireSousProtocoleBinaire(octets, contexte)[0] : null;
+    if (lecture) return { format: lecture.nom, apercu, octets, resume: resumerLecture(lecture) };
     const trouves = essayerFormats(octets);
-    return { format: trouves.length ? trouves[0].format : null, apercu, octets };
+    return { format: trouves.length ? trouves.map(x => x.format).join(' / ') : null, apercu, octets, resume: null };
   } catch {
     /* Base64 illisible : la trame reste comptee, on ne pretend rien de plus. */
-    return { format: null, apercu: null, octets: null };
+    return { format: null, apercu: null, octets: null, resume: null };
   }
 }
 
 /** Le corps d une ligne de trame : texte tel quel, ou lecture du binaire. */
-function corpsDeTrame(f) {
+function corpsDeTrame(f, contexte) {
   if (f.data != null) {
-    return { texte: f.data + (f.truncated ? ' …tronque' : ''), base64: null, format: null };
+    return { texte: f.data + (f.truncated ? ' …' + t('tronquee') : ''), base64: null, format: null,
+      resume: f.truncated ? null : resumerTrame(f.data, contexte) };
   }
   if (f.base64) {
-    const lu = lireTrameBinaire(f.base64);
+    const lu = lireTrameBinaire(f.base64, contexte, !f.truncated);
     const tete = '[' + f.opcode + ' ' + bytes(f.size)
-      + (lu.format ? '  ·  ' + lu.format : '') + (f.truncated ? '  ·  tronque' : '') + ']';
-    return { texte: tete + (lu.apercu ? '   ' + lu.apercu : ''), base64: f.base64, format: lu.format };
+      + (lu.format ? '  ·  ' + lu.format : '') + (f.truncated ? '  ·  ' + t('tronquee') : '') + ']';
+    return { texte: tete + (lu.apercu ? '   ' + lu.apercu : ''), base64: f.base64, format: lu.format, resume: lu.resume };
   }
   return { texte: '[' + f.opcode + ' ' + bytes(f.size) + ']'
-    + (f.truncated ? ' …tronque' : ''), base64: null, format: null };
+    + (f.truncated ? ' …' + t('tronquee') : ''), base64: null, format: null, resume: null };
 }
 
 /* ------------------------------- 4. Cookies -------------------------------- */
@@ -200,14 +221,39 @@ export function security(rec) {
   box.appendChild(sec('Chaine de certificats', certs.length));
   certs.forEach((c, i) => {
     box.appendChild(sec(i === 0 ? 'Certificat du serveur' : 'Autorite ' + i, c.isBuiltInRoot ? 'racine integree' : ''));
+    /* Ce que Firefox calcule lui-meme : empreintes, racine integree. */
     box.appendChild(allRows(c, {
       subject: 'Sujet', issuer: 'Emetteur', serialNumber: 'Numero de serie',
       fingerprintSha1: 'Empreinte SHA-1', fingerprintSha256: 'Empreinte SHA-256',
       validityStart: 'Valide depuis', validityEnd: 'Valide jusqu au',
       subjectPublicKeyInfoDigest: 'Empreinte de cle publique', isBuiltInRoot: 'Racine integree'
-    }));
+    }, ['der']));
+    if (c.der) certificatComplet(box, c.der);
   });
   return box;
+}
+
+/** Le PEM d un certificat : le DER en base64, par lignes de 64 caracteres. */
+export function enPem(der) {
+  const lignes = String(der).match(/.{1,64}/g) || [];
+  return '-----BEGIN CERTIFICATE-----\n' + lignes.join('\n') + '\n-----END CERTIFICATE-----';
+}
+
+/* Le certificat lu en entier depuis ses octets : ce que le visualiseur de
+   certificats de Firefox montre, et que le resume de l API ne donne pas —
+   noms couverts, usages, OCSP, CRL, politique, preuves de transparence. */
+function certificatComplet(box, der) {
+  const pem = enPem(der);
+  box.appendChild(el('div', { class: 'actions' }, [
+    button('Copier en PEM', () => copy(pem, t('Certificat copie en PEM'))),
+    button('Ouvrir dans la boite a outils', () => poser(pem, { vers: 'binaire', famille: 'der' }))
+  ]));
+  try {
+    blocCertificat(box, resumerCertificat(base64VersOctets(der)));
+  } catch (e) {
+    box.appendChild(el('p', { class: 'note warn', text:
+      t('Ce bloc n est pas un certificat : ') + String(e.message || e) }));
+  }
 }
 
 /* ------------------------------- 6. Analyse -------------------------------- */
@@ -252,8 +298,22 @@ export function streams(rec) {
       : 'WebSocket';
     box.appendChild(sec(titreFlux,
       tp('{envoyees} envoyees / {recues} recues', { envoyees: w.sent, recues: w.received })));
-    add(box, kv(canalRtc ? 'Sous-protocole du canal' : 'Protocoles',
+    add(box, kv(canalRtc ? 'Sous-protocole du canal' : 'Sous-protocoles proposes',
       Array.isArray(w.protocols) ? w.protocols.join(', ') : w.protocols));
+    contexteTrames = canalRtc ? null : contexteDeConnexion(rec);
+    if (contexteTrames) {
+      /* Celui que le serveur a choisi : c est lui qui dit comment lire la suite. */
+      add(box, kv('Sous-protocole negocie', contexteTrames.sousProtocole || null, { hl: true }));
+      const designe = protocoleDesigne(contexteTrames);
+      if (designe) {
+        add(box, kv('Protocole des trames', designe.nom + '  —  ' + (designe.preuve === 'url'
+          ? t('designe par l URL de la connexion') : t('designe par le sous-protocole negocie'))));
+      }
+      if (contexteTrames.niveauMqtt != null) {
+        add(box, kv('Version MQTT', ({ 3: '3.1', 4: '3.1.1', 5: '5.0' })[contexteTrames.niveauMqtt]
+          + '  —  ' + t('lue dans le paquet CONNECT')));
+      }
+    }
     add(box, kv('Ouverte', w.openedAt ? clock(w.openedAt) : null));
     add(box, kv('Fermee', w.closedAt ? clock(w.closedAt) : null));
     if (w.close) add(box, kv('Fermeture', 'code ' + w.close.code + (w.close.reason ? ' · ' + w.close.reason : '') + (w.close.wasClean ? ' · propre' : ' · brutale')));
@@ -265,13 +325,16 @@ export function streams(rec) {
     box.appendChild(trames);
     tramesRendues = w.frames.length;
     listeTrames = parLots(trames, w.frames, f => {
-      const corps = corpsDeTrame(f);
+      const corps = corpsDeTrame(f, contexteTrames);
       const ligne = el('div', {
         class: 'frame ' + (f.dir === 'send' ? 'send' : 'recv')
           + (corps.base64 ? ' copyable' : ''),
         title: corps.base64 ? t('Cliquer pour ouvrir cette trame dans la boite a outils') : null
       }, [
         el('b', { text: (f.dir === 'send' ? '↑ ' : '↓ ') + clock(f.ts) }),
+        /* La lecture du sous-protocole precede la trame, qui reste entiere :
+           on ajoute une lecture, on n en retire jamais. */
+        corps.resume ? el('i', { class: 'sous-protocole', text: corps.resume }) : null,
         el('span', { text: corps.texte })
       ]);
       /* Une trame binaire s ouvre dans la boite a outils, ou l hexadecimal,
@@ -305,25 +368,41 @@ export function streams(rec) {
 export function timeline(rec) {
   const box = frag();
 
-  if (rec.perf && rec.perf.timings) {
+  if (rec.perf && rec.perf.phasesFournies === false) {
+    /* Des zeros ici ne seraient pas des mesures : le navigateur a masque le
+       detail. On ne montre que la duree totale, qu il fournit toujours. */
+    box.appendChild(sec('Chronometrage reseau',
+      rec.perf.duration != null ? ms(Math.round(rec.perf.duration)) : ''));
+    box.appendChild(el('p', { class: 'note', text: raisonMasque(rec) }));
+  } else if (rec.perf && rec.perf.timings) {
     /* Surtout pas `t` : c est le nom de la fonction de traduction importee en
        tete de fichier. La nommer ainsi ici la masquait, et l appel a `t(label)`
        deux lignes plus bas invoquait l objet des temps. L onglet se vidait des
        qu une requete portait un chronometrage — c est-a-dire a chaque import
        de fichier HAR, DevTools, Charles et Fiddler l ecrivant tous. */
     const temps = rec.perf.timings;
-    const labels = { blocked: 'Attente', dns: 'DNS', connect: 'Connexion', ssl: 'TLS', send: 'Envoi', wait: 'Reponse', receive: 'Reception' };
+    /* Phases disjointes : la connexion est le TCP seul, le TLS vient apres.
+       Chaque libelle est traduit ICI, par un appel litteral : passe par une
+       variable, il echappait au controle de traduction — et « Attente »,
+       « Envoi », « Reception » s affichaient en francais dans l interface
+       anglaise. */
+    const labels = { blocked: t('Attente'), dns: 'DNS', connect: t('Connexion TCP'), ssl: 'TLS',
+      send: t('Envoi'), wait: t('Attente du premier octet'), receive: t('Reception') };
     const total = Object.values(temps).reduce((a, b) => a + (b > 0 ? b : 0), 0) || 1;
     box.appendChild(sec('Chronometrage reseau', ms(Math.round(total))));
     const bars = el('div', { class: 'bars' });
     for (const [key, label] of Object.entries(labels)) {
       const value = temps[key];
       if (value == null || value < 0) continue;
-      bars.appendChild(el('span', { text: t(label) }));
+      bars.appendChild(el('span', { text: label }));
       bars.appendChild(el('div', { class: 'track' }, el('div', { class: 'fill', style: 'width:' + Math.max(1, (value / total) * 100) + '%' })));
       bars.appendChild(el('span', { class: 'val', text: ms(Math.round(value)) }));
     }
     box.appendChild(bars);
+    if (!(temps.send >= 0) && temps.wait >= 0) {
+      box.appendChild(el('p', { class: 'note', text:
+        t('L envoi de la requete n est pas mesure a part : le navigateur ne l expose pas. Il est compris dans « Attente du premier octet ».') }));
+    }
   }
 
   if (rec.perf && rec.perf.serverTiming && rec.perf.serverTiming.length) {

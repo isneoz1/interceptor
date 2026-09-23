@@ -238,7 +238,9 @@ export function render() {
        et le suffixe des comparaisons par un gabarit plutot qu une addition. */
     fieldHelp().map(f => [
       f.name + ':' + (f.kind === 'num' ? '>100' : f.kind === 'bool' ? t('oui') : t('valeur')),
-      f.kind === 'num' ? tp('{aide}  (comparaisons > >= < <= =)', { aide: t(f.help) }) : t(f.help)
+      f.alias
+        ? tp('meme critere que {champ} — le nom que lui donne le moniteur reseau de Firefox', { champ: f.alias + ':' })
+        : f.kind === 'num' ? tp('{aide}  (comparaisons > >= < <= =)', { aide: t(f.help) }) : t(f.help)
     ])));
   box.appendChild(el('p', { text: t(
     'La case « corps » a cote de la recherche delegue le travail au noyau : il cherche aussi dans les corps, les entetes, les trames WebSocket, les messages SSE et les piles JavaScript. Les corps ne transitent jamais en masse vers l interface, seuls les identifiants correspondants reviennent.') }));

@@ -9,6 +9,8 @@
  * reellement ete observe.
  */
 import { $, el, clear, sec, button, kv, add, vide } from '../lib/dom.js';
+import { redessinerEnPlace } from '../lib/redessin.js';
+
 import { bytes } from '../lib/format.js';
 import { t, tp } from '../lib/i18n.js';
 import { listeProgressive } from '../lib/liste-progressive.js';
@@ -93,7 +95,13 @@ function compter(n, rec) {
 }
 
 /* --------------------------------- Rendu ---------------------------------- */
-export function render() {
+/* Redessiner recree le cadre qui defile et le champ de filtre :
+   redessinerEnPlace garde la position du lecteur, le focus et le curseur.
+   Sans cela, le lecteur remontait en haut a chaque redessin, et seule la
+   premiere lettre tapee dans le filtre comptait. */
+export function render() { return redessinerEnPlace($('#view-sitemap'), dessiner); }
+
+function dessiner() {
   const pane = clear($('#view-sitemap'));
   const box = el('div', { class: 'pane' });
   pane.appendChild(box);
@@ -103,7 +111,8 @@ export function render() {
   /* -------------------------------- Filtres ------------------------------- */
   const champ = el('input', {
     type: 'search', class: 'field', spellcheck: 'false',
-    placeholder: t('Filtrer par hote…'), value: filtreHote
+    placeholder: t('Filtrer par hote…'), value: filtreHote,
+    dataset: { champ: 'sitemap-hote' }
   });
   let minuteur = null;
   champ.addEventListener('input', () => {

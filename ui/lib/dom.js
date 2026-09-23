@@ -38,6 +38,35 @@ export function clear(node) {
   return node;
 }
 
+/**
+ * Redessine une vue sans voler la saisie en cours.
+ *
+ * Une vue qui filtre pendant qu on tape se redessine a chaque touche, et le
+ * redessin reconstruit le champ lui-meme : le focus partait avec l ancien, et
+ * la deuxieme lettre tapee n allait plus nulle part. Sept champs de la console
+ * ne gardaient ainsi que la premiere lettre, ou perdaient le focus apres une
+ * pause. Un champ marque `dataset: { champ: 'nom-unique' }` retrouve ici, apres
+ * le rendu, le focus et la position du curseur qu il avait avant.
+ */
+export function garderSaisie(rendre) {
+  const actif = typeof document !== 'undefined' ? document.activeElement : null;
+  const nom = actif && actif.dataset ? actif.dataset.champ : null;
+  let debut = null;
+  let fin = null;
+  if (nom) {
+    try { debut = actif.selectionStart; fin = actif.selectionEnd; } catch { /* champ sans curseur */ }
+  }
+  const resultat = rendre();
+  if (nom && actif.isConnected === false) {
+    const nouveau = document.querySelector('[data-champ="' + nom + '"]');
+    if (nouveau) {
+      nouveau.focus();
+      try { if (debut != null) nouveau.setSelectionRange(debut, fin); } catch { /* idem */ }
+    }
+  }
+  return resultat;
+}
+
 export const $ = (selector, root = document) => root.querySelector(selector);
 export const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
 export const frag = () => document.createDocumentFragment();

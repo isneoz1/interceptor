@@ -1,5 +1,6 @@
 /* Vue « Securite » — toutes les alertes de la capture — INTERCEPTOR (by NeoZ) */
 import { $, el, clear, sec, button, vide } from '../lib/dom.js';
+import { redessinerEnPlace } from '../lib/redessin.js';
 import { clock, middle, preuveLisible } from '../lib/format.js';
 import { state, cmd, toast, copy } from '../app.js';
 import { t } from '../lib/i18n.js';
@@ -42,7 +43,13 @@ async function load() {
   render();
 }
 
-export function render() {
+/* Redessiner recree le cadre qui defile et le champ de filtre :
+   redessinerEnPlace garde la position du lecteur, le focus et le curseur.
+   Sans cela, le lecteur remontait en haut a chaque redessin, et seule la
+   premiere lettre tapee dans le filtre comptait. */
+export function render() { return redessinerEnPlace($('#view-alerts'), dessiner); }
+
+function dessiner() {
   const pane = clear($('#view-alerts'));
   const box = el('div', { class: 'pane' });
   pane.appendChild(box);

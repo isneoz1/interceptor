@@ -911,32 +911,71 @@
   (function hookPerformance() {
     if (!CFG.perf || typeof PerformanceObserver === 'undefined') return;
 
+    function duree(fin, debut) { return Math.max(0, Math.round(fin - debut)); }
+
+    /**
+     * Les phases que le navigateur a reellement mesurees, et rien d autre.
+     *
+     * - Pour une ressource d une autre origine qui ne l autorise pas par
+     *   `Timing-Allow-Origin`, le navigateur met a ZERO les horodatages
+     *   intermediaires et les tailles. Zero n est alors pas une mesure : c est
+     *   un masque. On le dit (`phasesFournies: false`) au lieu d afficher
+     *   « DNS 0 ms », « 0 o », et une reception egale a l horodatage absolu.
+     * - La fin de l emission de la requete n est pas exposee : `send` vaut -1
+     *   (non mesure) et le temps d emission reste compris dans `wait`.
+     * - `connect` est le TCP seul et `ssl` la negociation TLS : les phases ne
+     *   se chevauchent pas, leur somme est donc juste. L export HAR, dont la
+     *   norme range le TLS DANS la connexion, les recompose.
+     */
+    function phases(e) {
+      var fournies = !(e.entryType === 'resource' && !e.requestStart && !e.responseStart);
+      if (!fournies) {
+        return { fournies: false, temps: { blocked: -1, dns: -1, connect: -1, ssl: -1, send: -1, wait: -1, receive: -1 } };
+      }
+      var debut = e.fetchStart || e.startTime;
+      var tls = e.secureConnectionStart > 0 && e.secureConnectionStart >= e.connectStart;
+      var finTcp = tls ? e.secureConnectionStart : e.connectEnd;
+      return {
+        fournies: true,
+        temps: {
+          blocked: e.domainLookupStart ? duree(e.domainLookupStart, debut) : -1,
+          dns: e.domainLookupStart ? duree(e.domainLookupEnd, e.domainLookupStart) : -1,
+          connect: e.connectStart ? duree(finTcp, e.connectStart) : -1,
+          /* Connexion reutilisee : aucune negociation n a eu lieu. */
+          ssl: tls ? duree(e.connectEnd, e.secureConnectionStart)
+            : (e.secureConnectionStart > 0 && e.connectEnd === e.connectStart ? 0 : -1),
+          send: -1,
+          wait: e.requestStart ? duree(e.responseStart, e.requestStart) : -1,
+          receive: e.responseStart ? duree(e.responseEnd, e.responseStart) : -1
+        }
+      };
+    }
+
     function serialize(e) {
+      var p = phases(e);
+      /* Tailles masquees comme les phases : null veut dire « non fourni ». */
+      var taille = function (v) { return p.fournies && typeof v === 'number' ? v : null; };
       return {
         name: e.name,
         initiatorType: e.initiatorType || null,
         nextHopProtocol: e.nextHopProtocol || null,
-        transferSize: e.transferSize,
-        encodedBodySize: e.encodedBodySize,
-        decodedBodySize: e.decodedBodySize,
+        transferSize: taille(e.transferSize),
+        encodedBodySize: taille(e.encodedBodySize),
+        decodedBodySize: taille(e.decodedBodySize),
         duration: Math.round(e.duration),
         startTime: Math.round(e.startTime),
         redirectCount: e.redirectCount,
         renderBlockingStatus: e.renderBlockingStatus || null,
         deliveryType: e.deliveryType || null,
         workerStart: e.workerStart || 0,
+        /* Le statut HTTP vu par la page, quand le navigateur l expose : il
+           reste lisible pour une reponse du cache ou d un Service Worker. */
+        responseStatus: typeof e.responseStatus === 'number' && e.responseStatus > 0 ? e.responseStatus : null,
+        phasesFournies: p.fournies,
         serverTiming: (e.serverTiming || []).map(function (s) {
           return { name: s.name, duration: s.duration, description: s.description };
         }),
-        timings: {
-          blocked: Math.max(-1, Math.round(e.domainLookupStart - e.startTime)),
-          dns: Math.max(-1, Math.round(e.domainLookupEnd - e.domainLookupStart)),
-          connect: Math.max(-1, Math.round(e.connectEnd - e.connectStart)),
-          ssl: e.secureConnectionStart ? Math.max(-1, Math.round(e.connectEnd - e.secureConnectionStart)) : -1,
-          send: Math.max(0, Math.round(e.responseStart - e.requestStart)),
-          wait: Math.max(0, Math.round(e.responseStart - e.requestStart)),
-          receive: Math.max(0, Math.round(e.responseEnd - e.responseStart))
-        }
+        timings: p.temps
       };
     }
 

@@ -53,15 +53,30 @@ function contentOf(rec) {
   return content;
 }
 
-/** Chronologie approximee : webRequest n'expose pas le detail DNS/connect. */
+/**
+ * Les temps au format HAR 1.2.
+ *
+ * En interne, `connect` est le TCP seul et `ssl` la negociation TLS, pour que
+ * les phases ne se chevauchent pas. La norme HAR range au contraire le TLS
+ * DANS `connect` (« the time is also included in the connect field ») : on
+ * recompose donc ici. `send`, `wait` et `receive` sont obligatoires et non
+ * negatifs ; un `send` que le navigateur n a pas mesure vaut 0, et le
+ * commentaire le dit.
+ */
 function timingsOf(rec) {
   const perf = rec.perf && rec.perf.timings;
-  if (perf) {
-    return {
-      blocked: num(perf.blocked), dns: num(perf.dns), connect: num(perf.connect),
-      send: num(perf.send), wait: num(perf.wait), receive: num(perf.receive),
-      ssl: num(perf.ssl)
+  if (perf && rec.perf.phasesFournies !== false) {
+    const ssl = num(perf.ssl);
+    const tcp = num(perf.connect);
+    const out = {
+      blocked: num(perf.blocked), dns: num(perf.dns),
+      connect: tcp >= 0 ? tcp + (ssl > 0 ? ssl : 0) : -1,
+      send: Math.max(0, num(perf.send)), wait: Math.max(0, num(perf.wait)),
+      receive: Math.max(0, num(perf.receive)),
+      ssl
     };
+    if (num(perf.send) < 0) out.comment = 'send non mesure par le navigateur : compris dans wait';
+    return out;
   }
   const total = rec.duration != null ? rec.duration : -1;
   const marks = Object.fromEntries(rec.timeline.map(t => [t.event, t.ts]));
@@ -69,11 +84,15 @@ function timingsOf(rec) {
   const received = marks['headers:received'] || marks['response:started'] || rec.endTime;
   const wait = sent && received ? Math.max(0, received - sent) : -1;
   const receive = received && rec.endTime ? Math.max(0, rec.endTime - received) : -1;
+  /* Ecarts entre evenements webRequest : c est ce que Firefox a date, sans
+     detail DNS, connexion ni TLS, qui restent donc a -1 (« ne s applique
+     pas ») plutot qu a un zero qui serait une fausse mesure. */
   return {
     blocked: -1, dns: -1, connect: -1, ssl: -1,
     send: 0,
-    wait: wait >= 0 ? wait : (total >= 0 ? total : -1),
-    receive: receive >= 0 ? receive : 0
+    wait: wait >= 0 ? wait : Math.max(0, total),
+    receive: receive >= 0 ? receive : 0,
+    comment: 'phases detaillees non fournies : ecarts entre evenements webRequest'
   };
 }
 const num = v => (typeof v === 'number' && v >= 0 ? v : -1);
@@ -81,7 +100,9 @@ const num = v => (typeof v === 'number' && v >= 0 ? v : -1);
 export function buildHar(records, meta = {}) {
   const entries = records.map(rec => {
     const timings = timingsOf(rec);
-    const time = Object.values(timings).reduce((a, b) => a + (b > 0 ? b : 0), 0);
+    /* `ssl` est deja compris dans `connect` : l ajouter le compterait deux fois. */
+    const time = ['blocked', 'dns', 'connect', 'send', 'wait', 'receive']
+      .reduce((a, k) => a + (timings[k] > 0 ? timings[k] : 0), 0);
     return {
       pageref: 'page_' + (rec.tabId ?? -1),
       startedDateTime: new Date(rec.startTime || Date.now()).toISOString(),

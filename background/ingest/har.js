@@ -25,6 +25,18 @@ const objet = v => (v && typeof v === 'object' && !Array.isArray(v)) ? v : null;
 const listeTextes = v => Array.isArray(v) ? v.filter(x => typeof x === 'string' && x) : [];
 const entier = (v, defaut) => Number.isFinite(Number(v)) ? Number(v) : defaut;
 
+/* La norme HAR range le TLS DANS `connect` ; en interne les phases ne se
+   chevauchent pas. Sans cette conversion, un fichier importe afficherait la
+   negociation TLS deux fois, et une duree totale plus longue que la reelle. */
+function tempsInternes(t) {
+  if (!t) return null;
+  const n = v => (typeof v === 'number' && Number.isFinite(v) ? v : -1);
+  const out = {};
+  for (const cle of ['blocked', 'dns', 'connect', 'ssl', 'send', 'wait', 'receive']) out[cle] = n(t[cle]);
+  if (out.ssl > 0 && out.connect >= out.ssl) out.connect -= out.ssl;
+  return out;
+}
+
 /* Les deux flux portent une liste que l interface compte sans la verifier :
    un `websocket` valant `{}` vidait l onglet Flux au lieu de l afficher. */
 function flux(v, cleListe) {
@@ -147,7 +159,8 @@ export function importHar(har) {
           encodedBodySize: null, decodedBodySize: null,
           duration, startTime: null, redirectCount: listeObjets(extra.redirects).length,
           renderBlockingStatus: null, deliveryType: null, serverTiming: null,
-          timings: objet(entry.timings), workerStart: null
+          timings: tempsInternes(objet(entry.timings)), workerStart: null,
+          phasesFournies: null, responseStatus: null
         };
       }
 
