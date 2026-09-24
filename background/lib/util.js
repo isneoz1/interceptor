@@ -103,8 +103,12 @@ export function throttleFlush(fn, ms) {
   };
 }
 
+/* Un flux compresse de 1 Mo peut se deplier en 1 Go et emporter la page de
+   fond : au-dela, on garde le flux tel quel, marque non decompresse. */
+export const DECOMPRESSE_MAX = 64 * 1024 * 1024;
+
 /** Decompression best-effort si le flux brut arrive encore encode. */
-export async function maybeDecompress(bytes, contentEncoding) {
+export async function maybeDecompress(bytes, contentEncoding, plafond = DECOMPRESSE_MAX) {
   const enc = String(contentEncoding || '').toLowerCase().trim();
   const isGzipMagic = bytes.length > 2 && bytes[0] === 0x1f && bytes[1] === 0x8b;
   const isZlibMagic = bytes.length > 2 && bytes[0] === 0x78 && [0x01, 0x5e, 0x9c, 0xda].includes(bytes[1]);
@@ -112,11 +116,21 @@ export async function maybeDecompress(bytes, contentEncoding) {
   if (isGzipMagic && enc.includes('gzip')) format = 'gzip';
   else if (isZlibMagic && (enc.includes('deflate') || enc.includes('zlib'))) format = 'deflate';
   if (!format || typeof DecompressionStream === 'undefined') return { bytes, decompressed: false };
+  const lecteur = new Blob([bytes]).stream().pipeThrough(new DecompressionStream(format)).getReader();
   try {
-    const ds = new DecompressionStream(format);
-    const stream = new Blob([bytes]).stream().pipeThrough(ds);
-    const buf = await new Response(stream).arrayBuffer();
-    return { bytes: new Uint8Array(buf), decompressed: true };
+    const morceaux = [];
+    let total = 0;
+    for (;;) {
+      const { done, value } = await lecteur.read();
+      if (done) break;
+      total += value.length;
+      if (total > plafond) {
+        await lecteur.cancel().catch(() => {});
+        return { bytes, decompressed: false };
+      }
+      morceaux.push(value);
+    }
+    return { bytes: concatChunks(morceaux, total), decompressed: true };
   } catch {
     return { bytes, decompressed: false };
   }

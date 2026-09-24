@@ -96,7 +96,7 @@ function kvForce(label, value, opts) {
     el('b', { text: String(value) })
   ]);
   if (opts.copy) {
-    row.title = 'Cliquer pour copier';
+    row.title = t('Cliquer pour copier');
     row.addEventListener('click', () => {
       navigator.clipboard.writeText(String(value)).catch(() => {});
       row.classList.add('hl');

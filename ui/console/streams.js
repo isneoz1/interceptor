@@ -96,7 +96,7 @@ function dessiner() {
   });
 
   if (selected == null) {
-    box.appendChild(el('p', { class: 'note', text: 'Choisissez un flux pour voir ses messages.' }));
+    box.appendChild(el('p', { class: 'note', text: t('Choisissez un flux pour voir ses messages.') }));
     return;
   }
 
@@ -122,17 +122,17 @@ function dessiner() {
   if (auto) load(false);
 
   if (!record) {
-    box.appendChild(el('p', { class: 'note', text: 'Lecture du flux…' }));
+    box.appendChild(el('p', { class: 'note', text: t('Lecture du flux…') }));
     return;
   }
 
   box.appendChild(sec('Flux #' + record.id, record.method + ' ' + middle(record.finalUrl || record.url, 90)));
   add(box, kv('Etat', record.state));
   if (record.ws) {
-    add(box, kv('Trames', record.ws.sent + ' envoyees / ' + record.ws.received + ' recues'));
-    add(box, kv('Volume', bytes(record.ws.bytesSent) + ' envoyes / ' + bytes(record.ws.bytesReceived) + ' recus'));
+    add(box, kv('Trames', tp('{envoyees} envoyees / {recues} recues', { envoyees: record.ws.sent, recues: record.ws.received })));
+    add(box, kv('Volume', tp('{envoyes} envoyes / {recus} recus', { envoyes: bytes(record.ws.bytesSent), recus: bytes(record.ws.bytesReceived) })));
     if (record.ws.close) {
-      add(box, kv('Fermeture', 'code ' + record.ws.close.code + ' · ' + (record.ws.close.reason || 'sans motif')));
+      add(box, kv('Fermeture', 'code ' + record.ws.close.code + ' · ' + (record.ws.close.reason || t('sans motif'))));
       // Un code de fermeture nu n apprend rien : la table de reference le dit.
       const fin = decrireFermetureWs(record.ws.close.code);
       if (fin) add(box, kv('Sens du code', t(fin.nom) + ' — ' + t(fin.sens)));

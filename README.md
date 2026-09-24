@@ -14,7 +14,7 @@ Created by **NeoZ**
 ![Manifest V2](https://img.shields.io/badge/Manifest-V2-444?style=flat)
 [![MIT licence](https://img.shields.io/badge/Licence-MIT-00DDFF?style=flat)](LICENSE)
 ![No dependencies](https://img.shields.io/badge/Dependencies-none-2ea043?style=flat)
-![1384 assertions](https://img.shields.io/badge/Assertions-1384-2ea043?style=flat)
+![1547 assertions](https://img.shields.io/badge/Assertions-1547-2ea043?style=flat)
 ![English and French](https://img.shields.io/badge/UI-EN%20%2F%20FR-444?style=flat)
 
 [**Try it in 60 seconds**](#try-it-in-60-seconds) · [**Why not the built-in panel?**](#firefox-already-has-a-network-panel-why-this) · [**Screenshots**](#2-screenshots) · [**How it works**](#4-how-it-works-the-capture-layers) · [**Changelog**](CHANGELOG.md)
@@ -44,7 +44,7 @@ the running tool, driven the way you would drive it.</sub>
 
 <img src="docs/images/vitrine-securite.png" alt="Every finished request is audited on its own, and nothing is reported that cannot be proven" width="100%">
 
-<img src="docs/images/vitrine-outils.png" alt="134 transformations across 23 tools, all computed locally" width="100%">
+<img src="docs/images/vitrine-outils.png" alt="135 transformations across 23 tools, all computed locally" width="100%">
 
 <div align="center">
 <sub><b>Every image on this page is a screenshot of the running tool</b>, not a mockup. They are
@@ -87,6 +87,8 @@ is *why*.
 | Why is this cookie ignored? | The cookie, as sent | The **exact rule it breaks** — prefix, `SameSite`, `Secure`, domain |
 | What did that WebSocket frame mean? | `42["order",{…}]` | *socket.io EVENT "order"* — plus **GraphQL**, **JSON-RPC**, **MQTT**, **WAMP**, **STOMP**, **SignalR**, **SockJS**, **Phoenix**, **Action Cable** and **Pusher**, and **never a label without proof** |
 | Did my gRPC-Web call succeed? | HTTP 200 | The **`grpc-status` in the trailers**, which is what actually decides |
+| What protects this page? | The headers, one by one | **HSTS, CSP, framing, `nosniff`, Referrer-Policy, Permissions-Policy, cross-origin isolation** read together, with what applies when nothing is said |
+| What is in this SSO login? | A base64 blob | The **OAuth 2.0 / OpenID Connect** request checked against RFC 9700, or the **SAML** message decoded — issuer, audience, validity, and **what is actually signed** |
 | Is a secret leaking in this traffic? | — | Every finished request **audited on its own**, with the value masked in the report |
 | Can I change a request before it leaves? | — | **Pause it, edit it, release it** — or block, redirect and rewrite by rule |
 | Can I share this capture safely? | A HAR carrying every token | A HAR with **secrets masked**, next to the faithful one |
@@ -137,7 +139,7 @@ specific points:
 |---|---|
 | **You never hunt for a feature** | `Ctrl+K` opens a command palette over every view, every tool and every action — **and over the 691 reference lines**. Type three letters — `chm` finds *Sites and paths*, `cook` finds *Cookies* — or type `cache-status`, `429`, `PROPFIND` and get the explanation itself. The registry is built from the real tables, so anything added later appears in it without anyone remembering to register it. |
 | **It reads what the browser cannot** | A `application/grpc-web+proto` body is a run of length-prefixed frames, and its **real verdict lives in the trailers** — a gRPC-Web call can answer HTTP 200 and still have failed. The detail panel decodes the frames, the protobuf inside them, and the `grpc-status` that actually decides. |
-| **It checks, rather than repeats** | When a server announces `Content-Digest: sha-256=…`, INTERCEPTOR has the body — so it **recomputes the digest and says whether it matches**, showing both values when it does not. No browser does this. RFC 9530 and the older RFC 3230 form, plus `Content-MD5`. |
+| **It checks, rather than repeats** | When a server announces `Content-Digest: sha-256=…`, INTERCEPTOR **recomputes the digest on the exact bytes it captured and says whether it matches**, showing both values when it does not. The digest covers the compressed stream, and Firefox decodes a compressed response before any extension sees it: so a match proves itself, a mismatch is asserted only for a response that was not compressed, and otherwise the tab says why there is no verdict rather than report a false mismatch. No browser does this. RFC 9530 and the older RFC 3230 form, plus `Content-MD5`. |
 | **It says where the time went** | `Server-Timing` next to the duration actually measured: the server claims 100 of the 214 ms, and the other 114 are network, queueing, or time it does not count. |
 | **It finds the cause, not the symptom** | When a CORS request fails, the browser shows the error on *that* request — while the cause sits in the `OPTIONS` preflight a few rows above. INTERCEPTOR pairs the two and says which header blocked it: a missing `Access-Control-Allow-Methods`, an origin that does not match, or the classic `*` with credentials, which no browser accepts. |
 | **It misses nothing** | Eight capture layers run in parallel: `webRequest`, response bodies via `StreamFilter`, TLS via `securityInfo`, DNS resolution, navigation, cookies, page probes (`fetch`, `XHR`, WebSocket, SSE, Beacon, WebRTC, `PerformanceObserver`), and an optional passive proxy. What one layer misses, another sees. |
@@ -148,8 +150,8 @@ specific points:
 **What it is not**: not a proxy, not a vulnerability scanner, not an attack tool. Everything
 happens inside your Firefox, on your machine.
 
-**By the numbers**: 177 JavaScript modules, ~37,400 lines, zero external dependencies,
-1384 automated assertions, English and French interface.
+**By the numbers**: 185 JavaScript modules, ~39,000 lines, zero external dependencies,
+1547 automated assertions, English and French interface.
 
 ---
 
@@ -223,7 +225,7 @@ What exists on the visited sites, host by host, reconstructed from observed traf
 
 ### The toolbox
 
-134 transformations across 23 tools, grouped into six families by intent: decode, hash, measure, inspect — everything is
+135 transformations across 23 tools, grouped into six families by intent: decode, hash, measure, inspect — everything is
 computed locally, nothing leaves the machine.
 
 ![Toolbox](docs/images/console-outils.png)
@@ -463,9 +465,9 @@ previous or next request **in displayed order**, filters included.
 | Tab | Contents |
 |---|---|
 | **Summary** | Identity (method, URL, status with its meaning, media type), network (IP, real protocol, cache, on-the-wire sizes, performance metrics), context (tab, window, frame, document, origin, third-party, Firefox tracking classification), and the free-text annotation. |
-| **Headers** | URL parameters, request headers, response headers, headers as seen by page JavaScript. Every known header is explained on hover. Then two computed analyses: **HTTP freshness** (RFC 9111: freshness lifetime, current age broken down, time remaining, validators, `Vary`, directives) and the **CSP policy** (each directive with its meaning, then a plain statement of what the policy allows). |
-| **Request** | The body sent: nature, source, declared type, encoding, compression. Automatic JSON formatting, form fields broken out, and **`multipart/form-data` bodies decoded part by part** (field name, filename, type, content). |
-| **Response** | The body received, with the same treatment, plus image preview and hex rendering for binary. |
+| **Headers** | URL parameters, request headers, response headers, headers as seen by page JavaScript. Every known header is explained on hover. Then two computed analyses: **HTTP freshness** (RFC 9111: freshness lifetime, current age broken down, time remaining, validators, `Vary`, directives) and the **CSP policy** (each directive with its meaning, then a plain statement of what the policy allows). Then the **response protections** — HSTS (and whether Firefox already enforces it for the host), CSP, framing, `nosniff`, the effective Referrer-Policy, Permissions-Policy, COOP / COEP / CORP and cross-origin isolation, and what the server says about itself — as facts, never as alerts. For a page, **a CSP derived from what it actually loaded**, ready to try in Report-Only, with what the network cannot show stated plainly. |
+| **Request** | The body sent: nature, source, declared type, encoding, compression. Automatic JSON formatting, form fields broken out, and **`multipart/form-data` bodies decoded part by part** (field name, filename, type, content). An **OAuth 2.0 / OpenID Connect** authorization or token request is read — flow, PKCE, `state`, `nonce`, redirect URI — and checked against RFC 6749, RFC 7636 and RFC 9700, without ever reproducing a secret. A **SAML** message is decoded in both bindings: issuer, subject, audience, validity at capture time, and **which element is signed** — the response, the assertion, or nothing. |
+| **Response** | The body received, with the same treatment, plus image preview and hex rendering for binary. An OAuth token response is summarised. For a script or stylesheet, the **Subresource Integrity hashes** (SHA-256, -384, -512) and a ready `integrity` tag — computed at capture time on the exact bytes the page received, and refused only when the body was truncated. |
 | **Cookies** | Cookies set and changed by this request, with all attributes detailed. |
 | **Security** | TLS version, cipher suite, key exchange, forward secrecy, ECH, HSTS — and **every certificate of the chain read in full from its DER bytes**, like Firefox's certificate viewer: the names it covers (DNS, IP, email, URI), key algorithm and size, key usages, whether it is a certificate authority, the validation level it declares (DV, OV, IV or EV), where to check revocation (OCSP, CRL), the issuer's certificate, key identifiers, and the embedded Certificate Transparency proofs with their log and timestamp. One click copies the PEM or opens it in the toolbox. |
 | **Alerts** | The analyser's findings for this request, each with its evidence. |
@@ -558,6 +560,19 @@ evidence, in plain language.
 | `__Host-` / `__Secure-` prefix not honoured | medium | The prefix's requirements are not met: **the browser rejects the cookie** |
 | `SameSite=None` without `Secure` | medium | The combination is refused by the browser |
 | Secrets in bodies and headers | varies | A value matching a known provider's exact format, which cannot be confused with anything else |
+| CSP nonce reused | medium | The same `nonce-…` appears in the CSP of two distinct responses: a nonce only protects if it is unpredictable, and an injected script can reuse this one. Cached responses and `304`s are not counted |
+
+### Facts, not alerts
+
+Some observations are exactly true without being a vulnerability by themselves. They are shown in
+the Alerts tab with their evidence, tagged in the table, and **never counted as alerts**:
+
+- **A parameter comes back in the response** — the value of a query or form parameter appears
+  verbatim in the body, and whether its special characters came back unescaped (tags `reflete`
+  and `reflete-brut`). It is where anyone testing an injection starts; nothing says in which
+  context the value lands, so nothing more is claimed.
+- **A redirect leads exactly to a parameter's value** — the shape of an open redirect (tag
+  `redirection-parametree`); it does not prove the server would accept any value.
 
 ### What was deliberately removed, and why
 
@@ -577,12 +592,12 @@ own secret and tracker patterns in the settings.
 
 ## 11. The toolbox: 23 tools in 6 families
 
-134 transformations, 23 tools grouped into six families by what you are trying to do — decode and convert, encryption and digests, network and HTTP, read and measure, search and compare, produce — **all computed locally**. A row's context menu, and the
+135 transformations, 23 tools grouped into six families by what you are trying to do — decode and convert, encryption and digests, network and HTTP, read and measure, search and compare, produce — **all computed locally**. A row's context menu, and the
 "Toolbox" buttons in the detail panel, send a value straight into it.
 
 | Family | Contents |
 |---|---|
-| **Transform** | The full catalogue of 134 transformations, grouped: bases, text, web, casing, Unicode normalisation, lines… |
+| **Transform** | The full catalogue of 135 transformations, grouped: bases, text, web, casing, Unicode normalisation, lines… |
 | **Keys and trials** | XOR (including single-byte key search), Vigenère, Caesar across all 26 shifts |
 | **Encryption** | AES-GCM / CBC / CTR, PBKDF2 derivation, RSA and ECDSA signing and verification |
 | **JWT** | Header and payload decoding, labels for standard claims, signature verification with a key, **JWK thumbprint (RFC 7638)** |
@@ -831,7 +846,7 @@ ui/                        The interface — one page for all four surfaces
 ├── console/               One view per file, plus the detail panel
 └── lib/                   Codecs, digests, network, reference tables, i18n
 
-tests/                     1384 assertions, no browser required
+tests/                     1547 assertions, no browser required
 tools/sockets.mjs          Real WebSockets against a real server: page, worker, WebRTC
 tools/transparence.mjs     What a page can tell about the probes — it should be nothing
 tools/minutage.mjs         Network timing phases in a real browser: only real measurements
@@ -892,7 +907,7 @@ French at the flip of a setting.
 npm test
 ```
 
-1384 assertions, with no browser and no dependencies. The kernel and interface modules are
+1547 assertions, with no browser and no dependencies. The kernel and interface modules are
 written for Firefox; `tests/harnais.mjs` supplies the minimum WebExtension API and DOM they
 need to import and run under Node. **The logic under test is exactly the logic that runs in
 the browser, with no rewriting.**
@@ -901,11 +916,12 @@ the browser, with no rewriting.**
 |---|---|---|
 | `core.test.mjs` | 228 | URL normalisation, correlation signatures, the store, the rule engine (both ways: what matches **and** what must not), the security analyser rule by rule, HAR export, curl import, all 39 code generators |
 | `avance.test.mjs` | 469 | WebSocket and HTTP/2 frames, CSP, RFC 9111 freshness, multipart, canonical URLs and homographs, protocol tables, binary structures, rare digests, generators |
-| `ui-load.test.mjs` | 231 | Actual loading of the 135 interface modules, complete module graph (no dead import, no file outside the graph), consistency with the HTML pages and the manifest, **full translation coverage** — every displayed string must have a dictionary entry, including labels that reach the translator through a table (`allRows` labels, search help, CSP directive meanings) — and **measured contrast**: every colour pair in both themes is checked against the WCAG 2.1 thresholds |
+| `ui-load.test.mjs` | 237 | Actual loading of the 141 interface modules, complete module graph (no dead import, no file outside the graph), consistency with the HTML pages and the manifest, **full translation coverage** — every displayed string must have a dictionary entry, including labels that reach the translator through a table (`allRows` labels, search help, CSP directive meanings) — and **measured contrast**: every colour pair in both themes is checked against the WCAG 2.1 thresholds |
 | `detail-coverage.test.mjs` | 128 | Each of a record's 60 fields is displayed, each tab has a render function, each searchable field exists |
 | `outils.test.mjs` | 108 | The toolbox, against published vectors |
-| `rendu.test.mjs` | 54 | The interface **actually rendered**: sixteen views against three captures, the eleven detail tabs, the twenty-two toolbox panels against thirty-two hostile inputs, and 264 deliberately malformed HAR files — then a fragment-by-fragment comparison of both languages, so nothing can stay in French on an English screen. It also counts the commands each view sends the kernel: **a view that re-renders itself in a loop is caught in a second instead of freezing the tab**. Finally the translator itself reports every text it could not translate while everything is rendered in English: a French sentence that arrives through a variable can no longer hide |
+| `rendu.test.mjs` | 70 | The interface **actually rendered**: sixteen views against three captures, the eleven detail tabs, the twenty-two toolbox panels against thirty-two hostile inputs, and 264 deliberately malformed HAR files — then a fragment-by-fragment comparison of both languages, so nothing can stay in French on an English screen. It also counts the commands each view sends the kernel: **a view that re-renders itself in a loop is caught in a second instead of freezing the tab**. Finally the translator itself reports every text it could not translate while everything is rendered in English: a French sentence that arrives through a variable can no longer hide |
 | `lectures.test.mjs` | 166 | What 4.4 reads, checked against its sources: the HAR timing rules (TLS inside `connect`, counted once), every WebSocket subprotocol **and every text that must receive no label**, MQTT packet by packet, the certificate reader **cross-checked against the OpenSSL X.509 parser built into Node**, and the Firefox search criteria |
+| `securite.test.mjs` | 141 | The security tools against independent references — gzip and DEFLATE made by `node:zlib`, digests by `node:crypto`: the analyser's facts and the reused-nonce alert, digests judged only on what the captured bytes can prove, hostile SAML input and DEFLATE bombs, every response protection, the derived CSP, OAuth 2.0 against RFC 9700, and SAML in both bindings, down to **which element is signed** |
 
 Expected values come from published sources: RFC vectors (4226, 6238, 6455, 4231, 7541, 9113,
 3986, 7578, 9111, 8187, 2231, 2047, 6266, 7638, 8941, and ZeroMQ RFC 32), standard check values (all 20 CRC variants are verified against their
@@ -921,8 +937,8 @@ for UUIDs.
 .\build.ps1            # verify, test, then write dist/interceptor-<version>.xpi
 ```
 
-The script checks that the 153 required files are present and that every surface declared in
-the manifest exists on disk, then runs the seven test suites. **If a test fails, the build
+The script checks that the 161 required files are present and that every surface declared in
+the manifest exists on disk, then runs the eight test suites. **If a test fails, the build
 stops.**
 
 Works with Windows PowerShell 5.1 as well as PowerShell 7.
@@ -935,7 +951,7 @@ node tools/captures.mjs
 
 ### Audits that need a real browser
 
-The seven test suites run under Node with no browser, which is what lets them run everywhere.
+The eight test suites run under Node with no browser, which is what lets them run everywhere.
 Two things cannot be checked that way, because they only exist once a layout engine is
 involved — so they live as tools, and each prints a verdict and an exit code:
 
@@ -1007,7 +1023,7 @@ the file. It contains internal errors and the command log — not your traffic.
 Before opening a pull request:
 
 ```bash
-npm test              # all 1384 assertions must pass
+npm test              # all 1547 assertions must pass
 .\build.ps1 -Verify   # the build must be green
 ```
 

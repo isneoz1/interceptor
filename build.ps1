@@ -95,6 +95,14 @@ $required = @(
   'ui/lib/asn1.js',
   'ui/lib/minutage.js',
   'ui/lib/redessin.js',
+  'ui/lib/protections.js',
+  'ui/lib/csp-observee.js',
+  'ui/lib/oauth.js',
+  'ui/lib/saml.js',
+  'ui/lib/dict-en-securite.js',
+  'ui/console/securite-detail.js',
+  'background/core/analyzer-faits.js',
+  'background/capture/empreintes.js',
   'ui/lib/mqtt.js',
   'ui/lib/sous-protocoles.js',
   'ui/lib/sous-protocoles-plus.js',
@@ -216,7 +224,9 @@ if ($node) {
     @{ titre = 'Rendu de l interface';        fichier = 'tests/rendu.test.mjs';
        echec = 'Une vue, un onglet ou un panneau ne se rend pas' },
     @{ titre = 'Lectures du trafic';          fichier = 'tests/lectures.test.mjs';
-       echec = 'Une lecture du trafic est fausse ou invente une valeur' }
+       echec = 'Une lecture du trafic est fausse ou invente une valeur' },
+    @{ titre = 'Outils de securite';          fichier = 'tests/securite.test.mjs';
+       echec = 'Un outil de securite affirme ce qui n est pas prouve' }
   )
 
   $totalAssertions = 0

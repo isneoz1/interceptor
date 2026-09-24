@@ -269,7 +269,7 @@ export const LESSONS = [
       { p: 'Un seul **texte de travail**, vingt et un onglets qui le regardent. On colle une valeur une fois — depuis le presse-papiers, depuis le menu contextuel d une ligne, ou depuis le bouton « Boite a outils » d un corps de reponse — et chaque outil travaille dessus.' },
       { p: 'Tout se calcule dans la page. Aucun de ces outils n emet la moindre requete : ni au chargement, ni au clic.' },
       { ul: [
-        '**Transformer** : 121 transformations. « Tout essayer » applique chaque decodage et ne garde que les resultats lisibles — c est la bonne premiere action sur une valeur inconnue.',
+        '**Transformer** : 135 transformations. « Tout essayer » applique chaque decodage et ne garde que les resultats lisibles — c est la bonne premiere action sur une valeur inconnue.',
         '**JWT** : entete, charge utile, expiration, et la signature reellement verifiee si vous fournissez la cle (douze algorithmes, cle partagee ou cle publique).',
         '**Chiffrement** et **Empreintes** : AES, PBKDF2, HKDF, MD5, SHA, CRC-32, HMAC.',
         '**Binaire** : Protocol Buffers, MessagePack, CBOR, certificats X.509, jeux de caracteres.',
@@ -303,7 +303,7 @@ export const LESSONS = [
         'Le trafic hors Firefox : c est le navigateur qui est observe, pas le systeme.',
         'La pile JavaScript des requetes emises depuis un Worker.',
         'Le contenu des flux de donnees WebRTC (la signalisation, elle, est journalisee).',
-        'Brotli : Firefox decode le plus souvent avant nous ; gzip et deflate sont decompresses.'
+        'Corps compresses : Firefox les decode avant toute extension ; le flux compresse n est pas vu. S il arrive encore compresse, gzip et deflate sont decompresses ici.'
       ] },
       { p: 'Vous savez tout. L aide reste disponible a tout moment, et ce tutoriel peut etre relance depuis les reglages.' }
     ],

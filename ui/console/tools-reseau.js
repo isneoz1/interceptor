@@ -70,7 +70,7 @@ export function panneauUrl(entree) {
   add(box, kv('Deux dernieres etiquettes', u.deuxEtiquettes));
   box.appendChild(el('p', { class: 'note', text:
     t('Le domaine reellement enregistrable demande la liste publique des suffixes : les deux dernieres etiquettes n en sont qu une approximation.') }));
-  add(box, kv('Adresse IP en guise d hote', u.estAdresseIp ? 'oui' : null));
+  add(box, kv('Adresse IP en guise d hote', u.estAdresseIp ? t('oui') : null));
   add(box, kv('Identifiant dans l URL', u.utilisateur, { copy: true }));
   if (u.motDePasse) {
     add(box, kv('Mot de passe dans l URL', u.motDePasse, { copy: true }));

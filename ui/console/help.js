@@ -84,7 +84,7 @@ const SECTIONS = [
       'Un seul texte de travail, vingt et un onglets qui le regardent. On colle une valeur une fois — depuis le presse-papiers, depuis le menu contextuel d une ligne, ou depuis un onglet du detail — et chaque outil travaille dessus. Tout se calcule dans la page : aucune de ces fonctions n emet la moindre requete.'
     ],
     table: [
-      ['Transformer', '121 transformations classees en dix-huit familles : base64 et base64 URL, base32, base58, base45, Ascii85, URL, entites HTML, hexadecimal, binaire, octal, echappements Unicode, punycode, JSON, YAML, CSV, XML, gzip et deflate, casse, lignes, echappements de chaine, Protocol Buffers, MessagePack, CBOR, ASN.1. « Tout essayer » applique chaque decodage et ne garde que les resultats lisibles.'],
+      ['Transformer', '135 transformations classees en dix-huit familles : base64 et base64 URL, base32, base58, base45, Ascii85, URL, entites HTML, hexadecimal, binaire, octal, echappements Unicode, punycode, JSON, YAML, CSV, XML, SAML, gzip et deflate, casse, lignes, echappements de chaine, Protocol Buffers, MessagePack, CBOR, ASN.1. « Tout essayer » applique chaque decodage et ne garde que les resultats lisibles.'],
       ['Cles et essais', 'XOR avec cle repetee, recherche des 255 cles d un octet, les vingt-cinq decalages de Cesar, Vigenere. Ces chiffres ne protegent rien : ils relisent une valeur volontairement obscurcie.'],
       ['JWT', 'Entete, charge utile, validite, temps restant. La signature se verifie vraiment, sur les douze algorithmes courants : HS256 a HS512 avec la cle partagee, RS, PS et ES avec la cle publique collee en PEM ou en JWK. Sans cle, l ecran le dit, plutot que de laisser croire qu un jeton decode est un jeton valide.'],
       ['Chiffrement', 'AES-GCM, AES-CBC et AES-CTR dans les deux sens, avec vecteur d initialisation et donnees authentifiees ; derivation PBKDF2 et HKDF ; verification d une signature detachee RSA, RSA-PSS, ECDSA ou HMAC. Tout passe par le moteur du navigateur, rien ne sort de la machine.'],
@@ -93,10 +93,10 @@ const SECTIONS = [
       ['Mesures', 'Caracteres, octets, lignes, mots, entropie de Shannon, frequence des caracteres, et reperage des caracteres invisibles qui servent a masquer du contenu.'],
       ['Hexadecimal', 'Vidage classique : decalage, seize octets, colonne lisible.'],
       ['Identifier', 'Ce que la forme du texte laisse deviner : famille d empreinte, signature de fichier dans les premiers octets, alphabet employe. Des candidats, jamais un verdict.'],
-      ['Horodatage', 'Onze origines possibles (Unix en secondes, millisecondes, microsecondes et nanosecondes, FILETIME Windows, Chrome, HFS, Apple, ticks .NET, serie Excel, jour julien) et toutes les ecritures d un meme instant. Lit aussi les durees ecrites « 1d12h ».'],
+      ['Horodatage', 'Quatorze origines possibles (Unix en secondes, millisecondes, microsecondes et nanosecondes, FILETIME Windows, Chrome, HFS, Apple, ticks .NET, serie Excel, jour julien, NTP, GPS, et la date MS-DOS des archives ZIP) et toutes les ecritures d un meme instant. Lit aussi les durees ecrites « 1d12h ».'],
       ['Nombres', 'Un entier reecrit dans toutes les bases, sans perte de chiffre, avec ses proprietes et sa lecture en adresse IPv4 ou en port.'],
       ['Structures', 'Parametres d URL, cookies et entetes reconnus dans le texte colle.'],
-      ['Entetes', 'Vingt-quatre entetes decoupes en detail : Set-Cookie et ses attributs, politique de securite, HSTS, Cache-Control, Accept pondere, Authorization. Chaque manque reel est signale — un attribut absent, une directive qui annule la protection.'],
+      ['Entetes', 'Trente-trois entetes decoupes en detail : Set-Cookie et ses attributs, politique de securite, HSTS, Cache-Control, Accept pondere, Authorization. Chaque manque reel est signale — un attribut absent, une directive qui annule la protection.'],
       ['Chercher', 'Vingt motifs tout prets (courriel, adresse, empreinte, jeton, cle privee), chemins dans un JSON, selecteurs CSS et XPath dans du HTML, et la cle de Luhn.'],
       ['Expression reguliere', 'Correspondances, groupes captures, position, et remplacement applique.'],
       ['Comparer', 'Le texte de travail confronte a un autre : lignes ajoutees, retirees, communes, premiere difference au caractere pres, comparaison mot a mot et format unifie.'],
@@ -183,7 +183,7 @@ const SECTIONS = [
       'Trafic hors Firefox : INTERCEPTOR observe le navigateur, pas le systeme.',
       'Requetes emises depuis un Worker : capturees, mais sans pile JavaScript.',
       'Flux de donnees WebRTC : la signalisation et les candidats sont journalises, pas le contenu des flux.',
-      'Brotli : Firefox decode generalement avant le filtre ; gzip et deflate sont decompresses si besoin.'
+      'Corps compresses : Firefox les decode (gzip, deflate, Brotli, zstd) avant toute extension, et le flux compresse lui-meme n est pas vu. Un corps qui arrive encore compresse est decompresse ici s il est en gzip ou deflate.'
     ]
   },
   {

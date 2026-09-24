@@ -12,6 +12,8 @@ import { config } from '../core/config.js';
 import { store } from '../core/store.js';
 import { hexPreview } from './bodies.js';
 import { mockFor, replaceFor, noteReplace, noteReplaceSkipped } from '../rules/engine.js';
+import { empreintesDeReponse } from './empreintes.js';
+import { analyze } from '../core/analyzer.js';
 
 export const filterState = {
   supported: typeof B !== 'undefined' && !!(B.webRequest && B.webRequest.filterResponseData),
@@ -114,7 +116,10 @@ export function attachFilter(rec, requestId, headers) {
     done = true;
     filterState.active--;
     try {
-      let bytes = concatChunks(chunks, kept);
+      /* Les octets tels que le filtre les a remis, et transmis a la page :
+         d ordinaire deja decodes par Firefox (voir empreintes.js). */
+      const recus = concatChunks(chunks, kept);
+      let bytes = recus;
       let decompressed = false;
       if (bytes.length) {
         const r = await maybeDecompress(bytes, ceHeader);
@@ -125,6 +130,11 @@ export function attachFilter(rec, requestId, headers) {
         mime, charset, total, truncated, decompressed,
         contentEncoding: ceHeader || '', status
       });
+      /* Asynchrone : crypto.subtle rend une promesse, et la capture ne doit
+         pas attendre un calcul d empreinte pour avancer. */
+      empreintesDeReponse(rec, recus, {
+        contentEncoding: ceHeader || '', truncated, status: rec.statusCode
+      }).catch(() => { /* empreinte impossible : le corps reste affiche */ });
       if (mock && rec.responseBody) {
         rec.responseBody.replacedBy = {
           rule: mock.rule, contentType: mock.contentType,
@@ -231,5 +241,11 @@ export function applyResponseBody(rec, bytes, meta) {
     store.stats.bytesDown += meta.total;
   }
   store.mark(rec, 'body:captured', Date.now(), { bytes: meta.total, truncated: body.truncated });
+  /* Le corps arrive souvent APRES onCompleted : le filtre signale la fin du
+     flux a part, et la decompression est asynchrone. L analyse faite alors
+     n avait pas vu le corps — ni les secrets qu il contient, ni les
+     parametres qu il renvoie. On la refait, comme pour un corps remonte par
+     la sonde de page. */
+  if (rec.analysis) analyze(rec, { force: true });
   store.touch(rec.id);
 }

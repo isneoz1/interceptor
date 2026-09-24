@@ -122,7 +122,7 @@ function dessiner() {
   const list = filtered();
   box.appendChild(sec('Detail', list.length + ' alerte(s)'));
   if (!list.length) {
-    box.appendChild(el('p', { class: 'note', text: 'Aucune alerte ne correspond aux filtres choisis.' }));
+    box.appendChild(el('p', { class: 'note', text: t('Aucune alerte ne correspond aux filtres choisis.') }));
     return;
   }
 

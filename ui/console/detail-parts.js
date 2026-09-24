@@ -19,12 +19,10 @@ import { analyserCsp } from '../lib/csp.js';
 import { analyserFraicheur, resumerFraicheur } from '../lib/cache-http.js';
 import { estGrpcWeb, estGrpcWebTexte, lireGrpcWeb, resumerGrpcWeb } from '../lib/grpc-web.js';
 import { estPreflight, verdictPreflight, apparierPreflights } from '../lib/cors-preflight.js';
-import { ENTETES_INTEGRITE, lireEmpreintes, verifierEmpreintes, resumerVerification }
-  from '../lib/integrite.js';
 import { lireServerTiming, comparerAuMesure, resumerServerTiming }
   from '../lib/server-timing.js';
-import { base64VersOctets, texteVersOctets } from '../lib/bytes.js';
 import { analyserMultipart } from '../lib/multipart.js';
+import * as securite from './securite-detail.js';
 
 /** Rend toutes les cles d un objet, y compris celles qu on n a pas prevues. */
 export function allRows(obj, labels = {}, skip = []) {
@@ -47,7 +45,7 @@ export function allRows(obj, labels = {}, skip = []) {
       out.appendChild(el('div', { class: 'tree' }, jsonTree(value, label)));
       continue;
     }
-    add(out, kv(label, value === true ? 'oui' : value));
+    add(out, kv(label, value === true ? t('oui') : value));
   }
   return out;
 }
@@ -56,7 +54,7 @@ function headerBlock(title, list) {
   const box = frag();
   box.appendChild(sec(title, (list || []).length + ' entete(s)'));
   if (!list || !list.length) {
-    box.appendChild(el('p', { class: 'note', text: 'Aucun entete capture pour cette phase.' }));
+    box.appendChild(el('p', { class: 'note', text: t('Aucun entete capture pour cette phase.') }));
     return box;
   }
   const sorted = [...list].sort((a, b) => String(a.name).localeCompare(String(b.name)));
@@ -79,7 +77,7 @@ export function resume(rec) {
   add(box, kv('Methode', rec.method, { hl: true }));
   add(box, kv('URL', rec.url, { copy: true }));
   if (rec.finalUrl && rec.finalUrl !== rec.url) add(box, kv('URL finale', rec.finalUrl, { copy: true }));
-  add(box, kv('Statut', rec.statusLine || rec.statusCode || rec.error || 'en cours', { hl: true }));
+  add(box, kv('Statut', rec.statusLine || rec.statusCode || rec.error || t('en cours'), { hl: true }));
   const statut = decrireStatut(rec.statusCode);
   if (statut) add(box, kv('Sens du statut', statut.nom + '  —  ' + t(statut.sens)));
   if (rec.statusCode) add(box, kv('Famille du statut', t(familleStatut(rec.statusCode))));
@@ -97,7 +95,7 @@ export function resume(rec) {
   add(box, kv('Horodatage', iso(rec.startTime)));
   add(box, kv('Identifiant', rec.id));
   add(box, kv('requestId Firefox', rec.requestId));
-  add(box, kv('Epinglee', rec.flag ? 'oui' : null));
+  add(box, kv('Epinglee', rec.flag ? t('oui') : null));
   add(box, kv('Annotation', rec.note || null));
   add(box, kv('Marquage couleur', rec.color || null));
   box.appendChild(annotation(rec));
@@ -105,8 +103,8 @@ export function resume(rec) {
   box.appendChild(sec('Reseau'));
   add(box, kv('Adresse IP', rec.ip, { hl: true, copy: true }));
   add(box, kv('Protocole reel', rec.perf && rec.perf.nextHopProtocol));
-  add(box, kv('Depuis le cache', rec.fromCache ? 'oui' : null));
-  add(box, kv('Sans trace reseau', rec.networkless ? 'oui (cache, Service Worker ou requete bloquee)' : null));
+  add(box, kv('Depuis le cache', rec.fromCache ? t('oui') : null));
+  add(box, kv('Sans trace reseau', rec.networkless ? t('oui (cache, Service Worker ou requete bloquee)') : null));
   if (rec.dns) {
     add(box, kv('Nom canonique', rec.dns.canonicalName));
     add(box, kv('Adresses resolues', (rec.dns.addresses || []).join(', ')));
@@ -134,14 +132,14 @@ export function resume(rec) {
   add(box, kv('Cadre', rec.frameId + (rec.parentFrameId >= 0 ? '  (parent ' + rec.parentFrameId + ')' : '')));
   add(box, kv('Document', rec.documentUrl, { copy: true }));
   add(box, kv('Origine', rec.originUrl, { copy: true }));
-  add(box, kv('Tierce partie', rec.thirdParty ? 'oui' : null));
+  add(box, kv('Tierce partie', rec.thirdParty ? t('oui') : null));
   add(box, kv('Classement de pistage Firefox', rec.urlClassification
     ? [...new Set([...(rec.urlClassification.firstParty || []), ...(rec.urlClassification.thirdParty || [])])].join(', ')
     : null, { hl: true }));
   add(box, kv('Cadres parents', rec.frameAncestors && rec.frameAncestors.length
     ? rec.frameAncestors.map(f => f.url).join('  <-  ') : null));
-  add(box, kv('Origine de la ligne', rec.imported ? 'importee depuis un fichier HAR' : null));
-  add(box, kv('Navigation privee', rec.incognito ? 'oui' : null));
+  add(box, kv('Origine de la ligne', rec.imported ? t('importee depuis un fichier HAR') : null));
+  add(box, kv('Navigation privee', rec.incognito ? t('oui') : null));
   add(box, kv('Conteneur', rec.cookieStoreId));
   add(box, kv('Couches de capture', (rec.sources || []).join(' + '), { hl: true }));
   add(box, kv('Fusions', rec.dedup && rec.dedup.merged ? rec.dedup.merged + ' (' + (rec.dedup.mergedFrom || []).join(', ') + ')' : null));
@@ -209,9 +207,13 @@ export function headers(rec) {
   /* Le preflight se lit avec les entetes : c est la qu on cherche quand une
      requete CORS echoue, et la cause vit dans une AUTRE ligne. */
   box.appendChild(cors(rec));
-  box.appendChild(integrite(rec));
+  box.appendChild(securite.integrite(rec));
   box.appendChild(serverTiming(rec));
   box.appendChild(politique(rec));
+  /* Ce qui protege la reponse, et pour une page la CSP que ses chargements
+     reels permettraient : des faits, jamais des alertes. */
+  box.appendChild(securite.protections(rec));
+  box.appendChild(securite.cspObservee(rec));
   return box;
 }
 
@@ -404,72 +406,6 @@ function lienVers(rec, texte) {
   return el('div', { class: 'actions' }, bouton);
 }
 
-/* ------------------------ Integrite du corps ------------------------------ */
-/* Un serveur peut annoncer l empreinte de ce qu il envoie. INTERCEPTOR a le
-   corps : il peut donc la VERIFIER, ce que le navigateur ne fait pas. On ne
-   dit pas « le serveur annonce sha-256=… », on dit si cela correspond. */
-function integrite(rec) {
-  const box = frag();
-  const recu = objetEntetes(rec.responseHeaders);
-  const envoye = objetEntetes(rec.requestHeaders);
-
-  for (const [nom, quoi] of Object.entries(ENTETES_INTEGRITE)) {
-    /* L en-tete peut venir de la reponse (le serveur annonce ce qu il rend)
-       ou de la requete (le client annonce ce qu il envoie). */
-    const surReponse = recu[nom];
-    const surRequete = envoye[nom];
-    for (const [valeur, corps, sens] of [
-      [surReponse, rec.responseBody, 'reponse'],
-      [surRequete, rec.requestBody, 'requete']
-    ]) {
-      if (!valeur) continue;
-      let annonces;
-      try { annonces = lireEmpreintes(nom, valeur); }
-      catch (e) {
-        box.appendChild(el('p', { class: 'note ko',
-          text: tp('{entete} illisible : {raison}', { entete: nom, raison: e.message }) }));
-        continue;
-      }
-      if (!annonces.length) continue;
-
-      const titre = nom + '  ·  ' + t(sens);
-      box.appendChild(sec(titre, t(quoi.porte)));
-      for (const a of annonces) {
-        add(box, kv(a.algorithme, a.base64, { copy: true }));
-        if (a.sens) box.appendChild(el('p', { class: 'note', text: t(a.sens) }));
-      }
-
-      /* Le verdict arrive apres : crypto.subtle est asynchrone, et une
-         interface qui attend un calcul pour dessiner parait bloquee. */
-      const verdict = el('p', { class: 'note', text: t('Verification en cours…') });
-      box.appendChild(verdict);
-      const octets = corps && (corps.base64 != null || corps.text != null)
-        ? (corps.base64 != null ? base64VersOctets(corps.base64) : texteVersOctets(corps.text))
-        : null;
-      if (!octets) {
-        verdict.textContent = t('Corps non capture : l empreinte ne peut pas etre verifiee.');
-        verdict.className = 'note warn';
-        continue;
-      }
-      verifierEmpreintes(nom, valeur, octets).then(resultats => {
-        const differe = resultats.some(r => r.verdict === 'differe');
-        const conforme = resultats.some(r => r.verdict === 'correspond');
-        const dit = resumerVerification(resultats);
-        verdict.textContent = dit ? tp(dit.cle, dit.valeurs) : '';
-        verdict.className = 'note ' + (differe ? 'ko' : conforme ? 'ok' : 'warn');
-        for (const r of resultats) {
-          if (r.verdict !== 'differe') continue;
-          add(box, kv(t('Empreinte calculee'), r.calcule, { copy: true, tone: 'ko' }));
-        }
-      }).catch(() => {
-        verdict.textContent = t('Verification impossible dans ce contexte.');
-        verdict.className = 'note warn';
-      });
-    }
-  }
-  return box;
-}
-
 /* --------------------------- Server-Timing -------------------------------- */
 /* La requete a mis 214 ms. Combien le serveur en revendique-t-il ? C est la
    seule facon de savoir si le probleme est chez lui ou sur le chemin. */
@@ -526,7 +462,7 @@ function bodyViewer(body, title, mimeHint) {
   const box = frag();
   if (!body) {
     box.appendChild(sec(title));
-    box.appendChild(el('p', { class: 'note', text: 'Aucun corps pour cette requete.' }));
+    box.appendChild(el('p', { class: 'note', text: t('Aucun corps pour cette requete.') }));
     return box;
   }
 
@@ -647,7 +583,7 @@ function bodyViewer(body, title, mimeHint) {
       el('button', { class: 'btn sm', type: 'button', on: { click: () => copy(body.base64, 'Base64 copie') } }, 'Copier le base64')));
   }
   if (!text && !body.preview && !body.base64 && !body.formData) {
-    box.appendChild(el('p', { class: 'note', text: 'Corps present mais non textuel, ou capture desactivee dans les reglages.' }));
+    box.appendChild(el('p', { class: 'note', text: t('Corps present mais non textuel, ou capture desactivee dans les reglages.') }));
   }
   return box;
 }
@@ -746,8 +682,22 @@ function partiesMultipart(texte, contentType) {
   return box;
 }
 
-export function requestBody(rec) { return bodyViewer(rec.requestBody, 'Corps envoye', rec.requestBody && rec.requestBody.contentType); }
-export function responseBody(rec) { return bodyViewer(rec.responseBody, 'Corps recu', rec.mime); }
+/* Une demande OAuth ou un message SAML se lisent AVANT le corps brut : c est
+   ce qu on vient y chercher. Rien ne s affiche quand il n y en a pas. */
+export function requestBody(rec) {
+  const box = frag();
+  box.appendChild(securite.oauthDemande(rec));
+  box.appendChild(securite.saml(rec));
+  box.appendChild(bodyViewer(rec.requestBody, 'Corps envoye', rec.requestBody && rec.requestBody.contentType));
+  return box;
+}
+export function responseBody(rec) {
+  const box = frag();
+  box.appendChild(securite.oauthReponse(rec));
+  box.appendChild(securite.sri(rec));
+  box.appendChild(bodyViewer(rec.responseBody, 'Corps recu', rec.mime));
+  return box;
+}
 
 /* Annotation d une ligne : commentaire libre et marquage couleur. Les deux
    sont cherchables (`note:` et `color:`) et suivent la ligne partout. */
@@ -773,8 +723,8 @@ function annotation(rec) {
                                 ['jaune', 'Jaune'], ['vert', 'Vert'], ['bleu', 'Bleu'],
                                 ['violet', 'Violet']]) {
     const btn = el('button', {
-      class: 'btn sm' + (rec.color === cle ? ' on' : ''), type: 'button', title: libelle
-    }, (rec.color === cle ? '● ' : '○ ') + libelle);
+      class: 'btn sm' + (rec.color === cle ? ' on' : ''), type: 'button', title: t(libelle)
+    }, (rec.color === cle ? '● ' : '○ ') + t(libelle));
     btn.addEventListener('click', async () => {
       const res = await cmd('annotateRecord', { id: rec.id, color: cle });
       if (res.error) return toast(res.error, false);

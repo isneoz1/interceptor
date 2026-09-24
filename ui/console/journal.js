@@ -77,7 +77,7 @@ function dessiner(kind) {
   box.appendChild(search);
 
   if (!entries) {
-    box.appendChild(el('p', { class: 'note', text: 'Lecture du journal…' }));
+    box.appendChild(el('p', { class: 'note', text: t('Lecture du journal…') }));
     load(kind);
     return;
   }
@@ -125,7 +125,7 @@ function label(kind, e) {
 function describe(kind, e) {
   if (kind === 'cookies') {
     const flags = [e.secure ? 'Secure' : null, e.httpOnly ? 'HttpOnly' : null,
-                   e.sameSite ? 'SameSite=' + e.sameSite : 'SameSite absent',
+                   e.sameSite ? 'SameSite=' + e.sameSite : t('SameSite absent'),
                    e.session ? 'session' : null].filter(Boolean).join(' ');
     return e.name + ' @' + e.domain + (e.path || '') + '  [' + flags + ']' +
            (e.partitionKey ? '  partition ' + JSON.stringify(e.partitionKey) : '') +

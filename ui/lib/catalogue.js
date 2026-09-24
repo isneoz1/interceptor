@@ -55,6 +55,7 @@ import { decoderValeurEtendue, encoderValeurEtendue, decoderMotsCodes }
   from './entetes-parametres.js';
 import { z85Encoder, z85Decoder, uuencode, uudecode } from './codecs-transport.js';
 import { lirePhpStrict, versJs, ecrirePhp } from './php-serialise.js';
+import { decoderSamlTexte } from './saml.js';
 
 /* Raccourcis d ecriture : e = encodage, d = decodage, a = asynchrone. */
 const e = (cle, groupe, libelle, fn) => ({ cle, groupe, libelle, fn, decode: false, asynchrone: false });
@@ -139,6 +140,7 @@ export const TRANSFORMATIONS = [
 
   /* ----------------------------- XML et balises --------------------------- */
   d('xml-joli', 'XML', 'XML ou HTML — mettre en forme', xmlJoli),
+  a('saml-dec', 'XML', 'SAML — decoder (liaison Redirect ou POST)', decoderSamlTexte, true),
   d('xml-texte', 'XML', 'Retirer les balises, garder le texte', xmlVersTexte),
 
   /* ------------------------------ Web et HTTP ----------------------------- */

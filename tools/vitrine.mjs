@@ -14,6 +14,7 @@ import fs from 'fs';
 import path from 'path';
 import url from 'url';
 import { rendrePages } from './chrome.mjs';
+import { TRANSFORMATIONS } from '../ui/lib/catalogue.js';
 
 const RACINE = path.resolve(path.dirname(url.fileURLToPath(import.meta.url)), '..');
 const SORTIE = path.join(RACINE, 'docs', 'images');
@@ -52,7 +53,9 @@ const VITRINES = [
   {
     fichier: 'vitrine-outils',
     source: 'console-outils.png',
-    titre: '134 transformations, all local',
+    /* Le nombre vient du catalogue : un chiffre ecrit a la main a fini par
+       mentir, l image annoncant 134 transformations quand il y en avait 135. */
+    titre: TRANSFORMATIONS.length + ' transformations, all local',
     phrase: 'Encodings, digests, JWT, OTP, timestamps, identifiers, structured headers, '
       + 'HPACK. Nothing is uploaded anywhere to be decoded — there is no server to upload to.',
     cadre: { x: 12, y: 0, largeur: 88, hauteur: 62 }

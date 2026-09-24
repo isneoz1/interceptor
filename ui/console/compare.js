@@ -119,7 +119,7 @@ export function render() {
   }
   box.appendChild(actions);
 
-  if (loading) { box.appendChild(el('p', { class: 'note', text: 'Lecture des deux enregistrements…' })); return; }
+  if (loading) { box.appendChild(el('p', { class: 'note', text: t('Lecture des deux enregistrements…') })); return; }
 
   if (!left || !right) {
     box.appendChild(vide('Selectionnez deux lignes',
@@ -134,7 +134,7 @@ export function render() {
     col.appendChild(el('h4', { text: side + ' · #' + rec.id }));
     add(col, kv('Methode', rec.method, { hl: true }));
     add(col, kv('URL', middle(rec.finalUrl || rec.url, 90)));
-    add(col, kv('Statut', rec.statusLine || rec.statusCode || rec.error || 'en cours'));
+    add(col, kv('Statut', rec.statusLine || rec.statusCode || rec.error || t('en cours')));
     add(col, kv('Heure', clock(rec.startTime)));
     add(col, kv('Duree', rec.duration != null ? ms(rec.duration) : null));
     add(col, kv('Taille', rec.size ? bytes(rec.size) : null));
@@ -174,7 +174,7 @@ function renderHeaderDiff(box, title, a, b) {
   const changed = rows.filter(r => r.kind !== 'same');
   box.appendChild(sec(title, changed.length + ' difference(s) sur ' + rows.length + ' entetes'));
   if (!rows.length) {
-    box.appendChild(el('p', { class: 'note', text: 'Aucun entete capture des deux cotes.' }));
+    box.appendChild(el('p', { class: 'note', text: t('Aucun entete capture des deux cotes.') }));
     return;
   }
   for (const row of rows) {
@@ -199,7 +199,7 @@ function renderBodyDiff(box, title, a, b, mime) {
   const changed = rows.filter(r => r.kind !== 'same').length;
   box.appendChild(sec(title, changed ? changed + ' ligne(s) differente(s)' : 'identiques'));
   if (!changed) {
-    box.appendChild(el('p', { class: 'note ok', text: 'Les deux corps sont rigoureusement identiques.' }));
+    box.appendChild(el('p', { class: 'note ok', text: t('Les deux corps sont rigoureusement identiques.') }));
     return;
   }
   for (const row of rows.slice(0, 4000)) box.appendChild(lineNode(row.kind, row.line));

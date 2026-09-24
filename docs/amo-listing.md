@@ -16,7 +16,7 @@ people running Developer Edition, Nightly or ESR *and* willing to flip
       publish. Changing it later means publishing a different add-on and orphaning every
       existing install, so make sure it is what you want *before* the first upload.
 - [ ] **Bump the version.** AMO refuses a version number it has already seen. The repository
-      is at `4.4.0`, which has never been submitted, so it can go up as-is. Only bump again if
+      is at `4.5.0`, which has never been submitted, so it can go up as-is. Only bump again if
       a submission gets rejected and you need to resubmit.
 - [ ] **Build a fresh package**: `npm run build` produces `dist/interceptor-<version>.xpi`.
 - [ ] The reviewer will read the source. It is plain ES modules with no build step, no
@@ -108,14 +108,21 @@ WHAT YOU CAN DO WITH IT
 • Replay any request after confirmation
 • Export to HAR, JSON, CSV or Postman, or generate ready-to-run code in 39 formats
   (curl, fetch, Python, PowerShell, Node, HTTPie and others)
-• 134 local transformations across 23 tools: encodings, digests, JWT, OTP, timestamps,
-  identifiers, structured headers, HPACK, and more
+• 135 local transformations across 23 tools: encodings, digests, JWT, OTP, timestamps,
+  identifiers, structured headers, HPACK, SAML, and more
 
 A SECURITY ANALYSER THAT DOES NOT GUESS
 
 Every finished request is audited automatically: exposed secrets, credentials sent in
-clear, exploitable CORS, cookies that will be rejected and why, obsolete TLS. It reports
-only what it can demonstrate from the captured data, and masks sensitive values by default.
+clear, exploitable CORS, cookies that will be rejected and why, obsolete TLS, a CSP nonce
+reused across responses. It reports only what it can demonstrate from the captured data,
+and masks sensitive values by default.
+
+Each request also gets security readings, stated as facts rather than alarms: the
+protections of the response (HSTS, CSP, framing, nosniff, Referrer-Policy, COOP / COEP /
+CORP), a CSP derived from what the page actually loaded, OAuth 2.0 / OpenID Connect and
+SAML 2.0 decoded, Subresource Integrity hashes for scripts and stylesheets, and the
+digests a server announces, checked against the bytes received.
 
 PRIVACY
 

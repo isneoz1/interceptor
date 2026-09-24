@@ -135,11 +135,11 @@ export function cookies(rec) {
   const changed = (rec.cookies && rec.cookies.changed) || [];
 
   box.appendChild(sec('Set-Cookie', set.length));
-  if (!set.length) box.appendChild(el('p', { class: 'note', text: 'Cette reponse ne pose aucun cookie.' }));
+  if (!set.length) box.appendChild(el('p', { class: 'note', text: t('Cette reponse ne pose aucun cookie.') }));
   for (const c of set) {
     const flags = [c.secure ? 'Secure' : null, c.httpOnly ? 'HttpOnly' : null,
-                   c.sameSite ? 'SameSite=' + c.sameSite : 'SameSite absent'].filter(Boolean);
-    add(box, kv(c.name, (c.domain || '(hote courant)') + (c.path || '/') + '  [' + flags.join(' ') + ']'));
+                   c.sameSite ? 'SameSite=' + c.sameSite : t('SameSite absent')].filter(Boolean);
+    add(box, kv(c.name, (c.domain || t('(hote courant)')) + (c.path || '/') + '  [' + flags.join(' ') + ']'));
     add(box, kv('  valeur', c.value, { copy: true }));
     add(box, kv('  expiration', c.expires || (c.maxAge ? 'max-age=' + c.maxAge : 'session')));
   }
@@ -155,23 +155,23 @@ export function cookies(rec) {
       if (res.error) { toast(res.error, false); return; }
       jar.appendChild(sec('Cookies du domaine', res.cookies.length + ' cookie(s)'));
       if (!res.cookies.length) {
-        jar.appendChild(el('p', { class: 'note', text: 'Aucun cookie enregistre pour cette URL.' }));
+        jar.appendChild(el('p', { class: 'note', text: t('Aucun cookie enregistre pour cette URL.') }));
       }
       for (const c of res.cookies) {
         const flags = [c.secure ? 'Secure' : null, c.httpOnly ? 'HttpOnly' : null,
-                       c.sameSite ? 'SameSite=' + c.sameSite : 'SameSite absent',
+                       c.sameSite ? 'SameSite=' + c.sameSite : t('SameSite absent'),
                        c.session ? 'session' : null].filter(Boolean).join(' ');
         add(jar, kv(c.name, c.domain + (c.path || '') + '  [' + flags + ']'));
         add(jar, kv('  valeur', c.value, { copy: true }));
       }
     } }
-  }, 'Voir les cookies du domaine')));
+  }, t('Voir les cookies du domaine'))));
   box.appendChild(jar);
 
   box.appendChild(sec('Mutations observees', changed.length));
-  if (!changed.length) box.appendChild(el('p', { class: 'note', text: 'Aucune mutation de cookie rattachee a cette requete.' }));
+  if (!changed.length) box.appendChild(el('p', { class: 'note', text: t('Aucune mutation de cookie rattachee a cette requete.') }));
   for (const c of changed) {
-    add(box, kv(clock(c.ts), (c.removed ? 'supprime ' : 'pose ') + c.name + ' @' + c.domain + (c.path || '') +
+    add(box, kv(clock(c.ts), (c.removed ? t('supprime') + ' ' : t('pose') + ' ') + c.name + ' @' + c.domain + (c.path || '') +
       ' [' + (c.secure ? 'Secure ' : '') + (c.httpOnly ? 'HttpOnly ' : '') + (c.sameSite || 'SameSite?') + '] · ' + c.cause));
   }
   return box;
@@ -184,8 +184,8 @@ export function security(rec) {
     box.appendChild(sec('Transport'));
     box.appendChild(el('p', { class: 'note', text:
       rec.scheme === 'https'
-        ? 'Aucune information TLS : la couche est desactivee, ou la reponse vient du cache.'
-        : 'Requete non chiffree (' + (rec.scheme || 'inconnu') + ') : il n y a pas de session TLS.' }));
+        ? t('Aucune information TLS : la couche est desactivee, ou la reponse vient du cache.')
+        : tp('Requete non chiffree ({schema}) : il n y a pas de session TLS.', { schema: rec.scheme || t('inconnu') }) }));
     return box;
   }
   const s = rec.security;
@@ -220,7 +220,7 @@ export function security(rec) {
   const certs = s.certificates || [];
   box.appendChild(sec('Chaine de certificats', certs.length));
   certs.forEach((c, i) => {
-    box.appendChild(sec(i === 0 ? 'Certificat du serveur' : 'Autorite ' + i, c.isBuiltInRoot ? 'racine integree' : ''));
+    box.appendChild(sec(i === 0 ? 'Certificat du serveur' : tp('Autorite {n}', { n: i }), c.isBuiltInRoot ? t('racine integree') : ''));
     /* Ce que Firefox calcule lui-meme : empreintes, racine integree. */
     box.appendChild(allRows(c, {
       subject: 'Sujet', issuer: 'Emetteur', serialNumber: 'Numero de serie',
@@ -260,12 +260,14 @@ function certificatComplet(box, der) {
 export function analysis(rec) {
   const box = frag();
   const a = rec.analysis;
-  if (!a || (!a.findings.length && !a.tags.length)) {
+  const faits = (a && Array.isArray(a.faits)) ? a.faits : [];
+  if (!a || (!a.findings.length && !a.tags.length && !faits.length)) {
     box.appendChild(sec('Analyse'));
-    box.appendChild(el('p', { class: 'note', text: 'Aucune alerte sur cette requete.' }));
+    box.appendChild(el('p', { class: 'note', text: t('Aucune alerte sur cette requete.') }));
     return box;
   }
   box.appendChild(sec('Alertes', a.risk + ' · ' + a.findings.length));
+  if (!a.findings.length) box.appendChild(el('p', { class: 'note', text: t('Aucune alerte sur cette requete.') }));
   const sorted = [...a.findings].sort((x, y) => SEV_ORDER[x.severity] - SEV_ORDER[y.severity]);
   for (const f of sorted) {
     box.appendChild(el('div', { class: 'find ' + f.severity }, [
@@ -273,6 +275,18 @@ export function analysis(rec) {
       el('p', { text: f.severity.toUpperCase() + '  ·  ' + f.where + (f.sample ? '  ·  ' + f.sample : '') }),
       f.preuve ? el('p', { class: 'note', text: t('Preuve : ') + preuveLisible(f) }) : null
     ]));
+  }
+  /* Ce qui est exact sans etre une faille : dit avec sa preuve, jamais compte
+     comme alerte. C est au lecteur de juger si c est voulu. */
+  if (faits.length) {
+    box.appendChild(sec('Faits constates', faits.length));
+    box.appendChild(el('p', { class: 'note', text:
+      t('Ces faits ne sont pas des failles a eux seuls : ils disent ce qui a ete observe, pour qu on aille voir.') }));
+    for (const fait of faits) {
+      const valeurs = { ...fait.valeurs };
+      for (const cle of fait.aTraduire || []) valeurs[cle] = t(valeurs[cle]);
+      box.appendChild(el('p', { class: 'note', text: '•  ' + tp(fait.texte, valeurs) }));
+    }
   }
   if (a.tags.length) {
     box.appendChild(sec('Marqueurs', a.tags.length));
@@ -316,7 +330,7 @@ export function streams(rec) {
     }
     add(box, kv('Ouverte', w.openedAt ? clock(w.openedAt) : null));
     add(box, kv('Fermee', w.closedAt ? clock(w.closedAt) : null));
-    if (w.close) add(box, kv('Fermeture', 'code ' + w.close.code + (w.close.reason ? ' · ' + w.close.reason : '') + (w.close.wasClean ? ' · propre' : ' · brutale')));
+    if (w.close) add(box, kv('Fermeture', 'code ' + w.close.code + (w.close.reason ? ' · ' + w.close.reason : '') + (w.close.wasClean ? ' · ' + t('propre') : ' · ' + t('brutale'))));
     add(box, kv('Octets envoyes', bytes(w.bytesSent)));
     add(box, kv('Octets recus', bytes(w.bytesReceived)));
 
@@ -349,7 +363,7 @@ export function streams(rec) {
     box.appendChild(sec('Server-Sent Events', rec.sse.messages.length + (rec.sse.dropped ? ' (+' + rec.sse.dropped + ' non conserves)' : '')));
     add(box, kv('Ouverte', rec.sse.openedAt ? clock(rec.sse.openedAt) : null));
     add(box, kv('Fermee', rec.sse.closedAt ? clock(rec.sse.closedAt) : null));
-    add(box, kv('Avec credentials', rec.sse.withCredentials ? 'oui' : null));
+    add(box, kv('Avec credentials', rec.sse.withCredentials ? t('oui') : null));
     const messages = el('div');
     box.appendChild(messages);
     parLots(messages, rec.sse.messages, m => el('div', { class: 'frame recv' }, [
@@ -359,7 +373,7 @@ export function streams(rec) {
   }
   if (!rec.ws && !rec.sse) {
     box.appendChild(sec('Flux'));
-    box.appendChild(el('p', { class: 'note', text: 'Cette requete ne transporte ni trame WebSocket ni message SSE.' }));
+    box.appendChild(el('p', { class: 'note', text: t('Cette requete ne transporte ni trame WebSocket ni message SSE.') }));
   }
   return box;
 }
@@ -437,12 +451,12 @@ export function stack(rec) {
   box.appendChild(sec('Pile d appel JavaScript'));
   if (!rec.stack) {
     box.appendChild(el('p', { class: 'note', text:
-      'Aucune pile : requete emise hors JavaScript (navigation, ressource HTML), depuis un Worker, ou capture des piles desactivee.' }));
+      t('Aucune pile : requete emise hors JavaScript (navigation, ressource HTML), depuis un Worker, ou capture des piles desactivee.') }));
     return box;
   }
   box.appendChild(el('pre', { class: 'pre stack', text: rec.stack }));
   box.appendChild(el('div', { class: 'actions' },
-    el('button', { class: 'btn sm', type: 'button', on: { click: () => copy(rec.stack, 'Pile copiee') } }, 'Copier la pile')));
+    el('button', { class: 'btn sm', type: 'button', on: { click: () => copy(rec.stack, 'Pile copiee') } }, t('Copier la pile'))));
   return box;
 }
 
@@ -451,7 +465,7 @@ export function raw(rec) {
   const box = frag();
   box.appendChild(sec('Enregistrement complet', 'tout ce que le noyau conserve'));
   box.appendChild(el('p', { class: 'note', text:
-    'Chaque champ conserve par INTERCEPTOR figure ici, y compris ceux qui n ont pas de presentation dediee.' }));
+    t('Chaque champ conserve par INTERCEPTOR figure ici, y compris ceux qui n ont pas de presentation dediee.') }));
   box.appendChild(el('div', { class: 'tree' }, jsonTree(rec)));
   return box;
 }

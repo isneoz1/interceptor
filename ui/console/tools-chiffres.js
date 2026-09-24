@@ -159,7 +159,7 @@ export function panneauIdentifier(entree) {
       add(carte, kv('Horloge', lu.horloge));
       if (lu.noeud) {
         add(carte, kv('Noeud', lu.noeud, { copy: true }));
-        add(carte, kv('Noeud tire au hasard', lu.noeudAleatoire ? 'oui' : 'non — adresse de machine reelle'));
+        add(carte, kv('Noeud tire au hasard', lu.noeudAleatoire ? t('oui') : t('non — adresse de machine reelle')));
       }
       add(carte, kv('Secondes depuis l origine', lu.secondes));
       add(carte, kv('Partie aleatoire', lu.hasard || lu.hasardBase32, { copy: true }));

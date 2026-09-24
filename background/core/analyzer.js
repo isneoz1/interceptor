@@ -12,6 +12,7 @@
 import { store } from './store.js';
 import { config } from './config.js';
 import { appliquerRegles } from './analyzer-regles.js';
+import { constaterReflexions, constaterRedirections, verifierNonces } from './analyzer-faits.js';
 
 export const SEVERITY = { critical: 4, high: 3, medium: 2, low: 1, info: 0 };
 const LEVELS = ['critical', 'high', 'medium', 'low', 'info'];
@@ -73,6 +74,13 @@ export function analyze(rec, { force = false } = {}) {
 
   appliquerRegles({ rec, reqH, resH, findings, seen, tags, customSecrets, customTrackers });
 
+  /* Faits exacts qui ne sont pas des failles : affiches avec leur preuve,
+     jamais comptes comme alertes. Le nonce reutilise, lui, en est une. */
+  const faits = [];
+  if (config.get('analyzeHeaders')) verifierNonces(rec, findings, seen);
+  constaterReflexions(rec, faits, tags);
+  constaterRedirections(rec, faits, tags);
+
   /* --- Anomalies de la requete elle-meme --- */
   if (rec.statusCode >= 500) tags.add('server-error');
   else if (rec.statusCode >= 400) tags.add('client-error');
@@ -89,6 +97,7 @@ export function analyze(rec, { force = false } = {}) {
   const previous = rec.analysis;
   const analysis = {
     findings,
+    faits,
     tags: [...tags],
     risk: maxSeverity < 0 ? 'none' : LEVELS.find(k => SEVERITY[k] === maxSeverity),
     score: maxSeverity < 0 ? 0 : maxSeverity,

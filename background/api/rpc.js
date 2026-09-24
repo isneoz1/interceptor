@@ -17,6 +17,7 @@ import { runProbe } from '../capture/probe.js';
 import { analyze, analyzeAll } from '../core/analyzer.js';
 import { clearSecurityCache } from '../capture/security.js';
 import { clearDnsCache } from '../capture/dnsinfo.js';
+import { oublierNonces } from '../core/analyzer-faits.js';
 import { ingestBatch, contextLog, clearPageState } from '../ingest/page.js';
 import { invalidateRuleCache } from '../rules/engine.js';
 import { configurerIntercepteur, relacherTout } from '../rules/intercept.js';
@@ -94,6 +95,7 @@ const COMMANDS = {
     clearCookieLog();
     clearDnsCache();
     clearSecurityCache();
+    oublierNonces();
     return { ok: true };
   },
 

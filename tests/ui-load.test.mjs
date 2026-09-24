@@ -340,6 +340,45 @@ for (const f of fieldHelp()) if (f.help) exigerTraduction('aide de recherche', f
 const { DIRECTIVES_CSP } = await import('../ui/lib/csp.js');
 for (const d of DIRECTIVES_CSP) exigerTraduction('sens de directive CSP', d.sens);
 
+/* Les alertes de l analyseur naissent dans le noyau, hors de ui/ : leur
+   titre et leur preuve sont traduits a l affichage, par t(f.title) et tp(f.preuve).
+   Personne ne verifiait qu ils avaient une entree. Une preuve est ecrite en
+   morceaux concatenes ('...' + '...') : on les recolle comme le fait le moteur. */
+for (const rel of ['background/core/analyzer-regles.js', 'background/core/analyzer-faits.js']) {
+  const source = fs.readFileSync(path.join(racine, rel), 'utf8');
+  for (const m of source.matchAll(/\btitle:\s*'((?:[^'\\]|\\.)*)'/g)) {
+    exigerTraduction('titre d alerte (' + rel + ')', desechapper(m[1]));
+  }
+  for (const m of source.matchAll(/\bpreuve:\s*((?:'(?:[^'\\]|\\.)*'\s*\+?\s*)+)/g)) {
+    const morceaux = [...m[1].matchAll(/'((?:[^'\\]|\\.)*)'/g)].map(x => desechapper(x[1]));
+    exigerTraduction('preuve d alerte (' + rel + ')', morceaux.join(''));
+  }
+}
+const { GABARITS_FAITS } = await import('../background/core/analyzer-faits.js');
+for (const gabarit of Object.values(GABARITS_FAITS)) exigerTraduction('fait constate', gabarit);
+
+/* Les lectures de securite produisent des gabarits traduits a l affichage :
+   les faits OAuth et SAML, les limites de la CSP deduite, les raisons d une
+   empreinte non verifiee, et chaque phrase des protections. */
+const { FAITS_OAUTH } = await import('../ui/lib/oauth.js');
+const { FAITS_SAML } = await import('../ui/lib/saml.js');
+const { LIMITES_CSP } = await import('../ui/lib/csp-observee.js');
+const { RAISONS: RAISONS_EMPREINTE } = await import('../background/capture/empreintes.js');
+for (const [quoi, table] of [['fait OAuth', FAITS_OAUTH], ['fait SAML', FAITS_SAML],
+  ['limite de la CSP deduite', LIMITES_CSP], ['raison d empreinte', RAISONS_EMPREINTE]]) {
+  for (const gabarit of Object.values(table)) exigerTraduction(quoi, gabarit);
+}
+{
+  /* protections.js ecrit ses phrases en ligne : toute chaine de plusieurs
+     mots y est un texte affiche. */
+  const source = fs.readFileSync(path.join(racine, 'ui/lib/protections.js'), 'utf8')
+    .replace(/\/\*[\s\S]*?\*\//g, '');
+  for (const m of source.matchAll(/'((?:[^'\\]|\\.)*)'/g)) {
+    const texte = desechapper(m[1]);
+    if (/\s/.test(texte) && /[a-z]{3}/i.test(texte)) exigerTraduction('protection', texte);
+  }
+}
+
 /* Les tables d etiquettes passees a allRows(objet, { cle: 'Libelle' }) : allRows
    les traduit par kv(label), donc par une variable. La session TLS et la sonde
    de page ont ainsi affiche quarante-trois libelles en francais dans

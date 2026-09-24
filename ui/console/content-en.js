@@ -82,7 +82,7 @@ export const HELP_SECTIONS = [
       'One working text, twenty-one tabs looking at it. You paste a value once — from the clipboard, from a row context menu, or from a detail tab — and every tool works on it. Everything is computed in the page: none of these functions sends a single request.'
     ],
     table: [
-      ['Transform', '121 transformations in eighteen families: base64 and base64 URL, base32, base58, base45, Ascii85, URL, HTML entities, hexadecimal, binary, octal, Unicode escapes, punycode, JSON, YAML, CSV, XML, gzip and deflate, letter case, lines, string escaping, Protocol Buffers, MessagePack, CBOR, ASN.1. "Try everything" applies every decoding and keeps only the readable results.'],
+      ['Transform', '135 transformations in eighteen families: base64 and base64 URL, base32, base58, base45, Ascii85, URL, HTML entities, hexadecimal, binary, octal, Unicode escapes, punycode, JSON, YAML, CSV, XML, SAML, gzip and deflate, letter case, lines, string escaping, Protocol Buffers, MessagePack, CBOR, ASN.1. "Try everything" applies every decoding and keeps only the readable results.'],
       ['Keys and trials', 'XOR with a repeated key, a sweep of the 255 single-byte keys, all twenty-five Caesar shifts, Vigenere. These ciphers protect nothing: they read back a deliberately obscured value.'],
       ['JWT', 'Header, payload, validity, time left. The signature is really verified across the twelve common algorithms: HS256 to HS512 with the shared key, RS, PS and ES with the public key pasted as PEM or JWK. With no key the screen says so, rather than letting a decoded token pass for a valid one.'],
       ['Encryption', 'AES-GCM, AES-CBC and AES-CTR both ways, with initialisation vector and authenticated data; PBKDF2 and HKDF derivation; verification of a detached RSA, RSA-PSS, ECDSA or HMAC signature. Everything goes through the browser engine, nothing leaves the machine.'],
@@ -91,10 +91,10 @@ export const HELP_SECTIONS = [
       ['Measurements', 'Characters, bytes, lines, words, Shannon entropy, character frequency, and detection of the invisible characters used to hide content.'],
       ['Hexadecimal', 'The classic dump: offset, sixteen bytes, readable column.'],
       ['Identify', 'What the shape of the text suggests: hash family, file signature in the first bytes, alphabet used. Candidates, never a verdict.'],
-      ['Timestamp', 'Eleven possible epochs (Unix in seconds, milliseconds, microseconds and nanoseconds, Windows FILETIME, Chrome, HFS, Apple, .NET ticks, Excel serial, Julian day) and every notation of one instant. It also reads durations written "1d12h".'],
+      ['Timestamp', 'Fourteen possible epochs (Unix in seconds, milliseconds, microseconds and nanoseconds, Windows FILETIME, Chrome, HFS, Apple, .NET ticks, Excel serial, Julian day, NTP, GPS, and the MS-DOS date of ZIP archives) and every notation of one instant. It also reads durations written "1d12h".'],
       ['Numbers', 'An integer rewritten in every base, without losing a digit, with its properties and its reading as an IPv4 address or a port.'],
       ['Structures', 'URL parameters, cookies and headers recognised in the pasted text.'],
-      ['Headers', 'Twenty-four headers broken down in detail: Set-Cookie and its attributes, content security policy, HSTS, Cache-Control, weighted Accept, Authorization. Every real gap is flagged — a missing attribute, a directive that cancels the protection.'],
+      ['Headers', 'Thirty-three headers broken down in detail: Set-Cookie and its attributes, content security policy, HSTS, Cache-Control, weighted Accept, Authorization. Every real gap is flagged — a missing attribute, a directive that cancels the protection.'],
       ['Find', 'Twenty ready-made patterns (email, address, hash, token, private key), paths inside a JSON document, CSS and XPath selectors in HTML, and the Luhn checksum.'],
       ['Regular expression', 'Matches, captured groups, position, and the replacement applied.'],
       ['Compare', 'The working text against another one: lines added, removed, in common, the first difference down to the character, word-by-word comparison and the unified format.'],
@@ -174,7 +174,7 @@ export const HELP_SECTIONS = [
       'Traffic outside Firefox: the browser is observed, not the system.',
       'JavaScript stacks for requests issued from a Worker.',
       'WebRTC data-channel payloads (signalling and candidates are logged).',
-      'Brotli: Firefox usually decodes before us; gzip and deflate are decompressed when needed.'
+      'Compressed bodies: Firefox decodes them (gzip, deflate, Brotli, zstd) before any extension, so the compressed stream itself is not seen. A body that still arrives compressed is decompressed here when it is gzip or deflate.'
     ]
   },
   {
@@ -337,7 +337,7 @@ export const LESSONS = {
       { p: 'One **working text**, twenty-one tabs looking at it. You paste a value once — from the clipboard, from a row context menu, or from the "Toolbox" button on a response body — and every tool works on it.' },
       { p: 'Everything is computed in the page. None of these tools sends a single request: not on load, not on click.' },
       { ul: [
-        '**Transform**: 121 transformations. "Try everything" applies each decoding and keeps only the readable results — the right first move on an unknown value.',
+        '**Transform**: 135 transformations. "Try everything" applies each decoding and keeps only the readable results — the right first move on an unknown value.',
         '**JWT**: header, payload, expiry, and the signature really verified when you provide the key (twelve algorithms, shared key or public key).',
         '**Encryption** and **Hashes**: AES, PBKDF2, HKDF, MD5, SHA, CRC-32, HMAC.',
         '**Binary**: Protocol Buffers, MessagePack, CBOR, X.509 certificates, character sets.',
@@ -359,7 +359,7 @@ export const LESSONS = {
         'Traffic outside Firefox: the browser is observed, not the system.',
         'JavaScript stacks for requests issued from a Worker.',
         'WebRTC data-channel payloads (signalling is logged).',
-        'Brotli: Firefox usually decodes before us; gzip and deflate are decompressed.'
+        'Compressed bodies: Firefox decodes them before any extension; the compressed stream is not seen. If one still arrives compressed, gzip and deflate are decompressed here.'
       ] },
       { p: 'That is everything. The reference help stays available at any time, and this tutorial can be restarted from the settings.' }
     ]

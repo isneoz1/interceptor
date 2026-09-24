@@ -15,6 +15,7 @@ import { config } from '../core/config.js';
 import { store } from '../core/store.js';
 import { correlator, signatureOf } from '../core/dedup.js';
 import { normalizePageBody } from '../capture/bodies.js';
+import { empreintesDe } from '../capture/empreintes.js';
 import { analyze } from '../core/analyzer.js';
 import { truncateText } from '../lib/util.js';
 
@@ -184,11 +185,13 @@ function applyEnd(rec, ev) {
   // (reponse servie par un Service Worker, cache memoire, requete inter-origines).
   if (ev.bodyText != null && (!rec.responseBody || !rec.responseBody.text)) {
     const t = truncateText(ev.bodyText, cap(config.get('maxResponseBodyBytes')));
+    /* Les empreintes calculees a la capture suivent le nouveau corps. */
     rec.responseBody = {
       kind: 'text', text: t.text, base64: null, preview: null,
       size: ev.bodySize != null ? ev.bodySize : t.size, stored: t.text.length,
       truncated: t.truncated, mime: ev.mime || '', charset: '',
-      contentEncoding: '', decompressed: false, source: 'pageHook'
+      contentEncoding: '', decompressed: false, source: 'pageHook',
+      ...empreintesDe(rec.responseBody)
     };
     if (!rec.size) rec.size = rec.responseBody.size;
     store.mark(rec, 'js:body', ev.ts, { bytes: rec.responseBody.size });

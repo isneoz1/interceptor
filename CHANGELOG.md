@@ -4,6 +4,82 @@ All notable changes to this project are documented here.
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning follows
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.5.0] — 2026-09-24
+
+Security tools that read what the traffic already shows — each a fact with its source, and
+an alert only where a weakness is provable.
+
+### Added
+
+- **Response protections.** For every response, in the Headers tab: HSTS (and whether Firefox
+  already enforces it for the host, from the preload list or an earlier visit), CSP — from the
+  header or a `<meta>` tag of the document —, framing protection (`frame-ancestors` wins over
+  `X-Frame-Options`, and `ALLOW-FROM` is said to be ignored), `nosniff`, the effective
+  Referrer-Policy (Firefox's default when none is set), Permissions-Policy, COOP / COEP / CORP and
+  cross-origin isolation, and what the server says about itself. **Facts, never alerts**: a
+  missing protection is not a vulnerability by itself.
+- **A CSP derived from what the page actually loaded**, ready to try in Report-Only — and what
+  the network cannot show, stated plainly: inline code and `eval()`, `base-uri`,
+  `form-action`, `frame-ancestors`, and whatever was not loaded during the capture.
+- **OAuth 2.0 / OpenID Connect**: authorization and token requests, token responses — flow,
+  PKCE, `state`, `nonce`, redirect URI — checked against RFC 6749, RFC 7636 and RFC 9700. No
+  secret is ever reproduced: its presence is stated, not its value.
+- **SAML 2.0** in both bindings, decoded — issuer, subject, audience, validity at capture time,
+  and **which element is signed**: the response, the assertion, or nothing. The XML is read
+  structurally, so each signature is placed in its real parent. SHA-1 is named where it is
+  used. Also in the toolbox, as a transformation. The message comes from the network, so it is
+  read in a single pass — a hostile one cannot freeze the tab — and a DEFLATE bomb is stopped
+  at 4 MB.
+- **Subresource Integrity** hashes for scripts and stylesheets, computed on the exact bytes the
+  page received, with a ready `integrity` tag.
+- **CSP nonce reused** — the one new **alert**: the same nonce in the CSP of two distinct
+  responses. Cached responses and `304`s are not counted, nor the same HAR imported twice.
+- **Facts, not alerts**: a request parameter that comes back verbatim in the response (and
+  whether its special characters came back unescaped), and a redirect that leads exactly to a
+  parameter's value. The search is bounded; a count past the bound is shown as a minimum
+  (`1000+`).
+
+### Fixed — values that were not true
+
+- **The analyser could miss what a response body contains.** It ran when the request completed,
+  and the stream filter can deliver the body after that — its end-of-stream is signalled
+  separately and decompression is asynchronous. Nothing re-ran it, so a secret in that body
+  went unreported. The analysis is now redone when the body arrives, as it already was for a
+  body reported by the page probe.
+- **Content-Digest could report a false mismatch.** The check re-encoded the stored *text* of the
+  body. That text is decoded, stripped of its BOM, sometimes converted from another character
+  set — and when the server compressed the response, the digest covers the compressed stream,
+  which Firefox decodes before any extension sees it. Digests are now checked at capture time
+  on the exact bytes received: a match proves itself, a mismatch is asserted only for a
+  response that was not compressed, and otherwise the tab says why there is no verdict. A
+  request body is only verified when its text is proven to reproduce the bytes sent.
+- **A compressed body could exhaust memory.** When a body still reaches the extension
+  compressed, the extension decompresses it, and nothing capped the result: a megabyte of gzip
+  can unfold into a gigabyte in the background page. Decompression now stops at 64 MB and keeps
+  the stream as received, marked not decompressed.
+- **The help said Firefox decodes Brotli before the extension, as if gzip were not.** Firefox
+  decodes every content coding before any extension sees the body; the help now says so, and
+  that the compressed stream itself is not seen.
+- **Sentences of the detail panel, Comparison, the logs and Live streams stayed French in the
+  English interface**, with the values *yes*, *in flight*, *SameSite missing* and the colour
+  names: they were written into the page without going through the translator. The render suite now compares every detail tab in
+  both languages.
+- **The built-in help gave wrong counts**: 121 transformations (there are 135), eleven timestamp
+  origins (fourteen), twenty-four analysed headers (thirty-three). The showcase image computes
+  its count from the catalogue instead of a number written by hand.
+
+### Tests
+
+- **`tests/securite.test.mjs`**: the analyser's facts and the nonce alert, digests on the real
+  bytes (gzip made by `node:zlib`, hashes by `node:crypto`), request-body exactness, every
+  protection, the derived CSP, OAuth and SAML in both bindings — including hostile SAML input,
+  DEFLATE bombs and the bounds of the analyser.
+- The translation checks now cover alert titles and proofs, and every template of the new
+  tools; the render suite checks that each new section appears where it should, and fails on
+  a tab that throws instead of skipping it.
+
+1547 assertions across eight suites, plus six browser audits.
+
 ## [4.4.0] — 2026-09-23
 
 Everything this release adds follows one rule: **show what the browser actually measured
@@ -40,7 +116,8 @@ and they are fixed here too.
   same bytes, only the first was named. All of them are now named, and on a connection whose
   negotiated subprotocol is `mqtt` or `wamp.2.msgpack`, the frame is read as that protocol
   instead.
-- **Seven filter fields kept only the first letter typed.** *Live streams*, the three logs,
+- **Seven filter fields lost what was typed**: five kept only the first letter, two lost the
+  focus after a pause. *Live streams*, the three logs,
   *Sites and paths*, the internal log and the toolbox reference rebuilt their own filter
   field on each keystroke: the focus left with the old field, so typing `abc` gave `a`, or
   the field lost the focus after a pause. The focus and cursor are now kept across redraws.
@@ -949,6 +1026,7 @@ First public release.
 - Documentation screenshots are generated by `tools/captures.mjs`, which renders the real
   console against the real kernel rather than producing mockups.
 
+[4.5.0]: https://github.com/isneoz1/interceptor/releases/tag/v4.5.0
 [4.4.0]: https://github.com/isneoz1/interceptor/releases/tag/v4.4.0
 [4.3.0]: https://github.com/isneoz1/interceptor/releases/tag/v4.3.0
 [4.2.0]: https://github.com/isneoz1/interceptor/releases/tag/v4.2.0

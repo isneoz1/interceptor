@@ -4,6 +4,13 @@ import { bytesToBase64, decodeBytes, looksBinary, truncateText } from '../lib/ut
 
 function cap(limit) { return (!limit || limit <= 0) ? Infinity : limit; }
 
+const encodeur = new TextEncoder();
+function memesOctets(a, b) {
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return false;
+  return true;
+}
+
 /**
  * details.requestBody peut contenir :
  *   - formData : champs deja parses (multipart / urlencoded)
@@ -65,7 +72,11 @@ export function decodeRequestBody(requestBody, contentType) {
       contentType: contentType || '',
       text: binary ? '' : text,
       base64: null,
-      hasFileUpload: hasFile
+      hasFileUpload: hasFile,
+      /* Le texte conserve redonne-t-il EXACTEMENT les octets envoyes ? Un BOM
+         retire ou une sequence invalide remplacee suffit a changer
+         l empreinte : on le verifie en re-encodant, sans le supposer. */
+      octetsExacts: !binary && !truncated && !hasFile && memesOctets(encodeur.encode(text), merged)
     };
     if (binary && config.get('captureBinaryBodies')) {
       const blimit = cap(config.get('maxBinaryBodyBytes'));

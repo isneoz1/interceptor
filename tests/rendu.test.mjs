@@ -730,7 +730,41 @@ function enregistrementsRiches() {
       { dir: 'send', ts: 2, opcode: 'binary', data: null, base64: 'MAYAA2EvYiE=', size: 8 },
       { dir: 'recv', ts: 3, opcode: 'text', data: '{"jsonrpc":"2.0","method":"x"}', size: 30 }
     ] };
-  return [tls, masque, mqtt];
+  /* Les lectures de securite : chaque section doit se rendre, et se traduire. */
+  const page = enregistrementExemple({ id: 983, type: 'main_frame', mime: 'text/html',
+    url: 'https://app.test/', finalUrl: 'https://app.test/' });
+  page.responseHeaders = [...page.responseHeaders,
+    { name: 'Strict-Transport-Security', value: 'max-age=300; preload' },
+    { name: 'X-Frame-Options', value: 'ALLOW-FROM https://x.test' },
+    { name: 'Referrer-Policy', value: 'origin' },
+    { name: 'Permissions-Policy', value: 'camera=(), geolocation=(self)' },
+    { name: 'Cross-Origin-Opener-Policy', value: 'same-origin' },
+    { name: 'Server', value: 'nginx/1.18.0' }];
+  page.analysis = { findings: [], tags: ['reflete'], risk: 'none', at: 1,
+    faits: [{ type: 'reflexion', texte: 'le parametre {nom} ({ou}) revient {n} fois tel quel dans la reponse',
+      valeurs: { nom: 'q', ou: 'corps de la requete', n: 2 }, aTraduire: ['ou'] }] };
+  page.responseBody = { kind: 'text', text: '<html></html>', size: 13,
+    integrite: [{ entete: 'content-digest', raison: 'le corps est arrive deja decode ({codage}) : l empreinte porte sur le flux code, qui n a pas ete vu', valeurs: { codage: 'gzip' } }] };
+  page.responseHeaders.push({ name: 'Content-Digest', value: 'sha-256=:AAAA:' });
+
+  const script = enregistrementExemple({ id: 984, type: 'script', mime: 'text/javascript', thirdParty: true,
+    url: 'https://cdn.test/lib.js', finalUrl: 'https://cdn.test/lib.js' });
+  script.responseBody = { kind: 'text', text: 'x', size: 1,
+    sri: { sha256: 'sha256-AAAA', sha384: 'sha384-BBBB', sha512: 'sha512-CCCC' } };
+  const style = enregistrementExemple({ id: 985, type: 'stylesheet', mime: 'text/css' });
+  style.responseBody = { kind: 'text', text: 'x', size: 1,
+    sriRaison: 'corps tronque a la capture : l empreinte porte sur le corps entier' };
+
+  const oauth = enregistrementExemple({ id: 986, method: 'GET',
+    url: 'https://idp.test/authorize?response_type=token&client_id=app&redirect_uri=http%3A%2F%2Fapp.test%2Fcb' });
+  oauth.responseBody = { kind: 'text', size: 60,
+    text: '{"access_token":"a","token_type":"Bearer","expires_in":60,"refresh_token":"r","id_token":"x.y.z"}' };
+  const jeton = enregistrementExemple({ id: 987, requestBody: { kind: 'formData', size: 10,
+    formData: { grant_type: ['password'], client_secret: ['s'] } } });
+  const saml = enregistrementExemple({ id: 988, requestBody: { kind: 'formData', size: 10,
+    formData: { SAMLResponse: ['PHNhbWxwOlJlc3BvbnNlLz4='] } } });
+
+  return [tls, masque, mqtt, page, script, style, oauth, jeton, saml];
 }
 
 const phrasesManquantes = new Map();
@@ -760,5 +794,77 @@ for (const phrase of [...phrasesManquantes.keys()].slice(0, 15)) {
   verifier('la phrase a une traduction anglaise', false, phrase.slice(0, 110));
 }
 egal('aucune phrase francaise ne s affiche dans l interface anglaise', phrasesManquantes.size, 0);
+
+/* ===== 12. Les onglets du detail, compares dans les deux langues ======== */
+/* Le controle de la section 5 compare les VUES rendues en francais et en
+   anglais ; les onglets du detail n y passaient pas. Or un texte ecrit
+   directement dans la page — el('p', { text: '...' }) — ne passe par aucune
+   traduction : « Cette reponse ne pose aucun cookie. » restait ainsi en
+   francais dans l interface anglaise, sans qu aucun controle le voie. Les
+   enregistrements vides comptent autant que les riches : ce sont eux qui
+   affichent ces phrases. */
+const ongletsPlantes = [];
+function textesOnglet(rendre, rec, langue) {
+  setLang(langue);
+  const hote = document.createElement('div');
+  /* Un onglet qui plante ne doit pas passer pour un onglet sans francais. */
+  try { hote.appendChild(rendre(rec)); }
+  catch (e) { ongletsPlantes.push('#' + rec.id + ' [' + langue + '] : ' + e.message); return null; }
+  return texteDe(hote);
+}
+const vide = newRecord({ id: 990, url: 'https://exemple.test/', scheme: 'https' });
+const clair = newRecord({ id: 991, url: 'http://exemple.test/', scheme: 'http' });
+const ongletsFrancais = [];
+for (const rec of [vide, clair, ...enregistrementsRiches(), ...CAS_DETAIL.map(([, r]) => r)]) {
+  for (const [nom, rendre] of ONGLETS) {
+    /* L onglet « Brut » montre l enregistrement TEL QU IL EST en memoire : les
+       gabarits y sont des donnees, et les traduire fausserait cette vue. */
+    if (nom === 'Brut') continue;
+    const fr = textesOnglet(rendre, rec, 'fr');
+    const en = textesOnglet(rendre, rec, 'en');
+    if (!fr || !en || fr.length !== en.length) continue;
+    for (let i = 0; i < fr.length; i++) {
+      const texte = fr[i];
+      if (texte !== en[i]) continue;
+      if (UN_SEUL_MOT.test(texte) || SANS_LETTRE.test(texte)) continue;
+      if (MESURE.test(texte) || NON_MESURE.test(texte) || METHODE.test(texte)) continue;
+      if (ADRESSE.test(texte) || IDENTIQUES.has(texte)) continue;
+      if (texte.includes('\n') || texte.length > 200) continue;
+      if (!MOTS_FRANCAIS.test(texte)) continue;       /* une valeur capturee, pas un libelle */
+      ongletsFrancais.push(nom + ' : ' + JSON.stringify(texte.slice(0, 100)));
+    }
+  }
+}
+setLang('fr');
+const ongletsUniques = [...new Set(ongletsFrancais)];
+for (const reste of ongletsUniques.slice(0, 20)) verifier('le texte de l onglet est traduit', false, reste);
+egal('aucun onglet du detail ne garde de francais en anglais', ongletsUniques.length, 0);
+for (const plante of ongletsPlantes.slice(0, 10)) verifier('l onglet se rend avec des donnees riches', false, plante);
+egal('aucun onglet ne plante sur les enregistrements riches', ongletsPlantes.length, 0);
+
+/* Chaque lecture de securite apparait la ou elle doit, et seulement la. */
+setLang('fr');
+const riches = Object.fromEntries(enregistrementsRiches().map(r => [r.id, r]));
+const texteOnglet = (rendre, id) => { const h = document.createElement('div'); h.appendChild(rendre(riches[id])); return texteDe(h).join(' | '); };
+const PRESENCES = [
+  ['protections d une page', parts.headers, 983, 'Protections de la reponse'],
+  ['encadrement ALLOW-FROM dit inoperant', parts.headers, 983, 'ALLOW-FROM n est plus reconnu'],
+  ['empreinte non verifiable, avec sa raison', parts.headers, 983, 'arrive deja decode'],
+  ['SRI d un script', parts.responseBody, 984, 'sha384-BBBB'],
+  ['SRI : autre origine sans CORS', parts.responseBody, 984, 'Access-Control-Allow-Origin'],
+  ['SRI refusee, avec sa raison', parts.responseBody, 985, 'corps tronque'],
+  ['demande OAuth', parts.requestBody, 986, 'OAuth 2.0 — demande d autorisation'],
+  ['flux implicite', parts.requestBody, 986, 'RFC 9700 (2.1.2)'],
+  ['reponse de jeton', parts.responseBody, 986, 'OAuth 2.0 — reponse de jeton'],
+  ['demande de jeton', parts.requestBody, 987, 'grant_type=password'],
+  ['message SAML', parts.requestBody, 988, 'SAML 2.0'],
+  ['faits constates', more.analysis, 983, 'Faits constates']
+];
+for (const [quoi, rendre, id, attendu] of PRESENCES) {
+  const texte = texteOnglet(rendre, id);
+  verifier('la section apparait : ' + quoi, texte.includes(attendu), texte.slice(0, 120));
+}
+verifier('pas de SRI pour une requete XHR', !texteOnglet(parts.responseBody, 982).includes('SRI'));
+verifier('pas d OAuth sur une requete ordinaire', !texteOnglet(parts.requestBody, 984).includes('OAuth'));
 
 bilan('Rendu de l interface');
