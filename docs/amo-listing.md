@@ -195,3 +195,5 @@ expires.
 - Add the AMO listing URL to the repository's homepage field.
 - Upload `docs/images/social-preview.png` under **Settings → General → Social preview**;
   GitHub has no API for it, so it is a manual one-time step.
+- Present it: `docs/launch.md` has texts ready to paste for Hacker News, Reddit, Mozilla
+  Discourse, LinuxFr.org and a blog article, each claim checkable in the repository.
