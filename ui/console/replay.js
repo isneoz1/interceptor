@@ -7,6 +7,7 @@
 import { el, clear, frag, kv, sec, add } from '../lib/dom.js';
 import { bytes, ms, clock, pretty } from '../lib/format.js';
 import { state, cmd, toast, copy, saveConfig } from '../app.js';
+import { t, tp } from '../lib/i18n.js';
 
 const METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS'];
 
@@ -31,12 +32,10 @@ export function replayPanel(rec, onDone) {
 
   box.appendChild(sec('Rejouer la requete', enabled ? 'active' : 'desactive'));
   box.appendChild(el('p', { class: 'note warn', text:
-    'Le rejeu envoie une vraie requete depuis le navigateur, avec vos cookies pour ce site. ' +
-    'Elle porte l entete X-Interceptor-Replay et reapparait dans la liste comme une ligne normale. ' +
-    'A n utiliser que sur des cibles dont vous avez la responsabilite.' }));
+    t('Le rejeu envoie une vraie requete depuis le navigateur, avec vos cookies pour ce site. Elle porte l entete X-Interceptor-Replay et reapparait dans la liste comme une ligne normale. A n utiliser que sur des cibles dont vous avez la responsabilite.') }));
 
   if (!enabled) {
-    const enable = el('button', { class: 'btn accent', type: 'button' }, 'Autoriser le rejeu');
+    const enable = el('button', { class: 'btn accent', type: 'button' }, t('Autoriser le rejeu'));
     enable.addEventListener('click', async () => {
       const config = await saveConfig({ replayEnabled: true });
       if (config) { toast('Rejeu autorise'); onDone && onDone(); }
@@ -58,7 +57,7 @@ export function replayPanel(rec, onDone) {
   body.value = (rec.requestBody && rec.requestBody.text) || '';
 
   const form = el('div', { class: 'rule-grid' }, [
-    el('label', {}, ['Methode', method]),
+    el('label', {}, [t('Methode'), method]),
     el('label', { style: 'grid-column: span 2' }, ['URL', url])
   ]);
   box.appendChild(form);
@@ -68,8 +67,8 @@ export function replayPanel(rec, onDone) {
   box.appendChild(body);
 
   const result = el('div');
-  const send = el('button', { class: 'btn accent', type: 'button' }, 'Envoyer');
-  const reset = el('button', { class: 'btn', type: 'button' }, 'Restaurer l original');
+  const send = el('button', { class: 'btn accent', type: 'button' }, t('Envoyer'));
+  const reset = el('button', { class: 'btn', type: 'button' }, t('Restaurer l original'));
 
   reset.addEventListener('click', () => {
     method.value = rec.method;
@@ -81,7 +80,7 @@ export function replayPanel(rec, onDone) {
 
   send.addEventListener('click', async () => {
     send.disabled = true;
-    send.textContent = 'Envoi…';
+    send.textContent = t('Envoi…');
     const res = await cmd('replay', {
       id: rec.id,
       overrides: {
@@ -92,9 +91,9 @@ export function replayPanel(rec, onDone) {
       }
     });
     send.disabled = false;
-    send.textContent = 'Envoyer';
+    send.textContent = t('Envoyer');
     if (res.error) { toast(res.error, false); return; }
-    toast('Rejeu effectue — statut ' + res.result.status);
+    toast(tp('Rejeu effectue — statut {statut}', { statut: res.result.status }));
     renderResult(result, res.result);
     onDone && onDone();
   });
@@ -130,6 +129,6 @@ function renderResult(host, run) {
     host.appendChild(sec('Corps recu', run.truncated ? 'tronque' : ''));
     host.appendChild(el('pre', { class: 'pre', text: pretty(run.body, '') }));
     host.appendChild(el('div', { class: 'actions' },
-      el('button', { class: 'btn sm', type: 'button', on: { click: () => copy(run.body, 'Reponse copiee') } }, 'Copier la reponse')));
+      el('button', { class: 'btn sm', type: 'button', on: { click: () => copy(run.body, 'Reponse copiee') } }, t('Copier la reponse'))));
   }
 }

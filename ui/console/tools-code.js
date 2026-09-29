@@ -10,7 +10,7 @@
  * le resultat comme nouvelle matiere d un clic.
  */
 import { el, frag, sec, add, button } from '../lib/dom.js';
-import { t } from '../lib/i18n.js';
+import { t, te } from '../lib/i18n.js';
 import { copy, toast } from '../app.js';
 import { obfusquer, STYLES } from '../lib/obfuscation.js';
 import { deobfusquer } from '../lib/obfuscation-lire.js';
@@ -76,7 +76,7 @@ function rendreBrouiller(box, brut, etat, redessiner, reprendre) {
       const sortie = obfusquer(brut, etat.codeStyle);
       etat.codeSortie = { ok: true, valeur: sortie, sens: 'brouiller' };
     } catch (e) {
-      etat.codeSortie = { ok: false, erreur: String((e && e.message) || e) };
+      etat.codeSortie = { ok: false, erreur: te(e) };
     }
     redessiner();
   }
@@ -127,7 +127,7 @@ function rendreLisible(box, brut, etat, redessiner, reprendre) {
 function afficherResultat(box, etat, reprendre, { titre, videAide }) {
   const sortie = etat.codeSortie;
   if (!sortie) { box.appendChild(el('p', { class: 'note', text: t(videAide) })); return; }
-  if (!sortie.ok) { box.appendChild(el('p', { class: 'note warn', text: t('Echec : ') + sortie.erreur })); return; }
+  if (!sortie.ok) { box.appendChild(el('p', { class: 'note warn', text: t('Echec : ') + te(sortie.erreur) })); return; }
 
   box.appendChild(sec(titre, sortie.valeur.length + ' ' + t('caracteres')));
   const apercu = sortie.valeur.length > 20000 ? sortie.valeur.slice(0, 20000) + '\n…' : sortie.valeur;

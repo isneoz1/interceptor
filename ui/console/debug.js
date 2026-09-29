@@ -11,7 +11,7 @@ import { $, el, clear, sec, button, kv, add, vide } from '../lib/dom.js';
 import { redessinerEnPlace } from '../lib/redessin.js';
 
 import { clock, ms } from '../lib/format.js';
-import { t } from '../lib/i18n.js';
+import { t, tp } from '../lib/i18n.js';
 import { state, cmd, toast, copy } from '../app.js';
 
 const NIVEAUX = [
@@ -135,12 +135,12 @@ function dessiner() {
   actions.appendChild(button('Exporter le journal', async () => {
     const res = await cmd('exportFile', { format: 'debug' });
     if (res.error) return toast(res.error, false);
-    toast('Journal ecrit — ' + res.filename);
+    toast(tp('Journal ecrit — {fichier}', { fichier: res.filename }));
   }));
   actions.appendChild(button('Copier', () => {
     const lignes = (cache.entrees || []).map(ligneTexte);
     if (!lignes.length) return toast('Journal vide', false);
-    copy(lignes.join('\n'), lignes.length + ' lignes copiees');
+    copy(lignes.join('\n'), tp('{n} lignes copiees', { n: lignes.length }));
   }));
   if (filtreNiveau || filtreSource || recherche) {
     actions.appendChild(button('Retirer les filtres', () => {
@@ -171,7 +171,7 @@ function dessiner() {
   const etat = el('div');
   add(etat, kv('Entrees conservees', cache.retenues, { always: true }));
   add(etat, kv('Entrees ecartees faute de place', cache.perdues || null));
-  add(etat, kv('Plafond du journal', cache.plafond ? cache.plafond + ' entrees' : 'illimite', { always: true }));
+  add(etat, kv('Plafond du journal', cache.plafond ? tp('{n} entree(s)', { n: cache.plafond }) : t('illimite'), { always: true }));
   add(etat, kv('Journal demarre a', clock(cache.depuis), { always: true }));
   box.appendChild(etat);
 
@@ -187,7 +187,7 @@ function dessiner() {
 
   /* ------------------------------- Journal ------------------------------- */
   const entrees = cache.entrees || [];
-  box.appendChild(sec('Journal', entrees.length + ' / ' + cache.total + ' ligne(s)'));
+  box.appendChild(sec('Journal', tp('{n} / {total} ligne(s)', { n: entrees.length, total: cache.total })));
 
   if (!entrees.length) {
     box.appendChild(vide('Journal vide',

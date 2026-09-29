@@ -4,7 +4,7 @@
  * Le mode JSON reste disponible pour les cas avances et les copier-coller.
  */
 import { $, el, clear, sec, button, vide } from '../lib/dom.js';
-import { t, tp } from '../lib/i18n.js';
+import { t, tp, te } from '../lib/i18n.js';
 import { RESOURCE_TYPES } from '../lib/format.js';
 import { state, toast, saveConfig, copy } from '../app.js';
 
@@ -178,12 +178,12 @@ function ruleCard(rule, index, list) {
 
   /* En-tete : activation, nom, deplacement, suppression */
   const head = el('div', { class: 'rule-head' });
-  const enabled = el('input', { type: 'checkbox', title: 'Activer cette regle' });
+  const enabled = el('input', { type: 'checkbox', title: t('Activer cette regle') });
   enabled.checked = !!rule.enabled;
   enabled.addEventListener('change', () => update({ enabled: enabled.checked }));
   head.appendChild(enabled);
 
-  const name = el('input', { type: 'text', class: 'field name', value: rule.name || '', placeholder: 'Nom de la regle' });
+  const name = el('input', { type: 'text', class: 'field name', value: rule.name || '', placeholder: t('Nom de la regle') });
   name.addEventListener('change', () => update({ name: name.value }));
   head.appendChild(name);
 
@@ -355,7 +355,7 @@ function selectInput(options, value, onChange) {
 
 function headerOps(title, ops, onChange) {
   const box = el('div', { class: 'hops' });
-  box.appendChild(sec(title, ops.length + ' operation(s)'));
+  box.appendChild(sec(title, tp('{n} operation(s)', { n: ops.length })));
   ops.forEach((op, i) => {
     const row = el('div', { class: 'hop' });
     row.appendChild(selectInput([['set', 'Definir'], ['remove', 'Retirer']], op.op || 'set',
@@ -377,7 +377,7 @@ function jsonEditor(list) {
   box.appendChild(sec('Regles au format JSON', 'tableau'));
   const area = el('textarea', { class: 'field', spellcheck: 'false', rows: '20' });
   area.value = JSON.stringify(list, null, 2);
-  const status = el('p', { class: 'note', text: list.length + ' regle(s) enregistree(s).' });
+  const status = el('p', { class: 'note', text: tp('{n} regle(s) enregistree(s).', { n: list.length }) });
 
   area.addEventListener('change', () => {
     let parsed;
@@ -386,7 +386,7 @@ function jsonEditor(list) {
       if (!Array.isArray(parsed)) throw new Error('un tableau est attendu');
     } catch (e) {
       status.className = 'note ko';
-      status.textContent = 'JSON invalide : ' + e.message;
+      status.textContent = tp('JSON invalide : {raison}', { raison: te(e) });
       return;
     }
     status.className = 'note ok';

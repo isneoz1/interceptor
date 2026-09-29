@@ -49,8 +49,8 @@ export const EN_PANNEAUX2 = {
   'RSA': 'RSA',
   'RSA-PSS': 'RSA-PSS',
   'ECDSA': 'ECDSA',
-  'cle publique PEM ou JWK, ou secret partage pour HMAC':
-    'PEM or JWK public key, or shared secret for HMAC',
+  'cle publique (PEM, JWK ou certificat), ou secret partage pour HMAC':
+    'public key (PEM, JWK or certificate), or shared secret for HMAC',
   'La signature couvre exactement le texte de travail, tel qu il est affiche.':
     'The signature covers exactly the working text, as displayed.',
   'Signature invalide : le contenu, la cle ou l algorithme ne correspondent pas.':

@@ -7,7 +7,7 @@
 import { $, el, clear, frag, vide } from '../lib/dom.js';
 import { parseQuery } from '../lib/filters.js';
 import { COLUMNS, COLUMN_ORDER, normalize, template, columnLabel, columnTitle } from '../lib/columns.js';
-import { t } from '../lib/i18n.js';
+import { t, tp } from '../lib/i18n.js';
 import { state, cmd, toast, dropdown, visibleRecords, scopeCount, saveConfig } from '../app.js';
 import { openRowMenu, closeContextMenu, grip } from './rowmenu.js';
 import { hauteurLigne as mesureLigne, invaliderHauteur, recalerHauteur } from './rowsize.js';
@@ -182,7 +182,7 @@ function buildFacets() {
     const actif = state.facets.has(f.key);
     const chip = el('div', {
       class: 'chip' + (actif ? ' on' : '') + (actif && f.warn ? ' warn' : ''),
-      dataset: { key: f.key }, title: 'Filtre rapide'
+      dataset: { key: f.key }, title: t('Filtre rapide')
     }, [
       el('span', { text: t(f.label) }),
       el('span', { class: 'n' })
@@ -395,7 +395,7 @@ async function deleteSelection() {
   const res = await cmd('deleteRecords', { ids: target });
   if (res.error) return toast(res.error, false);
   state.selection.clear();
-  toast(res.removed + ' ligne(s) supprimee(s)');
+  toast(tp('{n} ligne(s) supprimee(s)', { n: res.removed }));
 }
 
 /** Ajoute un critere au filtre courant sans effacer ce qui s y trouve deja. */

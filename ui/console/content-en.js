@@ -82,7 +82,7 @@ export const HELP_SECTIONS = [
       'One working text, twenty-one tabs looking at it. You paste a value once — from the clipboard, from a row context menu, or from a detail tab — and every tool works on it. Everything is computed in the page: none of these functions sends a single request.'
     ],
     table: [
-      ['Transform', '135 transformations in eighteen families: base64 and base64 URL, base32, base58, base45, Ascii85, URL, HTML entities, hexadecimal, binary, octal, Unicode escapes, punycode, JSON, YAML, CSV, XML, SAML, gzip and deflate, letter case, lines, string escaping, Protocol Buffers, MessagePack, CBOR, ASN.1. "Try everything" applies every decoding and keeps only the readable results.'],
+      ['Transform', '137 transformations in eighteen families: base64 and base64 URL, base32, base58, base45, Ascii85, URL, HTML entities, hexadecimal, binary, octal, Unicode escapes, punycode, JSON, YAML, CSV, XML, SAML, DNS messages, WebAuthn, gzip and deflate, letter case, lines, string escaping, Protocol Buffers, MessagePack, CBOR, ASN.1. "Try everything" applies every decoding — except DNS and WebAuthn, which would read any bytes — and keeps only the readable results.'],
       ['Keys and trials', 'XOR with a repeated key, a sweep of the 255 single-byte keys, all twenty-five Caesar shifts, Vigenere. These ciphers protect nothing: they read back a deliberately obscured value.'],
       ['JWT', 'Header, payload, validity, time left. The signature is really verified across the twelve common algorithms: HS256 to HS512 with the shared key, RS, PS and ES with the public key pasted as PEM or JWK. With no key the screen says so, rather than letting a decoded token pass for a valid one.'],
       ['Encryption', 'AES-GCM, AES-CBC and AES-CTR both ways, with initialisation vector and authenticated data; PBKDF2 and HKDF derivation; verification of a detached RSA, RSA-PSS, ECDSA or HMAC signature. Everything goes through the browser engine, nothing leaves the machine.'],
@@ -337,7 +337,7 @@ export const LESSONS = {
       { p: 'One **working text**, twenty-one tabs looking at it. You paste a value once — from the clipboard, from a row context menu, or from the "Toolbox" button on a response body — and every tool works on it.' },
       { p: 'Everything is computed in the page. None of these tools sends a single request: not on load, not on click.' },
       { ul: [
-        '**Transform**: 135 transformations. "Try everything" applies each decoding and keeps only the readable results — the right first move on an unknown value.',
+        '**Transform**: 137 transformations. "Try everything" applies each decoding (except DNS and WebAuthn) and keeps only the readable results — the right first move on an unknown value.',
         '**JWT**: header, payload, expiry, and the signature really verified when you provide the key (twelve algorithms, shared key or public key).',
         '**Encryption** and **Hashes**: AES, PBKDF2, HKDF, MD5, SHA, CRC-32, HMAC.',
         '**Binary**: Protocol Buffers, MessagePack, CBOR, X.509 certificates, character sets.',

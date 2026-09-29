@@ -14,7 +14,7 @@ Created by **NeoZ**
 ![Manifest V2](https://img.shields.io/badge/Manifest-V2-444?style=flat)
 [![MIT licence](https://img.shields.io/badge/Licence-MIT-00DDFF?style=flat)](LICENSE)
 ![No dependencies](https://img.shields.io/badge/Dependencies-none-2ea043?style=flat)
-![1547 assertions](https://img.shields.io/badge/Assertions-1547-2ea043?style=flat)
+![1788 assertions](https://img.shields.io/badge/Assertions-1788-2ea043?style=flat)
 ![English and French](https://img.shields.io/badge/UI-EN%20%2F%20FR-444?style=flat)
 
 [**Try it in 60 seconds**](#try-it-in-60-seconds) · [**Why not the built-in panel?**](#firefox-already-has-a-network-panel-why-this) · [**Screenshots**](#2-screenshots) · [**How it works**](#4-how-it-works-the-capture-layers) · [**Changelog**](CHANGELOG.md)
@@ -44,7 +44,7 @@ the running tool, driven the way you would drive it.</sub>
 
 <img src="docs/images/vitrine-securite.png" alt="Every finished request is audited on its own, and nothing is reported that cannot be proven" width="100%">
 
-<img src="docs/images/vitrine-outils.png" alt="135 transformations across 23 tools, all computed locally" width="100%">
+<img src="docs/images/vitrine-outils.png" alt="137 transformations across 23 tools, all computed locally" width="100%">
 
 <div align="center">
 <sub><b>Every image on this page is a screenshot of the running tool</b>, not a mockup. They are
@@ -89,6 +89,9 @@ is *why*.
 | Did my gRPC-Web call succeed? | HTTP 200 | The **`grpc-status` in the trailers**, which is what actually decides |
 | What protects this page? | The headers, one by one | **HSTS, CSP, framing, `nosniff`, Referrer-Policy, Permissions-Policy, cross-origin isolation** read together, with what applies when nothing is said |
 | What is in this SSO login? | A base64 blob | The **OAuth 2.0 / OpenID Connect** request checked against RFC 9700, or the **SAML** message decoded — issuer, audience, validity, and **what is actually signed** |
+| Is this request really signed? | Two opaque headers | The **HTTP message signature (RFC 9421)** rebuilt byte for byte — what it covers and what it leaves out — and **verified** with the key you paste |
+| What did this passkey sign-in prove? | A base64 blob | The **WebAuthn** ceremony opened — domain fingerprint recomputed, presence and verification flags, synced key or not — and the sign-in **signature verified** with the public key of the captured registration |
+| What did this DNS over HTTPS query ask? | Binary `application/dns-message` | The **question and every answer** decoded, with the EDNS options — client subnet, padding, extended DNS errors |
 | Is a secret leaking in this traffic? | — | Every finished request **audited on its own**, with the value masked in the report |
 | Can I change a request before it leaves? | — | **Pause it, edit it, release it** — or block, redirect and rewrite by rule |
 | Can I share this capture safely? | A HAR carrying every token | A HAR with **secrets masked**, next to the faithful one |
@@ -150,8 +153,8 @@ specific points:
 **What it is not**: not a proxy, not a vulnerability scanner, not an attack tool. Everything
 happens inside your Firefox, on your machine.
 
-**By the numbers**: 185 JavaScript modules, ~39,000 lines, zero external dependencies,
-1547 automated assertions, English and French interface.
+**By the numbers**: 194 JavaScript modules, ~41,400 lines, zero external dependencies,
+1788 automated assertions, English and French interface.
 
 ---
 
@@ -225,7 +228,7 @@ What exists on the visited sites, host by host, reconstructed from observed traf
 
 ### The toolbox
 
-135 transformations across 23 tools, grouped into six families by intent: decode, hash, measure, inspect — everything is
+137 transformations across 23 tools, grouped into six families by intent: decode, hash, measure, inspect — everything is
 computed locally, nothing leaves the machine.
 
 ![Toolbox](docs/images/console-outils.png)
@@ -465,9 +468,9 @@ previous or next request **in displayed order**, filters included.
 | Tab | Contents |
 |---|---|
 | **Summary** | Identity (method, URL, status with its meaning, media type), network (IP, real protocol, cache, on-the-wire sizes, performance metrics), context (tab, window, frame, document, origin, third-party, Firefox tracking classification), and the free-text annotation. |
-| **Headers** | URL parameters, request headers, response headers, headers as seen by page JavaScript. Every known header is explained on hover. Then two computed analyses: **HTTP freshness** (RFC 9111: freshness lifetime, current age broken down, time remaining, validators, `Vary`, directives) and the **CSP policy** (each directive with its meaning, then a plain statement of what the policy allows). Then the **response protections** — HSTS (and whether Firefox already enforces it for the host), CSP, framing, `nosniff`, the effective Referrer-Policy, Permissions-Policy, COOP / COEP / CORP and cross-origin isolation, and what the server says about itself — as facts, never as alerts. For a page, **a CSP derived from what it actually loaded**, ready to try in Report-Only, with what the network cannot show stated plainly. |
-| **Request** | The body sent: nature, source, declared type, encoding, compression. Automatic JSON formatting, form fields broken out, and **`multipart/form-data` bodies decoded part by part** (field name, filename, type, content). An **OAuth 2.0 / OpenID Connect** authorization or token request is read — flow, PKCE, `state`, `nonce`, redirect URI — and checked against RFC 6749, RFC 7636 and RFC 9700, without ever reproducing a secret. A **SAML** message is decoded in both bindings: issuer, subject, audience, validity at capture time, and **which element is signed** — the response, the assertion, or nothing. |
-| **Response** | The body received, with the same treatment, plus image preview and hex rendering for binary. An OAuth token response is summarised. For a script or stylesheet, the **Subresource Integrity hashes** (SHA-256, -384, -512) and a ready `integrity` tag — computed at capture time on the exact bytes the page received, and refused only when the body was truncated. |
+| **Headers** | URL parameters, request headers, response headers, headers as seen by page JavaScript. Every known header is explained on hover. Then two computed analyses: **HTTP freshness** (RFC 9111: freshness lifetime, current age broken down, time remaining, validators, `Vary`, directives) and the **CSP policy** (each directive with its meaning, then a plain statement of what the policy allows). Then the **response protections** — HSTS (and whether Firefox already enforces it for the host), CSP, framing, `nosniff`, the effective Referrer-Policy, Permissions-Policy, COOP / COEP / CORP and cross-origin isolation, and what the server says about itself — as facts, never as alerts. For a page, **a CSP derived from what it actually loaded**, ready to try in Report-Only, with what the network cannot show stated plainly. An **HTTP message signature** (`Signature-Input` / `Signature`, RFC 9421) is rebuilt: the components it covers, its parameters, and **the exact signature base**, byte for byte, from what Firefox reported — then verified with a key you paste (RSA-PSS, RSA PKCS #1, ECDSA P-256 and P-384, Ed25519, HMAC). What cannot be rebuilt — a trailer, a header Firefox did not report — is named instead of producing a false "invalid". |
+| **Request** | The body sent: nature, source, declared type, encoding, compression. Automatic JSON formatting, form fields broken out, and **`multipart/form-data` bodies decoded part by part** (field name, filename, type, content). An **OAuth 2.0 / OpenID Connect** authorization or token request is read — flow, PKCE, `state`, `nonce`, redirect URI — and checked against RFC 6749, RFC 7636 and RFC 9700, without ever reproducing a secret. A **SAML** message is decoded in both bindings: issuer, subject, audience, validity at capture time, and **which element is signed** — the response, the assertion, or nothing. A **passkey registration or sign-in (WebAuthn)** is opened: the signed origin and challenge, the domain fingerprint (`rpIdHash`, recomputed to name the domain), the presence and verification flags, whether the key is synced, the signature counter, the authenticator model (AAGUID) and its public key. A sign-in signature is **verified automatically** with the public key of the registration when that registration was captured. A **DNS over HTTPS** query (`?dns=` or `application/dns-message`) is decoded. |
+| **Response** | The body received, with the same treatment, plus image preview and hex rendering for binary. An OAuth token response is summarised. For a script or stylesheet, the **Subresource Integrity hashes** (SHA-256, -384, -512) and a ready `integrity` tag — computed at capture time on the exact bytes the page received, and refused only when the body was truncated. **WebAuthn options** sent by a server are read (challenge length, accepted algorithms, user verification, resident key, attestation). A **DNS over HTTPS** answer is decoded record by record — A, AAAA, CNAME, MX, TXT, SOA, SRV, CAA, HTTPS / SVCB, DS, DNSKEY, RRSIG — with the EDNS options. |
 | **Cookies** | Cookies set and changed by this request, with all attributes detailed. |
 | **Security** | TLS version, cipher suite, key exchange, forward secrecy, ECH, HSTS — and **every certificate of the chain read in full from its DER bytes**, like Firefox's certificate viewer: the names it covers (DNS, IP, email, URI), key algorithm and size, key usages, whether it is a certificate authority, the validation level it declares (DV, OV, IV or EV), where to check revocation (OCSP, CRL), the issuer's certificate, key identifiers, and the embedded Certificate Transparency proofs with their log and timestamp. One click copies the PEM or opens it in the toolbox. |
 | **Alerts** | The analyser's findings for this request, each with its evidence. |
@@ -592,12 +595,12 @@ own secret and tracker patterns in the settings.
 
 ## 11. The toolbox: 23 tools in 6 families
 
-135 transformations, 23 tools grouped into six families by what you are trying to do — decode and convert, encryption and digests, network and HTTP, read and measure, search and compare, produce — **all computed locally**. A row's context menu, and the
+137 transformations, 23 tools grouped into six families by what you are trying to do — decode and convert, encryption and digests, network and HTTP, read and measure, search and compare, produce — **all computed locally**. A row's context menu, and the
 "Toolbox" buttons in the detail panel, send a value straight into it.
 
 | Family | Contents |
 |---|---|
-| **Transform** | The full catalogue of 135 transformations, grouped: bases, text, web, casing, Unicode normalisation, lines… |
+| **Transform** | The full catalogue of 137 transformations, grouped: bases, text, web, casing, Unicode normalisation, lines… |
 | **Keys and trials** | XOR (including single-byte key search), Vigenère, Caesar across all 26 shifts |
 | **Encryption** | AES-GCM / CBC / CTR, PBKDF2 derivation, RSA and ECDSA signing and verification |
 | **JWT** | Header and payload decoding, labels for standard claims, signature verification with a key, **JWK thumbprint (RFC 7638)** |
@@ -846,7 +849,7 @@ ui/                        The interface — one page for all four surfaces
 ├── console/               One view per file, plus the detail panel
 └── lib/                   Codecs, digests, network, reference tables, i18n
 
-tests/                     1547 assertions, no browser required
+tests/                     1788 assertions, no browser required
 tools/sockets.mjs          Real WebSockets against a real server: page, worker, WebRTC
 tools/transparence.mjs     What a page can tell about the probes — it should be nothing
 tools/minutage.mjs         Network timing phases in a real browser: only real measurements
@@ -895,6 +898,12 @@ dictionary simply displays its French original — never an empty label, never a
 design has a real benefit (the UI can never show a broken placeholder) and one consequence:
 **translating the source strings would break English mode entirely.**
 
+Error messages go through `te()`, which also recognises messages that carry a value —
+`caractere invalide dans le base32 : 9` becomes *invalid character in the base32: 9* —
+through templates with holes (`ui/lib/dict-en-erreurs.js`). The test suite refuses a
+displayed text written straight into the page, a sentence built by concatenation, and an
+error message without a translation or a template.
+
 So the source stays French. Everything a reader or user meets — this README, the repository
 description, the releases — is in English, and the extension itself runs in English or
 French at the flip of a setting.
@@ -907,7 +916,7 @@ French at the flip of a setting.
 npm test
 ```
 
-1547 assertions, with no browser and no dependencies. The kernel and interface modules are
+1788 assertions, with no browser and no dependencies. The kernel and interface modules are
 written for Firefox; `tests/harnais.mjs` supplies the minimum WebExtension API and DOM they
 need to import and run under Node. **The logic under test is exactly the logic that runs in
 the browser, with no rewriting.**
@@ -916,15 +925,18 @@ the browser, with no rewriting.**
 |---|---|---|
 | `core.test.mjs` | 228 | URL normalisation, correlation signatures, the store, the rule engine (both ways: what matches **and** what must not), the security analyser rule by rule, HAR export, curl import, all 39 code generators |
 | `avance.test.mjs` | 469 | WebSocket and HTTP/2 frames, CSP, RFC 9111 freshness, multipart, canonical URLs and homographs, protocol tables, binary structures, rare digests, generators |
-| `ui-load.test.mjs` | 237 | Actual loading of the 141 interface modules, complete module graph (no dead import, no file outside the graph), consistency with the HTML pages and the manifest, **full translation coverage** — every displayed string must have a dictionary entry, including labels that reach the translator through a table (`allRows` labels, search help, CSP directive meanings) — and **measured contrast**: every colour pair in both themes is checked against the WCAG 2.1 thresholds |
+| `ui-load.test.mjs` | 254 | Actual loading of the 149 interface modules, complete module graph (no dead import, no file outside the graph), consistency with the HTML pages and the manifest, **full translation coverage** — every displayed string must have a dictionary entry, including labels that reach the translator through a table (`allRows` labels, search help, CSP directive meanings), and **no text written straight into the page or built by concatenation**, which no dictionary entry can match — and **measured contrast**: every colour pair in both themes is checked against the WCAG 2.1 thresholds |
 | `detail-coverage.test.mjs` | 128 | Each of a record's 60 fields is displayed, each tab has a render function, each searchable field exists |
 | `outils.test.mjs` | 108 | The toolbox, against published vectors |
-| `rendu.test.mjs` | 70 | The interface **actually rendered**: sixteen views against three captures, the eleven detail tabs, the twenty-two toolbox panels against thirty-two hostile inputs, and 264 deliberately malformed HAR files — then a fragment-by-fragment comparison of both languages, so nothing can stay in French on an English screen. It also counts the commands each view sends the kernel: **a view that re-renders itself in a loop is caught in a second instead of freezing the tab**. Finally the translator itself reports every text it could not translate while everything is rendered in English: a French sentence that arrives through a variable can no longer hide |
+| `rendu.test.mjs` | 85 | The interface **actually rendered**: sixteen views against three captures, the eleven detail tabs, the twenty-two toolbox panels against thirty-two hostile inputs, and 264 deliberately malformed HAR files — then a fragment-by-fragment comparison of both languages, so nothing can stay in French on an English screen. It also counts the commands each view sends the kernel: **a view that re-renders itself in a loop is caught in a second instead of freezing the tab**. Finally the translator itself reports every text it could not translate while everything is rendered in English: a French sentence that arrives through a variable can no longer hide |
 | `lectures.test.mjs` | 166 | What 4.4 reads, checked against its sources: the HAR timing rules (TLS inside `connect`, counted once), every WebSocket subprotocol **and every text that must receive no label**, MQTT packet by packet, the certificate reader **cross-checked against the OpenSSL X.509 parser built into Node**, and the Firefox search criteria |
 | `securite.test.mjs` | 141 | The security tools against independent references — gzip and DEFLATE made by `node:zlib`, digests by `node:crypto`: the analyser's facts and the reused-nonce alert, digests judged only on what the captured bytes can prove, hostile SAML input and DEFLATE bombs, every response protection, the derived CSP, OAuth 2.0 against RFC 9700, and SAML in both bindings, down to **which element is signed** |
+| `decodeurs.test.mjs` | 209 | What 4.6 reads, against independent references: every example of **RFC 9421** (Appendix B and section 2) — signature bases **identical byte for byte**, RSA-PSS, ECDSA, HMAC and Ed25519 signatures verified with the published keys, a tampered base refused — and every case where a base cannot be rebuilt; the strict **RFC 9651** serialisation; **WebAuthn** registrations and sign-ins made by Yubico's `fido2` in ES256, EdDSA and RS256, signatures verified and a tampered one refused; **DNS** messages made by `dnspython` and the RFC 8484 example, with hostile inputs (pointer loops, oversized names, truncation) |
 
 Expected values come from published sources: RFC vectors (4226, 6238, 6455, 4231, 7541, 9113,
-3986, 7578, 9111, 8187, 2231, 2047, 6266, 7638, 8941, and ZeroMQ RFC 32), standard check values (all 20 CRC variants are verified against their
+3986, 7578, 9111, 8187, 2231, 2047, 6266, 7638, 8941, 9421, 9651, 8484, and ZeroMQ RFC 32),
+independent libraries (Yubico `fido2` for WebAuthn, `dnspython` for DNS, `node:crypto` and
+`node:zlib`), standard check values (all 20 CRC variants are verified against their
 published check value for `123456789`), FIPS 202 for SHA-3, RFC 7693 for BLAKE2, RFC 9562
 for UUIDs.
 
@@ -938,7 +950,7 @@ for UUIDs.
 ```
 
 The script checks that the 161 required files are present and that every surface declared in
-the manifest exists on disk, then runs the eight test suites. **If a test fails, the build
+the manifest exists on disk, then runs the nine test suites. **If a test fails, the build
 stops.**
 
 Works with Windows PowerShell 5.1 as well as PowerShell 7.
@@ -951,7 +963,7 @@ node tools/captures.mjs
 
 ### Audits that need a real browser
 
-The eight test suites run under Node with no browser, which is what lets them run everywhere.
+The nine test suites run under Node with no browser, which is what lets them run everywhere.
 Two things cannot be checked that way, because they only exist once a layout engine is
 involved — so they live as tools, and each prints a verdict and an exit code:
 
@@ -1023,7 +1035,7 @@ the file. It contains internal errors and the command log — not your traffic.
 Before opening a pull request:
 
 ```bash
-npm test              # all 1547 assertions must pass
+npm test              # all 1788 assertions must pass
 .\build.ps1 -Verify   # the build must be green
 ```
 

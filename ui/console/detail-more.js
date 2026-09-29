@@ -11,7 +11,7 @@ import { poser } from './tools.js';
 import { bytes, ms, clock, middle, preuveLisible } from '../lib/format.js';
 import { copy, cmd, toast } from '../app.js';
 import { allRows } from './detail-parts.js';
-import { t, tp } from '../lib/i18n.js';
+import { t, tp, te } from '../lib/i18n.js';
 import { decrireSuiteTls } from '../lib/ref-reseau.js';
 import { raisonMasque } from '../lib/minutage.js';
 import { resumerCertificat } from '../lib/asn1.js';
@@ -153,7 +153,7 @@ export function cookies(rec) {
       const res = await cmd('cookiesFor', { url: rec.finalUrl || rec.url });
       clearNode(jar);
       if (res.error) { toast(res.error, false); return; }
-      jar.appendChild(sec('Cookies du domaine', res.cookies.length + ' cookie(s)'));
+      jar.appendChild(sec('Cookies du domaine', tp('{n} cookie(s)', { n: res.cookies.length })));
       if (!res.cookies.length) {
         jar.appendChild(el('p', { class: 'note', text: t('Aucun cookie enregistre pour cette URL.') }));
       }
@@ -252,7 +252,7 @@ function certificatComplet(box, der) {
     blocCertificat(box, resumerCertificat(base64VersOctets(der)));
   } catch (e) {
     box.appendChild(el('p', { class: 'note warn', text:
-      t('Ce bloc n est pas un certificat : ') + String(e.message || e) }));
+      t('Ce bloc n est pas un certificat : ') + te(e) }));
   }
 }
 
@@ -360,7 +360,7 @@ export function streams(rec) {
     });
   }
   if (rec.sse) {
-    box.appendChild(sec('Server-Sent Events', rec.sse.messages.length + (rec.sse.dropped ? ' (+' + rec.sse.dropped + ' non conserves)' : '')));
+    box.appendChild(sec('Server-Sent Events', rec.sse.messages.length + (rec.sse.dropped ? ' ' + tp('(+{n} non conserves)', { n: rec.sse.dropped }) : '')));
     add(box, kv('Ouverte', rec.sse.openedAt ? clock(rec.sse.openedAt) : null));
     add(box, kv('Fermee', rec.sse.closedAt ? clock(rec.sse.closedAt) : null));
     add(box, kv('Avec credentials', rec.sse.withCredentials ? t('oui') : null));

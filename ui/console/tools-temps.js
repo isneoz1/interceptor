@@ -5,7 +5,7 @@
  * instant, plutot que d en choisir une a la place de l utilisateur.
  */
 import { el, frag, kv, sec, add, button } from '../lib/dom.js';
-import { t } from '../lib/i18n.js';
+import { t, tp, te } from '../lib/i18n.js';
 import { copy, toast } from '../app.js';
 import { lireHorodatage, formatsDe, maintenant, lireDuree, dureeLisible, ecart, lireDateDos }
   from '../lib/temps.js';
@@ -45,7 +45,7 @@ export function panneauHorodatage(entree) {
   try { lectures = lireHorodatage(premier); }
   catch (e) {
     box.appendChild(sec('Lectures de « ' + premier + ' »', 0));
-    box.appendChild(el('p', { class: 'note', text: t('Non convertible : ') + String(e.message || e) }));
+    box.appendChild(el('p', { class: 'note', text: t('Non convertible : ') + te(e) }));
   }
 
   if (lectures) {
@@ -140,11 +140,11 @@ export function panneauNombres(entree, etat, redessiner) {
   let n;
   try { n = convertirNombre(brut, etat.base); }
   catch (e) {
-    box.appendChild(el('p', { class: 'note warn', text: t('Non convertible : ') + String(e.message || e) }));
+    box.appendChild(el('p', { class: 'note warn', text: t('Non convertible : ') + te(e) }));
     return box;
   }
 
-  box.appendChild(sec('Ecritures de « ' + brut + ' »', 'lu en base ' + etat.base));
+  box.appendChild(sec(tp('Ecritures de « {valeur} »', { valeur: brut }), tp('lu en base {base}', { base: etat.base })));
   for (const [libelle, base] of BASES) {
     add(box, kv(libelle, n.toString(base), { copy: true, hl: base === 16 }));
   }

@@ -335,6 +335,85 @@ export function analyserChampStructure(valeur, nomEntete = '') {
   return { formeAttendue: attendue, lectures, valides: lectures.filter(l => !l.erreur) };
 }
 
+/* ---------------------- Serialisation stricte (section 4.1) ---------------- */
+/* Ce qu une signature de message HTTP couvre (RFC 9421) est la forme STRICTE
+   d un champ : un espace unique entre membres, la base64 complete, un booleen
+   vrai reduit a sa cle. La relire et la reecrire ici redonne exactement les
+   octets que le signataire a signes. */
+
+/* Une cle repetee remplace la valeur precedente, a la place de la premiere
+   occurrence (sections 4.2.2 et 4.2.3.2). */
+function sansDoublons(membres) {
+  const ordre = new Map();
+  for (const m of membres) ordre.set(m.cle, m);
+  return [...ordre.values()];
+}
+
+function base64Stricte(octets) {
+  let binaire = '';
+  for (const o of octets) binaire += String.fromCharCode(o);
+  return btoa(binaire);
+}
+
+/** Un article de base, sans parametres (section 4.1.3.1). */
+export function serialiserArticleDeBase(a) {
+  switch (a.type) {
+    case 'entier':
+      if (!Number.isInteger(a.valeur) || Math.abs(a.valeur) > 999999999999999) throw new Error('entier hors bornes');
+      return String(a.valeur);
+    case 'decimal': {
+      const [entier, frac] = Math.abs(a.valeur).toFixed(3).split('.');
+      if (entier.length > 12) throw new Error('decimal hors bornes');
+      return (a.valeur < 0 ? '-' : '') + entier + '.' + (frac.replace(/0+$/, '') || '0');
+    }
+    case 'chaine':
+      if (/[^\x20-\x7e]/.test(a.valeur)) throw new Error('caractere interdit dans une chaine');
+      return '"' + a.valeur.replace(/[\\"]/g, c => '\\' + c) + '"';
+    case 'jeton': return a.valeur;
+    case 'suite d octets': return ':' + base64Stricte(a.valeur) + ':';
+    case 'booleen': return a.valeur ? '?1' : '?0';
+    case 'date': return '@' + a.valeur;
+    case 'chaine affichee': {
+      let sortie = '%"';
+      for (const o of new TextEncoder().encode(a.valeur)) {
+        sortie += o === 0x25 || o === 0x22 || o <= 0x1f || o >= 0x7f
+          ? '%' + o.toString(16).padStart(2, '0') : String.fromCharCode(o);
+      }
+      return sortie + '"';
+    }
+    default: throw new Error('type inconnu : ' + a.type);
+  }
+}
+
+/** Parametres (section 4.1.1.2) : un booleen vrai se reduit a sa cle. */
+export function serialiserParametres(parametres) {
+  return sansDoublons(parametres || []).map(p =>
+    ';' + p.cle + (p.type === 'booleen' && p.valeur === true ? '' : '=' + serialiserArticleDeBase(p))).join('');
+}
+
+/** Un membre de liste ou de dictionnaire : article ou liste interne. */
+export function serialiserMembre(m) {
+  if (m.type === 'liste interne') {
+    return '(' + m.valeur.map(serialiserMembre).join(' ') + ')' + serialiserParametres(m.parametres);
+  }
+  return serialiserArticleDeBase(m) + serialiserParametres(m.parametres);
+}
+
+export function serialiserListe(membres) {
+  return membres.map(serialiserMembre).join(', ');
+}
+
+export function serialiserDictionnaire(membres) {
+  return sansDoublons(membres).map(m => m.type === 'booleen' && m.valeur === true
+    ? m.cle + serialiserParametres(m.parametres)
+    : m.cle + '=' + serialiserMembre(m)).join(', ');
+}
+
+/** Le membre d une cle, apres application de la regle des doublons. */
+export function membreDuDictionnaire(membres, cle) {
+  return sansDoublons(membres).find(m => m.cle === cle) || null;
+}
+
 /** Rend un article lisible : « 5 (entier) », « "a" (chaine) »… */
 export function decrireArticle(article) {
   if (!article) return '';

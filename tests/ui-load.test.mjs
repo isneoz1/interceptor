@@ -364,8 +364,18 @@ const { FAITS_OAUTH } = await import('../ui/lib/oauth.js');
 const { FAITS_SAML } = await import('../ui/lib/saml.js');
 const { LIMITES_CSP } = await import('../ui/lib/csp-observee.js');
 const { RAISONS: RAISONS_EMPREINTE } = await import('../background/capture/empreintes.js');
+/* 4.6 : signatures de messages HTTP, WebAuthn, DNS par HTTPS. Les messages
+   d erreur que messagesDnsDe rend eux-memes passent aussi par la traduction. */
+const { FAITS_SIGNATURE, ERREURS_BASE } = await import('../ui/lib/signatures-http.js');
+const { FAITS_WEBAUTHN, DRAPEAUX } = await import('../ui/lib/webauthn.js');
+const { FAITS_DNS } = await import('../ui/lib/dns-message.js');
 for (const [quoi, table] of [['fait OAuth', FAITS_OAUTH], ['fait SAML', FAITS_SAML],
-  ['limite de la CSP deduite', LIMITES_CSP], ['raison d empreinte', RAISONS_EMPREINTE]]) {
+  ['limite de la CSP deduite', LIMITES_CSP], ['raison d empreinte', RAISONS_EMPREINTE],
+  ['fait de signature HTTP', FAITS_SIGNATURE], ['base de signature impossible', ERREURS_BASE],
+  ['fait WebAuthn', FAITS_WEBAUTHN], ['drapeau WebAuthn', Object.fromEntries(DRAPEAUX.map(d => [d[1], d[2]]))],
+  ['fait DNS', FAITS_DNS],
+  ['erreur DNS du trafic', ['octets du corps envoye non conserves',
+    'corps binaire non conserve (reglage « corps binaires »)', 'parametre dns= : base64url illisible']]]) {
   for (const gabarit of Object.values(table)) exigerTraduction(quoi, gabarit);
 }
 {
@@ -636,5 +646,153 @@ const totauxAnnonces = [...readme.matchAll(/Assertions-([0-9]+)|([0-9]+) asserti
 verifier('le README annonce partout le meme nombre d assertions',
   totauxAnnonces.length >= 4 && new Set(totauxAnnonces).size === 1,
   totauxAnnonces.join(', '));
+
+/* ============ Aucun texte affiche n echappe a la traduction =============== */
+/* Deux formes echappaient a tous les controles precedents, qui ne lisent que
+   les appels a t(), tp(), kv(), sec() et button() :
+
+     - un texte ecrit directement dans un element : el('button', {…}, 'Envoyer'),
+       ou { title: '…' }, { placeholder: '…' }, { text: '…' } ;
+     - une phrase construite par morceaux : toast(n + ' requetes reanalysees').
+       Aucune cle du dictionnaire ne peut correspondre a une phrase coupee.
+
+   La 4.6 en a trouve plus de soixante-dix, toutes affichees en francais dans
+   l interface anglaise. On lit ici chaque appel en suivant ses parentheses,
+   ses chaines et ses commentaires. */
+function finDeChaine(s, i) {
+  const q = s[i];
+  for (let j = i + 1; j < s.length; j++) {
+    if (s[j] === '\\') { j++; continue; }
+    if (s[j] === q) return j;
+  }
+  return s.length;
+}
+function finDeGroupe(s, i) {
+  const ferme = { '(': ')', '{': '}', '[': ']' }[s[i]];
+  let n = 0;
+  for (let j = i; j < s.length; j++) {
+    const c = s[j];
+    if (c === '"' || c === "'" || c === '`') { j = finDeChaine(s, j); continue; }
+    if (c === '/' && s[j + 1] === '/') { j = s.indexOf('\n', j); if (j < 0) return s.length; continue; }
+    if (c === '/' && s[j + 1] === '*') { j = s.indexOf('*/', j) + 1; continue; }
+    if (c === s[i]) n++;
+    else if (c === ferme && --n === 0) return j;
+  }
+  return s.length;
+}
+function argumentsDe(s, ouvrante) {
+  const fin = finDeGroupe(s, ouvrante);
+  const args = [];
+  let debut = ouvrante + 1;
+  for (let j = ouvrante + 1; j < fin; j++) {
+    const c = s[j];
+    if (c === '"' || c === "'" || c === '`') { j = finDeChaine(s, j); continue; }
+    if (c === '(' || c === '{' || c === '[') { j = finDeGroupe(s, j); continue; }
+    if (c === ',') { args.push(s.slice(debut, j).trim()); debut = j + 1; }
+  }
+  args.push(s.slice(debut, fin).trim());
+  return args;
+}
+/* L expression sans ses appels a t() et tp() : ce qui reste est ecrit en dur. */
+function horsTraduction(expr) {
+  let sortie = '';
+  for (let i = 0; i < expr.length; i++) {
+    const c = expr[i];
+    if (c === '"' || c === "'" || c === '`') { const f = finDeChaine(expr, i); sortie += expr.slice(i, f + 1); i = f; continue; }
+    const appel = /^\b(t|tp)\(/.exec(expr.slice(i));
+    if (appel && !/[\w.]/.test(expr[i - 1] || '')) { i = finDeGroupe(expr, i + appel[1].length); continue; }
+    sortie += c;
+  }
+  return sortie;
+}
+const litterauxDe = expr => [...expr.matchAll(/'((?:[^'\\]|\\.)*)'/g)].map(m => desechapper(m[1]));
+const phrase = texte => /[a-z]{3}/i.test(texte) && !SANS_TRADUCTION.has(texte.trim());
+/* Valeurs neutres, identiques dans les deux langues : un nom de format, deux
+   exemples de syntaxe (JSONPath, selecteur CSS et XPath). */
+const NEUTRES = new Set(['ISO', '$.data[0].id', 'a[href], //a/@href']);
+const enDur = [];
+for (const rel of fichiersJs(path.join(racine, 'ui'))) {
+  if (/\/dict-en|\/content-(fr|en)\.js$|\/i18n\.js$/.test(rel)) continue;
+  const s = fs.readFileSync(path.join(racine, rel), 'utf8');
+  const ligne = i => rel + ':' + s.slice(0, i).split('\n').length;
+  for (const m of s.matchAll(/\bel\(/g)) {
+    if (/[\w.]/.test(s[m.index - 1] || '')) continue;
+    const args = argumentsDe(s, m.index + 2);
+    const enfant = /^'((?:[^'\\]|\\.)*)'$/.exec(args[2] || '');
+    if (enfant && phrase(desechapper(enfant[1])) && !NEUTRES.has(desechapper(enfant[1]))) enDur.push(ligne(m.index) + ' ' + enfant[0]);
+    if ((args[1] || '').startsWith('{')) {
+      for (const x of args[1].matchAll(/\b(?:text|title|placeholder):\s*'((?:[^'\\]|\\.)*)'\s*[,}\n]/g)) {
+        const texte = desechapper(x[1]);
+        if (phrase(texte) && !NEUTRES.has(texte)) enDur.push(ligne(m.index) + ' ' + x[0].trim());
+      }
+    }
+  }
+  /* Phrases par morceaux : un « + » hors des chaines, et un litteral de
+     plusieurs mots hors de t() et tp(). */
+  const morceaux = expr => {
+    const reste = horsTraduction(expr || '');
+    const sansChaines = reste.replace(/'(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*"|`(?:[^`\\]|\\.)*`/g, '""');
+    return /\+/.test(sansChaines) && litterauxDe(reste).some(l => /\s/.test(l.trim()) && phrase(l));
+  };
+  for (const [fonction, rang] of [['toast', 0], ['copy', 1], ['sec', 1], ['vide', 1], ['kv', 1]]) {
+    for (const m of s.matchAll(new RegExp('\\b' + fonction + '\\(', 'g'))) {
+      if (/[\w.]/.test(s[m.index - 1] || '')) continue;
+      const arg = argumentsDe(s, m.index + fonction.length)[rang];
+      if (morceaux(arg)) enDur.push(ligne(m.index) + ' ' + fonction + '(… ' + arg.replace(/\s+/g, ' ').slice(0, 70) + ')');
+    }
+  }
+  for (const m of s.matchAll(/\btext:\s*/g)) {
+    let k = m.index + m[0].length;
+    for (let n = 0; k < s.length; k++) {
+      const c = s[k];
+      if (c === '"' || c === "'" || c === '`') { k = finDeChaine(s, k); continue; }
+      if ('([{'.includes(c)) n++;
+      else if (')]}'.includes(c)) { if (n === 0) break; n--; }
+      else if (c === ',' && n === 0) break;
+    }
+    const arg = s.slice(m.index + m[0].length, k);
+    if (morceaux(arg)) enDur.push(ligne(m.index) + ' text: ' + arg.replace(/\s+/g, ' ').slice(0, 70));
+  }
+}
+for (const reste of enDur.slice(0, 20)) verifier('texte affiche passe par la traduction', false, reste);
+egal('aucun texte affiche ecrit en dur ni construit par morceaux', enDur.length, 0);
+
+/* ===================== Les messages d erreur se traduisent ================= */
+/* Un decodeur qui refuse une entree dit pourquoi, et ce message s affiche.
+   Un message fixe doit avoir son entree ; un message qui porte une valeur
+   (« caractere invalide dans le base32 : @ ») doit avoir son modele, que
+   te() reconnait. Les deux s affichaient en francais dans l interface
+   anglaise jusqu a la 4.6. */
+{
+  const { MODELES_ERREURS } = await import('../ui/lib/dict-en-erreurs.js');
+  const { te, setLang } = await import('../ui/lib/i18n.js');
+  const prefixes = Object.keys(MODELES_ERREURS).map(m => m.slice(0, m.indexOf('{')));
+  const sansTraduction = [];
+  for (const rel of fichiersJs(path.join(racine, 'ui'))) {
+    if (/\/dict-en/.test(rel)) continue;
+    const s = fs.readFileSync(path.join(racine, rel), 'utf8');
+    for (const m of s.matchAll(/(?:new Error|\.erreur)\(\s*'((?:[^'\\]|\\.)*)'\s*(\+?)/g)) {
+      const texte = desechapper(m[1]);
+      if (!/[a-z]{3}/i.test(texte)) continue;
+      if (m[2]) {
+        if (!prefixes.some(p => p && (texte.startsWith(p) || p.startsWith(texte)))) sansTraduction.push(rel + ' : ' + texte + '…');
+      } else if (EN[texte] === undefined) sansTraduction.push(rel + ' : ' + texte);
+    }
+  }
+  for (const reste of sansTraduction.slice(0, 20)) verifier('le message d erreur se traduit', false, reste);
+  egal('aucun message d erreur sans traduction', sansTraduction.length, 0);
+
+  setLang('en');
+  try {
+    egal('te : message fixe', te(new Error('message DNS tronque')), 'truncated DNS message');
+    egal('te : message a valeur', te('caractere invalide dans le base32 : 9'), 'invalid character in the base32: 9');
+    egal('te : valeur au milieu', te('chiffre « 9 » impossible en base 8'), 'digit “9” impossible in base 8');
+    egal('te : trou traduit a son tour', te('chiffre attendu (position 3 : « ab »)'), 'digit expected (position 3: “ab”)');
+    egal('te : deux niveaux', te('longueur de chaine invalide : « x » (octet 4 : « s:x: »)'),
+      'invalid string length: “x” (byte 4: “s:x:”)');
+    egal('te : message inconnu rendu tel quel', te('Unexpected token < in JSON'), 'Unexpected token < in JSON');
+  } finally { setLang('fr'); }
+  egal('te : en francais, le message ne change pas', te('message DNS tronque'), 'message DNS tronque');
+}
 
 bilan('Chargement de l interface');

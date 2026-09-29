@@ -41,7 +41,7 @@ Add-on…**, pick `manifest.json`. Reload the add-on from that same page after e
 ## What must pass
 
 ```bash
-npm test              # every assertion, five suites, no browser needed
+npm test              # every assertion, nine suites, no browser needed
 .\build.ps1 -Verify   # file inventory, tests, and the figure checks
 ```
 
@@ -112,7 +112,7 @@ Licence: MIT, like the rest. By contributing, you agree your work ships under it
 
 ## Two checks that need a browser
 
-`npm test` runs eight suites under Node with no browser. Two kinds of defect only exist once
+`npm test` runs nine suites under Node with no browser. Two kinds of defect only exist once
 a layout engine is involved, so they live as tools:
 
 ```bash

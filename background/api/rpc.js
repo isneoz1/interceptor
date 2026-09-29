@@ -18,6 +18,7 @@ import { analyze, analyzeAll } from '../core/analyzer.js';
 import { clearSecurityCache } from '../capture/security.js';
 import { clearDnsCache } from '../capture/dnsinfo.js';
 import { oublierNonces } from '../core/analyzer-faits.js';
+import { liensWebAuthn } from '../core/webauthn-liens.js';
 import { ingestBatch, contextLog, clearPageState } from '../ingest/page.js';
 import { invalidateRuleCache } from '../rules/engine.js';
 import { configurerIntercepteur, relacherTout } from '../rules/intercept.js';
@@ -85,6 +86,10 @@ const COMMANDS = {
     if (!rec.analysis) analyze(rec);
     return { record: detail(rec) };
   },
+
+  /* Une ceremonie WebAuthn : l inscription de la meme cle et la reponse qui a
+     emis le defi, cherchees dans les corps que seul le noyau garde. */
+  webauthnLiens: ({ id }) => liensWebAuthn(id),
 
   clear: () => {
     // Remise a zero complete : donnees, index de correlation, journaux et caches.

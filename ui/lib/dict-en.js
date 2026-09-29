@@ -16,6 +16,9 @@ import { EN_INTEGRITE } from './dict-en-integrite.js';
 import { EN_TUTORIEL } from './dict-en-tutoriel.js';
 import { EN_LECTURE } from './dict-en-lecture.js';
 import { EN_SECURITE } from './dict-en-securite.js';
+import { EN_PREUVES } from './dict-en-preuves.js';
+import { EN_MORCEAUX } from './dict-en-morceaux.js';
+import { EN_ERREURS } from './dict-en-erreurs.js';
 
 export const EN = {
   /* ------------------------------ Navigation ----------------------------- */
@@ -417,5 +420,8 @@ export const EN = {
   ...EN_INTEGRITE,
   ...EN_TUTORIEL,
   ...EN_LECTURE,
-  ...EN_SECURITE
+  ...EN_SECURITE,
+  ...EN_PREUVES,
+  ...EN_MORCEAUX,
+  ...EN_ERREURS
 };

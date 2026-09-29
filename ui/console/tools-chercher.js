@@ -5,7 +5,7 @@
  * reguliere ecrite a la main, a son propre onglet.
  */
 import { el, frag, kv, sec, add, button } from '../lib/dom.js';
-import { t } from '../lib/i18n.js';
+import { t, tp, te } from '../lib/i18n.js';
 import { listeProgressive } from '../lib/liste-progressive.js';
 import { copy, toast } from '../app.js';
 import {
@@ -35,7 +35,7 @@ export function panneauChercher(entree, etat, redessiner, poser) {
       add(box, kv('Expression', motif.motif, { copy: true }));
       let trouves = [];
       try { trouves = [...new Set(brut.match(new RegExp(motif.motif, 'g')) || [])]; }
-      catch (e) { box.appendChild(el('p', { class: 'note warn', text: String(e.message || e) })); }
+      catch (e) { box.appendChild(el('p', { class: 'note warn', text: te(e) })); }
       box.appendChild(sec('Trouvailles', trouves.length));
       if (!trouves.length) {
         box.appendChild(el('p', { class: 'note', text: t('Rien de cette forme dans le texte de travail.') }));
@@ -70,7 +70,7 @@ export function panneauChercher(entree, etat, redessiner, poser) {
         ? t('La cle est juste : le numero est bien forme. Cela ne dit rien de son existence.')
         : t('La cle est fausse : il y a une faute de frappe, ou ce n est pas un numero de ce type.') }));
     } catch (e) {
-      box.appendChild(el('p', { class: 'note warn', text: String(e.message || e) }));
+      box.appendChild(el('p', { class: 'note warn', text: te(e) }));
     }
   }
 
@@ -86,8 +86,8 @@ export function panneauChercher(entree, etat, redessiner, poser) {
     try {
       const chemins = cheminsJson(brut);
       poser(chemins.map(c => c.chemin + ' = ' + c.valeur).join('\n'));
-      toast(chemins.length + ' chemins poses dans le texte de travail');
-    } catch (e) { toast(String(e.message || e), false); }
+      toast(tp('{n} chemins poses dans le texte de travail', { n: chemins.length }));
+    } catch (e) { toast(te(e), false); }
   }));
   box.appendChild(barreJson);
 
@@ -108,7 +108,7 @@ export function panneauChercher(entree, etat, redessiner, poser) {
         return kv(trouve.chemin, valeur, { copy: true });
       });
     } catch (e) {
-      box.appendChild(el('p', { class: 'note warn', text: t('Echec : ') + String(e.message || e) }));
+      box.appendChild(el('p', { class: 'note warn', text: t('Echec : ') + te(e) }));
     }
   }
 
@@ -149,7 +149,7 @@ export function panneauChercher(entree, etat, redessiner, poser) {
         box.appendChild(carte);
       }
     } catch (e) {
-      box.appendChild(el('p', { class: 'note warn', text: t('Selecteur refuse : ') + String(e.message || e) }));
+      box.appendChild(el('p', { class: 'note warn', text: t('Selecteur refuse : ') + te(e) }));
     }
   }
   return box;

@@ -1,0 +1,110 @@
+[
+  {
+    "nom": "es256",
+    "alg": -7,
+    "rp": "example.com",
+    "origine": "https://login.example.com",
+    "credentialId": "GUDDt1dwVI7R37FdhYMyJg",
+    "aaguid": "ee882879-721c-4913-9775-3dfcce97072a",
+    "defiCreation": "mgg6JD4_eolr2GAK4kPATZngMlDVlB6TfDyaaKZ_2bo",
+    "defiConnexion": "hPgVFE8CYYaOuBtfH62_I4gRL6X8uThUptxfuHmjZdg",
+    "inscription": {
+      "id": "GUDDt1dwVI7R37FdhYMyJg",
+      "rawId": "GUDDt1dwVI7R37FdhYMyJg",
+      "type": "public-key",
+      "response": {
+        "clientDataJSON": "eyJ0eXBlIjoid2ViYXV0aG4uY3JlYXRlIiwiY2hhbGxlbmdlIjoibWdnNkpENF9lb2xyMkdBSzRrUEFUWm5nTWxEVmxCNlRmRHlhYUtaXzJibyIsIm9yaWdpbiI6Imh0dHBzOi8vbG9naW4uZXhhbXBsZS5jb20iLCJjcm9zc09yaWdpbiI6ZmFsc2V9",
+        "attestationObject": "o2NmbXRkbm9uZWdhdHRTdG10oGhhdXRoRGF0YViUo3mm9u6vuaVeN4wRgDTidR5oL6ufLTCrE9ISVYbOGUddAAAAAO6IKHlyHEkTl3U9_M6XByoAEBlAw7dXcFSO0d-xXYWDMialAQIDJiABIVggZJnkdWfPcNITWeIZgxD1LIGbRYr6Yn4QNOOFvcJ-rUIiWCBtwD8DuO4oqIGR0frUFYc1NerZWb2_lhEoBl42IyQudQ",
+        "transports": [
+          "internal",
+          "hybrid"
+        ]
+      }
+    },
+    "connexion": {
+      "id": "GUDDt1dwVI7R37FdhYMyJg",
+      "rawId": "GUDDt1dwVI7R37FdhYMyJg",
+      "type": "public-key",
+      "response": {
+        "clientDataJSON": "eyJ0eXBlIjoid2ViYXV0aG4uZ2V0IiwiY2hhbGxlbmdlIjoiaFBnVkZFOENZWWFPdUJ0Zkg2Ml9JNGdSTDZYOHVUaFVwdHhmdUhtalpkZyIsIm9yaWdpbiI6Imh0dHBzOi8vbG9naW4uZXhhbXBsZS5jb20iLCJjcm9zc09yaWdpbiI6ZmFsc2V9",
+        "authenticatorData": "o3mm9u6vuaVeN4wRgDTidR5oL6ufLTCrE9ISVYbOGUcBAAAABw",
+        "signature": "MEUCIEZ-_1dv-UwHgAUmuRqrKQ6HgHyMjWct9k-onnPwsveOAiEA-uZoRy8WbXqYU5RAVVLtZRILiBTcsCl-t5G9acEh2tA",
+        "userHandle": "dXRpbGlzYXRldXItNDI"
+      }
+    },
+    "spki": "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEZJnkdWfPcNITWeIZgxD1LIGbRYr6\nYn4QNOOFvcJ+rUJtwD8DuO4oqIGR0frUFYc1NerZWb2/lhEoBl42IyQudQ==\n-----END PUBLIC KEY-----\n",
+    "rpIdHash": "a379a6f6eeafb9a55e378c118034e2751e682fab9f2d30ab13d2125586ce1947"
+  },
+  {
+    "nom": "eddsa",
+    "alg": -8,
+    "rp": "example.com",
+    "origine": "https://login.example.com",
+    "credentialId": "PC-c9xWD0x1CPA1rvTSU9Q",
+    "aaguid": "ee882879-721c-4913-9775-3dfcce97072a",
+    "defiCreation": "qV5kf3IrSiTqIe0SlfICE4EOPqiGFdvd9Rbl2iFEKs0",
+    "defiConnexion": "ZZ2SxN2lRo2FJWt4lUKUjbw3c4CMZG1JjQomQQfOu74",
+    "inscription": {
+      "id": "PC-c9xWD0x1CPA1rvTSU9Q",
+      "rawId": "PC-c9xWD0x1CPA1rvTSU9Q",
+      "type": "public-key",
+      "response": {
+        "clientDataJSON": "eyJ0eXBlIjoid2ViYXV0aG4uY3JlYXRlIiwiY2hhbGxlbmdlIjoicVY1a2YzSXJTaVRxSWUwU2xmSUNFNEVPUHFpR0ZkdmQ5UmJsMmlGRUtzMCIsIm9yaWdpbiI6Imh0dHBzOi8vbG9naW4uZXhhbXBsZS5jb20iLCJjcm9zc09yaWdpbiI6ZmFsc2V9",
+        "attestationObject": "o2NmbXRkbm9uZWdhdHRTdG10oGhhdXRoRGF0YVhxo3mm9u6vuaVeN4wRgDTidR5oL6ufLTCrE9ISVYbOGUddAAAAAO6IKHlyHEkTl3U9_M6XByoAEDwvnPcVg9MdQjwNa700lPWkAQEDJyAGIVggF3-Iv2mqf5IOT2ZlWPu4Hu_mffY_Hayyea93OsTcZE4",
+        "transports": [
+          "internal",
+          "hybrid"
+        ]
+      }
+    },
+    "connexion": {
+      "id": "PC-c9xWD0x1CPA1rvTSU9Q",
+      "rawId": "PC-c9xWD0x1CPA1rvTSU9Q",
+      "type": "public-key",
+      "response": {
+        "clientDataJSON": "eyJ0eXBlIjoid2ViYXV0aG4uZ2V0IiwiY2hhbGxlbmdlIjoiWloyU3hOMmxSbzJGSld0NGxVS1VqYnczYzRDTVpHMUpqUW9tUVFmT3U3NCIsIm9yaWdpbiI6Imh0dHBzOi8vbG9naW4uZXhhbXBsZS5jb20iLCJjcm9zc09yaWdpbiI6ZmFsc2V9",
+        "authenticatorData": "o3mm9u6vuaVeN4wRgDTidR5oL6ufLTCrE9ISVYbOGUcBAAAABw",
+        "signature": "BbfYUzX8wj96OcQgrPvQPFSJqXnCrSvHOCJwsnoe2AtaCKYdTn_h7_dRlmwoKZSA92ZoGjvJSvt6gUzISwJaDg",
+        "userHandle": "dXRpbGlzYXRldXItNDI"
+      }
+    },
+    "spki": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAF3+Iv2mqf5IOT2ZlWPu4Hu/mffY/Hayyea93OsTcZE4=\n-----END PUBLIC KEY-----\n",
+    "rpIdHash": "a379a6f6eeafb9a55e378c118034e2751e682fab9f2d30ab13d2125586ce1947"
+  },
+  {
+    "nom": "rs256",
+    "alg": -257,
+    "rp": "example.com",
+    "origine": "https://login.example.com",
+    "credentialId": "mRCcNV8hQeoi1kP5GmbbJg",
+    "aaguid": "ee882879-721c-4913-9775-3dfcce97072a",
+    "defiCreation": "zERLK7Tu7A51s2gVP8DqffnfW24Yt2wXhnqcGSwAGQ8",
+    "defiConnexion": "0Bgng73SJg1VqaJYrhhmCjl4WAh_pMBk8nq3gZLQ6zo",
+    "inscription": {
+      "id": "mRCcNV8hQeoi1kP5GmbbJg",
+      "rawId": "mRCcNV8hQeoi1kP5GmbbJg",
+      "type": "public-key",
+      "response": {
+        "clientDataJSON": "eyJ0eXBlIjoid2ViYXV0aG4uY3JlYXRlIiwiY2hhbGxlbmdlIjoiekVSTEs3VHU3QTUxczJnVlA4RHFmZm5mVzI0WXQyd1hobnFjR1N3QUdROCIsIm9yaWdpbiI6Imh0dHBzOi8vbG9naW4uZXhhbXBsZS5jb20iLCJjcm9zc09yaWdpbiI6ZmFsc2V9",
+        "attestationObject": "o2NmbXRkbm9uZWdhdHRTdG10oGhhdXRoRGF0YVkBV6N5pvbur7mlXjeMEYA04nUeaC-rny0wqxPSElWGzhlHXQAAAADuiCh5chxJE5d1PfzOlwcqABCZEJw1XyFB6iLWQ_kaZtsmpAEDAzkBACBZAQCx8xbC6uRf7AcKePZkrLrcYQ9QDBAedEPdiR6Cq45uV6b4c8IKS2Rbrlck14RQ7pdp48XvZ1NlHUoFsy9ribpZqh0jnn4NKhzJeoQMfXt3jpm_IXAj_ian8yHCjMNJp_mwiR85owioTikILbRsfE3788nObjAvDPALt6XhU-ro4Yr2GDqwE15_uAl9TkDvjHKy--jHl03yV-vqnAz8UPGpZFWbsJg4p_QTl8Jjtb_w-n4dFvRQ_4gW--4pCHHzG-mH98CI_yDLggByz8YyESvJvAewpqfNQwZyaNHP5Nbn1mcP8FDTS7gmX4Egp3E7lI0E5Nw2ke3DFjd0tNlQLIPRIUMBAAE",
+        "transports": [
+          "internal",
+          "hybrid"
+        ]
+      }
+    },
+    "connexion": {
+      "id": "mRCcNV8hQeoi1kP5GmbbJg",
+      "rawId": "mRCcNV8hQeoi1kP5GmbbJg",
+      "type": "public-key",
+      "response": {
+        "clientDataJSON": "eyJ0eXBlIjoid2ViYXV0aG4uZ2V0IiwiY2hhbGxlbmdlIjoiMEJnbmc3M1NKZzFWcWFKWXJoaG1Damw0V0FoX3BNQms4bnEzZ1pMUTZ6byIsIm9yaWdpbiI6Imh0dHBzOi8vbG9naW4uZXhhbXBsZS5jb20iLCJjcm9zc09yaWdpbiI6ZmFsc2V9",
+        "authenticatorData": "o3mm9u6vuaVeN4wRgDTidR5oL6ufLTCrE9ISVYbOGUcBAAAAAA",
+        "signature": "q0Ur1aMmzab5tuOnNbk-PtoNrg_odc59Jg1jDTq9hmSfkrhh9hC3CPTHT9EKP2inslqfn7J9hrYgaRAmrbqYhavm1yYutD4DzA8xSfM6-02o8bZWryAa7fP61R4kSUhkqgsB4OK4rl1EangTsNlpFZN5VaeZE4cJDokrFxYWepc71jiRtmz8W3Y44LrRDujqyfnLqfTgxMD_JiHJ0uJL3Em0CHbuiqpm7fCAepug2om22SmfhUOHtiYHejuU_B-zmdGHjC_IJZTucn7naxcnaJnHBpJuwpIOyZ7Au7PdyWX3mAWXLOWjPxE8iaIZQDiZiRVw9aw1JQN4np52ZGDuyg",
+        "userHandle": "dXRpbGlzYXRldXItNDI"
+      }
+    },
+    "spki": "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAsfMWwurkX+wHCnj2ZKy6\n3GEPUAwQHnRD3YkegquOblem+HPCCktkW65XJNeEUO6XaePF72dTZR1KBbMva4m6\nWaodI55+DSocyXqEDH17d46ZvyFwI/4mp/MhwozDSaf5sIkfOaMIqE4pCC20bHxN\n+/PJzm4wLwzwC7el4VPq6OGK9hg6sBNef7gJfU5A74xysvvox5dN8lfr6pwM/FDx\nqWRVm7CYOKf0E5fCY7W/8Pp+HRb0UP+IFvvuKQhx8xvph/fAiP8gy4IAcs/GMhEr\nybwHsKanzUMGcmjRz+TW59ZnD/BQ00u4Jl+BIKdxO5SNBOTcNpHtwxY3dLTZUCyD\n0QIDAQAB\n-----END PUBLIC KEY-----\n",
+    "rpIdHash": "a379a6f6eeafb9a55e378c118034e2751e682fab9f2d30ab13d2125586ce1947"
+  }
+]

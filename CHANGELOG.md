@@ -4,6 +4,77 @@ All notable changes to this project are documented here.
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning follows
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.6.0] — 2026-09-29
+
+Three readings of traffic that no browser offers, each verified against an independent
+reference — and an English interface that no longer shows French: about a hundred places
+in the page, and the 290 error messages.
+
+### Added
+
+- **HTTP message signatures (RFC 9421).** When a request or a response carries
+  `Signature-Input` and `Signature`, the Headers tab shows what the signature covers and its
+  parameters, rebuilds **the exact signature base** from what Firefox reported, and verifies
+  it with a key you paste: RSA-PSS, RSA PKCS #1 v1.5, ECDSA P-256 and P-384, Ed25519 (from
+  Firefox 129) and HMAC. Request components covered by a response (`;req`), strict
+  structured-field serialisation (`;sf`), dictionary members (`;key`) and byte-wrapped fields
+  (`;bs`) are handled. What cannot be rebuilt — a trailer, a header Firefox did not report, a
+  parameter repeated in the URL — is named, so a false "invalid" is never shown. Facts:
+  nothing covered, content not covered by a digest, expired or created after the capture, a
+  symmetric algorithm, a label present in only one of the two headers.
+- **Passkeys (WebAuthn).** A registration or a sign-in in a request body is opened: signed
+  origin and challenge, the domain fingerprint `rpIdHash` — recomputed to name the domain it
+  matches —, the presence and verification flags, a synced key, the signature counter, the
+  authenticator model (AAGUID), the attestation format and the public key (COSE, copied as a
+  JWK). A sign-in signature is **verified automatically** with the public key of the
+  registration when that registration was captured, or with a key you paste, and its
+  challenge is traced back to the response that issued it — the kernel searches the bodies,
+  which the interface never holds. Server options are read as well: a challenge shorter than
+  16 bytes, user verification "discouraged".
+- **DNS over HTTPS (RFC 8484).** Queries (`?dns=` or `application/dns-message`) and answers
+  are decoded record by record — A, AAAA, CNAME, NS, PTR, DNAME, MX, TXT, SOA, SRV, CAA,
+  HTTPS / SVCB, DS, DNSKEY, RRSIG, and any other type in the generic RFC 3597 form — with the
+  EDNS options: client subnet, padding, cookies, and extended DNS errors named from the IANA
+  registry. *Open in the toolbox* lands on the message already decoded.
+- **Two toolbox transformations**, DNS message and WebAuthn decoding. Neither runs under
+  "Try everything": twelve arbitrary bytes make a DNS header and thirty-seven an
+  authenticatorData, so proposing them would be a false lead — the help says so.
+- **A public key can be pasted as it comes**: PEM (`PUBLIC KEY`, or `RSA PUBLIC KEY` in
+  PKCS #1 form), a certificate — the first of a pasted chain —, bare base64, or a complete
+  JWK pair, of which only the public part is used. This holds wherever a key is asked for,
+  JWT and detached signatures included.
+
+### Fixed — the English interface
+
+- **About a hundred places showed French in the English interface.** Sentences built by
+  concatenation (`12 caracteres`, `3 requetes reanalysees`, `Rapport ecrit — …`, the counts
+  of the Alerts, Compare, Logs and Live streams views), and buttons, tooltips and
+  placeholders written straight into the page — the body viewer's *Formatted*, *Raw*, *Copy*
+  and *Toolbox*, the whole Replay panel, *Copy the base64* on a binary body.
+  None of them could reach the translator: no dictionary entry matches half a sentence.
+  They are templates now, and the interface suite reads every call to refuse a new one.
+- **Error messages were French in both languages**: a decoder that refuses an input says why
+  (`caractere invalide dans le base32 : 9`), and of the 290 messages of the interface, one
+  had a translation. They all do now — the 223 fixed ones through the dictionary, the 67
+  that carry a value through templates with holes (`te()`), so the example reads *invalid
+  character in the base32: 9*. The suite refuses a new message without one.
+- **The contributing guide announced five test suites** (there were eight; there are nine).
+
+### Tests
+
+- **`tests/decodeurs.test.mjs`**: every example of RFC 9421 — signature bases identical byte
+  for byte, signatures verified with the published keys, a tampered base refused —, every
+  case where a base cannot be rebuilt, the strict RFC 9651 serialisation, WebAuthn
+  ceremonies made by Yubico's `fido2` in ES256, EdDSA and RS256, DNS messages made by
+  `dnspython` and the RFC 8484 example, and hostile inputs.
+- The render suite renders each new section in both languages; the interface suite refuses a
+  displayed text written in the page or built by pieces, and an error message without a
+  translation.
+- The browser audits no longer fail before starting when headless Chrome is slow to open its
+  first tab.
+
+1788 assertions across nine suites, plus six browser audits.
+
 ## [4.5.0] — 2026-09-24
 
 Security tools that read what the traffic already shows — each a fact with its source, and

@@ -14,7 +14,7 @@ jobs:
   test:
     name: ${{ matrix.os }} · Node ${{ matrix.node }}
     runs-on: ${{ matrix.os }}
-    # Les huit suites prennent deux secondes. Dix minutes laissent toute la
+    # Les neuf suites prennent quelques secondes. Dix minutes laissent toute la
     # marge du monde a un runner lent, et font echouer en dix minutes ce qui
     # tournerait sinon six heures : un test qui se bloque doit se voir.
     timeout-minutes: 10
@@ -32,7 +32,7 @@ jobs:
           node-version: ${{ matrix.node }}
 
       # No dependencies to install: the extension and its tests are plain ES
-      # modules. `npm test` runs the eight suites directly.
+      # modules. `npm test` runs the nine suites directly.
       - name: Run the test suites
         run: npm test
 

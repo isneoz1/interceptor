@@ -9,7 +9,7 @@
  * refait le calcul public de TOTP/HOTP a partir d un secret fourni.
  */
 import { el, frag, sec, add, kv, button } from '../lib/dom.js';
-import { t } from '../lib/i18n.js';
+import { t, te } from '../lib/i18n.js';
 import { copy, toast } from '../app.js';
 import {
   secretVersOctets, totp, hotp, totpVoisins, lireOtpauth, secretAleatoire, ALGOS_OTP
@@ -36,7 +36,7 @@ export function panneauOtp(entree, etat, redessiner) {
           etat.otpType = p.type;
           toast(t('Lien otpauth lu') + ' : ' + (p.emetteur || p.compte || ''));
           redessiner();
-        } catch (e) { toast(String(e.message || e), false); }
+        } catch (e) { toast(te(e), false); }
       })));
   }
 
@@ -65,7 +65,7 @@ export function panneauOtp(entree, etat, redessiner) {
       const r = await totp(oc, { chiffres: etat.otpChiffres, algorithme: etat.otpAlgo, pas: etat.otpPas });
       etat.otpResultat = { type: 'totp', code: r.code, restantes: r.restantes, fenetre: r.fenetre };
       redessiner();
-    } catch (e) { toast(String(e.message || e), false); }
+    } catch (e) { toast(te(e), false); }
   }));
   actions.appendChild(button('Fenetres voisines', async () => {
     const oc = octets(); if (!oc) return;
@@ -73,7 +73,7 @@ export function panneauOtp(entree, etat, redessiner) {
       etat.otpVoisins = await totpVoisins(oc,
         { chiffres: etat.otpChiffres, algorithme: etat.otpAlgo, pas: etat.otpPas }, 1);
       redessiner();
-    } catch (e) { toast(String(e.message || e), false); }
+    } catch (e) { toast(te(e), false); }
   }, { class: 'ghost' }));
   box.appendChild(actions);
 
@@ -90,7 +90,7 @@ export function panneauOtp(entree, etat, redessiner) {
         { chiffres: etat.otpChiffres, algorithme: etat.otpAlgo });
       etat.otpResultat = { type: 'hotp', code, compteur: Number(compteur.value) || 0 };
       redessiner();
-    } catch (e) { toast(String(e.message || e), false); }
+    } catch (e) { toast(te(e), false); }
   }));
   box.appendChild(hbar);
 
@@ -136,7 +136,7 @@ export function panneauOtp(entree, etat, redessiner) {
   function octets() {
     etat.otpSecret = secret.value;
     try { return secretVersOctets(secret.value, etat.otpForme); }
-    catch (e) { toast(String(e.message || e), false); return null; }
+    catch (e) { toast(te(e), false); return null; }
   }
 }
 

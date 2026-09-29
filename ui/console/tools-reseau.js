@@ -5,7 +5,7 @@
  * prefixe donne le calcul complet du sous-reseau.
  */
 import { el, frag, kv, sec, add, button } from '../lib/dom.js';
-import { t } from '../lib/i18n.js';
+import { t, tp, te } from '../lib/i18n.js';
 import { copy, toast } from '../app.js';
 import { analyserUrl, analyserPrefixe, ipDansCidrV4, ipDansCidrV6, estIpv4, estIpv6 } from '../lib/net.js';
 import { decrirePort, plagePort } from '../lib/ref-ports.js';
@@ -27,7 +27,7 @@ export function panneauUrl(entree) {
   let u;
   try { u = analyserUrl(brut.split(/\s+/)[0]); }
   catch (e) {
-    box.appendChild(el('p', { class: 'note warn', text: t('URL illisible : ') + String(e.message || e) }));
+    box.appendChild(el('p', { class: 'note warn', text: t('URL illisible : ') + te(e) }));
     return box;
   }
 
@@ -132,7 +132,7 @@ export function panneauAdresse(entree, etat, redessiner, poser) {
         t('Nom inverse lu comme l adresse ') + retrouvee + '.' }));
       brut = retrouvee;
     } catch (e) {
-      box.appendChild(el('p', { class: 'note warn', text: t('Nom inverse illisible : ') + String(e.message || e) }));
+      box.appendChild(el('p', { class: 'note warn', text: t('Nom inverse illisible : ') + te(e) }));
       return box;
     }
   }
@@ -140,7 +140,7 @@ export function panneauAdresse(entree, etat, redessiner, poser) {
   let bloc;
   try { bloc = analyserPrefixe(brut); }
   catch (e) {
-    box.appendChild(el('p', { class: 'note warn', text: t('Adresse illisible : ') + String(e.message || e) }));
+    box.appendChild(el('p', { class: 'note warn', text: t('Adresse illisible : ') + te(e) }));
     return box;
   }
 
@@ -190,7 +190,7 @@ export function panneauAdresse(entree, etat, redessiner, poser) {
         ? t('Oui : cette adresse appartient au prefixe.')
         : t('Non : cette adresse est hors du prefixe.') }));
     } catch (e) {
-      box.appendChild(el('p', { class: 'note warn', text: t('Prefixe illisible : ') + String(e.message || e) }));
+      box.appendChild(el('p', { class: 'note warn', text: t('Prefixe illisible : ') + te(e) }));
     }
   }
 
@@ -220,7 +220,7 @@ function ecrirePrefixes(box, brut, etat, redessiner, poser) {
   if (etat.decoupe) {
     try {
       const r = decouperPrefixe(brut, etat.sousPrefixe || 26);
-      box.appendChild(sec('Sous-reseaux', r.total + (r.affiches < r.total ? '   ·   ' + r.affiches + ' affiches' : '')));
+      box.appendChild(sec('Sous-reseaux', r.total + (r.affiches < r.total ? '   ·   ' + tp('{n} affiches', { n: r.affiches }) : '')));
       for (const sous of r.sousReseaux) {
         add(box, kv(sous.cidr, sous.premiere + '  a  ' + sous.derniere, { copy: true }));
       }
@@ -228,7 +228,7 @@ function ecrirePrefixes(box, brut, etat, redessiner, poser) {
         button('Poser la liste comme entree',
           () => poser(r.sousReseaux.map(s => s.cidr).join('\n')))));
     } catch (e) {
-      box.appendChild(el('p', { class: 'note warn', text: t('Decoupage impossible : ') + String(e.message || e) }));
+      box.appendChild(el('p', { class: 'note warn', text: t('Decoupage impossible : ') + te(e) }));
     }
   }
 
@@ -252,7 +252,7 @@ function ecrirePrefixes(box, brut, etat, redessiner, poser) {
           t('Ce resume couvre plus large que la liste : il inclut des adresses qui n y figuraient pas.') }));
       }
     } catch (e) {
-      box.appendChild(el('p', { class: 'note warn', text: t('Resume impossible : ') + String(e.message || e) }));
+      box.appendChild(el('p', { class: 'note warn', text: t('Resume impossible : ') + te(e) }));
     }
   }
 
@@ -276,7 +276,7 @@ function ecrirePrefixes(box, brut, etat, redessiner, poser) {
       box.appendChild(el('div', { class: 'actions' },
         button('Poser la liste comme entree', () => poser(prefixes.join('\n')))));
     } catch (e) {
-      box.appendChild(el('p', { class: 'note warn', text: t('Conversion impossible : ') + String(e.message || e) }));
+      box.appendChild(el('p', { class: 'note warn', text: t('Conversion impossible : ') + te(e) }));
     }
   }
 
@@ -285,7 +285,7 @@ function ecrirePrefixes(box, brut, etat, redessiner, poser) {
     try {
       const r = listerAdresses(brut, 256);
       poser(r.adresses.join('\n'));
-      toast(r.affichees + ' adresses posees sur ' + r.total);
-    } catch (e) { toast(String(e.message || e), false); }
+      toast(tp('{n} adresses posees sur {total}', { n: r.affichees, total: r.total }));
+    } catch (e) { toast(te(e), false); }
   })));
 }

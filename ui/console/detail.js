@@ -6,7 +6,7 @@
  */
 import { $, el, clear } from '../lib/dom.js';
 import { middle } from '../lib/format.js';
-import { t } from '../lib/i18n.js';
+import { t, tp } from '../lib/i18n.js';
 import { state, cmd, toast, copy, dropdown, B, saveConfig } from '../app.js';
 import * as parts from './detail-parts.js';
 import * as more from './detail-more.js';
@@ -235,7 +235,7 @@ async function blockHost() {
   });
   const config = await saveConfig({ rules, rulesEnabled: true });
   disarmBlock();
-  if (config) toast(current.host + ' bloque — regle active');
+  if (config) toast(tp('{hote} bloque — regle active', { hote: current.host }));
 }
 
 async function copyAs(kind) {

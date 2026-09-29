@@ -5,7 +5,7 @@
  * hexadecimal, sauf pour un bloc PEM, qui se colle tel quel.
  */
 import { el, frag, kv, sec, add, button, jsonTree } from '../lib/dom.js';
-import { t } from '../lib/i18n.js';
+import { t, tp, te } from '../lib/i18n.js';
 import { copy, toast } from '../app.js';
 import { base64VersOctets, hexVersOctets, octetsVersHex } from '../lib/bytes.js';
 import { decoderProtobuf, decoderMsgpack, decoderCbor, essayerFormats } from '../lib/binaires.js';
@@ -76,7 +76,7 @@ export function panneauBinaire(entree, etat, redessiner, poser) {
   let lecture;
   try { lecture = octetsDuTexte(entree); }
   catch (e) {
-    box.appendChild(el('p', { class: 'note', text: t('Rien a lire : ') + String(e.message || e) }));
+    box.appendChild(el('p', { class: 'note', text: t('Rien a lire : ') + te(e) }));
     return box;
   }
   const { octets, forme } = lecture;
@@ -105,7 +105,7 @@ export function panneauBinaire(entree, etat, redessiner, poser) {
       return true;
     } catch (e) {
       if (famille !== 'auto') {
-        box.appendChild(el('p', { class: 'note warn', text: t('Echec : ') + String(e.message || e) }));
+        box.appendChild(el('p', { class: 'note warn', text: t('Echec : ') + te(e) }));
       }
       return false;
     }
@@ -170,7 +170,7 @@ function ecrireTrames(box, octets, etat, redessiner, poser) {
       break;
     } catch (e) {
       if (protocole !== 'auto') {
-        box.appendChild(el('p', { class: 'note warn', text: t('Echec : ') + String(e.message || e) }));
+        box.appendChild(el('p', { class: 'note warn', text: t('Echec : ') + te(e) }));
         rendu = true;
         break;
       }
@@ -252,7 +252,7 @@ function ecrireTramesH2(box, trames) {
     if (lus) {
       if (lus.erreur) {
         carte.appendChild(el('p', { class: 'note warn',
-          text: t('Bloc HPACK illisible : ') + lus.erreur }));
+          text: t('Bloc HPACK illisible : ') + te(lus.erreur) }));
       } else {
         carte.appendChild(sec('En-tetes decodes (HPACK)',
           lus.entetes.length + ' ' + t('en-tete(s)')));
@@ -299,12 +299,12 @@ function ecrireDer(box, entree, etat, redessiner) {
       octets = octetsDuTexte(brut).octets;
     }
   } catch (e) {
-    box.appendChild(el('p', { class: 'note warn', text: t('Bloc illisible : ') + String(e.message || e) }));
+    box.appendChild(el('p', { class: 'note warn', text: t('Bloc illisible : ') + te(e) }));
     return box;
   }
 
   add(box, kv('Bloc', etiquette, { hl: true }));
-  add(box, kv('Taille', octets.length + ' octets', { always: true }));
+  add(box, kv('Taille', tp('{n} octets', { n: octets.length }), { always: true }));
 
   try {
     /* Meme rendu que l onglet Securite : un seul endroit decide de ce qu on
@@ -312,7 +312,7 @@ function ecrireDer(box, entree, etat, redessiner) {
     blocCertificat(box, resumerCertificat(octets));
   } catch (e) {
     box.appendChild(el('p', { class: 'note', text:
-      t('Ce bloc n est pas un certificat : ') + String(e.message || e) }));
+      t('Ce bloc n est pas un certificat : ') + te(e) }));
   }
 
   const montrer = etat.arbreDer === true;
@@ -321,14 +321,14 @@ function ecrireDer(box, entree, etat, redessiner) {
       () => { etat.arbreDer = !montrer; redessiner(); })));
   if (montrer) {
     try { box.appendChild(el('div', { class: 'tree' }, jsonTree(lireDer(octets), 'DER'))); }
-    catch (e) { box.appendChild(el('p', { class: 'note warn', text: String(e.message || e) })); }
+    catch (e) { box.appendChild(el('p', { class: 'note warn', text: te(e) })); }
   }
   return box;
 }
 
 /* --------------------------- Jeux de caracteres --------------------------- */
 function ecrireCharsets(box, octets, entree, etat, redessiner, poser) {
-  box.appendChild(sec('Jeux de caracteres', jeuxDisponibles().length + ' lisibles par ce moteur'));
+  box.appendChild(sec('Jeux de caracteres', tp('{n} lisibles par ce moteur', { n: jeuxDisponibles().length })));
 
   const trace = traceDeMojibake(String(entree || ''));
   if (trace.suspect) {
@@ -363,7 +363,7 @@ function ecrireCharsets(box, octets, entree, etat, redessiner, poser) {
   const actions = el('div', { class: 'actions' }, [select]);
   actions.appendChild(button('Decoder avec ce jeu', () => {
     try { poser(decoderAvec(octets, jeu)); }
-    catch (e) { toast(String(e.message || e), false); }
+    catch (e) { toast(te(e), false); }
   }));
   box.appendChild(actions);
   return box;

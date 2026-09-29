@@ -6,7 +6,7 @@
 import { $, el, clear, sec, button, vide } from '../lib/dom.js';
 import { redessinerEnPlace } from '../lib/redessin.js';
 
-import { t } from '../lib/i18n.js';
+import { t, tp } from '../lib/i18n.js';
 import { listeProgressive } from '../lib/liste-progressive.js';
 import { clock, middle } from '../lib/format.js';
 import { cmd, toast, copy } from '../app.js';
@@ -50,14 +50,14 @@ function dessiner(kind) {
   pane.appendChild(box);
 
   const entries = cache[kind];
-  box.appendChild(sec(meta.title, entries ? entries.length + ' entree(s)' : ''));
+  box.appendChild(sec(meta.title, entries ? tp('{n} entree(s)', { n: entries.length }) : ''));
   box.appendChild(el('p', { class: 'note', text: meta.note }));
 
   const actions = el('div', { class: 'actions' });
   actions.appendChild(button('Actualiser', () => load(kind)));
   actions.appendChild(button('Copier', () => {
     const lines = shown(kind).map(e => clock(e.ts) + '\t' + describe(kind, e));
-    copy(lines.join('\n'), lines.length + ' lignes copiees');
+    copy(lines.join('\n'), tp('{n} lignes copiees', { n: lines.length }));
   }));
   actions.appendChild(button('Vider ce journal', async () => {
     const res = await cmd('clearLogs', { kind });
@@ -69,7 +69,7 @@ function dessiner(kind) {
   box.appendChild(actions);
 
   const search = el('input', {
-    type: 'search', class: 'field', placeholder: 'Filtrer ce journal…',
+    type: 'search', class: 'field', placeholder: t('Filtrer ce journal…'),
     value: filters[kind] || '',
     dataset: { champ: 'journal-filtre-' + kind }
   });

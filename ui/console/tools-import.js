@@ -10,7 +10,7 @@
  * L apercu est calcule ici meme : on voit ce qui sera cree avant de le creer.
  */
 import { el, frag, kv, sec, add, button } from '../lib/dom.js';
-import { t } from '../lib/i18n.js';
+import { t, tp, te } from '../lib/i18n.js';
 import { toast, cmd, copy } from '../app.js';
 import { analyserCurl } from '../../background/ingest/curl.js';
 import { echapperShell } from '../lib/codecs-format.js';
@@ -41,7 +41,7 @@ export function panneauImport(entree, etat, redessiner) {
     commande = modeBrut ? brutVersCurl(brut) : brut;
     lu = analyserCurl(commande);
   } catch (e) {
-    box.appendChild(el('p', { class: 'note warn', text: t('Requete illisible : ') + String(e.message || e) }));
+    box.appendChild(el('p', { class: 'note warn', text: t('Requete illisible : ') + te(e) }));
     return box;
   }
 
@@ -51,7 +51,7 @@ export function panneauImport(entree, etat, redessiner) {
   add(box, kv('Entetes', lu.headers.length, { always: true }));
   for (const h of lu.headers) add(box, kv('  ' + h.name, h.value, { copy: true }));
   if (lu.body != null) {
-    box.appendChild(sec('Corps', lu.body.length + ' caracteres'));
+    box.appendChild(sec('Corps', tp('{n} caracteres', { n: lu.body.length })));
     box.appendChild(el('pre', { class: 'pre', text: lu.body }));
   }
   if (lu.warnings.length) {
@@ -63,7 +63,7 @@ export function panneauImport(entree, etat, redessiner) {
   actions.appendChild(button('Creer la requete', async () => {
     const res = await cmd('importCurl', { commande });
     if (res.error) return toast(res.error, false);
-    toast('Requete #' + res.id + ' creee — visible dans le tableau');
+    toast(tp('Requete #{id} creee — visible dans le tableau', { id: res.id }));
     document.dispatchEvent(new CustomEvent('ic:goto', { detail: { view: 'requests', id: res.id } }));
   }));
   if (modeBrut) {

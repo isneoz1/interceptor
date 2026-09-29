@@ -106,8 +106,8 @@ export const EN_PANNEAUX = {
   /* -------------------------- Signature d un jeton ------------------------ */
   'Cle a fournir': 'Key to provide',
   'la cle partagee du serveur, telle quelle': 'the shared key of the server, as it is',
-  'la cle publique RSA, en PEM ou en JWK': 'the RSA public key, as PEM or JWK',
-  'la cle publique de la courbe, en PEM ou en JWK': 'the public key of the curve, as PEM or JWK',
+  'la cle publique RSA, en PEM, en JWK ou par son certificat': 'the RSA public key, as PEM or JWK, or its certificate',
+  'la cle publique de la courbe, en PEM, en JWK ou par son certificat': 'the public key of the curve, as PEM or JWK, or its certificate',
   'aucune : ce jeton n est pas signe': 'none: this token is not signed',
   'algorithme non verifiable par une extension': 'algorithm an extension cannot verify',
   'Cet algorithme ne se verifie pas dans un navigateur : les douze familles HS, RS, PS et ES le peuvent, les autres non.':
@@ -334,8 +334,8 @@ export const EN_PANNEAUX = {
   'Type de media': 'Media type',
 
   /* --------------------------------- Divers ------------------------------- */
-  'Applique chaque decodage et ne garde que ceux qui rendent un resultat lisible':
-    'Applies every decoding and keeps only those that give a readable result',
+  'Applique chaque decodage (sauf DNS et WebAuthn, qui liraient n importe quels octets) et ne garde que ceux qui rendent un resultat lisible':
+    'Applies every decoding (except DNS and WebAuthn, which would read any bytes) and keeps only those that give a readable result',
   'oui': 'yes',
   'non': 'no'
 };

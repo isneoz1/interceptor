@@ -5,7 +5,7 @@
  * le resultat, y compris quand il echoue.
  */
 import { el, frag, kv, sec, add, button } from '../lib/dom.js';
-import { t } from '../lib/i18n.js';
+import { t, tp, te } from '../lib/i18n.js';
 import { copy, toast } from '../app.js';
 import {
   MODES_AES, HACHAGES_DISPONIBLES, tailleIv, aesChiffrer, aesDechiffrer, cleAesAleatoire,
@@ -57,7 +57,7 @@ export function panneauChiffrement(entree, etat, redessiner, poser) {
     champ('donnees authentifiees (AES-GCM seulement)', etat.aadAes, v => { etat.aadAes = v; }, 'max-width:260px')
   ]);
   box.appendChild(barre2);
-  add(box, kv('Vecteur attendu', tailleIv(mode) + ' octets, soit ' + (tailleIv(mode) * 2) + ' chiffres hexadecimaux'));
+  add(box, kv('Vecteur attendu', tp('{n} octets, soit {chiffres} chiffres hexadecimaux', { n: tailleIv(mode), chiffres: tailleIv(mode) * 2 })));
 
   const actions = el('div', { class: 'actions' });
   actions.appendChild(button('Chiffrer', async () => {
@@ -67,7 +67,7 @@ export function panneauChiffrement(entree, etat, redessiner, poser) {
         mode, iv: etat.ivAes, aad: etat.aadAes
       });
       etat.erreurAes = null;
-    } catch (e) { etat.erreurAes = String(e.message || e); etat.sortieAes = null; }
+    } catch (e) { etat.erreurAes = te(e); etat.sortieAes = null; }
     redessiner();
   }));
   actions.appendChild(button('Dechiffrer', async () => {
@@ -81,7 +81,7 @@ export function panneauChiffrement(entree, etat, redessiner, poser) {
       etat.sortieAes = null;
       poser(clair);
       toast('Texte dechiffre : il remplace le texte de travail');
-    } catch (e) { etat.erreurAes = String(e.message || e); redessiner(); }
+    } catch (e) { etat.erreurAes = te(e); redessiner(); }
   }));
   box.appendChild(actions);
 
@@ -89,7 +89,7 @@ export function panneauChiffrement(entree, etat, redessiner, poser) {
     box.appendChild(el('p', { class: 'note warn', text: t('Echec : ') + etat.erreurAes }));
   }
   if (etat.sortieAes) {
-    box.appendChild(sec('Resultat chiffre', etat.sortieAes.octets + ' octets'));
+    box.appendChild(sec('Resultat chiffre', tp('{n} octets', { n: etat.sortieAes.octets })));
     add(box, kv('Base64', etat.sortieAes.base64, { copy: true }));
     add(box, kv('Hexadecimal', etat.sortieAes.hex, { copy: true }));
     add(box, kv('Vecteur employe', etat.sortieAes.iv, { copy: true, hl: true }));
@@ -119,7 +119,7 @@ export function panneauChiffrement(entree, etat, redessiner, poser) {
       });
       etat.sortieKdf.methode = 'PBKDF2';
       etat.erreurKdf = null;
-    } catch (e) { etat.erreurKdf = String(e.message || e); }
+    } catch (e) { etat.erreurKdf = te(e); }
     redessiner();
   }));
   barre3.appendChild(button('HKDF', async () => {
@@ -130,7 +130,7 @@ export function panneauChiffrement(entree, etat, redessiner, poser) {
       });
       etat.sortieKdf.methode = 'HKDF';
       etat.erreurKdf = null;
-    } catch (e) { etat.erreurKdf = String(e.message || e); }
+    } catch (e) { etat.erreurKdf = te(e); }
     redessiner();
   }));
   box.appendChild(barre3);
@@ -164,7 +164,7 @@ export function panneauChiffrement(entree, etat, redessiner, poser) {
 
   const cleSignature = el('textarea', {
     class: 'field', spellcheck: 'false', rows: '3',
-    placeholder: t('cle publique PEM ou JWK, ou secret partage pour HMAC')
+    placeholder: t('cle publique (PEM, JWK ou certificat), ou secret partage pour HMAC')
   });
   cleSignature.value = etat.cleSignature || '';
   cleSignature.addEventListener('change', () => { etat.cleSignature = cleSignature.value; });
@@ -182,7 +182,7 @@ export function panneauChiffrement(entree, etat, redessiner, poser) {
             : (etat.hashSignature || 'SHA-256') === 'SHA-512' ? 'P-521' : 'P-256'
         })
       };
-    } catch (e) { etat.verdictSignature = { erreur: String(e.message || e) }; }
+    } catch (e) { etat.verdictSignature = { erreur: te(e) }; }
     redessiner();
   })));
 

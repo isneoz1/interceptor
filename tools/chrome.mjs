@@ -93,10 +93,17 @@ export async function ouvrirChrome(options = {}) {
     });
   };
 
-  const cibles = await envoyer('Target.getTargets');
-  const cible = cibles.targetInfos.find(t => t.type === 'page');
-  const { sessionId } = await envoyer('Target.attachToTarget',
-    { targetId: cible.targetId, flatten: true });
+  /* Chrome annonce son port avant d avoir ouvert son premier onglet : on
+     l attend un moment, et s il ne vient pas, on l ouvre soi-meme. Sans cela,
+     un demarrage un peu lent faisait echouer l audit avant qu il commence. */
+  let cible = null;
+  for (let essai = 0; essai < 20 && !cible; essai++) {
+    const cibles = await envoyer('Target.getTargets');
+    cible = cibles.targetInfos.find(t => t.type === 'page') || null;
+    if (!cible) await new Promise(r => setTimeout(r, 100));
+  }
+  const targetId = cible ? cible.targetId : (await envoyer('Target.createTarget', { url: 'about:blank' })).targetId;
+  const { sessionId } = await envoyer('Target.attachToTarget', { targetId, flatten: true });
 
   const page = (methode, params) => envoyer(methode, params, sessionId);
   await page('Page.enable');

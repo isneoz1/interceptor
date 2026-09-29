@@ -88,7 +88,7 @@ function dessiner() {
       title: rec.url
     }, [
       el('b', { text: String(rec.wsFrames || rec.sseEvents || 0) }),
-      el('label', { text: (rec.wsFrames ? 'trames · ' : 'messages · ') + middle(rec.host, 26) }),
+      el('label', { text: (rec.wsFrames ? t('trames') : t('messages')) + ' · ' + middle(rec.host, 26) }),
       el('label', { text: middle(rec.path, 30) + '  ·  ' + rec.state })
     ]);
     tile.addEventListener('click', () => { selected = rec.id; record = null; load(true); render(true); });
@@ -114,7 +114,7 @@ function dessiner() {
   }));
   box.appendChild(actions);
 
-  const search = el('input', { type: 'search', class: 'field', placeholder: 'Filtrer les messages…', value: needle,
+  const search = el('input', { type: 'search', class: 'field', placeholder: t('Filtrer les messages…'), value: needle,
     dataset: { champ: 'flux-filtre' } });
   search.addEventListener('input', () => { needle = search.value; render(true); });
   box.appendChild(search);
@@ -144,10 +144,10 @@ function dessiner() {
     (dirFilter === 'all' || f.dir === dirFilter) &&
     (!needle || String(f.text).toLowerCase().includes(needle.toLowerCase())));
 
-  box.appendChild(sec('Messages', shown.length + ' sur ' + frames.length));
+  box.appendChild(sec('Messages', tp('{n} sur {total}', { n: shown.length, total: frames.length })));
   box.appendChild(el('div', { class: 'actions' },
     button('Copier les messages affiches', () =>
-      copy(shown.map(f => (f.dir === 'send' ? '> ' : '< ') + f.text).join('\n'), shown.length + ' messages copies'))));
+      copy(shown.map(f => (f.dir === 'send' ? '> ' : '< ') + f.text).join('\n'), tp('{n} messages copies', { n: shown.length })))));
 
   /* Par lots, comme l onglet Flux du detail : une session de dizaines de
      milliers de messages ne fige pas la vue, et aucun n est ecarte — la suite

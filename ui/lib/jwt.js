@@ -14,6 +14,7 @@
  * laisser croire a une validite.
  */
 import { texteVersOctets, base64VersOctets } from './bytes.js';
+import { sujetCrypto as sujet, importerClePublique as importerPublique } from './cles-publiques.js';
 
 const HACHAGE = { 256: 'SHA-256', 384: 'SHA-384', 512: 'SHA-512' };
 const COURBES = { 256: 'P-256', 384: 'P-384', 512: 'P-521' };   // ES512 emploie bien P-521
@@ -26,52 +27,12 @@ export const ALGORITHMES_JWT = [
   'ES256', 'ES384', 'ES512'
 ];
 
-function sujet() {
-  const s = globalThis.crypto && globalThis.crypto.subtle;
-  if (!s) throw new Error('crypto.subtle indisponible dans ce contexte');
-  return s;
-}
-
 /** Decoupe « entete.charge.signature » sans rien interpreter. */
 function parties(jeton) {
   const brut = String(jeton || '').trim().replace(/^Bearer\s+/i, '');
   const p = brut.split('.');
   if (p.length !== 3) throw new Error('un JWT compte trois parties separees par des points');
   return p;
-}
-
-/** Une cle collee arrive en PEM, en JWK, ou en secret partage. */
-function formeDeCle(cle) {
-  const brut = String(cle || '').trim();
-  if (!brut) throw new Error('cle vide');
-  if (brut.includes('-----BEGIN')) return 'pem';
-  if (brut.startsWith('{')) return 'jwk';
-  return 'brute';
-}
-
-/** PEM -> octets DER : on retire les lignes d encadrement et on decode. */
-function pemVersDer(pem) {
-  const corps = String(pem)
-    .replace(/-----BEGIN [^-]+-----/g, '')
-    .replace(/-----END [^-]+-----/g, '')
-    .replace(/[\s\r\n]+/g, '');
-  if (!corps) throw new Error('bloc PEM vide');
-  if (/PRIVATE KEY/.test(pem)) throw new Error('cle privee fournie : la verification demande la cle publique');
-  return base64VersOctets(corps);
-}
-
-async function importerPublique(cle, parametres, usages = ['verify']) {
-  const forme = formeDeCle(cle);
-  if (forme === 'jwk') {
-    let jwk;
-    try { jwk = JSON.parse(cle); }
-    catch { throw new Error('JWK illisible'); }
-    return sujet().importKey('jwk', jwk, parametres, false, usages);
-  }
-  if (forme === 'pem') {
-    return sujet().importKey('spki', pemVersDer(cle), parametres, false, usages);
-  }
-  throw new Error('cle publique attendue au format PEM ou JWK');
 }
 
 /**
@@ -132,8 +93,8 @@ export async function verifierJwt(jeton, cle) {
 export function cleAttendue(algorithme) {
   const alg = String(algorithme || '').toUpperCase();
   if (alg.startsWith('HS')) return 'la cle partagee du serveur, telle quelle';
-  if (alg.startsWith('RS') || alg.startsWith('PS')) return 'la cle publique RSA, en PEM ou en JWK';
-  if (alg.startsWith('ES')) return 'la cle publique de la courbe, en PEM ou en JWK';
+  if (alg.startsWith('RS') || alg.startsWith('PS')) return 'la cle publique RSA, en PEM, en JWK ou par son certificat';
+  if (alg.startsWith('ES')) return 'la cle publique de la courbe, en PEM, en JWK ou par son certificat';
   if (alg.toLowerCase() === 'none') return 'aucune : ce jeton n est pas signe';
   return 'algorithme non verifiable par une extension';
 }

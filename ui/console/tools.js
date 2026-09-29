@@ -10,7 +10,7 @@
 import { $, el, clear, sec, button } from '../lib/dom.js';
 import { redessinerEnPlace } from '../lib/redessin.js';
 
-import { t, tp } from '../lib/i18n.js';
+import { t, tp, te } from '../lib/i18n.js';
 import { toast, copy } from '../app.js';
 import { TRANSFORMATIONS, GROUPES, transformer, transformerAsync } from '../lib/catalogue.js';
 import { panneauJwt, panneauEmpreintes, panneauMesures, panneauHex, panneauAnalyse, panneauRegex }
@@ -127,8 +127,10 @@ export function ouvrir(cle) {
    que d aller fouiller le panneau. */
 export { entreesReference };
 
-/** Charge un texte dans la boite a outils depuis n importe quelle autre vue. */
-export function poser(texte, { bascule = true, vers = null, famille = null } = {}) {
+/** Charge un texte dans la boite a outils depuis n importe quelle autre vue.
+ *  `transformation` : la cle d une transformation a choisir et appliquer
+ *  aussitot — le resultat est a l ecran sans la chercher parmi toutes. */
+export function poser(texte, { bascule = true, vers = null, famille = null, transformation: cle = null } = {}) {
   entree = String(texte == null ? '' : texte);
   /* Un certificat envoye depuis l onglet Securite s ouvre directement dans
      le lecteur ASN.1, pas dans la reconnaissance generique. */
@@ -139,7 +141,13 @@ export function poser(texte, { bascule = true, vers = null, famille = null } = {
   etat.xorCandidats = null;
   etat.questionRef = undefined;
   sortie = null;
-  if (vers && ONGLETS.some(([cle]) => cle === vers)) onglet = vers;
+  if (vers && ONGLETS.some(([id]) => id === vers)) onglet = vers;
+  const choisie = cle ? TRANSFORMATIONS.find(tr => tr.cle === cle) : null;
+  if (choisie) {
+    transformation = choisie.cle;
+    onglet = 'transformer';
+    if (!choisie.asynchrone) sortie = transformer(choisie.cle, entree);
+  }
   if (bascule) document.dispatchEvent(new CustomEvent('ic:goto', { detail: { view: 'tools' } }));
   else render();
 }
@@ -254,12 +262,12 @@ function panneauTransformer() {
   const actions = el('div', { class: 'actions' }, [select]);
   actions.appendChild(button('Appliquer', appliquer));
   actions.appendChild(button('Tout essayer', essayerTout,
-    { title: 'Applique chaque decodage et ne garde que ceux qui rendent un resultat lisible' }));
+    { title: 'Applique chaque decodage (sauf DNS et WebAuthn, qui liraient n importe quels octets) et ne garde que ceux qui rendent un resultat lisible' }));
   box.appendChild(actions);
 
   if (sortie) {
     if (!sortie.ok) {
-      box.appendChild(el('p', { class: 'note warn', text: t('Echec : ') + sortie.erreur }));
+      box.appendChild(el('p', { class: 'note warn', text: t('Echec : ') + te(sortie.erreur) }));
     } else if (sortie.multiple) {
       box.appendChild(sec('Resultats lisibles', sortie.multiple.length));
       if (!sortie.multiple.length) {
@@ -278,7 +286,7 @@ function panneauTransformer() {
         box.appendChild(carte);
       }
     } else {
-      box.appendChild(sec('Resultat', sortie.valeur.length + ' caracteres'));
+      box.appendChild(sec('Resultat', tp('{n} caracteres', { n: sortie.valeur.length })));
       box.appendChild(el('pre', { class: 'pre', text: sortie.valeur }));
       const acts = el('div', { class: 'actions' });
       acts.appendChild(button('Copier le resultat', () => copy(sortie.valeur, 'Resultat copie')));
@@ -295,7 +303,7 @@ function panneauTransformer() {
 async function appliquer() {
   if (!entree) { toast('Texte de travail vide', false); return; }
   sortie = await transformerAsync(transformation, entree);
-  if (!sortie.ok) toast(sortie.erreur, false);
+  if (!sortie.ok) toast(te(sortie.erreur), false);
   render();
 }
 

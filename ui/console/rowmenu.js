@@ -8,7 +8,7 @@ import { $, el } from '../lib/dom.js';
 import { template } from '../lib/columns.js';
 import { state, cmd, toast, copy, saveConfig, B } from '../app.js';
 import { poser } from './tools.js';
-import { t } from '../lib/i18n.js';
+import { t, tp } from '../lib/i18n.js';
 
 /** Ferme tout menu contextuel ouvert. */
 export function closeContextMenu() {
@@ -121,7 +121,7 @@ async function blockHost(rec) {
   if (rules.some(r => r.id === id)) return toast('Regle deja presente');
   rules.push({ id, enabled: true, name: 'Bloquer ' + rec.host, match: { host: rec.host }, action: 'block' });
   const config = await saveConfig({ rules, rulesEnabled: true });
-  if (config) toast(rec.host + ' bloque — regle active');
+  if (config) toast(tp('{hote} bloque — regle active', { hote: rec.host }));
 }
 
 /**
@@ -129,7 +129,7 @@ async function blockHost(rec) {
  * dans les reglages, colonne par colonne.
  */
 export function grip(key, cell, api) {
-  const handle = el('div', { class: 'grip', title: 'Tirer pour redimensionner cette colonne' });
+  const handle = el('div', { class: 'grip', title: t('Tirer pour redimensionner cette colonne') });
   handle.addEventListener('click', ev => ev.stopPropagation());
   handle.addEventListener('mousedown', ev => {
     ev.preventDefault();

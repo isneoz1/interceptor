@@ -5,7 +5,7 @@
  * module a besoin pour agir sur les vues : `api`.
  */
 import { $, el, clear } from '../lib/dom.js';
-import { t, tp } from '../lib/i18n.js';
+import { t, tp, te } from '../lib/i18n.js';
 import { B, cmd, state, toast, copy, dropdown, saveConfig } from '../app.js';
 import * as requests from './requests.js';
 import * as detail from './detail.js';
@@ -292,20 +292,20 @@ async function exportAs(format) {
   }
   const res = await cmd('exportFile', { format: 'config' });
   if (res.error) return toast(res.error, false);
-  toast('Reglages exportes — ' + res.filename);
+  toast(tp('Reglages exportes — {fichier}', { fichier: res.filename }));
 }
 
 function copyUrls() {
   const rows = requests.selectionOrRows();
   if (!rows.length) return toast('Aucune ligne', false);
-  copy(rows.map(r => r.url).join('\n'), rows.length + ' URL copiees');
+  copy(rows.map(r => r.url).join('\n'), tp('{n} URL copiees', { n: rows.length }));
 }
 
 async function reanalyze() {
   toast('Analyse en cours…');
   const res = await cmd('analyzeAll', {});
   if (res.error) return toast(res.error, false);
-  toast(res.analyzed + ' requetes reanalysees');
+  toast(tp('{n} requetes reanalysees', { n: res.analyzed }));
   api.renderView();
 }
 
@@ -322,14 +322,14 @@ function importHar() {
   picker.addEventListener('change', async () => {
     const file = picker.files && picker.files[0];
     if (!file) { picker.remove(); return; }
-    toast('Lecture de ' + file.name + '…');
+    toast(tp('Lecture de {fichier}…', { fichier: file.name }));
     try {
       const text = await file.text();
       const res = await cmd('importHar', { har: JSON.parse(text) });
       if (res.error) toast(res.error, false);
-      else toast(res.imported + ' requetes importees' + (res.skipped ? ', ' + res.skipped + ' ignorees' : ''));
+      else toast(tp('{n} requetes importees', { n: res.imported }) + (res.skipped ? ', ' + tp('{n} ignorees', { n: res.skipped }) : ''));
     } catch (e) {
-      toast('Fichier illisible : ' + String(e && e.message || e), false);
+      toast(tp('Fichier illisible : {raison}', { raison: te(e) }), false);
     }
     picker.remove();
   });
@@ -375,13 +375,13 @@ function importSession() {
   picker.addEventListener('change', async () => {
     const file = picker.files && picker.files[0];
     if (!file) { picker.remove(); return; }
-    toast('Lecture de ' + file.name + '…');
+    toast(tp('Lecture de {fichier}…', { fichier: file.name }));
     try {
       const res = await cmd('importSession', { session: JSON.parse(await file.text()) });
       if (res.error) toast(res.error, false);
-      else toast(res.imported + ' requetes restaurees');
+      else toast(tp('{n} requetes restaurees', { n: res.imported }));
     } catch (e) {
-      toast('Fichier illisible : ' + String(e && e.message || e), false);
+      toast(tp('Fichier illisible : {raison}', { raison: te(e) }), false);
     }
     picker.remove();
   });

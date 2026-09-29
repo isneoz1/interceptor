@@ -8,7 +8,7 @@
 import { $, el, clear } from './lib/dom.js';
 import { bytes, ms, statusClass, statusText } from './lib/format.js';
 import { parseQuery } from './lib/filters.js';
-import { t } from './lib/i18n.js';
+import { t, tp } from './lib/i18n.js';
 import {
   B, cmd, state, toast, dropdown, connect, bootstrap, visibleRecords, scopeCount
 } from './app.js';
@@ -56,7 +56,7 @@ function render() {
 
   if (rows.length > MAX_ROWS) {
     list.appendChild(el('li', { class: 'empty', text:
-      (rows.length - MAX_ROWS) + ' lignes plus anciennes — la console complete les affiche toutes.' }));
+      tp('{n} lignes plus anciennes — la console complete les affiche toutes.', { n: rows.length - MAX_ROWS }) }));
   }
 }
 
@@ -187,7 +187,7 @@ async function exportAs(format) {
   toast('Preparation de l export…');
   const res = await cmd('exportFile', { format, ids: rows.map(r => r.id) });
   if (res.error) return toast(res.error, false);
-  toast(res.count + ' requetes exportees');
+  toast(tp('{n} requetes exportees', { n: res.count }));
 }
 
 /* -------------------------------- Demarrage ------------------------------- */

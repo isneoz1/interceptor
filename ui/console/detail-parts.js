@@ -9,7 +9,7 @@ import { el, frag, kv, sec, jsonTree, add } from '../lib/dom.js';
 import { bytes, ms, clock, iso, pretty, typeLabel } from '../lib/format.js';
 import { state, copy, cmd, toast } from '../app.js';
 import { poser } from './tools.js';
-import { t, tp } from '../lib/i18n.js';
+import { t, tp, te } from '../lib/i18n.js';
 import { decrireStatut, familleStatut } from '../lib/ref-http.js';
 import { decrireEntete } from '../lib/ref-entetes.js';
 import { decrireType } from '../lib/ref-mime.js';
@@ -23,6 +23,7 @@ import { lireServerTiming, comparerAuMesure, resumerServerTiming }
   from '../lib/server-timing.js';
 import { analyserMultipart } from '../lib/multipart.js';
 import * as securite from './securite-detail.js';
+import * as preuves from './preuves-detail.js';
 
 /** Rend toutes les cles d un objet, y compris celles qu on n a pas prevues. */
 export function allRows(obj, labels = {}, skip = []) {
@@ -36,7 +37,7 @@ export function allRows(obj, labels = {}, skip = []) {
       if (value.every(v => typeof v !== 'object')) {
         add(out, kv(label, value.join(', ')));
       } else {
-        add(out, kv(label, value.length + ' element(s)'));
+        add(out, kv(label, tp('{n} element(s)', { n: value.length })));
         out.appendChild(el('div', { class: 'tree' }, jsonTree(value, label)));
       }
       continue;
@@ -52,7 +53,7 @@ export function allRows(obj, labels = {}, skip = []) {
 
 function headerBlock(title, list) {
   const box = frag();
-  box.appendChild(sec(title, (list || []).length + ' entete(s)'));
+  box.appendChild(sec(title, tp('{n} entete(s)', { n: (list || []).length })));
   if (!list || !list.length) {
     box.appendChild(el('p', { class: 'note', text: t('Aucun entete capture pour cette phase.') }));
     return box;
@@ -208,6 +209,7 @@ export function headers(rec) {
      requete CORS echoue, et la cause vit dans une AUTRE ligne. */
   box.appendChild(cors(rec));
   box.appendChild(securite.integrite(rec));
+  box.appendChild(preuves.signaturesHttp(rec));
   box.appendChild(serverTiming(rec));
   box.appendChild(politique(rec));
   /* Ce qui protege la reponse, et pour une page la CSP que ses chargements
@@ -418,7 +420,7 @@ function serverTiming(rec) {
   try { mesures = lireServerTiming(valeur); }
   catch (e) {
     box.appendChild(el('p', { class: 'note ko',
-      text: tp('Server-Timing illisible : {raison}', { raison: e.message }) }));
+      text: tp('Server-Timing illisible : {raison}', { raison: te(e) }) }));
     return box;
   }
   if (!mesures.length) return box;
@@ -466,19 +468,19 @@ function bodyViewer(body, title, mimeHint) {
     return box;
   }
 
-  box.appendChild(sec(title, bytes(body.size) + (body.truncated ? ' · tronque' : '')));
+  box.appendChild(sec(title, bytes(body.size) + (body.truncated ? ' · ' + t('tronque') : '')));
   if (body.replacedBy) {
-    box.appendChild(el('p', { class: 'note warn', text:
-      'Une regle de simulation (« ' + body.replacedBy.rule + ' ») a remplace ce corps pour la page. ' +
-      'Le contenu ci-dessous est celui reellement envoye par le serveur ; la page, elle, a recu ' +
-      body.replacedBy.size + ' octets de type ' + body.replacedBy.contentType + '.' }));
+    box.appendChild(el('p', { class: 'note warn', text: tp(
+      'Une regle de simulation (« {regle} ») a remplace ce corps pour la page. Le contenu ci-dessous est celui reellement envoye par le serveur ; la page, elle, a recu {n} octets de type {type}.',
+      { regle: body.replacedBy.rule, n: body.replacedBy.size, type: body.replacedBy.contentType }) }));
     box.appendChild(el('pre', { class: 'pre', text: body.replacedBy.body }));
   }
   add(box, kv('Nature', body.kind));
   add(box, kv('Source', body.source));
   add(box, kv('Type declare', body.mime || body.contentType || mimeHint));
   add(box, kv('Encodage', body.charset));
-  add(box, kv('Compression', body.contentEncoding ? body.contentEncoding + (body.decompressed ? ' (decompresse)' : ' (non decompresse)') : null));
+  add(box, kv('Compression', body.contentEncoding
+    ? tp(body.decompressed ? '{codage} (decompresse)' : '{codage} (non decompresse)', { codage: body.contentEncoding }) : null));
   add(box, kv('Octets conserves', body.stored != null ? bytes(body.stored) : null));
   add(box, kv('Fichier joint', body.hasFileUpload ? 'oui — le contenu des fichiers n est pas lisible par une extension' : null));
   add(box, kv('Remarque', body.note));
@@ -539,7 +541,7 @@ function bodyViewer(body, title, mimeHint) {
       return embelli;
     };
 
-    const montrerTout = el('button', { class: 'btn sm', type: 'button' }, 'Tout afficher');
+    const montrerTout = el('button', { class: 'btn sm', type: 'button' }, t('Tout afficher'));
 
     const paint = () => {
       const complet = source();
@@ -557,12 +559,12 @@ function bodyViewer(body, title, mimeHint) {
     };
     montrerTout.addEventListener('click', () => { tout = true; paint(); });
 
-    bar.appendChild(el('button', { class: 'btn sm', type: 'button', on: { click: () => { mode = 'pretty'; paint(); } } }, 'Mise en forme'));
-    bar.appendChild(el('button', { class: 'btn sm', type: 'button', on: { click: () => { mode = 'raw'; paint(); } } }, 'Brut'));
-    bar.appendChild(el('button', { class: 'btn sm', type: 'button', on: { click: () => copy(text, 'Corps copie') } }, 'Copier'));
+    bar.appendChild(el('button', { class: 'btn sm', type: 'button', on: { click: () => { mode = 'pretty'; paint(); } } }, t('Mise en forme')));
+    bar.appendChild(el('button', { class: 'btn sm', type: 'button', on: { click: () => { mode = 'raw'; paint(); } } }, t('Brut')));
+    bar.appendChild(el('button', { class: 'btn sm', type: 'button', on: { click: () => copy(text, 'Corps copie') } }, t('Copier')));
     bar.appendChild(el('button', { class: 'btn sm', type: 'button',
-      title: 'Decoder, hacher, mesurer ce corps dans la boite a outils',
-      on: { click: () => poser(text) } }, 'Boite a outils'));
+      title: t('Decoder, hacher, mesurer ce corps dans la boite a outils'),
+      on: { click: () => poser(text) } }, t('Boite a outils')));
     bar.appendChild(montrerTout);
     paint();
     wrap.appendChild(bar);
@@ -577,10 +579,10 @@ function bodyViewer(body, title, mimeHint) {
   }
   if (body.base64) {
     box.appendChild(sec('Base64', bytes(body.base64.length)));
-    const pre = el('pre', { class: 'pre', text: body.base64.slice(0, 20000) + (body.base64.length > 20000 ? '\n… (tronque a l affichage)' : '') });
+    const pre = el('pre', { class: 'pre', text: body.base64.slice(0, 20000) + (body.base64.length > 20000 ? '\n… ' + t('(tronque a l affichage)') : '') });
     box.appendChild(pre);
     box.appendChild(el('div', { class: 'actions' },
-      el('button', { class: 'btn sm', type: 'button', on: { click: () => copy(body.base64, 'Base64 copie') } }, 'Copier le base64')));
+      el('button', { class: 'btn sm', type: 'button', on: { click: () => copy(body.base64, 'Base64 copie') } }, t('Copier le base64'))));
   }
   if (!text && !body.preview && !body.base64 && !body.formData) {
     box.appendChild(el('p', { class: 'note', text: t('Corps present mais non textuel, ou capture desactivee dans les reglages.') }));
@@ -599,7 +601,7 @@ function blocGrpcWeb(body, mime) {
     if (!source) return null;
     lu = lireGrpcWeb(source);
   } catch (e) {
-    return el('p', { class: 'note ko', text: tp('Corps gRPC-Web illisible : {raison}', { raison: e.message }) });
+    return el('p', { class: 'note ko', text: tp('Corps gRPC-Web illisible : {raison}', { raison: te(e) }) });
   }
   if (!lu.cadres.length) return null;
 
@@ -638,7 +640,7 @@ function blocGrpcWeb(body, mime) {
       add(bloc, kv(titre, tp('{n} octets', { n: cadre.taille })));
       bloc.appendChild(jsonTree(cadre.protobuf));
     } else {
-      add(bloc, kv(titre, cadre.erreur || tp('{n} octets', { n: cadre.taille }), { tone: 'warn' }));
+      add(bloc, kv(titre, (cadre.erreur && te(cadre.erreur)) || tp('{n} octets', { n: cadre.taille }), { tone: 'warn' }));
     }
   });
   return bloc;
@@ -668,10 +670,10 @@ function partiesMultipart(texte, contentType) {
       carte.appendChild(el('pre', { class: 'pre', text: partie.contenu.slice(0, 4000) }));
       carte.appendChild(el('div', { class: 'actions' }, [
         el('button', { class: 'btn sm', type: 'button',
-          on: { click: () => copy(partie.contenu, 'Partie copiee') } }, 'Copier'),
+          on: { click: () => copy(partie.contenu, 'Partie copiee') } }, t('Copier')),
         el('button', { class: 'btn sm', type: 'button',
-          title: 'Decoder, hacher ou mesurer cette partie',
-          on: { click: () => poser(partie.contenu) } }, 'Boite a outils')
+          title: t('Decoder, hacher ou mesurer cette partie'),
+          on: { click: () => poser(partie.contenu) } }, t('Boite a outils'))
       ]));
     }
     box.appendChild(carte);
@@ -688,6 +690,8 @@ export function requestBody(rec) {
   const box = frag();
   box.appendChild(securite.oauthDemande(rec));
   box.appendChild(securite.saml(rec));
+  box.appendChild(preuves.webauthnCeremonie(rec));
+  box.appendChild(preuves.dnsQuestion(rec));
   box.appendChild(bodyViewer(rec.requestBody, 'Corps envoye', rec.requestBody && rec.requestBody.contentType));
   return box;
 }
@@ -695,6 +699,8 @@ export function responseBody(rec) {
   const box = frag();
   box.appendChild(securite.oauthReponse(rec));
   box.appendChild(securite.sri(rec));
+  box.appendChild(preuves.webauthnOptions(rec));
+  box.appendChild(preuves.dnsReponse(rec));
   box.appendChild(bodyViewer(rec.responseBody, 'Corps recu', rec.mime));
   return box;
 }
@@ -705,7 +711,7 @@ function annotation(rec) {
   const box = frag();
   const champ = el('input', {
     type: 'text', class: 'field', spellcheck: 'false',
-    placeholder: 'Annoter cette requete…'
+    placeholder: t('Annoter cette requete…')
   });
   champ.value = rec.note || '';
   champ.addEventListener('change', async () => {

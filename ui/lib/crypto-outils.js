@@ -13,6 +13,7 @@ import {
   texteVersOctets, octetsVersTexte, octetsVersHex, hexVersOctets,
   octetsVersBase64, base64VersOctets
 } from './bytes.js';
+import { importerClePublique } from './cles-publiques.js';
 
 const MODES = ['AES-GCM', 'AES-CBC', 'AES-CTR'];
 const HACHAGES = ['SHA-256', 'SHA-384', 'SHA-512', 'SHA-1'];
@@ -177,17 +178,6 @@ export async function verifierSignature({ donnees, signature, formeSignature = '
     throw new Error('algorithme de signature inconnu : ' + algorithme);
   }
 
-  let importee;
-  if (brut.startsWith('{')) {
-    let jwk;
-    try { jwk = JSON.parse(brut); } catch { throw new Error('JWK illisible'); }
-    importee = await sujet().importKey('jwk', jwk, parametresCle, false, ['verify']);
-  } else if (brut.includes('-----BEGIN')) {
-    if (/PRIVATE KEY/.test(brut)) throw new Error('cle privee fournie : la verification demande la cle publique');
-    const corps = brut.replace(/-----[^-]+-----/g, '').replace(/[\s\r\n]+/g, '');
-    importee = await sujet().importKey('spki', base64VersOctets(corps), parametresCle, false, ['verify']);
-  } else {
-    throw new Error('cle publique attendue au format PEM ou JWK');
-  }
+  const importee = await importerClePublique(brut, parametresCle);
   return sujet().verify(parametresVerif, importee, lireOctets(signature, formeSignature), texteVersOctets(donnees));
 }

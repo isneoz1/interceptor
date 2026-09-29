@@ -101,6 +101,15 @@ $required = @(
   'ui/lib/saml.js',
   'ui/lib/dict-en-securite.js',
   'ui/console/securite-detail.js',
+  'ui/lib/signatures-http.js',
+  'ui/lib/webauthn.js',
+  'ui/lib/dns-message.js',
+  'ui/lib/cles-publiques.js',
+  'ui/lib/dict-en-preuves.js',
+  'ui/lib/dict-en-morceaux.js',
+  'ui/console/preuves-detail.js',
+  'ui/lib/dict-en-erreurs.js',
+  'background/core/webauthn-liens.js',
   'background/core/analyzer-faits.js',
   'background/capture/empreintes.js',
   'ui/lib/mqtt.js',
@@ -226,7 +235,9 @@ if ($node) {
     @{ titre = 'Lectures du trafic';          fichier = 'tests/lectures.test.mjs';
        echec = 'Une lecture du trafic est fausse ou invente une valeur' },
     @{ titre = 'Outils de securite';          fichier = 'tests/securite.test.mjs';
-       echec = 'Un outil de securite affirme ce qui n est pas prouve' }
+       echec = 'Un outil de securite affirme ce qui n est pas prouve' },
+    @{ titre = 'Signatures, WebAuthn et DNS';  fichier = 'tests/decodeurs.test.mjs';
+       echec = 'Une signature, une ceremonie WebAuthn ou un message DNS est mal lu' }
   )
 
   $totalAssertions = 0

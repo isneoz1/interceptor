@@ -17,6 +17,7 @@
  *   - la moitie des ecrans « rien a montrer » — les premiers qu on voit apres
  *     l installation — s affichaient en francais quelle que soit la langue.
  */
+import fs from 'node:fs';
 import path from 'node:path';
 import url from 'node:url';
 import {
@@ -764,7 +765,43 @@ function enregistrementsRiches() {
   const saml = enregistrementExemple({ id: 988, requestBody: { kind: 'formData', size: 10,
     formData: { SAMLResponse: ['PHNhbWxwOlJlc3BvbnNlLz4='] } } });
 
-  return [tls, masque, mqtt, page, script, style, oauth, jeton, saml];
+  return [tls, masque, mqtt, page, script, style, oauth, jeton, saml, ...enregistrementsPreuves()];
+}
+
+/* 4.6 : signatures HTTP, WebAuthn, DNS par HTTPS, sur les vecteurs des tests. */
+function enregistrementsPreuves() {
+  const lire = nom => JSON.parse(fs.readFileSync(path.join(racine, 'tests', nom), 'utf8'));
+  const v9421 = lire('vecteurs-rfc9421.json');
+  const [wa] = lire('vecteurs-webauthn.json');
+  const vdns = lire('vecteurs-dns.json');
+  const entetes = lignes => lignes.slice(1).map(l => { const i = l.indexOf(':'); return { name: l.slice(0, i), value: l.slice(i + 1).trim() }; });
+
+  const signee = enregistrementExemple({ id: 970, method: 'POST', url: 'https://example.com/foo?param=Value&Pet=dog',
+    finalUrl: 'https://example.com/foo?param=Value&Pet=dog', startTime: Date.parse('2021-04-20T02:07:55Z'),
+    requestBody: { kind: 'raw', text: '{"hello": "world"}', size: 18 } });
+  signee.requestHeaders = [...entetes(v9421.requete),
+    { name: 'Signature-Input', value: v9421.cas.b25.signatureInput }, { name: 'Signature', value: v9421.cas.b25.signature }];
+
+  const incomplete = enregistrementExemple({ id: 971, method: 'POST', url: 'https://example.com/foo?param=Value&Pet=dog',
+    startTime: Date.parse('2021-04-20T02:07:55Z') });
+  incomplete.responseHeaders = [...entetes(v9421.reponse).filter(h => h.name !== 'Content-Length'),
+    { name: 'Signature-Input', value: v9421.cas.b24.signatureInput }, { name: 'Signature', value: v9421.cas.b24.signature }];
+
+  const corps = objet => ({ kind: 'raw', text: JSON.stringify(objet), size: JSON.stringify(objet).length });
+  const inscription = enregistrementExemple({ id: 972, method: 'POST', url: 'https://login.example.com/webauthn/register',
+    requestBody: corps(wa.inscription) });
+  const connexion = enregistrementExemple({ id: 973, method: 'POST', url: 'https://login.example.com/webauthn/login',
+    requestBody: corps({ credential: wa.connexion }) });
+  const options = enregistrementExemple({ id: 974, method: 'POST', url: 'https://login.example.com/webauthn/options' });
+  options.responseBody = { kind: 'text', size: 400, text: JSON.stringify({ publicKey: {
+    challenge: 'AAECAwQFBgcICQ', rp: { id: 'example.com', name: 'Exemple' }, user: { id: 'dQ', name: 'alice' },
+    pubKeyCredParams: [{ type: 'public-key', alg: -7 }, { type: 'public-key', alg: -257 }],
+    authenticatorSelection: { residentKey: 'required', userVerification: 'discouraged' }, attestation: 'none', timeout: 60000 } }) };
+
+  const doh = enregistrementExemple({ id: 975, method: 'GET', url: 'https://doh.example/dns-query?dns=' + vdns.requete });
+  doh.responseHeaders = [{ name: 'Content-Type', value: 'application/dns-message' }];
+  doh.responseBody = { kind: 'binary', size: 400, text: '', base64: vdns.reponse };
+  return [signee, incomplete, inscription, connexion, options, doh];
 }
 
 const phrasesManquantes = new Map();
@@ -858,7 +895,18 @@ const PRESENCES = [
   ['reponse de jeton', parts.responseBody, 986, 'OAuth 2.0 — reponse de jeton'],
   ['demande de jeton', parts.requestBody, 987, 'grant_type=password'],
   ['message SAML', parts.requestBody, 988, 'SAML 2.0'],
-  ['faits constates', more.analysis, 983, 'Faits constates']
+  ['faits constates', more.analysis, 983, 'Faits constates'],
+  ['signature de message HTTP', parts.headers, 970, 'Signature de message HTTP (RFC 9421)'],
+  ['base de signature exacte', parts.headers, 970, '"@signature-params": ("date" "@authority" "content-type")'],
+  ['formulaire de verification', parts.headers, 970, 'Verifier la signature'],
+  ['base impossible, avec sa raison', parts.headers, 971, 'le champ content-length est absent des en-tetes rapportes par Firefox'],
+  ['inscription WebAuthn', parts.requestBody, 972, 'WebAuthn — inscription d une cle d acces'],
+  ['drapeaux WebAuthn', parts.requestBody, 972, 'UV (utilisateur verifie)'],
+  ['connexion WebAuthn', parts.requestBody, 973, 'WebAuthn — connexion par cle d acces'],
+  ['options WebAuthn', parts.responseBody, 974, 'WebAuthn — options d inscription'],
+  ['algorithmes acceptes', parts.responseBody, 974, 'ES256, RS256'],
+  ['question DNS par HTTPS', parts.requestBody, 975, 'DNS par HTTPS — question'],
+  ['reponse DNS par HTTPS', parts.responseBody, 975, 'cdn.example.net.']
 ];
 for (const [quoi, rendre, id, attendu] of PRESENCES) {
   const texte = texteOnglet(rendre, id);
@@ -866,5 +914,21 @@ for (const [quoi, rendre, id, attendu] of PRESENCES) {
 }
 verifier('pas de SRI pour une requete XHR', !texteOnglet(parts.responseBody, 982).includes('SRI'));
 verifier('pas d OAuth sur une requete ordinaire', !texteOnglet(parts.requestBody, 984).includes('OAuth'));
+verifier('pas de DNS ni de WebAuthn sur une requete ordinaire',
+  !/DNS par HTTPS|WebAuthn/.test(texteOnglet(parts.requestBody, 984) + texteOnglet(parts.responseBody, 984)));
+verifier('pas de signature HTTP sans Signature-Input', !texteOnglet(parts.headers, 984).includes('RFC 9421'));
+
+/* Un message ouvert depuis le detail arrive dans la boite a outils deja
+   decode : la transformation est choisie et appliquee pour l utilisateur. */
+{
+  const outils = await import('../ui/console/tools.js');
+  const vdns = JSON.parse(fs.readFileSync(path.join(racine, 'tests', 'vecteurs-dns.json'), 'utf8'));
+  setLang('fr');
+  outils.poser(vdns.reponse, { transformation: 'dns-dec', bascule: false });
+  const ecran = texteDe(document.querySelector('#view-tools')).join(' | ');
+  verifier('ouvert avec sa transformation : le resultat est deja a l ecran', ecran.includes('cdn.example.net.'), ecran.slice(0, 160));
+  outils.poser('texte', { transformation: 'inexistante', bascule: false });
+  verifier('transformation inconnue : rien d applique, rien ne plante', !texteDe(document.querySelector('#view-tools')).join(' ').includes('cdn.example.net.'));
+}
 
 bilan('Rendu de l interface');

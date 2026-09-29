@@ -1,0 +1,100 @@
+/* Dictionnaire anglais — phrases longtemps ecrites par morceaux — INTERCEPTOR (by NeoZ)
+ *
+ * Complete dict-en.js (`...EN_MORCEAUX`). Ces textes s affichaient en francais
+ * dans l interface anglaise : une phrase construite par concatenation
+ * (`n + ' requetes reanalysees'`), un bouton ou une infobulle ecrits
+ * directement dans la page, ne passent par aucune traduction. Ils sont
+ * maintenant des gabarits, et un controle du chargement de l interface
+ * interdit d en ecrire de nouveaux.
+ */
+export const EN_MORCEAUX = {
+  /* ------------------------------ Gabarits -------------------------------- */
+  '{n} requetes reanalysees': '{n} requests re-analysed',
+  'Rapport ecrit — {fichier}': 'Report written — {fichier}',
+  '{n} alertes copiees': '{n} alerts copied',
+  '{n} alerte(s)': '{n} alert(s)',
+  '{n} alertes supplementaires : affinez le filtre ou exportez le rapport complet.':
+    '{n} more alerts: narrow the filter or export the full report.',
+  '{n} difference(s) sur {total} entetes': '{n} difference(s) across {total} headers',
+  '{n} ligne(s) differente(s)': '{n} differing line(s)',
+  '{n} lignes supplementaires non affichees.': '{n} more lines not shown.',
+  'Journal ecrit — {fichier}': 'Log written — {fichier}',
+  '{n} lignes copiees': '{n} lines copied',
+  '{n} / {total} ligne(s)': '{n} / {total} line(s)',
+  '{n} cookie(s)': '{n} cookie(s)',
+  '(+{n} non conserves)': '(+{n} not kept)',
+  '{n} entete(s)': '{n} header(s)',
+  '{hote} bloque — regle active': '{hote} blocked — rule active',
+  'Reglages exportes — {fichier}': 'Settings exported — {fichier}',
+  '{n} ignorees': '{n} skipped',
+  '{n} requetes restaurees': '{n} requests restored',
+  '{n} URL copiees': '{n} URLs copied',
+  '{n} requete(s) relachee(s)': '{n} request(s) released',
+  'Expression invalide : {raison}': 'Invalid expression: {raison}',
+  '{n} entree(s)': '{n} entries',
+  '{n} ligne(s) supprimee(s)': '{n} row(s) deleted',
+  '{n} operation(s)': '{n} operation(s)',
+  '{n} regle(s) enregistree(s).': '{n} rule(s) saved.',
+  '{n} hotes copies': '{n} hosts copied',
+  '{n} messages copies': '{n} messages copied',
+  '{n} sur {total}': '{n} of {total}',
+  'trames': 'frames',
+  'messages': 'messages',
+  '{n} lisibles par ce moteur': '{n} readable by this engine',
+  '{n} chemins poses dans le texte de travail': '{n} paths put in the working text',
+  '{n} caracteres': '{n} characters',
+  '{n} candidat(s)': '{n} candidate(s)',
+  '{n} % lisible': '{n} % readable',
+  'position {n}': 'position {n}',
+  '{n} entetes decoupes en detail': '{n} headers broken down in detail',
+  'Requete #{id} creee — visible dans le tableau': 'Request #{id} created — visible in the table',
+  '{n} algorithmes': '{n} algorithms',
+  '{n} familles': '{n} families',
+  '{n} normalisees': '{n} standardised',
+  '(arretees a 500)': '(stopped at 500)',
+  '{n} affiches': '{n} shown',
+  '{n} adresses posees sur {total}': '{n} addresses placed out of {total}',
+  'Ecritures de « {valeur} »': 'Forms of “{valeur}”',
+  'lu en base {base}': 'read in base {base}',
+  '{n} requetes exportees': '{n} requests exported',
+  '{n} lignes plus anciennes — la console complete les affiche toutes.': '{n} older rows — the full console shows them all.',
+  'tronque': 'truncated',
+  'Une regle de simulation (« {regle} ») a remplace ce corps pour la page. Le contenu ci-dessous est celui reellement envoye par le serveur ; la page, elle, a recu {n} octets de type {type}.':
+    'A mock rule (“{regle}”) replaced this body for the page. The content below is what the server really sent; the page received {n} bytes of type {type}.',
+  'Rejeu effectue — statut {statut}': 'Replay done — status {statut}',
+  '{n} element(s)': '{n} item(s)',
+  'illimite': 'unlimited',
+  '{somme}  (complement : {complement})': '{somme}  (complement: {complement})',
+  '{codage} (decompresse)': '{codage} (decompressed)',
+  '{codage} (non decompresse)': '{codage} (not decompressed)',
+  'version {version}, UDP {udp}': 'version {version}, UDP {udp}',
+  '{n} octets, soit {chiffres} chiffres hexadecimaux': '{n} bytes, that is {chiffres} hexadecimal digits',
+
+  /* ------------------ Ecrit directement dans la page, avant ----------------- */
+  'Ce tutoriel se relance a tout moment depuis la barre laterale ou les reglages. Les verifications lisent l etat reel de la capture : rien n est coche a votre place.':
+    'This tutorial can be restarted at any time from the sidebar or the settings. The checks read the real state of the capture: nothing is ticked for you.',
+  'Le rejeu envoie une vraie requete depuis le navigateur, avec vos cookies pour ce site. Elle porte l entete X-Interceptor-Replay et reapparait dans la liste comme une ligne normale. A n utiliser que sur des cibles dont vous avez la responsabilite.':
+    'Replay sends a real request from the browser, with your cookies for this site. It carries the X-Interceptor-Replay header and shows up in the list as a normal row. Use it only on targets you are responsible for.',
+  'Autoriser le rejeu': 'Allow replay',
+  'Envoyer': 'Send',
+  'Restaurer l original': 'Restore the original',
+  'Envoi…': 'Sending…',
+  'Copier la reponse': 'Copy the response',
+  'Reponse copiee': 'Response copied',
+  'Valeurs d origine restaurees': 'Original values restored',
+  'Mise en forme': 'Formatted',
+  'Corps copie': 'Body copied',
+  'Decoder, hacher, mesurer ce corps dans la boite a outils': 'Decode, hash, measure this body in the toolbox',
+  'Annoter cette requete…': 'Annotate this request…',
+  'Cliquer pour ouvrir la requete': 'Click to open the request',
+  'Filtrer ce journal…': 'Filter this log…',
+  'Filtre rapide': 'Quick filter',
+  'Tirer pour redimensionner cette colonne': 'Drag to resize this column',
+  'Activer cette regle': 'Enable this rule',
+  'Nom de la regle': 'Rule name',
+  'Coller ici un fichier de reglages JSON…': 'Paste a JSON settings file here…',
+  'Filtrer les messages…': 'Filter messages…',
+  'active': 'on',
+  'vide': 'empty',
+  'enregistrement': 'record'
+};

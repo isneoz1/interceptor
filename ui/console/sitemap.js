@@ -136,7 +136,7 @@ function dessiner() {
   actions.appendChild(button('Tout replier', () => { ouverts.clear(); render(); }));
   actions.appendChild(button('Copier les hotes', () => {
     if (!hotes.length) return toast('Aucun hote', false);
-    copy(hotes.map(h => h.nom).join('\n'), hotes.length + ' hotes copies');
+    copy(hotes.map(h => h.nom).join('\n'), tp('{n} hotes copies', { n: hotes.length }));
   }));
   box.appendChild(actions);
 

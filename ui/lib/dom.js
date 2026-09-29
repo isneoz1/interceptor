@@ -155,12 +155,12 @@ export function jsonTree(value, key = null, depth = 0) {
   const entries = type === 'array'
     ? value.map((v, i) => [String(i), v])
     : Object.entries(value);
-  const label = (key == null ? 'enregistrement' : key) +
+  const label = (key == null ? t('enregistrement') : key) +
     (type === 'array' ? ' [' + entries.length + ']' : ' {' + entries.length + '}');
 
   const box = el('details', { open: depth < 1 });
   box.appendChild(el('summary', { text: label }));
-  if (!entries.length) box.appendChild(el('div', { class: 'row' }, el('span', { class: 't', text: 'vide' })));
+  if (!entries.length) box.appendChild(el('div', { class: 'row' }, el('span', { class: 't', text: t('vide') })));
   for (const [k, v] of entries) box.appendChild(jsonTree(v, k, depth + 1));
   return box;
 }

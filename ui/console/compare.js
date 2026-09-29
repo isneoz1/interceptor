@@ -6,7 +6,7 @@
  */
 import { $, el, clear, sec, button, kv, add, vide } from '../lib/dom.js';
 import { bytes, ms, clock, middle, pretty } from '../lib/format.js';
-import { t } from '../lib/i18n.js';
+import { t, tp } from '../lib/i18n.js';
 import { state, cmd, toast, copy } from '../app.js';
 
 const MAX_DIFF_LINES = 1200;
@@ -172,7 +172,7 @@ export function render() {
 function renderHeaderDiff(box, title, a, b) {
   const rows = diffHeaders(a, b);
   const changed = rows.filter(r => r.kind !== 'same');
-  box.appendChild(sec(title, changed.length + ' difference(s) sur ' + rows.length + ' entetes'));
+  box.appendChild(sec(title, tp('{n} difference(s) sur {total} entetes', { n: changed.length, total: rows.length })));
   if (!rows.length) {
     box.appendChild(el('p', { class: 'note', text: t('Aucun entete capture des deux cotes.') }));
     return;
@@ -197,14 +197,14 @@ function renderBodyDiff(box, title, a, b, mime) {
   const textB = pretty(b || '', mime);
   const rows = diffLines(textA, textB);
   const changed = rows.filter(r => r.kind !== 'same').length;
-  box.appendChild(sec(title, changed ? changed + ' ligne(s) differente(s)' : 'identiques'));
+  box.appendChild(sec(title, changed ? tp('{n} ligne(s) differente(s)', { n: changed }) : 'identiques'));
   if (!changed) {
     box.appendChild(el('p', { class: 'note ok', text: t('Les deux corps sont rigoureusement identiques.') }));
     return;
   }
   for (const row of rows.slice(0, 4000)) box.appendChild(lineNode(row.kind, row.line));
   if (rows.length > 4000) {
-    box.appendChild(el('p', { class: 'note', text: (rows.length - 4000) + ' lignes supplementaires non affichees.' }));
+    box.appendChild(el('p', { class: 'note', text: tp('{n} lignes supplementaires non affichees.', { n: rows.length - 4000 }) }));
   }
 }
 

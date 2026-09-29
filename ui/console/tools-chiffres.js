@@ -8,7 +8,7 @@
  * obscurcie dans un parametre, un cookie ou un fichier de configuration.
  */
 import { el, frag, kv, sec, add, button } from '../lib/dom.js';
-import { t } from '../lib/i18n.js';
+import { t, tp, te } from '../lib/i18n.js';
 import { copy, toast } from '../app.js';
 import { xorTexte, xorHex, xorForceUnOctet, cesarToutes, vigenere } from '../lib/codecs-text.js';
 import { texteVersOctets } from '../lib/bytes.js';
@@ -36,7 +36,7 @@ export function panneauCles(entree, etat, redessiner, poser) {
     try {
       const clair = xorTexte(brut, etat.cleXor, !!etat.xorHex);
       const hex = xorHex(brut, etat.cleXor, !!etat.xorHex);
-      box.appendChild(sec('Resultat', clair.length + ' caracteres'));
+      box.appendChild(sec('Resultat', tp('{n} caracteres', { n: clair.length })));
       box.appendChild(el('pre', { class: 'pre', text: clair }));
       box.appendChild(sec('Le meme resultat, en octets'));
       box.appendChild(el('pre', { class: 'pre nowrap', text: hex }));
@@ -45,7 +45,7 @@ export function panneauCles(entree, etat, redessiner, poser) {
       acts.appendChild(button('Reprendre comme entree', () => poser(clair)));
       box.appendChild(acts);
     } catch (e) {
-      box.appendChild(el('p', { class: 'note warn', text: t('Echec : ') + String(e.message || e) }));
+      box.appendChild(el('p', { class: 'note warn', text: t('Echec : ') + te(e) }));
     }
   } else {
     box.appendChild(el('p', { class: 'note', text:
@@ -64,7 +64,7 @@ export function panneauCles(entree, etat, redessiner, poser) {
     box.appendChild(sec('Cles d un octet retenues', etat.xorCandidats.length));
     for (const c of etat.xorCandidats.slice(0, 12)) {
       const carte = el('div', { class: 'find info' }, [
-        el('h4', { text: '0x' + c.cle.toString(16).padStart(2, '0') + '   ·   ' + c.score + ' % lisible' }),
+        el('h4', { text: '0x' + c.cle.toString(16).padStart(2, '0') + '   ·   ' + tp('{n} % lisible', { n: c.score }) }),
         el('pre', { class: 'pre', text: c.texte.slice(0, 500) })
       ]);
       carte.appendChild(el('div', { class: 'actions' },
@@ -99,11 +99,11 @@ export function panneauCles(entree, etat, redessiner, poser) {
   const barreV = el('div', { class: 'actions' }, [cleV]);
   barreV.appendChild(button('Chiffrer', () => {
     try { poser(vigenere(brut, cleV.value, false)); }
-    catch (e) { toast(String(e.message || e), false); }
+    catch (e) { toast(te(e), false); }
   }));
   barreV.appendChild(button('Dechiffrer', () => {
     try { poser(vigenere(brut, cleV.value, true)); }
-    catch (e) { toast(String(e.message || e), false); }
+    catch (e) { toast(te(e), false); }
   }));
   box.appendChild(barreV);
 
@@ -123,7 +123,7 @@ export function panneauIdentifier(entree) {
   }
 
   const empreinte = reconnaitreEmpreinte(brut);
-  box.appendChild(sec('Empreinte', empreinte.candidats.length + ' candidat(s)'));
+  box.appendChild(sec('Empreinte', tp('{n} candidat(s)', { n: empreinte.candidats.length })));
   for (const c of empreinte.candidats) add(box, kv('Candidat', c, { hl: true }));
   box.appendChild(el('p', { class: 'note', text: t(empreinte.note) }));
 

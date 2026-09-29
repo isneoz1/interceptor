@@ -56,11 +56,17 @@ import { decoderValeurEtendue, encoderValeurEtendue, decoderMotsCodes }
 import { z85Encoder, z85Decoder, uuencode, uudecode } from './codecs-transport.js';
 import { lirePhpStrict, versJs, ecrirePhp } from './php-serialise.js';
 import { decoderSamlTexte } from './saml.js';
+import { dnsVersTexte } from './dns-message.js';
+import { webauthnVersTexte } from './webauthn.js';
 
 /* Raccourcis d ecriture : e = encodage, d = decodage, a = asynchrone. */
 const e = (cle, groupe, libelle, fn) => ({ cle, groupe, libelle, fn, decode: false, asynchrone: false });
 const d = (cle, groupe, libelle, fn) => ({ cle, groupe, libelle, fn, decode: true, asynchrone: false });
 const a = (cle, groupe, libelle, fn, decode) => ({ cle, groupe, libelle, fn, decode: !!decode, asynchrone: true });
+/* o = decodage sur demande seulement : « Tout essayer » ne le tente pas, parce
+   que des octets quelconques s y lisent (douze octets font un en-tete DNS,
+   trente-sept un authenticatorData). Le proposer serait une fausse piste. */
+const o = (cle, groupe, libelle, fn) => ({ cle, groupe, libelle, fn, decode: false, asynchrone: false });
 
 /** Chaque transformation affichee par la boite a outils. */
 export const TRANSFORMATIONS = [
@@ -162,6 +168,8 @@ export const TRANSFORMATIONS = [
   e('ext-value-enc', 'Web', 'Valeur etendue RFC 8187 — encoder',
     v => encoderValeurEtendue(v)),
   d('mot-code-dec', 'Web', 'Mot code RFC 2047 (=?jeu?B?...?=) — decoder', decoderMotsCodes),
+  o('dns-dec', 'Web', 'Message DNS (DNS par HTTPS, RFC 8484) — decoder', dnsVersTexte),
+  o('webauthn-dec', 'Web', 'WebAuthn (cle d acces) — decoder', webauthnVersTexte),
 
   /* Encodages de transport binaire. */
   e('z85-enc', 'Autres alphabets', 'Z85 (ZeroMQ) — encoder',

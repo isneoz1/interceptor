@@ -295,6 +295,82 @@ export function decoderCbor(octets) {
   return valeur;
 }
 
+/* ------------------------------ CBOR brut --------------------------------- */
+/* Pour qui doit EXPLOITER les valeurs (WebAuthn, COSE) et non seulement les
+   montrer : une chaine d octets reste des octets, une carte garde ses cles
+   typees (COSE numerote les siennes : 1, 3, -1, -2…). */
+function lireCborBrut(lec, profondeur = 0) {
+  if (profondeur > 32) throw new Error('imbrication CBOR trop profonde');
+  const initial = lec.octet();
+  const majeur = initial >> 5;
+  const complement = initial & 0x1f;
+  const indefini = complement === 31;
+  const suite = lire => {
+    const out = [];
+    while (lec.o[lec.i] !== 0xff) out.push(lire());
+    lec.octet();
+    return out;
+  };
+  switch (majeur) {
+    case 0: return longueurCbor(lec, complement);
+    case 1: return -1 - longueurCbor(lec, complement);
+    case 2: {
+      if (indefini) {
+        const morceaux = suite(() => lireCborBrut(lec, profondeur + 1));
+        if (morceaux.some(m => !(m instanceof Uint8Array))) throw new Error('morceau non binaire dans une chaine d octets');
+        const out = new Uint8Array(morceaux.reduce((n, m) => n + m.length, 0));
+        let pos = 0;
+        for (const m of morceaux) { out.set(m, pos); pos += m.length; }
+        return out;
+      }
+      return lec.tranche(longueurCbor(lec, complement)).slice();
+    }
+    case 3:
+      if (indefini) return suite(() => lireCborBrut(lec, profondeur + 1)).join('');
+      return texteDe(lec.tranche(longueurCbor(lec, complement)));
+    case 4: {
+      if (indefini) return suite(() => lireCborBrut(lec, profondeur + 1));
+      const n = longueurCbor(lec, complement);
+      const out = [];
+      for (let i = 0; i < n; i++) out.push(lireCborBrut(lec, profondeur + 1));
+      return out;
+    }
+    case 5: {
+      const carte = new Map();
+      const poser = () => { const cle = lireCborBrut(lec, profondeur + 1); carte.set(cle, lireCborBrut(lec, profondeur + 1)); };
+      if (indefini) { while (lec.o[lec.i] !== 0xff) poser(); lec.octet(); }
+      else { const n = longueurCbor(lec, complement); for (let i = 0; i < n; i++) poser(); }
+      return carte;
+    }
+    case 6: return { etiquette: longueurCbor(lec, complement), valeur: lireCborBrut(lec, profondeur + 1) };
+    default:
+      if (complement === 20) return false;
+      if (complement === 21) return true;
+      if (complement === 22) return null;
+      if (complement === 23) return undefined;
+      if (complement === 25) return demiFlottant(lec.vue(2).getUint16(0));
+      if (complement === 26) return lec.vue(4).getFloat32(0);
+      if (complement === 27) return lec.vue(8).getFloat64(0);
+      if (complement === 31) throw new Error('rupture CBOR inattendue');
+      return { simple: longueurCbor(lec, complement) };
+  }
+}
+
+/** Un element CBOR lu a partir d une position ; rend aussi ou il s arrete. */
+export function lireCborPartiel(octets, debut = 0) {
+  const lec = new Lecteur(octets);
+  lec.i = debut;
+  const valeur = lireCborBrut(lec);
+  return { valeur, fin: lec.i };
+}
+
+/** Un document CBOR complet, lu sans perte. */
+export function decoderCborBrut(octets) {
+  const { valeur, fin } = lireCborPartiel(octets, 0);
+  if (fin < octets.length) throw new Error((octets.length - fin) + ' octets en trop apres le document');
+  return valeur;
+}
+
 /* ------------------------- Reconnaissance de format ----------------------- */
 /**
  * Essaie les trois formats et rend ceux qui consomment exactement les octets.

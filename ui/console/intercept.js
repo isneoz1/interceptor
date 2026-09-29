@@ -9,7 +9,7 @@
  */
 import { $, el, clear, sec, button, kv, add, vide } from '../lib/dom.js';
 import { clock, middle } from '../lib/format.js';
-import { t } from '../lib/i18n.js';
+import { t, tp, te } from '../lib/i18n.js';
 import { state, cmd, toast, saveConfig } from '../app.js';
 
 let file = { pending: [], count: 0, stats: {} };
@@ -60,7 +60,7 @@ export function render() {
     actions.appendChild(button('Tout laisser passer', async () => {
       const res = await cmd('interceptReleaseAll', {});
       if (res.error) return toast(res.error, false);
-      toast(res.released + ' requete(s) relachee(s)');
+      toast(tp('{n} requete(s) relachee(s)', { n: res.released }));
       brouillons.clear();
       charger({ silencieux: false });
     }));
@@ -133,7 +133,7 @@ function reglagesRapides(config) {
     const valeur = filtre.value.trim();
     if (valeur) {
       try { new RegExp(valeur); }
-      catch (e) { return toast('Expression invalide : ' + String(e.message || e), false); }
+      catch (e) { return toast(tp('Expression invalide : {raison}', { raison: te(e) }), false); }
     }
     await saveConfig({ interceptFilter: valeur });
     toast(valeur ? 'Filtre applique' : 'Filtre retire');

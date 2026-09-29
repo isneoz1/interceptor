@@ -5,14 +5,14 @@
  * explique, et suivi de ce qui pose reellement probleme.
  */
 import { el, frag, kv, sec, add, button } from '../lib/dom.js';
-import { t } from '../lib/i18n.js';
+import { t, tp } from '../lib/i18n.js';
 import { copy } from '../app.js';
 import { analyserBloc, ENTETES_ANALYSABLES } from '../lib/entetes-analyse.js';
 import { decrireEntete } from '../lib/ref-entetes.js';
 
 export function panneauEntetes(entree) {
   const box = frag();
-  box.appendChild(sec('Entetes', ENTETES_ANALYSABLES.length + ' entetes decoupes en detail'));
+  box.appendChild(sec('Entetes', tp('{n} entetes decoupes en detail', { n: ENTETES_ANALYSABLES.length })));
 
   const brut = String(entree || '').trim();
   if (!brut) {

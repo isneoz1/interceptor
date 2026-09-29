@@ -5,7 +5,7 @@
  * deux configurations, deux jetons qui devraient etre identiques.
  */
 import { el, frag, kv, sec, add, button } from '../lib/dom.js';
-import { t } from '../lib/i18n.js';
+import { t, tp, te } from '../lib/i18n.js';
 import { copy, toast } from '../app.js';
 import { comparerTextes, comparerMots, diffUnifie, premiereDifference } from '../lib/diff.js';
 
@@ -44,7 +44,7 @@ export function panneauComparer(entree, etat, redessiner, poser) {
   let resultat;
   try { resultat = comparerTextes(entree, etat.autreTexte || ''); }
   catch (e) {
-    box.appendChild(el('p', { class: 'note warn', text: t('Comparaison impossible : ') + String(e.message || e) }));
+    box.appendChild(el('p', { class: 'note warn', text: t('Comparaison impossible : ') + te(e) }));
     return box;
   }
 
@@ -66,7 +66,7 @@ export function panneauComparer(entree, etat, redessiner, poser) {
          c est pareil » quand deux jetons ne s egalent pas. --- */
   const finesse = premiereDifference(entree, etat.autreTexte || '');
   if (finesse) {
-    box.appendChild(sec('Premiere difference', 'position ' + finesse.position));
+    box.appendChild(sec('Premiere difference', tp('position {n}', { n: finesse.position })));
     add(box, kv('A gauche', (finesse.gauche || '(rien)') + '   ·   ' + finesse.codeGauche));
     add(box, kv('A droite', (finesse.droite || '(rien)') + '   ·   ' + finesse.codeDroite));
     add(box, kv('Contexte', finesse.contexte));

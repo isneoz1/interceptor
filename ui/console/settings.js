@@ -7,7 +7,7 @@ import { $, el, clear, sec, button } from '../lib/dom.js';
 import { RESOURCE_TYPES } from '../lib/format.js';
 import { COLUMNS, COLUMN_ORDER, DEFAULT_COLUMNS } from '../lib/columns.js';
 import { state, cmd, toast, saveConfig, B, copy } from '../app.js';
-import { t, tp, dictionarySize } from '../lib/i18n.js';
+import { t, tp, dictionarySize, te } from '../lib/i18n.js';
 import { GROUPS, PROFILES } from './settings-groups.js';
 
 let importText = '';
@@ -100,7 +100,7 @@ function buildField([key, label, type, extra, hint]) {
       // Un filtre invalide serait un reglage qui ment : on refuse tout de suite.
       if (v) {
         try { new RegExp(v); }
-        catch (e) { return toast('Expression invalide : ' + String(e.message || e), false); }
+        catch (e) { return toast(tp('Expression invalide : {raison}', { raison: te(e) }), false); }
       }
       saveConfig({ [key]: v });
     });
@@ -117,7 +117,7 @@ function buildField([key, label, type, extra, hint]) {
       const list = area.value.split('\n').map(s => s.trim()).filter(Boolean);
       if (key.endsWith('UrlPatterns')) {
         const bad = list.find(p => { try { new RegExp(p); return false; } catch { return true; } });
-        if (bad) return toast('Expression invalide : ' + bad, false);
+        if (bad) return toast(tp('Expression invalide : {raison}', { raison: bad }), false);
       }
       saveConfig({ [key]: list });
       toast(tp('{n} ligne(s) enregistree(s)', { n: list.length }));
@@ -200,7 +200,7 @@ function importHarFile() {
         ? tp('{n} requetes importees, {i} ignorees', { n: res.imported, i: res.skipped })
         : tp('{n} requetes importees', { n: res.imported }));
     } catch (e) {
-      toast(tp('Fichier illisible : {raison}', { raison: String(e && e.message || e) }), false);
+      toast(tp('Fichier illisible : {raison}', { raison: te(e) }), false);
     }
     picker.remove();
   });
@@ -229,7 +229,7 @@ function maintenanceSection() {
   }));
   box.appendChild(actions);
 
-  const area = el('textarea', { class: 'field', spellcheck: 'false', rows: '5', placeholder: 'Coller ici un fichier de reglages JSON…' });
+  const area = el('textarea', { class: 'field', spellcheck: 'false', rows: '5', placeholder: t('Coller ici un fichier de reglages JSON…') });
   area.value = importText;
   area.addEventListener('input', () => { importText = area.value; });
   box.appendChild(area);
@@ -240,7 +240,7 @@ function maintenanceSection() {
     try { parsed = JSON.parse(area.value || '{}'); }
     catch (e) {
       status.className = 'note ko';
-      status.textContent = tp('JSON invalide : {raison}', { raison: e.message });
+      status.textContent = tp('JSON invalide : {raison}', { raison: te(e) });
       return;
     }
     const res = await cmd('importConfig', { values: parsed });

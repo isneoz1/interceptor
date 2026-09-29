@@ -14,7 +14,7 @@
  * l analyseur, qui n en emet que pour une faille demontrable.
  */
 import { el, frag, kv, sec, add, button } from '../lib/dom.js';
-import { t, tp } from '../lib/i18n.js';
+import { t, tp, te } from '../lib/i18n.js';
 import { state, copy } from '../app.js';
 import { poser } from './tools.js';
 import { lireProtections, entetesEnObjet } from '../lib/protections.js';
@@ -57,7 +57,7 @@ export function integrite(rec) {
       try { annonces = lireEmpreintes(nom, valeur); }
       catch (e) {
         box.appendChild(el('p', { class: 'note ko',
-          text: tp('{entete} illisible : {raison}', { entete: nom, raison: e.message }) }));
+          text: tp('{entete} illisible : {raison}', { entete: nom, raison: te(e) }) }));
         continue;
       }
       if (!annonces.length) continue;
@@ -231,7 +231,7 @@ export function saml(rec) {
     ]));
   }).catch(e => {
     zone.textContent = '';
-    zone.appendChild(note(t('Message SAML illisible : ') + String(e.message || e), 'note warn'));
+    zone.appendChild(note(t('Message SAML illisible : ') + te(e), 'note warn'));
   });
   return box;
 }

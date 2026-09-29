@@ -9,7 +9,7 @@
  * on colle une fois, tous les outils regardent la meme matiere.
  */
 import { el, frag, kv, sec, add, button, jsonTree } from '../lib/dom.js';
-import { t } from '../lib/i18n.js';
+import { t, tp, te } from '../lib/i18n.js';
 import { copy, toast } from '../app.js';
 import {
   decoderJwt, libelleClaim, entropie, vidageHex,
@@ -37,7 +37,7 @@ export function panneauJwt(entree, etat, redessiner) {
   let jwt;
   try { jwt = decoderJwt(entree); }
   catch (e) {
-    box.appendChild(el('p', { class: 'note', text: t('Ce texte n est pas un JWT : ') + String(e.message || e) }));
+    box.appendChild(el('p', { class: 'note', text: t('Ce texte n est pas un JWT : ') + te(e) }));
     return box;
   }
 
@@ -110,7 +110,7 @@ function panneauSignatureJwt(entree, jwt, etat, redessiner) {
     etat.cleJwt = champ.value;
     if (!etat.cleJwt) return toast('Cle vide', false);
     try { etat.jwtVerdict = await verifierJwt(entree, etat.cleJwt); }
-    catch (e) { etat.jwtVerdict = { valide: false, erreur: String(e.message || e) }; }
+    catch (e) { etat.jwtVerdict = { valide: false, erreur: te(e) }; }
     redessiner();
   }));
   box.appendChild(actions);
@@ -118,7 +118,7 @@ function panneauSignatureJwt(entree, jwt, etat, redessiner) {
   if (etat.jwtVerdict) {
     const v = etat.jwtVerdict;
     if (v.erreur) {
-      box.appendChild(el('p', { class: 'note warn', text: t('Echec : ') + v.erreur }));
+      box.appendChild(el('p', { class: 'note warn', text: t('Echec : ') + te(v.erreur) }));
     } else if (v.valide) {
       add(box, kv('Verdict', t('signature valide'), { hl: true }));
       add(box, kv('Methode employee', t(v.methode)));
@@ -147,20 +147,20 @@ function formaterValeur(v) {
 export function panneauEmpreintes(entree, redessiner, etat) {
   const box = frag();
   const resultats = etat.empreintes;
-  box.appendChild(sec('Empreintes', ALGORITHMES.length + ' algorithmes'));
+  box.appendChild(sec('Empreintes', tp('{n} algorithmes', { n: ALGORITHMES.length })));
 
   const actions = el('div', { class: 'actions' });
   for (const algo of ALGORITHMES) {
     actions.appendChild(button(algo, async () => {
       try { resultats[algo] = await empreinteHex(algo, entree); redessiner(); }
-      catch (e) { toast(String(e.message || e), false); }
+      catch (e) { toast(te(e), false); }
     }));
   }
   actions.appendChild(button('Tout calculer', async () => {
     try {
       for (const algo of ALGORITHMES) resultats[algo] = await empreinteHex(algo, entree);
       redessiner();
-    } catch (e) { toast(String(e.message || e), false); }
+    } catch (e) { toast(te(e), false); }
   }));
   box.appendChild(actions);
 
@@ -176,17 +176,17 @@ export function panneauEmpreintes(entree, redessiner, etat) {
 
   /* --- Empreintes supplementaires : SHA-3, Keccak, SHAKE, RIPEMD, SM3,
          MD4, NTLM, BLAKE2 — calculees sans le navigateur --- */
-  box.appendChild(sec('Empreintes supplementaires', EMPREINTES_SUP.length + ' familles'));
+  box.appendChild(sec('Empreintes supplementaires', tp('{n} familles', { n: EMPREINTES_SUP.length })));
   const supActions = el('div', { class: 'actions' });
   for (const [nom] of EMPREINTES_SUP) {
     supActions.appendChild(button(nom, () => {
       try { resultats[nom] = empreinteSup(nom, entree); redessiner(); }
-      catch (e) { toast(String(e.message || e), false); }
+      catch (e) { toast(te(e), false); }
     }));
   }
   supActions.appendChild(button('Toutes', () => {
     try { for (const [nom] of EMPREINTES_SUP) resultats[nom] = empreinteSup(nom, entree); redessiner(); }
-    catch (e) { toast(String(e.message || e), false); }
+    catch (e) { toast(te(e), false); }
   }));
   box.appendChild(supActions);
   for (const [nom] of EMPREINTES_SUP) {
@@ -204,10 +204,10 @@ export function panneauEmpreintes(entree, redessiner, etat) {
   add(box, kv('djb2', djb2(entree), { copy: true }));
   add(box, kv('MurmurHash3', murmur3(entree), { copy: true }));
   add(box, kv('xxHash32', xxhash32(entree), { copy: true }));
-  add(box, kv('Somme des octets', somme.somme + '  (complement : ' + somme.complement + ')'));
+  add(box, kv('Somme des octets', tp('{somme}  (complement : {complement})', { somme: somme.somme, complement: somme.complement })));
 
   /* --- Variantes CRC nommees : on choisit, on lit la valeur et son usage --- */
-  box.appendChild(sec('Variantes CRC', CRC_VARIANTES.length + ' normalisees'));
+  box.appendChild(sec('Variantes CRC', tp('{n} normalisees', { n: CRC_VARIANTES.length })));
   const crcChoix = el('select');
   for (const v of CRC_VARIANTES) {
     crcChoix.appendChild(el('option', { value: v.nom, text: v.nom, selected: v.nom === (etat.crcVariante || 'CRC-32/ISO-HDLC') }));
@@ -241,7 +241,7 @@ export function panneauEmpreintes(entree, redessiner, etat) {
     etat.cleHmac = cle.value;
     etat.algoHmac = choix.value;
     try { etat.hmac = await hmacHex(choix.value, cle.value, entree); redessiner(); }
-    catch (e) { toast(String(e.message || e), false); }
+    catch (e) { toast(te(e), false); }
   }));
   box.appendChild(barre);
   if (etat.hmac) add(box, kv('HMAC-' + (etat.algoHmac || 'SHA-256'), etat.hmac, { copy: true }));
@@ -352,7 +352,7 @@ export function panneauAnalyse(entree) {
       ]));
     } catch (e) {
       box.appendChild(el('p', { class: 'note warn', text:
-        t('Serialisation PHP illisible : ') + String(e.message || e) }));
+        t('Serialisation PHP illisible : ') + te(e) }));
     }
   }
   return box;
@@ -428,7 +428,7 @@ export function panneauRegex(entree, etat, redessiner) {
   let re;
   try { re = new RegExp(etat.motif, etat.options.includes('g') ? etat.options : etat.options + 'g'); }
   catch (e) {
-    box.appendChild(el('p', { class: 'note warn', text: t('Expression invalide : ') + String(e.message || e) }));
+    box.appendChild(el('p', { class: 'note warn', text: t('Expression invalide : ') + te(e) }));
     return box;
   }
 
@@ -439,7 +439,7 @@ export function panneauRegex(entree, etat, redessiner) {
     if (m.index === re.lastIndex) re.lastIndex++;
   }
 
-  box.appendChild(sec('Correspondances', trouves.length + (garde >= 500 ? ' (arretees a 500)' : '')));
+  box.appendChild(sec('Correspondances', trouves.length + (garde >= 500 ? ' ' + t('(arretees a 500)') : '')));
   if (!trouves.length) {
     box.appendChild(el('p', { class: 'note', text: t('Aucune correspondance.') }));
     return box;
@@ -451,7 +451,7 @@ export function panneauRegex(entree, etat, redessiner) {
 
   if (etat.remplacement) {
     const resultat = String(entree).replace(re, etat.remplacement);
-    box.appendChild(sec('Apres remplacement', resultat.length + ' caracteres'));
+    box.appendChild(sec('Apres remplacement', tp('{n} caracteres', { n: resultat.length })));
     box.appendChild(el('pre', { class: 'pre', text: resultat }));
     box.appendChild(el('div', { class: 'actions' },
       button('Copier le resultat', () => copy(resultat, 'Resultat copie'))));

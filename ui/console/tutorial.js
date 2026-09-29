@@ -118,8 +118,7 @@ export function render() {
   box.appendChild(bottom);
 
   box.appendChild(el('p', { class: 'note', text:
-    'Ce tutoriel se relance a tout moment depuis la barre laterale ou les reglages. ' +
-    'Les verifications lisent l etat reel de la capture : rien n est coche a votre place.' }));
+    t('Ce tutoriel se relance a tout moment depuis la barre laterale ou les reglages. Les verifications lisent l etat reel de la capture : rien n est coche a votre place.') }));
 }
 
 /** Rend une lecon dans la langue courante : titre, objectif et corps. */

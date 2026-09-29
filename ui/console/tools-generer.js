@@ -5,7 +5,7 @@
  * travail, prete a etre transformee, hachee ou collee dans une requete.
  */
 import { el, frag, kv, sec, add, button } from '../lib/dom.js';
-import { t } from '../lib/i18n.js';
+import { t, tp, te } from '../lib/i18n.js';
 import { copy, toast } from '../app.js';
 import {
   uuidV4, uuidV7, ulid, nanoid, hexAleatoire, base64Aleatoire, base64UrlAleatoire,
@@ -74,14 +74,14 @@ export function panneauGenerateurs(poser, etat, redessiner) {
         etat.jeuxMdp || ['minuscules', 'majuscules', 'chiffres', 'symboles']);
       etat.dernierMdp = valeur;
       redessiner();
-    } catch (e) { toast(String(e.message || e), false); }
+    } catch (e) { toast(te(e), false); }
   }));
   box.appendChild(actions);
 
   if (etat.dernierMdp) {
     const force = forceMotDePasse(etat.dernierMdp);
     add(box, kv('Mot de passe', etat.dernierMdp, { copy: true, hl: true }));
-    add(box, kv('Alphabet employe', force.alphabet + ' caracteres', { always: true }));
+    add(box, kv('Alphabet employe', tp('{n} caracteres', { n: force.alphabet }), { always: true }));
     add(box, kv('Entropie', force.bits + ' bits', { always: true }));
     box.appendChild(el('p', { class: 'note', text: t(force.lecture) }));
     const suite = el('div', { class: 'actions' });
