@@ -134,6 +134,10 @@ const SECTIONS = [
       ['Problemes HTTP', 'Une erreur decrite en application/problem+json (RFC 9457) : type, titre, detail, et le membre status confronte au statut reellement servi.'],
       ['Controles du corps', 'Un corps annonce JSON qui est une page HTML, une image annoncee PNG qui est un JPEG ; et, pour un texte servi sans compression, ce que gzip en aurait fait, mesure sur les octets recus.'],
       ['security.txt', 'Le fichier ou un site dit comment lui signaler une faille (RFC 9116) : contacts, expiration, politique, signature, et ce qui manque (tag:security-txt).'],
+      ['Verdict', 'En tete de l onglet Resume, ce qui s est passe en une phrase — reussie, refusee, bloquee par une regle, 200 cachant une erreur GraphQL — et le bouton qui ouvre l onglet du detail.'],
+      ['Provenance', 'Ce que Firefox dit de l origine d une requete (Sec-Fetch-*) : meme site ou autre site, navigation ou appel, declenchee ou non par l utilisateur.'],
+      ['Clear-Site-Data', 'Ce qu une reponse fait effacer au navigateur : cache, cookies, stockage, pages ouvertes.'],
+      ['Cartes de source', 'L adresse de la carte qui relie un script minifie a son code d origine (tag:source-map).'],
       ['Signatures et cles d acces', 'Signatures de messages HTTP (RFC 9421) reconstruites et verifiees, inscriptions et connexions WebAuthn, DNS par HTTPS.'],
       ['Securite', 'OAuth 2.0 et OpenID Connect, SAML, empreintes de contenu, protections de la reponse, CSP deduite des chargements reels.']
     ]

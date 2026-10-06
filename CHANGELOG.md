@@ -4,6 +4,42 @@ All notable changes to this project are documented here.
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning follows
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.2.0] — 2026-10-06
+
+Simpler to read: every request now opens on a one-sentence verdict. And three readings
+that only existed as reference entries until now.
+
+### Added
+
+- **The verdict in one sentence**, at the top of the Summary tab, with a button to the tab
+  that holds the details: *Succeeded: 200 OK, in 168 ms*, *Refused by the server: 403
+  Forbidden*, *Network failure* with the meaning of Firefox's error, *Blocked by the
+  “Trackers” rule*, *Response mocked by a rule*, *Redirected to …*, *Not modified (304)*, an
+  RFC 9457 problem's title — and, rather than "succeeded", *Response 200, but 1 GraphQL
+  error in the body* (likewise for JSON-RPC errors and SOAP faults). A second line counts the
+  security alerts. Nothing is guessed: each verdict reuses a reading proven elsewhere, in a
+  fixed order (a blocked request has no status; a 200 carrying an error is not a success).
+- **Where a request comes from**, as Firefox declares it (W3C Fetch Metadata):
+  `Sec-Fetch-Site`, `-Mode`, `-Dest` and `-User` in plain words — same origin, same site or
+  another site; navigation, CORS or no-CORS call; image, script, fetch…; triggered by the
+  user or not. An unknown value is shown as is, with no meaning invented.
+- **`Clear-Site-Data`**: what a response makes the browser erase — cache, cookies, storage,
+  open pages, Client Hints — with a value outside the grammar or unknown to the
+  specification, and a response served without https, which the browser does not process.
+- **Source maps (ECMA-426)**: a script or stylesheet that announces one — `SourceMap`
+  header, which wins, the deprecated `X-SourceMap`, or a `sourceMappingURL` comment (the old
+  `//@` form named) — shows the map's address, resolved against the file; an embedded
+  `data:` map is said as such. Tagged `source-map`. Announced is not reachable: the map is
+  not downloaded.
+
+### Tests
+
+- `tests/protocoles.test.mjs`: every kind of verdict, including the order of precedence;
+  the values of each Fetch Metadata header from its specification; Clear-Site-Data's six
+  types, its grammar and the https rule; source-map precedence, resolution and forms.
+
+2084 assertions across ten suites, plus six browser audits.
+
 ## [5.1.0] — 2026-10-06
 
 More API readings, each checked against the examples of its own specification — and two

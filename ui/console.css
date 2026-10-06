@@ -339,6 +339,22 @@ body { display: flex; flex-direction: column; overflow: hidden; }
 
 .dbody { flex: 1; min-height: 0; overflow: auto; padding: 16px 18px 32px; background: var(--bg); }
 
+/* Le verdict en tete du Resume : la gravite se lit au bord gauche. */
+.verdict {
+  margin: 0 0 18px; padding: 10px 14px;
+  background: var(--surface); border: 1px solid var(--line); border-left: 3px solid var(--blue);
+  border-radius: var(--r);
+}
+.verdict.ok { border-left-color: var(--green); }
+.verdict.warn { border-left-color: var(--amber); }
+.verdict.ko { border-left-color: var(--red); }
+.verdict-ligne {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin: 0;
+  font: 600 calc(13.5px * var(--scale))/1.5 var(--sans); color: var(--text);
+}
+.verdict-ligne + .verdict-ligne { margin-top: 6px; font-weight: 400; color: var(--dim); }
+.verdict-ligne .btn { margin-left: auto; }
+
 /* Trame WebSocket ou message SSE : sens, heure, contenu. */
 .frame {
   display: grid; grid-template-columns: 112px 1fr; gap: 12px; padding: 6px 0;

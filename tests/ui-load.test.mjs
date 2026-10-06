@@ -415,6 +415,15 @@ for (const gabarit of Object.values(FAITS_PROBLEME)) exigerTraduction('fait RFC 
 for (const gabarit of Object.values(FAITS_CORPS)) exigerTraduction('fait sur un corps', gabarit);
 const { FAITS_SECURITY_TXT } = await import('../ui/lib/security-txt.js');
 for (const gabarit of Object.values(FAITS_SECURITY_TXT)) exigerTraduction('fait security.txt', gabarit);
+const { VERDICTS } = await import('../ui/lib/verdict.js');
+const { SENS_SITE, SENS_MODE, SENS_DEST } = await import('../ui/lib/fetch-metadata.js');
+const { TYPES_CSD, FAITS_CSD } = await import('../ui/lib/clear-site-data.js');
+const { FAITS_SOURCE_MAP } = await import('../ui/lib/source-map.js');
+for (const [table, quoi] of [[VERDICTS, 'verdict'], [SENS_SITE, 'Sec-Fetch-Site'], [SENS_MODE, 'Sec-Fetch-Mode'],
+  [SENS_DEST, 'Sec-Fetch-Dest'], [TYPES_CSD, 'type Clear-Site-Data'], [FAITS_CSD, 'fait Clear-Site-Data'],
+  [FAITS_SOURCE_MAP, 'fait carte de source']]) {
+  for (const texte of Object.values(table)) exigerTraduction(quoi, texte);
+}
 /* Les colonnes du tableau : libelle et bulle passent par t() depuis la table,
    ou la lecture des appels ne les voit pas. */
 const { COLUMNS: COLONNES_TABLE } = await import('../ui/lib/columns.js');

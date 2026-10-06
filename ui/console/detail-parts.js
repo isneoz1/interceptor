@@ -29,6 +29,7 @@ import { rpcRequete, rpcReponse } from './rpc-detail.js';
 import { problemeReponse } from './probleme-detail.js';
 import { securityTxtReponse } from './security-txt-detail.js';
 import { controlesCorps } from './corps-detail.js';
+import { blocVerdict, blocProvenance, blocEffacement, blocSourceMap } from './lectures-detail.js';
 import { rapportsRequete, collecteRapports } from './rapports-detail.js';
 
 /** Rend toutes les cles d un objet, y compris celles qu on n a pas prevues. */
@@ -79,6 +80,8 @@ function headerBlock(title, list) {
 /* ------------------------------- 1. Resume -------------------------------- */
 export function resume(rec) {
   const box = frag();
+  /* Ce qui s est passe, en une phrase, avant tout le reste. */
+  box.appendChild(blocVerdict(rec));
 
   box.appendChild(sec('Identite', typeLabel(rec.type)));
   add(box, kv('Methode', rec.method, { hl: true }));
@@ -151,6 +154,7 @@ export function resume(rec) {
   add(box, kv('Couches de capture', (rec.sources || []).join(' + '), { hl: true }));
   add(box, kv('Fusions', rec.dedup && rec.dedup.merged ? rec.dedup.merged + ' (' + (rec.dedup.mergedFrom || []).join(', ') + ')' : null));
   add(box, kv('Signature de correlation', rec.dedup && rec.dedup.signature));
+  box.appendChild(blocProvenance(rec));
 
   if (rec.pageMeta) {
     box.appendChild(sec('Contexte JavaScript', rec.pageMeta.api || ''));
@@ -223,6 +227,7 @@ export function headers(rec) {
   box.appendChild(securite.protections(rec));
   box.appendChild(securite.cspObservee(rec));
   box.appendChild(collecteRapports(rec));
+  box.appendChild(blocEffacement(rec));
   return box;
 }
 
@@ -718,6 +723,7 @@ export function responseBody(rec) {
   box.appendChild(rpcReponse(rec));
   box.appendChild(problemeReponse(rec));
   box.appendChild(securityTxtReponse(rec));
+  box.appendChild(blocSourceMap(rec));
   box.appendChild(bodyViewer(rec.responseBody, 'Corps recu', rec.mime, { entetes: rec.responseHeaders, mesurer: true }));
   return box;
 }

@@ -203,6 +203,12 @@ $required = @(
   'ui/lib/dict-en-api.js',
   'ui/lib/security-txt.js',
   'ui/console/security-txt-detail.js',
+  'ui/lib/verdict.js',
+  'ui/lib/fetch-metadata.js',
+  'ui/lib/clear-site-data.js',
+  'ui/lib/source-map.js',
+  'ui/console/lectures-detail.js',
+  'ui/lib/dict-en-lectures2.js',
   'icons/icon.svg'
 )
 $missing = $required | Where-Object { -not (Test-Path $_) }

@@ -132,6 +132,10 @@ export const HELP_SECTIONS = [
       ['HTTP problems', 'An error described as application/problem+json (RFC 9457): type, title, detail, and the status member compared with the status actually served.'],
       ['Body checks', 'A body announced as JSON that is an HTML page, an image announced as PNG that is a JPEG; and, for text served without compression, what gzip would have made of it, measured on the bytes received.'],
       ['security.txt', 'The file where a site says how to report a vulnerability (RFC 9116): contacts, expiry, policy, signature, and what is missing (tag:security-txt).'],
+      ['Verdict', 'At the top of the Summary tab, what happened in one sentence — succeeded, refused, blocked by a rule, a 200 hiding a GraphQL error — and the button that opens the tab with the details.'],
+      ['Origin', 'What Firefox says about where a request comes from (Sec-Fetch-*): same site or another site, navigation or call, triggered by the user or not.'],
+      ['Clear-Site-Data', 'What a response makes the browser clear: cache, cookies, storage, open pages.'],
+      ['Source maps', 'The address of the map that links a minified script to its original code (tag:source-map).'],
       ['Signatures and passkeys', 'HTTP message signatures (RFC 9421) rebuilt and verified, WebAuthn registrations and sign-ins, DNS over HTTPS.'],
       ['Security', 'OAuth 2.0 and OpenID Connect, SAML, content digests, response protections, a CSP derived from what actually loaded.']
     ]

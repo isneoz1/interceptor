@@ -71,6 +71,14 @@ export function init(deps = {}) {
   $('#d-open').addEventListener('click', openUrl);
   $('#d-block').addEventListener('click', blockHost);
   dropdown($('#d-copy'), copyItems, { up: true });
+  /* Le verdict de l onglet Resume renvoie a l onglet qui en donne le detail. */
+  document.addEventListener('ic:onglet', ev => {
+    const cle = ev && ev.detail && ev.detail.onglet;
+    if (!current || !TABS.some(d => d.key === cle)) return;
+    tab = cle;
+    paint();
+    $('#dbody').scrollTop = 0;
+  });
 }
 
 export function isOpen() { return !$('#detail').hidden; }

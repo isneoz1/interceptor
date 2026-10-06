@@ -670,4 +670,80 @@ egal('security.txt : emplacements', ['https://a.test/.well-known/security.txt', 
 const analyseSt = analyze(enregistrementExemple({ url: URL_WK, finalUrl: URL_WK, method: 'GET', requestBody: null }), { force: true });
 verifier('analyseur : un security.txt porte son marqueur', analyseSt.tags.includes('security-txt'));
 
+/* ===================== 13. Le verdict en une phrase ======================= */
+const vd = await import('../ui/lib/verdict.js');
+const cleDe = patch => vd.verdictDe(enregistrementExemple(patch)).cle;
+egal('verdict : reussie avec sa duree', cleDe({ statusCode: 200, duration: 120 }), 'reussieDuree');
+egal('verdict : la phrase IANA du statut', vd.verdictDe(enregistrementExemple({ statusCode: 404 })).valeurs.phrase, 'Not Found');
+egal('verdict : 4xx refusee', cleDe({ statusCode: 403 }), 'refusee');
+egal('verdict : 5xx erreur du serveur', cleDe({ statusCode: 503 }), 'erreurServeur');
+egal('verdict : 304 non modifiee', cleDe({ statusCode: 304 }), 'nonModifiee');
+const redir = vd.verdictDe(enregistrementExemple({ statusCode: 302, responseHeaders: [{ name: 'Location', value: 'https://a.test/b' }] }));
+egal('verdict : redirection et sa cible', redir.cle + ' ' + redir.valeurs.cible, 'redirigee https://a.test/b');
+egal('verdict : redirection sans Location', cleDe({ statusCode: 301, responseHeaders: [] }), 'redirectionSansCible');
+egal('verdict : servie par le cache', cleDe({ statusCode: 200, fromCache: true }), 'cache');
+egal('verdict : changement de protocole', cleDe({ statusCode: 101 }), 'protocole');
+egal('verdict : en cours', cleDe({ statusCode: null, error: null, state: 'pending' }), 'enCours');
+const echec = vd.verdictDe(enregistrementExemple({ statusCode: null, error: 'NS_ERROR_NET_RESET' }));
+verifier('verdict : echec reseau explique, son sens marque a traduire', echec.cle === 'echecReseau' && echec.aTraduire.includes('sens'), echec.cle);
+egal('verdict : erreur inconnue gardee telle quelle', cleDe({ statusCode: null, error: 'ERREUR_INCONNUE_XYZ' }), 'echecBrut');
+egal('verdict : bloquee par une regle, avant toute autre lecture',
+  cleDe({ statusCode: null, error: 'NS_ERROR_ABORT', rulesApplied: [{ id: 'r1', name: 'Pisteurs', action: 'block', phase: 'onBeforeRequest' }] }), 'bloquee');
+egal('verdict : reponse simulee par une regle', cleDe({ statusCode: 200, rulesApplied: [{ id: 'r2', name: 'Stock', action: 'mock', phase: 'streamFilter' }] }), 'simulee');
+const gqlErr = vd.verdictDe(enregistrementExemple({ statusCode: 200, url: 'https://api.test/graphql', method: 'POST',
+  requestBody: { kind: 'raw', text: '{"query":"{ a }"}', size: 16 },
+  responseBody: { kind: 'text', text: '{"data":{"a":null},"errors":[{"message":"x"}]}', size: 44 } }));
+egal('verdict : 200 avec erreur GraphQL n est pas une reussite', gqlErr.cle + ' ' + gqlErr.valeurs.n + ' ' + gqlErr.onglet, 'graphqlErreurs 1 response');
+egal('verdict : 200 avec erreur JSON-RPC', cleDe({ statusCode: 200,
+  requestBody: { kind: 'raw', text: '{"jsonrpc": "2.0", "method": "foobar", "id": "1"}', size: 50 },
+  responseBody: { kind: 'text', text: '{"jsonrpc": "2.0", "error": {"code": -32601, "message": "Method not found"}, "id": "1"}', size: 80 } }), 'jsonRpcErreurs');
+egal('verdict : 200 avec faute SOAP', cleDe({ statusCode: 200,
+  requestBody: { kind: 'raw', text: SOAP11_APPEL, size: SOAP11_APPEL.length, contentType: 'text/xml' },
+  responseBody: { kind: 'text', text: SOAP11_FAUTE, size: SOAP11_FAUTE.length } }), 'soapFaute');
+const pbVerdict = vd.verdictDe(enregistrementExemple({ statusCode: 403, mime: 'application/problem+json',
+  responseBody: { kind: 'text', text: HORS_CREDIT, size: HORS_CREDIT.length } }));
+egal('verdict : le titre d un probleme RFC 9457', pbVerdict.cle + ' | ' + pbVerdict.valeurs.titre, 'probleme | You do not have enough credit.');
+egal('verdict : sans alerte, pas de seconde ligne', vd.alertesDe(enregistrementExemple({ analysis: { findings: [] } })), null);
+egal('verdict : alertes graves en rouge', vd.alertesDe(enregistrementExemple({ analysis: { findings: [{ severity: 'high' }, { severity: 'low' }] } })).ton, 'ko');
+
+/* ===================== 14. Provenance (Fetch Metadata) ==================== */
+const fm = await import('../ui/lib/fetch-metadata.js');
+const prov = fm.lireFetchMetadata([
+  { name: 'Sec-Fetch-Site', value: 'cross-site' }, { name: 'Sec-Fetch-Mode', value: 'no-cors' },
+  { name: 'Sec-Fetch-Dest', value: 'image' }
+]);
+egal('Fetch Metadata : les trois valeurs lues', [prov.site, prov.mode, prov.dest].join(','), 'cross-site,no-cors,image');
+verifier('Fetch Metadata : chaque valeur de la specification a son sens',
+  ['cross-site', 'same-origin', 'same-site', 'none'].every(v => fm.SENS_SITE[v])
+  && ['cors', 'navigate', 'no-cors', 'same-origin', 'websocket'].every(v => fm.SENS_MODE[v]));
+verifier('Fetch Metadata : ?1 seulement pour une action de l utilisateur',
+  fm.lireFetchMetadata([{ name: 'Sec-Fetch-User', value: '?1' }]).utilisateur && !prov.utilisateur);
+egal('Fetch Metadata : une valeur inconnue reste sans sens invente', fm.lireFetchMetadata([{ name: 'Sec-Fetch-Dest', value: 'futur' }]).sensDest, null);
+egal('Fetch Metadata : rien sans les en-tetes', fm.lireFetchMetadata([{ name: 'Accept', value: '*/*' }]), null);
+
+/* ========================== 15. Clear-Site-Data =========================== */
+const csd = await import('../ui/lib/clear-site-data.js');
+const efface = csd.lireClearSiteData([{ name: 'Clear-Site-Data', value: '"cache", "cookies", cookies, "inconnu"' }], 'https://a.test/logout');
+egal('Clear-Site-Data : types reconnus', efface.types.join(','), 'cache,cookies');
+egal('Clear-Site-Data : hors grammaire et inconnu dits', efface.faits.map(f => f.cle).join(','), 'nonQuote,inconnu');
+verifier('Clear-Site-Data : sans https, le navigateur ne le traite pas',
+  csd.lireClearSiteData([{ name: 'Clear-Site-Data', value: '"*"' }], 'http://a.test/').faits.some(f => f.cle === 'nonSur'));
+egal('Clear-Site-Data : les six valeurs de la specification', Object.keys(csd.TYPES_CSD).sort().join(','), '*,cache,clientHints,cookies,executionContexts,storage');
+
+/* ========================= 16. Cartes de source =========================== */
+const sm = await import('../ui/lib/source-map.js');
+const js = sm.lireSourceMap({ texte: 'console.log(1);\n//# sourceMappingURL=app.js.map\n', type: 'application/javascript', url: 'https://cdn.test/js/app.js' });
+egal('ECMA-426 : commentaire JS, adresse resolue sur le fichier', js.adresse + ' ' + js.source, 'https://cdn.test/js/app.js.map commentaire');
+const prime = sm.lireSourceMap({ entetes: [{ name: 'SourceMap', value: '/maps/app.map' }], texte: '//# sourceMappingURL=autre.map', type: 'text/javascript', url: 'https://cdn.test/js/app.js' });
+egal('ECMA-426 : l en-tete SourceMap l emporte sur le commentaire', prime.adresse, 'https://cdn.test/maps/app.map');
+verifier('ECMA-426 : X-SourceMap dit deprecie',
+  sm.lireSourceMap({ entetes: [{ name: 'X-SourceMap', value: 'a.map' }], url: 'https://cdn.test/a.js' }).faits.some(f => f.cle === 'enteteDeprecie'));
+verifier('ECMA-426 : la forme //@ dite ancienne',
+  sm.lireSourceMap({ texte: 'x\n//@ sourceMappingURL=a.map', type: 'application/javascript', url: 'https://cdn.test/a.js' }).faits.some(f => f.cle === 'formeAncienne'));
+const css = sm.lireSourceMap({ texte: 'a{}\n/*# sourceMappingURL=style.css.map */', type: 'text/css', url: 'https://cdn.test/s/style.css' });
+egal('ECMA-426 : commentaire CSS', css.adresse, 'https://cdn.test/s/style.css.map');
+verifier('ECMA-426 : carte integree en URI data:',
+  sm.lireSourceMap({ texte: '//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozfQ==', type: 'application/javascript' }).integree);
+egal('ECMA-426 : sans annonce, rien', sm.lireSourceMap({ texte: 'console.log(1)', type: 'application/javascript' }), null);
+
 bilan('Protocoles et formats d API');
