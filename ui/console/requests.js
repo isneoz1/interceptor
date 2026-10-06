@@ -30,6 +30,7 @@ const FACETS = [
   { key: 'asset',  label: 'Ressources', test: r => ['image', 'media', 'font', 'stylesheet', 'script', 'imageset'].includes(r.type) },
   { key: 'flux',   label: 'Flux',       test: r => r.type === 'websocket' || r.wsFrames > 0 || r.sseEvents > 0 },
   { key: 'gql',    label: 'GraphQL',    test: r => !!r.gql },
+  { key: 'rpc',    label: 'RPC',        test: r => !!r.rpc },
   { key: 'err',    label: 'Erreurs',    test: r => !!r.error || r.statusCode >= 400 },
   { key: 'risk',   label: 'Alertes',    test: r => r.risk && r.risk !== 'none' && r.risk !== 'info', warn: true },
   { key: 'third',  label: 'Tiers',      test: r => r.thirdParty },
@@ -315,7 +316,8 @@ export function renderRows(depuisDefilement = false) {
     span: Math.max(1, lastTime - firstTime),
     /* Le chemin d un appel GraphQL porte le nom de son operation, sauf si la
        colonne GraphQL l affiche deja : jamais deux fois la meme chose. */
-    gqlDansChemin: !columns.includes('graphql')
+    gqlDansChemin: !columns.includes('graphql'),
+    rpcDansChemin: !columns.includes('rpc')
   };
   const out = frag();
 

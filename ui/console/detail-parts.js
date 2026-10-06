@@ -25,6 +25,10 @@ import { analyserMultipart } from '../lib/multipart.js';
 import * as securite from './securite-detail.js';
 import * as preuves from './preuves-detail.js';
 import { graphqlRequete, graphqlReponse } from './graphql-detail.js';
+import { rpcRequete, rpcReponse } from './rpc-detail.js';
+import { problemeReponse } from './probleme-detail.js';
+import { securityTxtReponse } from './security-txt-detail.js';
+import { controlesCorps } from './corps-detail.js';
 import { rapportsRequete, collecteRapports } from './rapports-detail.js';
 
 /** Rend toutes les cles d un objet, y compris celles qu on n a pas prevues. */
@@ -463,7 +467,7 @@ function serverTiming(rec) {
  * sur le corps entier. */
 const LIMITE_AFFICHAGE = 200000;
 
-function bodyViewer(body, title, mimeHint) {
+function bodyViewer(body, title, mimeHint, controles = {}) {
   const box = frag();
   if (!body) {
     box.appendChild(sec(title));
@@ -487,6 +491,9 @@ function bodyViewer(body, title, mimeHint) {
   add(box, kv('Octets conserves', body.stored != null ? bytes(body.stored) : null));
   add(box, kv('Fichier joint', body.hasFileUpload ? 'oui — le contenu des fichiers n est pas lisible par une extension' : null));
   add(box, kv('Remarque', body.note));
+  /* Le contenu contredit-il le type annonce ? Et, pour une reponse, ce que
+     gzip aurait fait d un texte servi sans compression, mesure. */
+  box.appendChild(controlesCorps(body, mimeHint, controles.entetes, { mesurer: !!controles.mesurer }));
 
   if (body.formData) {
     box.appendChild(sec('Champs de formulaire', Object.keys(body.formData).length));
@@ -697,6 +704,7 @@ export function requestBody(rec) {
   box.appendChild(preuves.dnsQuestion(rec));
   box.appendChild(graphqlRequete(rec));
   box.appendChild(rapportsRequete(rec));
+  box.appendChild(rpcRequete(rec));
   box.appendChild(bodyViewer(rec.requestBody, 'Corps envoye', rec.requestBody && rec.requestBody.contentType));
   return box;
 }
@@ -707,7 +715,10 @@ export function responseBody(rec) {
   box.appendChild(preuves.webauthnOptions(rec));
   box.appendChild(preuves.dnsReponse(rec));
   box.appendChild(graphqlReponse(rec));
-  box.appendChild(bodyViewer(rec.responseBody, 'Corps recu', rec.mime));
+  box.appendChild(rpcReponse(rec));
+  box.appendChild(problemeReponse(rec));
+  box.appendChild(securityTxtReponse(rec));
+  box.appendChild(bodyViewer(rec.responseBody, 'Corps recu', rec.mime, { entetes: rec.responseHeaders, mesurer: true }));
   return box;
 }
 

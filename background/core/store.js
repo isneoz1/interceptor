@@ -3,6 +3,7 @@ import { Emitter } from '../lib/emitter.js';
 import { config } from './config.js';
 import { hostOf, pathOf, schemeOf, throttleFlush } from '../lib/util.js';
 import { lireRequeteGraphql, resumeGraphql } from '../../ui/lib/graphql-http.js';
+import { lireAppelRpc, resumeRpc } from '../../ui/lib/rpc-http.js';
 
 let SEQ = 0;
 
@@ -238,6 +239,21 @@ export function graphqlDe(rec) {
   return lu;
 }
 
+/* L appel JSON-RPC ou SOAP d un enregistrement, lu une fois par corps. */
+const lecturesRpc = new WeakMap();
+
+/** L appel RPC (JSON-RPC 2.0, SOAP) que porte un enregistrement, ou null. */
+export function rpcDe(rec) {
+  const corps = rec.requestBody || null;
+  const deja = lecturesRpc.get(rec);
+  if (deja && deja.corps === corps) return deja.lu;
+  let lu = null;
+  try { lu = graphqlDe(rec) ? null : lireAppelRpc(corps, rec.requestHeaders); }
+  catch { lu = null; }
+  lecturesRpc.set(rec, { corps, lu });
+  return lu;
+}
+
 /** Les noms d entetes, en minuscules, separes par un saut de ligne. */
 function nomsEntetes(liste) {
   if (!Array.isArray(liste) || !liste.length) return '';
@@ -300,6 +316,8 @@ export function summarize(rec) {
     /* L operation GraphQL executee : sur le reseau, toutes ces requetes se
        ressemblent (POST /graphql) ; c est son nom qui les distingue. */
     gql: resumeGraphql(graphqlDe(rec)),
+    /* De meme pour JSON-RPC et SOAP : la methode, ou l operation. */
+    rpc: resumeRpc(rpcDe(rec)),
     /* Pour les filtres du moniteur reseau de Firefox (has-response-header:,
        set-cookie-name:...) : les NOMS d entetes seulement, jamais leurs
        valeurs, et les Set-Cookie de la reponse. Un saut de ligne ne peut

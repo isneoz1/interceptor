@@ -193,6 +193,16 @@ $required = @(
   'ui/lib/schema-json.js',
   'ui/lib/dict-en-openapi.js',
   'background/export/openapi.js',
+  'ui/lib/xml-lecture.js',
+  'ui/lib/rpc-http.js',
+  'ui/console/rpc-detail.js',
+  'ui/lib/probleme-http.js',
+  'ui/console/probleme-detail.js',
+  'ui/lib/corps-controles.js',
+  'ui/console/corps-detail.js',
+  'ui/lib/dict-en-api.js',
+  'ui/lib/security-txt.js',
+  'ui/console/security-txt-detail.js',
   'icons/icon.svg'
 )
 $missing = $required | Where-Object { -not (Test-Path $_) }
@@ -248,8 +258,8 @@ if ($node) {
        echec = 'Un outil de securite affirme ce qui n est pas prouve' },
     @{ titre = 'Signatures, WebAuthn et DNS';  fichier = 'tests/decodeurs.test.mjs';
        echec = 'Une signature, une ceremonie WebAuthn ou un message DNS est mal lu' },
-    @{ titre = 'GraphQL, rapports et OpenAPI'; fichier = 'tests/protocoles.test.mjs';
-       echec = 'Une lecture GraphQL, un rapport du navigateur ou une description OpenAPI est faux' }
+    @{ titre = 'Protocoles et formats d API'; fichier = 'tests/protocoles.test.mjs';
+       echec = 'Une lecture d API (GraphQL, JSON-RPC, SOAP, RFC 9457), un rapport ou une description OpenAPI est faux' }
   )
 
   $totalAssertions = 0

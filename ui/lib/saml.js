@@ -17,6 +17,7 @@
  */
 
 import { xmlJoli } from './codecs-format.js';
+import { desechapper, lireAttributs, morceauxXml, lireBalise } from './xml-lecture.js';
 
 export const FAITS_SAML = {
   signeReponse: 'la reponse elle-meme est signee (Signature dans Response)',
@@ -30,120 +31,9 @@ export const FAITS_SAML = {
   nonCompresse: 'le message n est pas compresse, alors que la liaison Redirect exige DEFLATE (SAML 2.0 Bindings, 3.4.4.1)'
 };
 
-const ENTITES = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'" };
-/* Un point de code hors d Unicode reste ecrit tel quel : il ne rend pas tout
-   le message illisible. En une passe, pour que « &amp;#65; » redonne « &#65; ». */
-const point = (brut, code) => (code >= 0 && code <= 0x10ffff ? String.fromCodePoint(code) : brut);
-const desechapper = s => String(s).replace(/&(?:(amp|lt|gt|quot|apos)|#(\d{1,8})|#x([0-9a-fA-F]{1,8}));/g,
-  (brut, nomme, dec, hex) => nomme ? ENTITES[nomme]
-    : point(brut, dec !== undefined ? Number(dec) : parseInt(hex, 16)));
-
 /* Un message SAML vient du reseau : il peut etre hostile. Au-dela, il n est
    pas lu — un vrai message pese quelques dizaines de kilo-octets. */
 const TAILLE_MAX = 4 * 1024 * 1024;
-
-const blanc = c => c === ' ' || c === '\n' || c === '\r' || c === '\t';
-
-/* Attributs d une balise, lus caractere par caractere. Une expression
-   reguliere pouvait revenir en arriere sur un long nom sans « = » : le temps
-   croissait comme le carre de la longueur. */
-function lireAttributs(s) {
-  const out = {};
-  const n = s.length;
-  let i = 0;
-  while (i < n) {
-    while (i < n && blanc(s[i])) i++;
-    const debut = i;
-    while (i < n && s[i] !== '=' && !blanc(s[i]) && s[i] !== '/') i++;
-    const brut = s.slice(debut, i);
-    while (i < n && blanc(s[i])) i++;
-    if (s[i] !== '=') { if (i === debut) i++; continue; }
-    i++;
-    while (i < n && blanc(s[i])) i++;
-    const guillemet = s[i];
-    if (guillemet !== '"' && guillemet !== "'") continue;
-    const fin = s.indexOf(guillemet, i + 1);
-    if (fin < 0) break;
-    const valeur = s.slice(i + 1, fin);
-    i = fin + 1;
-    if (!brut) continue;
-    const nom = brut.includes(':') && !brut.startsWith('xmlns') ? brut.split(':').pop() : brut;
-    out[nom] = desechapper(valeur);
-  }
-  return out;
-}
-
-/**
- * Decoupe le XML en textes et en balises, en une seule lecture.
- *
- * L ancienne expression reguliere relisait tout le reste du texte a chaque
- * « < » sans « > » : 110 Ko hostiles figeaient l onglet deux secondes et
- * demie, et le temps quadruplait a chaque doublement. Ici chaque caractere est
- * lu une fois, et un « > » ecrit dans une valeur d attribut entre guillemets —
- * que XML n oblige pas a echapper — ne coupe plus la balise.
- */
-function* morceauxXml(texte) {
-  const n = texte.length;
-  let i = 0;
-  while (i < n) {
-    const lt = texte.indexOf('<', i);
-    if (lt < 0) { yield { texte: texte.slice(i) }; return; }
-    if (lt > i) yield { texte: texte.slice(i, lt) };
-    if (texte.startsWith('<!--', lt)) {
-      const fin = texte.indexOf('-->', lt + 4);
-      if (fin < 0) throw new Error('commentaire XML non ferme');
-      i = fin + 3;
-      continue;
-    }
-    if (texte.startsWith('<![CDATA[', lt)) {
-      const fin = texte.indexOf(']]>', lt + 9);
-      if (fin < 0) throw new Error('section CDATA non fermee');
-      yield { texte: texte.slice(lt + 9, fin), brut: true };
-      i = fin + 3;
-      continue;
-    }
-    if (texte.startsWith('<?', lt)) {
-      const fin = texte.indexOf('?>', lt + 2);
-      if (fin < 0) throw new Error('instruction XML non fermee');
-      i = fin + 2;
-      continue;
-    }
-    if (texte.startsWith('<!', lt)) {
-      const fin = texte.indexOf('>', lt + 2);
-      if (fin < 0) throw new Error('declaration XML non fermee');
-      i = fin + 1;
-      continue;
-    }
-    let j = lt + 1;
-    let guillemet = null;
-    for (; j < n; j++) {
-      const c = texte[j];
-      if (guillemet) { if (c === guillemet) guillemet = null; }
-      else if (c === '"' || c === "'") guillemet = c;
-      else if (c === '>') break;
-    }
-    if (j >= n) throw new Error('balise XML non fermee');
-    yield { balise: texte.slice(lt + 1, j) };
-    i = j + 1;
-  }
-}
-
-const NOM_XML = /^[A-Za-z_][\w.-]*$/;
-
-/* « /saml:Issuer », « ds:Signature Id="x" / » : sens, nom local, attributs. */
-function lireBalise(balise) {
-  const fermante = balise[0] === '/';
-  let k = fermante ? 1 : 0;
-  const debut = k;
-  while (k < balise.length && !blanc(balise[k]) && balise[k] !== '/') k++;
-  const qualifie = balise.slice(debut, k);
-  const deux = qualifie.indexOf(':');
-  const nom = deux < 0 ? qualifie : qualifie.slice(deux + 1);
-  if (!NOM_XML.test(nom) || (deux >= 0 && !NOM_XML.test(qualifie.slice(0, deux)))) return null;
-  const reste = balise.slice(k);
-  const autofermante = !fermante && reste.trimEnd().endsWith('/');
-  return { fermante, nom, attrs: autofermante ? reste.trimEnd().slice(0, -1) : reste, autofermante };
-}
 
 /**
  * Lit un message SAML (texte XML).

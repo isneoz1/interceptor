@@ -17,6 +17,7 @@
  */
 
 import { texteGraphql } from './graphql-http.js';
+import { texteRpc } from './rpc-http.js';
 
 export const FIELDS = {
   method:    { kind: 'text', get: r => r.method,               help: 'verbe HTTP' },
@@ -26,6 +27,7 @@ export const FIELDS = {
   path:      { kind: 'text', get: r => r.path,                 help: 'chemin et parametres' },
   url:       { kind: 'text', get: r => r.url,                  help: 'URL complete' },
   gql:       { kind: 'text', get: r => texteGraphql(r.gql),     help: 'operation GraphQL (type et nom)' },
+  rpc:       { kind: 'text', get: r => texteRpc(r.rpc),         help: 'methode JSON-RPC ou operation SOAP' },
   mime:      { kind: 'text', get: r => r.mime,                 help: 'type de contenu' },
   scheme:    { kind: 'text', get: r => r.scheme,               help: 'protocole (http, https, ws...)' },
   proto:     { kind: 'text', get: r => r.protocol,             help: 'protocole reel (h2, h3...)' },

@@ -127,7 +127,11 @@ export const HELP_SECTIONS = [
     table: [
       ['GraphQL', 'The operation that runs (GraphQL column, gql: search), the variables, batches, the Apollo persisted query with its SHA-256 recomputed, and the real verdict of the response: complete, partial, execution error or request error.'],
       ['Browser reports', 'CSP violations, network errors (NEL), deprecated APIs, interventions: the POSTs the browser sends on its own, read field by field (tag:rapport-navigateur), and the Reporting-Endpoints, Report-To and NEL headers that ask for them.'],
+      ['JSON-RPC and SOAP', 'The method or operation next to the path (rpc: search), the parameters, the results, the errors with the meaning of their code, the SOAP fault — and whether the HTTP status agrees with the body.'],
       ['gRPC-Web', 'The frames, the protobuf they carry, and the grpc-status of the trailers: it alone says whether the call succeeded.'],
+      ['HTTP problems', 'An error described as application/problem+json (RFC 9457): type, title, detail, and the status member compared with the status actually served.'],
+      ['Body checks', 'A body announced as JSON that is an HTML page, an image announced as PNG that is a JPEG; and, for text served without compression, what gzip would have made of it, measured on the bytes received.'],
+      ['security.txt', 'The file where a site says how to report a vulnerability (RFC 9116): contacts, expiry, policy, signature, and what is missing (tag:security-txt).'],
       ['Signatures and passkeys', 'HTTP message signatures (RFC 9421) rebuilt and verified, WebAuthn registrations and sign-ins, DNS over HTTPS.'],
       ['Security', 'OAuth 2.0 and OpenID Connect, SAML, content digests, response protections, a CSP derived from what actually loaded.']
     ]

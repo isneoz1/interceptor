@@ -129,7 +129,11 @@ const SECTIONS = [
     table: [
       ['GraphQL', 'L operation executee (colonne GraphQL, recherche gql:), les variables, les lots, la requete persistee d Apollo dont le SHA-256 est recalcule, et le vrai verdict de la reponse : complete, partielle, erreur d execution ou erreur de requete.'],
       ['Rapports du navigateur', 'Violations de CSP, erreurs reseau (NEL), API depreciees, interventions : les POST que le navigateur envoie de lui-meme, lus champ par champ (tag:rapport-navigateur), et les en-tetes Reporting-Endpoints, Report-To et NEL qui les demandent.'],
+      ['JSON-RPC et SOAP', 'La methode ou l operation a cote du chemin (recherche rpc:), les parametres, les resultats, les erreurs avec le sens de leur code, la faute SOAP — et l accord du statut HTTP avec le corps.'],
       ['gRPC-Web', 'Les cadres, le protobuf qu ils portent, et le grpc-status des trailers : lui seul dit si l appel a reussi.'],
+      ['Problemes HTTP', 'Une erreur decrite en application/problem+json (RFC 9457) : type, titre, detail, et le membre status confronte au statut reellement servi.'],
+      ['Controles du corps', 'Un corps annonce JSON qui est une page HTML, une image annoncee PNG qui est un JPEG ; et, pour un texte servi sans compression, ce que gzip en aurait fait, mesure sur les octets recus.'],
+      ['security.txt', 'Le fichier ou un site dit comment lui signaler une faille (RFC 9116) : contacts, expiration, politique, signature, et ce qui manque (tag:security-txt).'],
       ['Signatures et cles d acces', 'Signatures de messages HTTP (RFC 9421) reconstruites et verifiees, inscriptions et connexions WebAuthn, DNS par HTTPS.'],
       ['Securite', 'OAuth 2.0 et OpenID Connect, SAML, empreintes de contenu, protections de la reponse, CSP deduite des chargements reels.']
     ]

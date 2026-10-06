@@ -13,6 +13,7 @@ import { store } from './store.js';
 import { config } from './config.js';
 import { appliquerRegles } from './analyzer-regles.js';
 import { constaterReflexions, constaterRedirections, constaterGraphql, verifierNonces } from './analyzer-faits.js';
+import { emplacementSecurityTxt } from '../../ui/lib/security-txt.js';
 
 export const SEVERITY = { critical: 4, high: 3, medium: 2, low: 1, info: 0 };
 const LEVELS = ['critical', 'high', 'medium', 'low', 'info'];
@@ -93,6 +94,7 @@ export function analyze(rec, { force = false } = {}) {
   if (rec.replay) tags.add('rejoue');
   if (rec.rulesApplied.length) tags.add('regle-appliquee');
   if (rec.sources.includes('page') && !rec.sources.includes('webRequest')) tags.add('js-only');
+  if (emplacementSecurityTxt(rec.finalUrl || rec.url)) tags.add('security-txt');
   /* Un rapport que le navigateur envoie de lui-meme (CSP, NEL, API
      depreciee) : il se retrouve par tag:rapport-navigateur. */
   if (/^application\/(reports\+json|csp-report)\b/i.test(String(reqH['content-type'] || ''))) tags.add('rapport-navigateur');

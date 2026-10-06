@@ -407,6 +407,21 @@ for (const gabarit of Object.values(FAITS_RAPPORTS)) exigerTraduction('fait sur 
 for (const [, sens] of Object.values(TYPES_NEL)) exigerTraduction('sens d une erreur NEL', sens);
 for (const champs of Object.values(CHAMPS_RAPPORTS)) for (const [, libelle] of champs) exigerTraduction('champ de rapport', libelle);
 for (const nom of Object.values(NOMS_TYPES)) exigerTraduction('type de rapport', nom);
+const { FAITS_RPC } = await import('../ui/lib/rpc-http.js');
+const { FAITS_PROBLEME } = await import('../ui/lib/probleme-http.js');
+const { FAITS_CORPS } = await import('../ui/lib/corps-controles.js');
+for (const gabarit of Object.values(FAITS_RPC)) exigerTraduction('fait JSON-RPC ou SOAP', gabarit);
+for (const gabarit of Object.values(FAITS_PROBLEME)) exigerTraduction('fait RFC 9457', gabarit);
+for (const gabarit of Object.values(FAITS_CORPS)) exigerTraduction('fait sur un corps', gabarit);
+const { FAITS_SECURITY_TXT } = await import('../ui/lib/security-txt.js');
+for (const gabarit of Object.values(FAITS_SECURITY_TXT)) exigerTraduction('fait security.txt', gabarit);
+/* Les colonnes du tableau : libelle et bulle passent par t() depuis la table,
+   ou la lecture des appels ne les voit pas. */
+const { COLUMNS: COLONNES_TABLE } = await import('../ui/lib/columns.js');
+for (const colonne of Object.values(COLONNES_TABLE)) {
+  exigerTraduction('libelle de colonne', colonne.label);
+  if (colonne.title) exigerTraduction('titre de colonne', colonne.title);
+}
 
 /* Les lectures de securite produisent des gabarits traduits a l affichage :
    les faits OAuth et SAML, les limites de la CSP deduite, les raisons d une

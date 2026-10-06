@@ -11,7 +11,20 @@
  *      persistee contre l exemple publie par Apollo ; les quatre formes de
  *      transport, les lots, et les faits dits sur la reponse ;
  *   2. le noyau : l operation dans le resume d une ligne, les faits de
- *      l analyseur (mutation executee en GET, schema livre).
+ *      l analyseur (mutation executee en GET, schema livre) ;
+ *   3. les rapports du navigateur et leur collecte, avec les noms de champs
+ *      des specifications du W3C et du WICG ;
+ *   4. l inference de schemas JSON et la description OpenAPI ;
+ *
+ * et ce que la 5.1 ajoute :
+ *
+ *   5. JSON-RPC 2.0 sur HTTP, contre les echanges de la specification (§7)
+ *      recopies tels quels ;
+ *   6. SOAP 1.1 et 1.2, contre les exemples de la Note SOAP 1.1 et du Primer
+ *      SOAP 1.2 ;
+ *   7. les problemes HTTP, contre l exemple de la RFC 9457 ;
+ *   8. les controles d un corps : type annonce contre contenu, et la
+ *      compression mesuree, dont le gzip se decompresse avec node:zlib.
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -440,4 +453,221 @@ egal('OpenAPI : sans reponse observee, il le dit', doc.paths['/v1/slow'].post.re
 verifier('OpenAPI : aucune valeur capturee recopiee', !JSON.stringify(doc).includes('Bearer x') && !JSON.stringify(doc).includes('"id":5'));
 egal('OpenAPI : rien sans appel d API', oa.buildOpenApi([appels[3]]).document, null);
 
-bilan('GraphQL, rapports et OpenAPI');
+/* ===================== 8. JSON-RPC 2.0 sur HTTP ========================== */
+/* Les echanges de la specification (jsonrpc.org, §7), recopies tels quels. */
+const rpc = await import('../ui/lib/rpc-http.js');
+const appelPos = rpc.lireAppelJsonRpc('{"jsonrpc": "2.0", "method": "subtract", "params": [42, 23], "id": 1}');
+egal('JSON-RPC §7 : appel a parametres positionnels', appelPos.appels[0].methode + ' ' + JSON.stringify(appelPos.appels[0].params) + ' #' + appelPos.appels[0].id, 'subtract [42,23] #1');
+const repPos = rpc.lireReponseJsonRpc('{"jsonrpc": "2.0", "result": 19, "id": 1}');
+egal('JSON-RPC §7 : resultat', repPos.reponses[0].resultat, 19);
+egal('JSON-RPC §7 : un echange conforme ne dit rien', rpc.faitsJsonRpc(appelPos, repPos, { statut: 200 }).length, 0);
+verifier('JSON-RPC §7 : une notification n a pas d id',
+  rpc.lireAppelJsonRpc('{"jsonrpc": "2.0", "method": "update", "params": [1,2,3,4,5]}').appels[0].notification);
+const inconnue = rpc.lireReponseJsonRpc('{"jsonrpc": "2.0", "error": {"code": -32601, "message": "Method not found"}, "id": "1"}');
+egal('JSON-RPC §7 : methode inexistante, sens du code', inconnue.reponses[0].erreur.sens, 'Method not found');
+egal('JSON-RPC §7 : un JSON illisible n est pas un appel', rpc.lireAppelJsonRpc('{"jsonrpc": "2.0", "method": "foobar, "params": "bar", "baz]'), null);
+egal('JSON-RPC §7 : sa reponse se lit', rpc.lireReponseJsonRpc('{"jsonrpc": "2.0", "error": {"code": -32700, "message": "Parse error"}, "id": null}').reponses[0].erreur.sens, 'Parse error');
+const lotSpec = rpc.lireAppelJsonRpc(`[
+        {"jsonrpc": "2.0", "method": "sum", "params": [1,2,4], "id": "1"},
+        {"jsonrpc": "2.0", "method": "notify_hello", "params": [7]},
+        {"jsonrpc": "2.0", "method": "subtract", "params": [42,23], "id": "2"},
+        {"foo": "boo"},
+        {"jsonrpc": "2.0", "method": "foo.get", "params": {"name": "myself"}, "id": "5"},
+        {"jsonrpc": "2.0", "method": "get_data", "id": "9"}
+    ]`);
+const lotReponse = rpc.lireReponseJsonRpc(`[
+        {"jsonrpc": "2.0", "result": 7, "id": "1"},
+        {"jsonrpc": "2.0", "result": 19, "id": "2"},
+        {"jsonrpc": "2.0", "error": {"code": -32600, "message": "Invalid Request"}, "id": null},
+        {"jsonrpc": "2.0", "error": {"code": -32601, "message": "Method not found"}, "id": "5"},
+        {"jsonrpc": "2.0", "result": ["hello", 5], "id": "9"}
+    ]`);
+const faitsLot = rpc.faitsJsonRpc(lotSpec, lotReponse, { statut: 200 });
+egal('JSON-RPC §7 : lot, l element invalide est compte', faitsLot.filter(f => f.cle === 'elementsInvalides').map(f => f.valeurs.n).join(), '1');
+verifier('JSON-RPC §7 : lot, chaque requete a sa reponse', !faitsLot.some(f => f.cle === 'sansReponse'));
+verifier('JSON-RPC §7 : lot, deux erreurs malgre le statut 200', faitsLot.some(f => f.cle === 'statut2xxErreurs' && f.valeurs.n === 2));
+const amputee = rpc.lireReponseJsonRpc('[{"jsonrpc": "2.0", "result": 7, "id": "1"}]');
+verifier('JSON-RPC §6 : une requete sans reponse est nommee',
+  rpc.faitsJsonRpc(lotSpec, amputee).some(f => f.cle === 'sansReponse' && f.valeurs.id === '"2"'));
+const notifications = rpc.lireAppelJsonRpc('[{"jsonrpc": "2.0", "method": "notify_sum", "params": [1,2,4]}, {"jsonrpc": "2.0", "method": "notify_hello", "params": [7]}]');
+verifier('JSON-RPC §4.1 : un serveur qui repond a des notifications est signale',
+  rpc.faitsJsonRpc(notifications, rpc.lireReponseJsonRpc('{"jsonrpc": "2.0", "result": 7, "id": null}')).some(f => f.cle === 'notificationRepondue'));
+verifier('JSON-RPC §6 : un tableau vide en reponse a un lot est signale',
+  rpc.faitsJsonRpc(lotSpec, rpc.lireReponseJsonRpc('[]')).some(f => f.cle === 'lotVide'));
+verifier('JSON-RPC : un id de reponse different est signale',
+  rpc.faitsJsonRpc(appelPos, rpc.lireReponseJsonRpc('{"jsonrpc": "2.0", "result": 19, "id": 2}')).some(f => f.cle === 'idInattendu'));
+verifier('JSON-RPC §5 : result et error ensemble font une reponse invalide',
+  rpc.lireReponseJsonRpc('{"jsonrpc": "2.0", "result": 1, "error": {"code": 1, "message": "x"}, "id": 1}') === null);
+egal('JSON-RPC : la version 1.0 n est pas lue', rpc.lireAppelJsonRpc('{"jsonrpc": "1.0", "method": "getinfo", "id": 1}'), null);
+egal('JSON-RPC : resume d un lot', rpc.texteRpc(rpc.resumeRpc(lotSpec)), 'JSON-RPC sum, notify_hello, subtract +2');
+
+/* ============================== 9. SOAP ================================== */
+/* Exemples de SOAP 1.1 (Note du W3C, 2000) et du Primer SOAP 1.2 (§2.3). */
+const SOAP11_APPEL = `<SOAP-ENV:Envelope
+  xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
+  SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+   <SOAP-ENV:Body>
+       <m:GetLastTradePrice xmlns:m="Some-URI">
+           <symbol>DIS</symbol>
+       </m:GetLastTradePrice>
+   </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>`;
+const SOAP11_FAUTE = `<SOAP-ENV:Envelope
+  xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+   <SOAP-ENV:Body>
+       <SOAP-ENV:Fault>
+           <faultcode>SOAP-ENV:MustUnderstand</faultcode>
+           <faultstring>SOAP Must Understand Error</faultstring>
+       </SOAP-ENV:Fault>
+   </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>`;
+const SOAP12_FAUTE = `<?xml version='1.0' ?>
+<env:Envelope xmlns:env="http://www.w3.org/2003/05/soap-envelope"
+            xmlns:rpc='http://www.w3.org/2003/05/soap-rpc'>
+  <env:Body>
+   <env:Fault>
+     <env:Code>
+       <env:Value>env:Sender</env:Value>
+       <env:Subcode>
+        <env:Value>rpc:BadArguments</env:Value>
+       </env:Subcode>
+     </env:Code>
+     <env:Reason>
+      <env:Text xml:lang="en-US">Processing error</env:Text>
+      <env:Text xml:lang="cs">Chyba zpracování</env:Text>
+     </env:Reason>
+     <env:Detail>
+      <e:myFaultDetails
+        xmlns:e="http://travelcompany.example.org/faults">
+        <e:message>Name does not match card number</e:message>
+        <e:errorcode>999</e:errorcode>
+      </e:myFaultDetails>
+     </env:Detail>
+   </env:Fault>
+ </env:Body>
+</env:Envelope>`;
+const appelSoap = rpc.lireSoap(SOAP11_APPEL);
+egal('SOAP 1.1 : version lue a l espace de noms', appelSoap.version, '1.1');
+egal('SOAP 1.1 : operation et son espace de noms', appelSoap.operation.nom + ' ' + appelSoap.operation.espace, 'GetLastTradePrice Some-URI');
+const faute11 = rpc.lireSoap(SOAP11_FAUTE);
+egal('SOAP 1.1 : faute lue', faute11.faute.code + ' | ' + faute11.faute.message, 'SOAP-ENV:MustUnderstand | SOAP Must Understand Error');
+egal('SOAP 1.1 : faute en 500, rien a redire', rpc.faitsSoap(appelSoap, faute11, { statut: 500 }).length, 0);
+const cles200 = rpc.faitsSoap(appelSoap, faute11, { statut: 200 }).map(f => f.cle).join();
+egal('SOAP 1.1 §6.2 : faute en 200, deux faits', cles200, 'soapStatut2xx,soap11Statut');
+const faute12 = rpc.lireSoap(SOAP12_FAUTE);
+egal('SOAP 1.2 : version', faute12.version, '1.2');
+egal('SOAP 1.2 : code, sous-code, premiere raison', [faute12.faute.code, faute12.faute.sousCode, faute12.faute.message].join(' | '),
+  'env:Sender | rpc:BadArguments | Processing error');
+egal('SOAP 1.2 : le detail garde son texte', faute12.faute.detail, 'Name does not match card number 999');
+verifier('SOAP 1.2 : aucune regle de statut inventee', !rpc.faitsSoap(null, faute12, { statut: 400 }).some(f => f.cle === 'soap11Statut'));
+egal('SOAP : un autre espace de noms n est pas SOAP', rpc.lireSoap('<Envelope xmlns="urn:autre"><Body/></Envelope>'), null);
+verifier('SOAP : une enveloppe coupee est lue en partie et le dit', rpc.lireSoap(SOAP11_APPEL.slice(0, 160)).incomplet);
+egal('SOAP 1.1 : SOAPAction lue sans guillemets', JSON.stringify(rpc.actionSoap([{ name: 'SOAPAction', value: '"Some-URI#GetLastTradePrice"' }])),
+  '{"source":"SOAPAction","valeur":"Some-URI#GetLastTradePrice"}');
+egal('SOAP 1.2 : action lue dans le type', rpc.actionSoap([], 'application/soap+xml; charset=utf-8; action="urn:Quote"').valeur, 'urn:Quote');
+verifier('SOAP 1.1 : SOAPAction vide, son sens est dit',
+  rpc.faitsSoap(appelSoap, null, { action: rpc.actionSoap([{ name: 'SOAPAction', value: '""' }]) }).some(f => f.cle === 'soapActionVide'));
+const ligneSoap = enregistrementExemple({ url: 'https://api.test/soap', finalUrl: 'https://api.test/soap',
+  requestBody: { kind: 'raw', text: SOAP11_APPEL, size: SOAP11_APPEL.length, contentType: 'text/xml; charset="utf-8"' } });
+egal('noyau : l operation SOAP figure dans le resume de la ligne', rpc.texteRpc(summarize(ligneSoap).rpc), 'SOAP 1.1 GetLastTradePrice');
+const ligneRpc = enregistrementExemple({ url: 'https://api.test/rpc', finalUrl: 'https://api.test/rpc',
+  requestBody: { kind: 'raw', text: '{"jsonrpc": "2.0", "method": "subtract", "params": [42, 23], "id": 1}', size: 70 } });
+egal('noyau : la methode JSON-RPC figure dans le resume de la ligne', rpc.texteRpc(summarize(ligneRpc).rpc), 'JSON-RPC subtract');
+egal('noyau : une ligne ordinaire n a pas d appel RPC', summarize(enregistrementExemple({})).rpc, null);
+
+/* ======================= 10. Probleme HTTP (RFC 9457) ===================== */
+const pb = await import('../ui/lib/probleme-http.js');
+const HORS_CREDIT = `{
+ "type": "https://example.com/probs/out-of-credit",
+ "title": "You do not have enough credit.",
+ "detail": "Your current balance is 30, but that costs 50.",
+ "instance": "/account/12345/msgs/abc",
+ "balance": 30,
+ "accounts": ["/account/12345",
+              "/account/67890"]
+}`;
+const p1 = pb.lireProbleme(HORS_CREDIT, 'application/problem+json');
+egal('RFC 9457 §3 : l exemple de la RFC se lit', p1.type + ' | ' + p1.title, 'https://example.com/probs/out-of-credit | You do not have enough credit.');
+egal('RFC 9457 : les membres d extension sont gardes a part', Object.keys(p1.extensions).join(','), 'balance,accounts');
+egal('RFC 9457 : sans status ni type relatif, rien a redire', pb.faitsProbleme(p1, { statut: 403, url: 'https://example.com/account/12345/msgs' }).length, 0);
+egal('RFC 9457 : un autre type n est pas lu', pb.lireProbleme(HORS_CREDIT, 'application/json'), null);
+const p2 = pb.lireProbleme('{"title":"Not Found","status":404}', 'application/problem+json; charset=utf-8');
+const cles2 = pb.faitsProbleme(p2, { statut: 200 }).map(f => f.cle).join();
+egal('RFC 9457 §3.1.1, §4.2.1, §3.1.2 : type absent, about:blank, status contredit', cles2, 'typeAbsent,aboutBlank,statutDifferent');
+egal('RFC 9457 §4.2.1 : about:blank et la phrase du statut', pb.faitsProbleme(p2, { statut: 404 }).find(f => f.cle === 'aboutBlank').valeurs.phrase, 'Not Found');
+const p3 = pb.lireProbleme('{"type":"/probs/x","status":"404"}', 'application/problem+json');
+egal('RFC 9457 §3.1 : un status qui n est pas un nombre est ignore', p3.ignores.join(), 'status');
+egal('RFC 9457 §3.1.1 : type relatif resolu', pb.faitsProbleme(p3, { statut: 404, url: 'https://api.test/v1/x' }).find(f => f.cle === 'typeRelatif').valeurs.resolu,
+  'https://api.test/probs/x');
+
+/* ========================= 11. Controles d un corps ======================= */
+const cc = await import('../ui/lib/corps-controles.js');
+const zlib = await import('node:zlib');
+const pageErreur = cc.controlerType({ text: '<!DOCTYPE html><html><body>502 Bad Gateway</body></html>', size: 56 }, 'application/json');
+egal('corps : une page HTML annoncee JSON', pageErreur.cle + ' / ' + pageErreur.valeurs.nature, 'pasDuJson / ' + cc.FAITS_CORPS.natureHtml);
+verifier('corps : la nature est marquee a traduire', pageErreur.aTraduire.includes('nature'));
+egal('corps : un JSON valide ne dit rien', cc.controlerType({ text: '{"a":1}' }, 'application/json; charset=utf-8'), null);
+egal('corps : un corps tronque n est pas juge', cc.controlerType({ text: '{"a":', truncated: true }, 'application/json'), null);
+egal('corps : du JSON servi en text/html', cc.controlerType({ text: '{"a":1}' }, 'text/html').cle, 'jsonEnHtml');
+const jpeg = Buffer.from([0xff, 0xd8, 0xff, 0xe0, 0, 16, 0x4a, 0x46, 0x49, 0x46, 0, 1, 1, 0, 0, 1]).toString('base64');
+egal('corps : un JPEG annonce PNG', cc.controlerType({ base64: jpeg }, 'image/png').valeurs.format, 'JPEG');
+egal('corps : un JPEG annonce JPEG ne dit rien', cc.controlerType({ base64: jpeg }, 'image/jpeg'), null);
+egal('corps : signature WebP', cc.formatImage(new Uint8Array([...Buffer.from('RIFF'), 1, 2, 3, 4, ...Buffer.from('WEBP')])), 'webp');
+egal('corps : octets inconnus, aucune affirmation', cc.formatImage(new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8])), null);
+
+const texteLong = JSON.stringify({ lignes: Array.from({ length: 300 }, (_, i) => ({ id: i, libelle: 'produit ' + (i % 7) })) });
+const octetsLong = new TextEncoder().encode(texteLong);
+const mesure = await cc.mesurerCompression({ text: texteLong, size: octetsLong.length, stored: octetsLong.length }, []);
+verifier('compression : mesuree sur un texte servi sans compression', mesure && mesure.apres < mesure.avant, JSON.stringify(mesure));
+const gz = await cc.gzipOctets(octetsLong);
+verifier('compression : le gzip mesure se decompresse avec node:zlib en texte identique',
+  Buffer.from(zlib.gunzipSync(gz)).equals(Buffer.from(octetsLong)));
+egal('compression : la taille annoncee est celle de ce gzip', mesure.apres, gz.length);
+egal('compression : deja compresse, pas de mesure', await cc.mesurerCompression({ text: texteLong, stored: octetsLong.length }, [{ name: 'Content-Encoding', value: 'br' }]), null);
+egal('compression : texte qui ne redonne pas les octets recus, pas de mesure', await cc.mesurerCompression({ text: texteLong, stored: octetsLong.length + 3 }, []), null);
+egal('compression : moins d un kilo-octet, pas de mesure', await cc.mesurerCompression({ text: '{"a":1}', stored: 7 }, []), null);
+
+/* ======================= 12. security.txt (RFC 9116) ====================== */
+/* L exemple non signe de la RFC (§2.6), recopie tel quel. */
+const st = await import('../ui/lib/security-txt.js');
+const EXEMPLE_9116 = `# Our security address
+Contact: mailto:security@example.com
+
+# Our OpenPGP key
+Encryption: https://example.com/pgp-key.txt
+
+# Our security policy
+Policy: https://example.com/security-policy.html
+
+# Our security acknowledgments page
+Acknowledgments: https://example.com/hall-of-fame.html
+
+Expires: 2021-12-31T18:37:07z
+`;
+const lu9116 = st.lireSecurityTxt(EXEMPLE_9116);
+egal('RFC 9116 §2.6 : les cinq champs de l exemple, commentaires ignores', lu9116.champs.map(c => c.nom).join(','),
+  'Contact,Encryption,Policy,Acknowledgments,Expires');
+egal('RFC 3339 : le « z » minuscule de l exemple est une date valide', new Date(st.dateRfc3339('2021-12-31T18:37:07z')).toISOString(), '2021-12-31T18:37:07.000Z');
+egal('RFC 3339 : decalage pris en compte', new Date(st.dateRfc3339('2021-12-31T20:37:07+02:00')).toISOString(), '2021-12-31T18:37:07.000Z');
+egal('RFC 3339 : 30 fevrier refuse', st.dateRfc3339('2021-02-30T00:00:00Z'), null);
+const URL_WK = 'https://example.com/.well-known/security.txt';
+const avant = st.faitsSecurityTxt(lu9116, { url: URL_WK, typeMedia: 'text/plain; charset=utf-8', maintenant: Date.UTC(2021, 5, 1) });
+egal('RFC 9116 : l exemple, lu avant son expiration, n a que la recommandation de signature', avant.map(f => f.cle).join(), 'nonSigne');
+const apres = st.faitsSecurityTxt(lu9116, { url: URL_WK, typeMedia: 'text/plain', maintenant: Date.UTC(2026, 9, 6) });
+verifier('RFC 9116 §2.5.5 : lu en 2026, l exemple est perime', apres.some(f => f.cle === 'perime' && f.valeurs.date === '2021-12-31'));
+const fautif = st.lireSecurityTxt('contact: http://example.com/securite\nExpires: 2030-01-01T00:00:00Z\nExpires: 2031-01-01T00:00:00Z\nCanonical: https://example.com/.well-known/security.txt');
+const clesFautif = st.faitsSecurityTxt(fautif, { url: 'http://example.com/security.txt', typeMedia: 'text/html', maintenant: Date.UTC(2026, 9, 6) }).map(f => f.cle);
+for (const cle of ['contactHttp', 'expiresMultiple', 'plusDunAn', 'horsCanonical', 'nonHttps', 'typeContenu', 'horsWellKnown']) {
+  verifier('RFC 9116 : ' + cle + ' constate', clesFautif.includes(cle), clesFautif.join());
+}
+egal('RFC 9116 §2 : nom de champ insensible a la casse', fautif.champs[0].nom, 'Contact');
+verifier('RFC 9116 : sans Contact ni Expires, les deux sont dits',
+  ['sansContact', 'sansExpires'].every(c => st.faitsSecurityTxt(st.lireSecurityTxt('Policy: https://a.test/p'), { url: URL_WK }).some(f => f.cle === c)));
+const signe = st.lireSecurityTxt('-----BEGIN PGP SIGNED MESSAGE-----\nHash: SHA256\n\nContact: mailto:s@a.test\n- -----not a header\nExpires: 2030-01-01T00:00:00Z\n-----BEGIN PGP SIGNATURE-----\n\nAAAA\n-----END PGP SIGNATURE-----\n');
+egal('RFC 9116 §2.3 : signature OpenPGP en clair reconnue, armure retiree', signe.signe + ' ' + signe.champs.map(c => c.nom).join(','), 'true Contact,Expires');
+egal('security.txt : emplacements', ['https://a.test/.well-known/security.txt', 'https://a.test/security.txt', 'https://a.test/x.txt'].map(st.emplacementSecurityTxt).join(','),
+  'well-known,racine,');
+const analyseSt = analyze(enregistrementExemple({ url: URL_WK, finalUrl: URL_WK, method: 'GET', requestBody: null }), { force: true });
+verifier('analyseur : un security.txt porte son marqueur', analyseSt.tags.includes('security-txt'));
+
+bilan('Protocoles et formats d API');

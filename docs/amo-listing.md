@@ -16,7 +16,7 @@ people running Developer Edition, Nightly or ESR *and* willing to flip
       publish. Changing it later means publishing a different add-on and orphaning every
       existing install, so make sure it is what you want *before* the first upload.
 - [ ] **Bump the version.** AMO refuses a version number it has already seen. The repository
-      is at `5.0.0`, which has never been submitted, so it can go up as-is. Only bump again if
+      is at `5.1.0`, which has never been submitted, so it can go up as-is. Only bump again if
       a submission gets rejected and you need to resubmit.
 - [ ] **Build a fresh package**: `npm run build` produces `dist/swift-<version>.xpi`.
 - [x] **Data collection is declared**: `data_collection_permissions` is `{"required": ["none"]}`,
@@ -139,6 +139,10 @@ GraphQL calls are named: the operation that runs gets its own column and search 
 with its variables, batches, Apollo persisted queries (SHA-256 recomputed) and the real
 verdict of the response. Reports the browser sends on its own — CSP violations, network
 errors (NEL), deprecations — are opened field by field.
+
+JSON-RPC and SOAP calls are named and read the same way, an RFC 9457 problem is checked
+against the status actually served, a site's security.txt against RFC 9116, and text
+served without compression gets the gzip saving measured on the bytes received.
 
 PRIVACY
 

@@ -4,6 +4,52 @@ All notable changes to this project are documented here.
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning follows
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.1.0] — 2026-10-06
+
+More API readings, each checked against the examples of its own specification — and two
+checks on bodies that no browser makes.
+
+### Added
+
+- **JSON-RPC 2.0 over HTTP.** The method is written next to the path, like a GraphQL
+  operation, with an *RPC* column, a quick filter chip and the `rpc:` search. The Request
+  tab shows each call — method, id or notification, parameters —, the Response tab each
+  result and error with the meaning of the standard codes. Facts: errors behind an HTTP 2xx,
+  a notification that got a response (§4.1), a request left without a response in a batch
+  (§6), an empty array returned for a batch, a response whose id is not the request's,
+  invalid elements counted rather than dropped. The meaning of the standard error codes comes
+  from the same table as for JSON-RPC in WebSocket frames.
+- **SOAP 1.1 and 1.2.** The envelope is recognised by the namespace of its root element:
+  operation and its namespace, `SOAPAction` or the `action` parameter of
+  `application/soap+xml`, header blocks; in the response, the fault — code, subcode,
+  reason, actor, node, role, detail — and the SOAP 1.1 rule that a fault is served with
+  HTTP 500. No status rule is claimed for SOAP 1.2. The XML reader is the one SAML already
+  used, now shared.
+- **HTTP problems (RFC 9457).** An `application/problem+json` response is read member by
+  member — type (about:blank when absent), title, status, detail, instance, extension
+  members — and its `status` member is compared with the status actually served, which
+  §3.1.2 requires to be the same.
+- **Body checks.** A body announced as JSON that is an HTML page, XML or empty; JSON served
+  as `text/html`; an image whose bytes are those of another format (PNG, JPEG, GIF, WebP,
+  AVIF, ICO, BMP signatures). For text served without compression, **what gzip would have
+  saved, measured** by compressing the bytes received — and only when the text gives back
+  those exact bytes.
+- **`security.txt` (RFC 9116).** When the browser loads one, it is read field by field and
+  checked: Contact and Expires present, Expires once, in RFC 3339, not past and less than a
+  year away, https addresses, the loading address among the Canonical ones, https,
+  `text/plain`, its place under `/.well-known/`, an OpenPGP cleartext signature (recognised,
+  not verified). Tagged `security-txt`.
+
+### Tests
+
+- `tests/protocoles.test.mjs`: every JSON-RPC exchange of §7 of its specification, the
+  SOAP 1.1 Note and SOAP 1.2 Primer examples, the RFC 9457 and RFC 9116 examples, hostile
+  and truncated envelopes, and the measured gzip decompressed back to the identical text by
+  `node:zlib`.
+- The interface suite now checks the label and tooltip of every table column.
+
+2042 assertions across ten suites, plus six browser audits.
+
 ## [5.0.0] — 2026-10-06
 
 INTERCEPTOR becomes **SWIFT**: a new name, a new logo and a new interface — and three readings

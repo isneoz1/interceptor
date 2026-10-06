@@ -118,7 +118,7 @@ const ERREURS_JSONRPC = {
   '-32602': 'Invalid params', '-32603': 'Internal error'
 };
 
-function sensErreurJsonRpc(code) {
+export function sensErreurJsonRpc(code) {
   if (ERREURS_JSONRPC[String(code)]) return ERREURS_JSONRPC[String(code)];
   if (Number.isInteger(code) && code <= -32000 && code >= -32099) return 'Server error';
   return null;

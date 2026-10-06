@@ -22,6 +22,7 @@ import { EN_ERREURS } from './dict-en-erreurs.js';
 import { EN_GRAPHQL } from './dict-en-graphql.js';
 import { EN_RAPPORTS } from './dict-en-rapports.js';
 import { EN_OPENAPI } from './dict-en-openapi.js';
+import { EN_API } from './dict-en-api.js';
 
 export const EN = {
   /* ------------------------------ Navigation ----------------------------- */
@@ -434,5 +435,6 @@ export const EN = {
   ...EN_ERREURS,
   ...EN_GRAPHQL,
   ...EN_RAPPORTS,
-  ...EN_OPENAPI
+  ...EN_OPENAPI,
+  ...EN_API
 };

@@ -7,6 +7,7 @@ import { el } from './dom.js';
 import { bytes, ms, timeText, statusClass, statusText, typeLabel, layers, middle } from './format.js';
 import { t } from './i18n.js';
 import { texteGraphql } from './graphql-http.js';
+import { texteRpc } from './rpc-http.js';
 
 const RISK_ORDER = { critical: 5, high: 4, medium: 3, low: 2, info: 1, none: 0 };
 const text = (value, cls) => el('div', { class: cls || null, text: value == null || value === '' ? '—' : String(value) });
@@ -53,11 +54,16 @@ export const COLUMNS = {
   host: { label: 'Hote', width: 'minmax(130px, 240px)', cell: rec => text(rec.host), cmp: cmpText('host') },
   path: {
     label: 'Chemin', width: 'minmax(200px, 3fr)',
-    /* Tous les appels GraphQL partagent un chemin : l operation, a cote, est ce
-       qui les distingue d un regard. */
-    cell: (rec, ctx) => (rec.gql && (!ctx || ctx.gqlDansChemin !== false)
-      ? el('div', null, [rec.path || '/', el('span', { class: 'gql', text: '   ' + texteGraphql(rec.gql, t('requete persistee')) })])
-      : text(rec.path || '/')),
+    /* Les appels GraphQL, JSON-RPC et SOAP partagent un chemin : l operation,
+       a cote, est ce qui les distingue d un regard. */
+    cell: (rec, ctx) => {
+      const operation = rec.gql && (!ctx || ctx.gqlDansChemin !== false)
+        ? texteGraphql(rec.gql, t('requete persistee'))
+        : rec.rpc && (!ctx || ctx.rpcDansChemin !== false) ? texteRpc(rec.rpc) : '';
+      return operation
+        ? el('div', null, [rec.path || '/', el('span', { class: 'gql', text: '   ' + operation })])
+        : text(rec.path || '/');
+    },
     cmp: cmpText('path')
   },
   url: { label: 'URL complete', width: 'minmax(240px, 4fr)', cell: rec => text(rec.url), cmp: cmpText('url') },
@@ -65,6 +71,11 @@ export const COLUMNS = {
     label: 'GraphQL', width: 'minmax(150px, 1.5fr)', title: 'Operation GraphQL executee',
     cell: rec => text(texteGraphql(rec.gql, t('requete persistee')) || '—', rec.gql ? null : 'dim'),
     cmp: (a, b) => texteGraphql(a.gql).localeCompare(texteGraphql(b.gql))
+  },
+  rpc: {
+    label: 'RPC', width: 'minmax(150px, 1.5fr)', title: 'Methode JSON-RPC ou operation SOAP',
+    cell: rec => text(texteRpc(rec.rpc) || '—', rec.rpc ? null : 'dim'),
+    cmp: (a, b) => texteRpc(a.rpc).localeCompare(texteRpc(b.rpc))
   },
   initiator: {
     label: 'Origine', width: 'minmax(140px, 2fr)',
@@ -156,7 +167,7 @@ export const COLUMNS = {
 /** Ordre propose dans le menu « Colonnes ». */
 export const COLUMN_ORDER = [
   'flag', 'risk', 'id', 'time', 'method', 'status', 'state', 'proto', 'scheme', 'type',
-  'host', 'path', 'url', 'graphql', 'initiator', 'mime', 'size', 'transfer', 'reqsize', 'duration',
+  'host', 'path', 'url', 'graphql', 'rpc', 'initiator', 'mime', 'size', 'transfer', 'reqsize', 'duration',
   'ip', 'classified', 'tls', 'sources', 'findings', 'tags', 'wire', 'redirects', 'ws', 'sse', 'cookies',
   'merged', 'tab', 'frame', 'rules', 'note', 'color', 'waterfall'
 ];
