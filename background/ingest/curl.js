@@ -1,8 +1,8 @@
-/* Import d une commande cURL — INTERCEPTOR (by NeoZ)
+/* Import d une commande cURL — SWIFT (by NeoZ)
  *
  * Le pendant exact du generateur de code : ce que l on sait ecrire, on sait le
  * relire. Une commande copiee depuis les outils de developpement d un autre
- * navigateur, depuis un ticket ou depuis INTERCEPTOR lui-meme redevient une
+ * navigateur, depuis un ticket ou depuis SWIFT lui-meme redevient une
  * requete exploitable (detail, rejeu, generation dans un autre langage).
  *
  * Les trois formes de continuation de ligne que le projet sait produire sont

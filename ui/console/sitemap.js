@@ -1,4 +1,4 @@
-/* Vue « Sites et chemins » — arborescence des hotes — INTERCEPTOR (by NeoZ)
+/* Vue « Sites et chemins » — arborescence des hotes — SWIFT (by NeoZ)
  *
  * Le tableau des requetes montre le flux dans l ordre du temps. Cette vue
  * montre la meme matiere autrement : la structure du site observe, hote par

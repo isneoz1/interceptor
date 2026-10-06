@@ -1,4 +1,4 @@
-/* Banniere de partage social — INTERCEPTOR (by NeoZ)
+/* Banniere de partage social — SWIFT (by NeoZ)
  *
  * C est l image qu affichent X, Reddit, Discord, LinkedIn et Slack quand
  * quelqu un colle le lien du depot. Sans elle, GitHub sert une vignette
@@ -102,7 +102,7 @@ const PAGE = `<!doctype html><html><head><meta charset="utf-8"><style>
       <div class="marque">
         ${icone}
         <div>
-          <div class="nom">INTERCEPTOR</div>
+          <div class="nom">SWIFT</div>
           <div class="par">BY NEOZ</div>
         </div>
       </div>

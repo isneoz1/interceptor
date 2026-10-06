@@ -1,4 +1,4 @@
-/* Dictionnaire anglais — analyses, trames et bandeau — INTERCEPTOR (by NeoZ)
+/* Dictionnaire anglais — analyses, trames et bandeau — SWIFT (by NeoZ)
  *
  * Ce fichier couvre trois endroits qui parlaient encore francais en anglais :
  *   - le bandeau du bas et ses compteurs ;

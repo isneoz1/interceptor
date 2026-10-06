@@ -2,15 +2,18 @@
   "manifest_version": 2,
   "default_locale": "en",
   "name": "__MSG_extensionName__",
-  "short_name": "INTERCEPTOR",
-  "version": "4.6.0",
+  "short_name": "SWIFT",
+  "version": "5.0.0",
   "author": "NeoZ",
   "homepage_url": "https://github.com/isneoz1/interceptor",
   "description": "__MSG_extensionDescription__",
   "browser_specific_settings": {
     "gecko": {
-      "id": "interceptor@neoz",
-      "strict_min_version": "115.0"
+      "id": "swift@neoz",
+      "strict_min_version": "115.0",
+      "data_collection_permissions": {
+        "required": ["none"]
+      }
     }
   },
   "permissions": [
@@ -53,7 +56,7 @@
     "content/hooks.js"
   ],
   "browser_action": {
-    "default_title": "INTERCEPTOR — by NeoZ",
+    "default_title": "SWIFT — by NeoZ",
     "default_popup": "ui/popup.html",
     "default_icon": {
       "16": "icons/icon.svg",
@@ -63,7 +66,7 @@
     }
   },
   "sidebar_action": {
-    "default_title": "INTERCEPTOR",
+    "default_title": "SWIFT",
     "default_panel": "ui/console.html",
     "default_icon": {
       "16": "icons/icon.svg",
@@ -80,13 +83,13 @@
       "suggested_key": {
         "default": "Ctrl+Shift+Y"
       },
-      "description": "Ouvrir la fenetre INTERCEPTOR"
+      "description": "Ouvrir la fenetre SWIFT"
     },
     "_execute_sidebar_action": {
       "suggested_key": {
         "default": "Alt+Shift+S"
       },
-      "description": "Ouvrir INTERCEPTOR dans le panneau lateral"
+      "description": "Ouvrir SWIFT dans le panneau lateral"
     },
     "open-console": {
       "suggested_key": {

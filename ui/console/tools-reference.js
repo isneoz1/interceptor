@@ -1,4 +1,4 @@
-/* Panneau « Reference » — INTERCEPTOR (by NeoZ)
+/* Panneau « Reference » — SWIFT (by NeoZ)
  *
  * Les tables qu on va toujours chercher ailleurs : codes de statut, methodes,
  * entetes, types de media, ports. Elles vivent dans l extension, donc hors

@@ -1,5 +1,5 @@
 /* Capture des corps de reponse via StreamFilter (API exclusive Firefox)
- * INTERCEPTOR (by NeoZ)
+ * SWIFT (by NeoZ)
  *
  * filterResponseData() ne peut etre appele que depuis un listener bloquant.
  * On privilegie onHeadersReceived (on connait alors Content-Type / Content-Length,
@@ -50,7 +50,7 @@ export function attachFilter(rec, requestId, headers) {
     filterState.failed++;
     if (filterState.anchor === 'onHeadersReceived') {
       filterState.anchor = 'onBeforeRequest';
-      console.warn('[INTERCEPTOR] StreamFilter: bascule sur onBeforeRequest', e && e.message);
+      console.warn('[SWIFT] StreamFilter: bascule sur onBeforeRequest', e && e.message);
     }
     return false;
   }
@@ -153,7 +153,7 @@ export function attachFilter(rec, requestId, headers) {
       filterState.captured++;
     } catch (e) {
       filterState.failed++;
-      console.warn('[INTERCEPTOR] finalisation corps', e);
+      console.warn('[SWIFT] finalisation corps', e);
     }
   };
 

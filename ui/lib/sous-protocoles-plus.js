@@ -1,4 +1,4 @@
-/* Sous-protocoles WebSocket, suite — INTERCEPTOR (by NeoZ)
+/* Sous-protocoles WebSocket, suite — SWIFT (by NeoZ)
  *
  * Complete sous-protocoles.js (Engine.IO / socket.io, STOMP, SignalR) avec les
  * autres familles repandues, chacune lue selon sa specification publiee :
@@ -20,6 +20,7 @@
  * fausse piste.
  */
 import { decoderMsgpack, decoderCbor } from './binaires.js';
+import { operationsGraphql } from './graphql-http.js';
 
 /* Les lecteurs JSON sont essayes l un apres l autre sur la MEME trame : on ne
    l analyse qu une fois. Aucun lecteur ne modifie la valeur rendue, qui peut
@@ -54,51 +55,13 @@ const GQL_SANS_EQUIVOQUE = new Set(['connection_init', 'connection_ack', 'connec
   'connection_terminate', 'start_ack']);
 
 /**
- * Type et nom de la premiere operation d un document GraphQL, lus au niveau
- * zero des accolades : un champ nomme « query » plus bas ne trompe pas, les
- * fragments sont sautes, chaines et commentaires ignores.
+ * Type et nom de la premiere operation d un document GraphQL. La lecture du
+ * document vit dans graphql-http.js, partagee avec GraphQL sur HTTP : un
+ * champ nomme « query » plus bas ne trompe pas, les fragments sont sautes,
+ * chaines et commentaires ignores.
  */
 export function operationGraphql(source) {
-  const s = String(source || '');
-  let i = 0;
-  let profondeur = 0;
-  let dansFragment = false;
-  while (i < s.length) {
-    const c = s[i];
-    if (c === '#') { while (i < s.length && s[i] !== '\n') i++; continue; }
-    if (c === '"') {
-      if (s.startsWith('"""', i)) {
-        const fin = s.indexOf('"""', i + 3);
-        i = fin < 0 ? s.length : fin + 3;
-      } else {
-        i++;
-        while (i < s.length && s[i] !== '"') i += s[i] === '\\' ? 2 : 1;
-        i++;
-      }
-      continue;
-    }
-    if (c === '{') {
-      if (profondeur === 0 && !dansFragment) return { type: 'query', nom: null };
-      profondeur++; i++; continue;
-    }
-    if (c === '}') {
-      profondeur = Math.max(0, profondeur - 1);
-      if (profondeur === 0) dansFragment = false;
-      i++; continue;
-    }
-    if (profondeur === 0 && /[_A-Za-z]/.test(c)) {
-      const mot = /^[_A-Za-z][_0-9A-Za-z]*/.exec(s.slice(i))[0];
-      i += mot.length;
-      if (mot === 'fragment') { dansFragment = true; continue; }
-      if (!dansFragment && (mot === 'query' || mot === 'mutation' || mot === 'subscription')) {
-        const nom = /^\s*([_A-Za-z][_0-9A-Za-z]*)/.exec(s.slice(i));
-        return { type: mot, nom: nom ? nom[1] : null };
-      }
-      continue;
-    }
-    i++;
-  }
-  return null;
+  return operationsGraphql(source)[0] || null;
 }
 
 export function lireGraphqlWs(texte, indices) {

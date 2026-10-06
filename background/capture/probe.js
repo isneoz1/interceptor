@@ -1,4 +1,4 @@
-/* Verification de couverture — INTERCEPTOR (by NeoZ)
+/* Verification de couverture — SWIFT (by NeoZ)
  *
  * Declenche de vraies requetes depuis l onglet actif, uniquement vers l origine
  * de cet onglet (chemins relatifs). Aucun service externe n est contacte.
@@ -10,22 +10,22 @@ export const probeStats = { runs: 0, lastUrl: null, lastFired: 0 };
 
 const SOURCE = `(function () {
   var base = location.origin + location.pathname;
-  var tag = '?__interceptor_probe=' + Date.now();
+  var tag = '?__swift_probe=' + Date.now();
   var fired = [];
 
   try { fetch(base + tag + '&k=fetch-get', { cache: 'no-store' }).catch(function(){}); fired.push('fetch GET'); } catch (e) {}
   try {
     fetch(base + tag + '&k=fetch-post', {
       method: 'POST', cache: 'no-store',
-      headers: { 'Content-Type': 'application/json', 'X-Interceptor-Probe': '1' },
-      body: JSON.stringify({ sonde: 'interceptor' })
+      headers: { 'Content-Type': 'application/json', 'X-Swift-Probe': '1' },
+      body: JSON.stringify({ sonde: 'swift' })
     }).catch(function(){});
     fired.push('fetch POST + corps');
   } catch (e) {}
   try {
     var x = new XMLHttpRequest();
     x.open('GET', base + tag + '&k=xhr');
-    x.setRequestHeader('X-Interceptor-Probe', 'xhr');
+    x.setRequestHeader('X-Swift-Probe', 'xhr');
     x.send();
     fired.push('XMLHttpRequest');
   } catch (e) {}
@@ -37,8 +37,8 @@ const SOURCE = `(function () {
     fired.push('EventSource');
   } catch (e) {}
   try {
-    var ws = new WebSocket((location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/__interceptor_probe');
-    ws.onopen = function () { try { ws.send('sonde interceptor'); } catch (e) {} };
+    var ws = new WebSocket((location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/__swift_probe');
+    ws.onopen = function () { try { ws.send('sonde swift'); } catch (e) {} };
     setTimeout(function () { try { ws.close(); } catch (e) {} }, 3000);
     fired.push('WebSocket');
   } catch (e) {}

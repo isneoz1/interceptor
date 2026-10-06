@@ -1,7 +1,7 @@
-/* Une CSP deduite de ce que la page a reellement charge — INTERCEPTOR (by NeoZ)
+/* Une CSP deduite de ce que la page a reellement charge — SWIFT (by NeoZ)
  *
  * Ecrire une Content-Security-Policy, c est enumerer d ou la page a le droit
- * de charger ses scripts, ses styles, ses images, ses connexions. INTERCEPTOR
+ * de charger ses scripts, ses styles, ses images, ses connexions. SWIFT
  * a vu chacun de ces chargements : il peut proposer la politique qui les
  * autorise tous, et rien d autre.
  *

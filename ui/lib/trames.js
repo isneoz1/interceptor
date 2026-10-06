@@ -1,4 +1,4 @@
-/* Trames WebSocket et HTTP/2 — INTERCEPTOR (by NeoZ)
+/* Trames WebSocket et HTTP/2 — SWIFT (by NeoZ)
  *
  * Decode des trames brutes (hexadecimal) telles qu elles circulent sur le fil :
  *   - WebSocket, RFC 6455 section 5.2 : FIN, opcode, masque, longueur sur 7,

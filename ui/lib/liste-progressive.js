@@ -1,4 +1,4 @@
-/* Liste rendue par lots — INTERCEPTOR (by NeoZ)
+/* Liste rendue par lots — SWIFT (by NeoZ)
  *
  * Certaines vues affichent des listes longues dont les elements n ont pas tous
  * la meme hauteur : les alertes, les journaux. Le defilement virtuel du tableau

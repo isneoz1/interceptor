@@ -1,4 +1,4 @@
-/* Contenu des onglets du panneau de detail — INTERCEPTOR (by NeoZ)
+/* Contenu des onglets du panneau de detail — SWIFT (by NeoZ)
  *
  * Principe : tout champ present dans l enregistrement est affiche. Les blocs
  * connus recoivent un libelle francais ; tout champ inconnu est neanmoins
@@ -24,6 +24,8 @@ import { lireServerTiming, comparerAuMesure, resumerServerTiming }
 import { analyserMultipart } from '../lib/multipart.js';
 import * as securite from './securite-detail.js';
 import * as preuves from './preuves-detail.js';
+import { graphqlRequete, graphqlReponse } from './graphql-detail.js';
+import { rapportsRequete, collecteRapports } from './rapports-detail.js';
 
 /** Rend toutes les cles d un objet, y compris celles qu on n a pas prevues. */
 export function allRows(obj, labels = {}, skip = []) {
@@ -216,6 +218,7 @@ export function headers(rec) {
      reels permettraient : des faits, jamais des alertes. */
   box.appendChild(securite.protections(rec));
   box.appendChild(securite.cspObservee(rec));
+  box.appendChild(collecteRapports(rec));
   return box;
 }
 
@@ -692,6 +695,8 @@ export function requestBody(rec) {
   box.appendChild(securite.saml(rec));
   box.appendChild(preuves.webauthnCeremonie(rec));
   box.appendChild(preuves.dnsQuestion(rec));
+  box.appendChild(graphqlRequete(rec));
+  box.appendChild(rapportsRequete(rec));
   box.appendChild(bodyViewer(rec.requestBody, 'Corps envoye', rec.requestBody && rec.requestBody.contentType));
   return box;
 }
@@ -701,6 +706,7 @@ export function responseBody(rec) {
   box.appendChild(securite.sri(rec));
   box.appendChild(preuves.webauthnOptions(rec));
   box.appendChild(preuves.dnsReponse(rec));
+  box.appendChild(graphqlReponse(rec));
   box.appendChild(bodyViewer(rec.responseBody, 'Corps recu', rec.mime));
   return box;
 }

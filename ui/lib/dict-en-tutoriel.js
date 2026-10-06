@@ -1,4 +1,4 @@
-/* Dictionnaire anglais — tutoriel — INTERCEPTOR (by NeoZ)
+/* Dictionnaire anglais — tutoriel — SWIFT (by NeoZ)
  *
  * Les douze lecons ont leur texte dans content-en.js : titre, objectif et
  * corps y sont ecrits en anglais. Mais `localized()` ne transpose que ces

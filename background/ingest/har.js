@@ -1,9 +1,11 @@
-/* Import d un fichier HAR — INTERCEPTOR (by NeoZ)
+/* Import d un fichier HAR — SWIFT (by NeoZ)
  *
  * Permet de relire une capture faite ailleurs (DevTools, Charles, Fiddler…)
- * dans la meme interface. Les fichiers exportes par INTERCEPTOR contiennent
- * l extension `_interceptor` : ils sont alors restaures a l identique, couches
- * de capture, TLS, analyse, trames WebSocket et chronologie comprises.
+ * dans la meme interface. Les fichiers exportes par SWIFT contiennent
+ * l extension `_swift` — `_interceptor` pour ceux des versions qui portaient
+ * encore ce nom, lus de la meme facon : ils sont alors restaures a
+ * l identique, couches de capture, TLS, analyse, trames WebSocket et
+ * chronologie comprises.
  *
  * Les lignes importees sont marquees `imported` et portent la couche `import` :
  * elles ne peuvent jamais etre confondues avec une capture en direct.
@@ -14,7 +16,7 @@ import { hostOf, pathOf, schemeOf } from '../lib/util.js';
 
 /* ------------------------- Ce qui vient du fichier ------------------------ */
 /* Un HAR est ecrit par quelqu un d autre : un autre outil, une version
-   anterieure d INTERCEPTOR, ou une main. Rien n y garantit qu une liste soit
+   anterieure de SWIFT, ou une main. Rien n y garantit qu une liste soit
    une liste. Et une forme inattendue ne se voit pas a l import — elle se voit
    trois clics plus tard, quand un onglet du detail refuse de s afficher.
    On ramene donc chaque valeur a la forme attendue ici, une fois, plutot que
@@ -115,7 +117,7 @@ export function importHar(har) {
       const url = req.url || '';
       if (!url) { skipped++; continue; }
 
-      const extra = entry._interceptor || {};
+      const extra = entry._swift || entry._interceptor || {};
       const started = Date.parse(entry.startedDateTime || '') || Date.now();
       const duration = typeof entry.time === 'number' && entry.time >= 0 ? Math.round(entry.time) : null;
 
@@ -164,7 +166,7 @@ export function importHar(har) {
         };
       }
 
-      // Extensions INTERCEPTOR : restauration fidele de nos propres exports.
+      // Extensions SWIFT : restauration fidele de nos propres exports.
       rec.dns = objet(extra.dns);
       rec.security = objet(extra.security);
       rec.proxy = objet(extra.proxy);

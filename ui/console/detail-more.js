@@ -1,5 +1,5 @@
 /* Onglets « Cookies », « Securite », « Alertes », « Flux », « Chronologie »,
- * « Pile JS » et « Brut » du panneau de detail — INTERCEPTOR (by NeoZ)
+ * « Pile JS » et « Brut » du panneau de detail — SWIFT (by NeoZ)
  *
  * Suite de detail-parts.js : meme principe, tout champ present est affiche.
  */
@@ -465,7 +465,7 @@ export function raw(rec) {
   const box = frag();
   box.appendChild(sec('Enregistrement complet', 'tout ce que le noyau conserve'));
   box.appendChild(el('p', { class: 'note', text:
-    t('Chaque champ conserve par INTERCEPTOR figure ici, y compris ceux qui n ont pas de presentation dediee.') }));
+    t('Chaque champ conserve par SWIFT figure ici, y compris ceux qui n ont pas de presentation dediee.') }));
   box.appendChild(el('div', { class: 'tree' }, jsonTree(rec)));
   return box;
 }

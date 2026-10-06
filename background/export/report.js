@@ -1,4 +1,4 @@
-/* Exports tabulaires et rapport d alertes — INTERCEPTOR (by NeoZ) */
+/* Exports tabulaires et rapport d alertes — SWIFT (by NeoZ) */
 
 const CSV_HEAD = [
   'id', 'heure', 'methode', 'statut', 'hote', 'chemin', 'type', 'mime',
@@ -40,9 +40,9 @@ const ORDER = { critical: 0, high: 1, medium: 2, low: 3, info: 4 };
 export function buildFindingsReport(records) {
   const flagged = records.filter(r => r.analysis && r.analysis.findings.length);
   const lines = [
-    '# INTERCEPTOR — rapport d alertes',
+    '# SWIFT — rapport d alertes',
     '',
-    '_genere par INTERCEPTOR (by NeoZ) le ' + new Date().toLocaleString('fr-FR') + '_',
+    '_genere par SWIFT (by NeoZ) le ' + new Date().toLocaleString('fr-FR') + '_',
     '',
     '- Requetes analysees : ' + records.length,
     '- Requetes porteuses d au moins une alerte : ' + flagged.length,

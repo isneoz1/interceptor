@@ -1,4 +1,4 @@
-/* Table de reference des entetes HTTP — INTERCEPTOR (by NeoZ)
+/* Table de reference des entetes HTTP — SWIFT (by NeoZ)
  *
  * Chaque entete courant, son sens de circulation et ce qu il fait reellement.
  * Sert la boite a outils et l explication d une requete capturee.
@@ -195,7 +195,7 @@ const T = [
   ['Dictionary-ID', 'les deux', 'Identifiant du dictionnaire de compression employe (RFC 9842).'],
 
   /* -------------------------- Empreintes de corps ------------------------- */
-  ['Content-Digest', 'les deux', 'Empreinte des octets transmis. INTERCEPTOR la recalcule et dit si elle correspond (RFC 9530).'],
+  ['Content-Digest', 'les deux', 'Empreinte des octets transmis. SWIFT la recalcule et dit si elle correspond (RFC 9530).'],
   ['Repr-Digest', 'les deux', 'Empreinte de la representation, avant encodage de transfert (RFC 9530).'],
   ['Want-Content-Digest', 'les deux', 'Empreintes souhaitees en retour ; un poids nul vaut refus (RFC 9530).'],
   ['Want-Repr-Digest', 'les deux', 'Empreintes de representation souhaitees en retour (RFC 9530).'],

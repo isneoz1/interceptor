@@ -1,4 +1,4 @@
-/* Commandes d outillage et de diagnostic — INTERCEPTOR (by NeoZ)
+/* Commandes d outillage et de diagnostic — SWIFT (by NeoZ)
  *
  * Fusionnees dans la table de rpc.js par `...TOOLING_COMMANDS`, exactement
  * comme les commandes de fichiers : une commande d outillage s ajoute ici,

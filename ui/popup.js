@@ -1,5 +1,5 @@
 /* ============================================================
- * INTERCEPTOR — fenetre compacte  (cree par NeoZ)
+ * SWIFT — fenetre compacte  (cree par NeoZ)
  *
  * Poste de veille : etat de la capture, chiffres cles, dernieres requetes,
  * filtres rapides. Tout le detail se trouve dans la console complete, qui
@@ -203,6 +203,7 @@ function applyLabels() {
   set('#sidebar', 'Panneau', 'Ouvrir le panneau lateral');
   set('#export', 'Exporter');
   set('#clear', 'Vider');
+  set('#scope', null, 'Perimetre');
 
   const labels = document.querySelectorAll('.tile label');
   const texts = ['requetes', 'req/s', 'fusions', 'alertes'];

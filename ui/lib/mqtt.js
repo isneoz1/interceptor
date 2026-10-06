@@ -1,4 +1,4 @@
-/* MQTT sur WebSocket — INTERCEPTOR (by NeoZ)
+/* MQTT sur WebSocket — SWIFT (by NeoZ)
  *
  * MQTT est le protocole des objets connectes et de bien des tableaux de bord
  * temps reel ; dans un navigateur il passe par une WebSocket de

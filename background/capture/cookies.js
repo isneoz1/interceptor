@@ -1,4 +1,4 @@
-/* Mutations de cookies (cookies.onChanged) — INTERCEPTOR (by NeoZ)
+/* Mutations de cookies (cookies.onChanged) — SWIFT (by NeoZ)
  * Capture aussi les cookies poses en JavaScript, invisibles dans Set-Cookie.
  */
 import { B } from '../lib/util.js';
@@ -45,7 +45,7 @@ export function startCookies() {
     attachToRecentRecord(entry);
   });
 
-  console.info('[INTERCEPTOR] cookies.onChanged actif');
+  console.info('[SWIFT] cookies.onChanged actif');
 }
 
 /** Rattache la mutation a la requete la plus recente du meme domaine (fenetre 3 s). */

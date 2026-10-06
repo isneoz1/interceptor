@@ -1,4 +1,4 @@
-/* Panneau de detail — INTERCEPTOR (by NeoZ)
+/* Panneau de detail — SWIFT (by NeoZ)
  *
  * Douze onglets couvrant la totalite d un enregistrement, dont un onglet
  * « Brut » qui affiche l objet complet : aucune donnee capturee ne peut
@@ -165,7 +165,9 @@ function paint() {
   who.appendChild(el('span', { text: '   #' + rec.id }));
 
   $('#d-flag').classList.toggle('on', !!rec.flag);
-  $('#d-flag').title = rec.flag ? 'Retirer l epingle' : 'Epingler cette ligne';
+  $('#d-flag').title = rec.flag ? t('Retirer l epingle') : t('Epingler cette ligne');
+  /* Un bouton a deux etats : son nom reste « Epingler », l etat s annonce. */
+  $('#d-flag').setAttribute('aria-pressed', rec.flag ? 'true' : 'false');
 
   const tabsHost = clear($('#dtabs'));
   for (const def of TABS) {

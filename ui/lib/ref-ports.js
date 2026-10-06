@@ -1,4 +1,4 @@
-/* Ports et services — INTERCEPTOR (by NeoZ)
+/* Ports et services — SWIFT (by NeoZ)
  *
  * Les affectations publiees par l IANA, plus les usages devenus des standards
  * de fait (3000, 8080, 5432...) marques comme tels. Sert a lire un port vu

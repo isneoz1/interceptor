@@ -1,10 +1,10 @@
-/* Journal de diagnostic interne — INTERCEPTOR (by NeoZ)
+/* Journal de diagnostic interne — SWIFT (by NeoZ)
  *
  * Ce module observe l extension elle-meme, pas le trafic. Il repond a une
- * question que rien d autre ne couvrait : « que fait INTERCEPTOR, et qu est-ce
+ * question que rien d autre ne couvrait : « que fait SWIFT, et qu est-ce
  * qui a echoue chez lui ? »
  *
- * Jusqu ici, chaque `console.warn('[INTERCEPTOR] ...')` du code partait dans la
+ * Jusqu ici, chaque `console.warn('[SWIFT] ...')` du code partait dans la
  * console de la page d arriere-plan, invisible sans passer par about:debugging.
  * On detourne donc console.error / warn / info : toutes les erreurs deja
  * ecrites dans le code existant arrivent ici sans qu il faille les modifier.
@@ -147,9 +147,9 @@ export function installerDebug() {
         const brut = texteDe(args);
         // Les messages du projet portent tous le meme prefixe : on s en sert
         // comme nom de source quand il est present.
-        const marque = /^\[INTERCEPTOR\]\s*/.test(brut);
-        journal.note(niveau, marque ? 'interceptor' : 'console',
-                     brut.replace(/^\[INTERCEPTOR\]\s*/, ''), detailDe(args));
+        const marque = /^\[SWIFT\]\s*/.test(brut);
+        journal.note(niveau, marque ? 'swift' : 'console',
+                     brut.replace(/^\[SWIFT\]\s*/, ''), detailDe(args));
       } catch { /* le journal ne doit jamais casser l appelant */ }
     };
   }

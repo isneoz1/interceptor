@@ -1,4 +1,4 @@
-/* Formatage d'affichage — INTERCEPTOR (by NeoZ) */
+/* Formatage d'affichage — SWIFT (by NeoZ) */
 
 import { t, tp } from './i18n.js';
 

@@ -1,4 +1,4 @@
-/* Analyse et evaluation des filtres — INTERCEPTOR (by NeoZ)
+/* Analyse et evaluation des filtres — SWIFT (by NeoZ)
  *
  * Syntaxe supportee :
  *   texte libre              -> url + hote + chemin + methode + MIME
@@ -16,6 +16,8 @@
  * marche ici sans rien reapprendre.
  */
 
+import { texteGraphql } from './graphql-http.js';
+
 export const FIELDS = {
   method:    { kind: 'text', get: r => r.method,               help: 'verbe HTTP' },
   status:    { kind: 'num',  get: r => r.statusCode,           help: 'code de statut, accepte 2xx a 5xx' },
@@ -23,6 +25,7 @@ export const FIELDS = {
   host:      { kind: 'text', get: r => r.host,                 help: 'hote' },
   path:      { kind: 'text', get: r => r.path,                 help: 'chemin et parametres' },
   url:       { kind: 'text', get: r => r.url,                  help: 'URL complete' },
+  gql:       { kind: 'text', get: r => texteGraphql(r.gql),     help: 'operation GraphQL (type et nom)' },
   mime:      { kind: 'text', get: r => r.mime,                 help: 'type de contenu' },
   scheme:    { kind: 'text', get: r => r.scheme,               help: 'protocole (http, https, ws...)' },
   proto:     { kind: 'text', get: r => r.protocol,             help: 'protocole reel (h2, h3...)' },

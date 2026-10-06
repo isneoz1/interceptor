@@ -1,5 +1,5 @@
 /* La scene : du vrai trafic, un vrai noyau, une vraie console
- * INTERCEPTOR (by NeoZ)
+ * SWIFT (by NeoZ)
  *
  * Les captures, les vitrines et la video ont besoin de la meme mise en
  * place : un jeu de trafic passe dans le VRAI noyau — meme magasin, meme
@@ -28,6 +28,7 @@ const VERSION = MANIFESTE.version;
  * Prepare la scene et rend de quoi s en servir.
  *
  * @param options.langue  « en » ou « fr » — la langue rendue par l interface
+ * @param options.theme   « clair » ou « sombre » ; absent, le reglage par defaut
  * @param options.volume  requetes ordinaires ajoutees apres la demonstration,
  *                        pour eprouver le defilement du tableau
  * @returns { port, instantane, scriptDeDemarrage, fermer, RACINE, VERSION }
@@ -119,6 +120,23 @@ export async function ouvrirScene(options = {}) {
     corpsRep: { size: 18422, kind: 'texte', source: 'streamFilter', mime: 'application/json',
       text: '{"items":[{"ref":"REF-8842","price":6420},{"ref":"REF-1130","price":2990}],"total":248}' } });
 
+  /* Un appel GraphQL comme les autres sur le reseau — POST, statut 200 — dont
+     la reponse est pourtant partielle : le cas que seule sa lecture revele. */
+  requete({ methode: 'POST', url: API + '/graphql', taille: 220, duree: 131,
+    entetesReq: [{ name: 'Content-Type', value: 'application/json' }],
+    corpsReq: { size: 165, kind: 'texte', source: 'webRequest', contentType: 'application/json',
+      text: JSON.stringify({
+        operationName: 'ProductReviews',
+        query: 'query ProductReviews($ref: ID!) { product(ref: $ref) { name reviews { rating author } } }',
+        variables: { ref: 'REF-8842' }
+      }) },
+    corpsRep: { size: 220, kind: 'texte', source: 'streamFilter', mime: 'application/json',
+      text: JSON.stringify({
+        data: { product: { name: 'Trail shoe', reviews: null } },
+        errors: [{ message: 'Reviews service unavailable', path: ['product', 'reviews'],
+          locations: [{ line: 1, column: 61 }], extensions: { code: 'SERVICE_UNAVAILABLE' } }]
+      }) } });
+
   requete({ url: API + '/v2/stock/REF-8842', statut: 404, taille: 74, duree: 41,
     corpsRep: { size: 74, kind: 'texte', source: 'streamFilter', mime: 'application/json',
       text: '{"error":"unknown reference","code":"STOCK_404"}' } });
@@ -177,6 +195,9 @@ export async function ouvrirScene(options = {}) {
      sources francaises. */
   await config.set({
     lang: langue,
+    /* Le theme n est pose que sur demande (tools/apercu-theme.mjs) : les
+       captures de la documentation gardent le reglage par defaut. */
+    ...(options.theme ? { theme: options.theme } : {}),
     rulesEnabled: false,
     rules: [
       { id: 'r-trackers', enabled: true, name: 'Block known trackers',
@@ -309,7 +330,7 @@ export async function ouvrirScene(options = {}) {
 
     const api = {
       runtime: {
-        id: 'interceptor@demo',
+        id: 'swift@demo',
         getURL: p => '/' + String(p).replace(/^\\//, ''),
         getManifest: () => ({ version: SNAP.version }),
         sendMessage: envoyer,

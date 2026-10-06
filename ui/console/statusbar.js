@@ -1,11 +1,11 @@
-/* Pied de page et diagramme de debit — INTERCEPTOR (by NeoZ)
+/* Pied de page et diagramme de debit — SWIFT (by NeoZ)
  *
  * Deux affichages temps reel, alimentes uniquement par les chiffres du noyau :
  * aucune valeur n est lissee, interpolee ni inventee.
  */
 import { $, el, clear } from '../lib/dom.js';
 import { uptime, bytes } from '../lib/format.js';
-import { t } from '../lib/i18n.js';
+import { t, tp } from '../lib/i18n.js';
 import { state } from '../app.js';
 
 /** Bandeau du bas : compteurs de la session en cours. */
@@ -44,8 +44,9 @@ export function renderSpark() {
     host.appendChild(el('i', {
       class: value ? null : 'zero',
       style: 'height:' + Math.max(4, (value / max) * 100) + '%',
-      title: value + ' requetes/s'
+      title: tp('{n} requetes/s', { n: value })
     }));
   }
-  host.title = 'Debit : ' + state.rate + ' requetes par seconde — pointe a ' + max + '/s sur 30 s';
+  host.title = tp('Debit : {debit} requetes par seconde — pointe a {pointe}/s sur 30 s',
+    { debit: state.rate, pointe: max });
 }

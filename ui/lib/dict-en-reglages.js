@@ -1,4 +1,4 @@
-/* Dictionnaire anglais — page des reglages — INTERCEPTOR (by NeoZ)
+/* Dictionnaire anglais — page des reglages — SWIFT (by NeoZ)
  *
  * Les titres et libelles courts vivent dans dict-en.js. Ici se trouvent les
  * phrases : notes de section, aides de champ, descriptions de profil. Ce sont
@@ -26,8 +26,8 @@ export const EN_REGLAGES = {
     'Applied before anything is recorded: what is excluded here exists nowhere in the capture.',
   'Chaque requete terminee est auditee sans action de votre part. Les valeurs sensibles sont masquees dans les alertes.':
     'Every finished request is audited without any action from you. Sensitive values are masked in the alerts.',
-  'Le journal observe INTERCEPTOR lui-meme, pas le trafic : erreurs du noyau, commandes et leur duree. Il vit en memoire et ne sort jamais du navigateur.':
-    'The log observes INTERCEPTOR itself, not the traffic: kernel errors, commands and how long they took. It lives in memory and never leaves the browser.',
+  'Le journal observe SWIFT lui-meme, pas le trafic : erreurs du noyau, commandes et leur duree. Il vit en memoire et ne sort jamais du navigateur.':
+    'The log observes SWIFT itself, not the traffic: kernel errors, commands and how long they took. It lives in memory and never leaves the browser.',
   'Les deux seuls reglages capables de modifier ou d emettre du trafic. Desactives par defaut.':
     'The only two settings able to modify or emit traffic. Off by default.',
   'Suspend reellement le trafic pour le modifier avant son depart. Ne fonctionne que console ouverte : sans interface pour trancher, aucune requete n est retenue. Une echeance relache toujours la requete, et fermer la console relache tout.':

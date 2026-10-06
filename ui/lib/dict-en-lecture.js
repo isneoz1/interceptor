@@ -1,4 +1,4 @@
-/* Dictionnaire anglais — lectures de la 4.4 — INTERCEPTOR (by NeoZ)
+/* Dictionnaire anglais — lectures de la 4.4 — SWIFT (by NeoZ)
  *
  * Complete dict-en.js (`...EN_LECTURE`) : minutage vu par la page,
  * sous-protocoles WebSocket, certificat lu en entier, criteres de recherche du

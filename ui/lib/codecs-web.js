@@ -1,4 +1,4 @@
-/* Encodages propres au web — INTERCEPTOR (by NeoZ)
+/* Encodages propres au web — SWIFT (by NeoZ)
  *
  * Punycode et noms de domaine internationaux, URI de donnees, authentification
  * « Basic », corps de formulaire, transfert par morceaux, compression gzip et

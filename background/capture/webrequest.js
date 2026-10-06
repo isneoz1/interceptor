@@ -1,4 +1,4 @@
-/* Capture webRequest — cycle de vie COMPLET (9 evenements) — INTERCEPTOR (by NeoZ)
+/* Capture webRequest — cycle de vie COMPLET (9 evenements) — SWIFT (by NeoZ)
  *
  * onBeforeRequest -> onBeforeSendHeaders -> onSendHeaders -> onHeadersReceived
  *   -> [onAuthRequired] -> [onBeforeRedirect] -> onResponseStarted -> onCompleted
@@ -302,5 +302,5 @@ export function startWebRequest() {
     analyze(rec);
   }, FILTER);
 
-  console.info('[INTERCEPTOR] webRequest actif — 9 evenements sur <all_urls>');
+  console.info('[SWIFT] webRequest actif — 9 evenements sur <all_urls>');
 }

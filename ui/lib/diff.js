@@ -1,4 +1,4 @@
-/* Comparaison de deux textes — INTERCEPTOR (by NeoZ)
+/* Comparaison de deux textes — SWIFT (by NeoZ)
  *
  * La vue Comparaison confronte deux requetes capturees ; ici on compare deux
  * textes quelconques, celui de travail et un autre colle a cote : deux

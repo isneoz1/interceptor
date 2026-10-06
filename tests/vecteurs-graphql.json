@@ -1,0 +1,429 @@
+{
+ "genere_par": "graphql-core 3.3.0",
+ "vecteurs": [
+  {
+   "source": "{__typename}",
+   "operationName": null,
+   "operations": [
+    {
+     "type": "query",
+     "nom": null
+    }
+   ],
+   "choisie": {
+    "type": "query",
+    "nom": null
+   },
+   "introspection": false
+  },
+  {
+   "source": "query { __typename }",
+   "operationName": null,
+   "operations": [
+    {
+     "type": "query",
+     "nom": null
+    }
+   ],
+   "choisie": {
+    "type": "query",
+    "nom": null
+   },
+   "introspection": false
+  },
+  {
+   "source": "query GetUser($id: ID!) { user(id: $id) { name } }",
+   "operationName": null,
+   "operations": [
+    {
+     "type": "query",
+     "nom": "GetUser"
+    }
+   ],
+   "choisie": {
+    "type": "query",
+    "nom": "GetUser"
+   },
+   "introspection": false
+  },
+  {
+   "source": "mutation Login($input: LoginInput = {user: \"a\", pass: \"{b}\"}) { login(input: $input) { token } }",
+   "operationName": null,
+   "operations": [
+    {
+     "type": "mutation",
+     "nom": "Login"
+    }
+   ],
+   "choisie": {
+    "type": "mutation",
+    "nom": "Login"
+   },
+   "introspection": false
+  },
+  {
+   "source": "subscription OnMessage { messageAdded { id text } }",
+   "operationName": null,
+   "operations": [
+    {
+     "type": "subscription",
+     "nom": "OnMessage"
+    }
+   ],
+   "choisie": {
+    "type": "subscription",
+    "nom": "OnMessage"
+   },
+   "introspection": false
+  },
+  {
+   "source": "query A { a } mutation B { b } subscription C { c }",
+   "operationName": "B",
+   "operations": [
+    {
+     "type": "query",
+     "nom": "A"
+    },
+    {
+     "type": "mutation",
+     "nom": "B"
+    },
+    {
+     "type": "subscription",
+     "nom": "C"
+    }
+   ],
+   "choisie": {
+    "type": "mutation",
+    "nom": "B"
+   },
+   "introspection": false
+  },
+  {
+   "source": "query A { a } mutation B { b } subscription C { c }",
+   "operationName": null,
+   "operations": [
+    {
+     "type": "query",
+     "nom": "A"
+    },
+    {
+     "type": "mutation",
+     "nom": "B"
+    },
+    {
+     "type": "subscription",
+     "nom": "C"
+    }
+   ],
+   "choisie": null,
+   "introspection": false
+  },
+  {
+   "source": "query A { a } mutation B { b }",
+   "operationName": "Z",
+   "operations": [
+    {
+     "type": "query",
+     "nom": "A"
+    },
+    {
+     "type": "mutation",
+     "nom": "B"
+    }
+   ],
+   "choisie": null,
+   "introspection": false
+  },
+  {
+   "source": "fragment F on User { id name } query Q { me { ...F } }",
+   "operationName": null,
+   "operations": [
+    {
+     "type": "query",
+     "nom": "Q"
+    }
+   ],
+   "choisie": {
+    "type": "query",
+    "nom": "Q"
+   },
+   "introspection": false
+  },
+  {
+   "source": "# query Fake { x }\nquery Real { field(arg: \"mutation X { }\") }",
+   "operationName": null,
+   "operations": [
+    {
+     "type": "query",
+     "nom": "Real"
+    }
+   ],
+   "choisie": {
+    "type": "query",
+    "nom": "Real"
+   },
+   "introspection": false
+  },
+  {
+   "source": "query Doc { f(a: \"\"\" } mutation Evil { \"\"\") }",
+   "operationName": null,
+   "operations": [
+    {
+     "type": "query",
+     "nom": "Doc"
+    }
+   ],
+   "choisie": {
+    "type": "query",
+    "nom": "Doc"
+   },
+   "introspection": false
+  },
+  {
+   "source": "query Doc2 { f(a: \"\"\" \\\"\"\" mutation Evil { \"\"\") }",
+   "operationName": null,
+   "operations": [
+    {
+     "type": "query",
+     "nom": "Doc2"
+    }
+   ],
+   "choisie": {
+    "type": "query",
+    "nom": "Doc2"
+   },
+   "introspection": false
+  },
+  {
+   "source": "query Q @cached(opts: {ttl: 60}) { a }",
+   "operationName": null,
+   "operations": [
+    {
+     "type": "query",
+     "nom": "Q"
+    }
+   ],
+   "choisie": {
+    "type": "query",
+    "nom": "Q"
+   },
+   "introspection": false
+  },
+  {
+   "source": "fragment F on T { a } { ...F }",
+   "operationName": null,
+   "operations": [
+    {
+     "type": "query",
+     "nom": null
+    }
+   ],
+   "choisie": {
+    "type": "query",
+    "nom": null
+   },
+   "introspection": false
+  },
+  {
+   "source": "query IntrospectionQuery { __schema { queryType { name } types { name } } }",
+   "operationName": null,
+   "operations": [
+    {
+     "type": "query",
+     "nom": "IntrospectionQuery"
+    }
+   ],
+   "choisie": {
+    "type": "query",
+    "nom": "IntrospectionQuery"
+   },
+   "introspection": true
+  },
+  {
+   "source": "{ __type(name: \"User\") { fields { name } } }",
+   "operationName": null,
+   "operations": [
+    {
+     "type": "query",
+     "nom": null
+    }
+   ],
+   "choisie": {
+    "type": "query",
+    "nom": null
+   },
+   "introspection": true
+  },
+  {
+   "source": "{ user { __typename } }",
+   "operationName": null,
+   "operations": [
+    {
+     "type": "query",
+     "nom": null
+    }
+   ],
+   "choisie": {
+    "type": "query",
+    "nom": null
+   },
+   "introspection": false
+  },
+  {
+   "source": "query Q { f(a: \"say \\\"hi\\\" }\") }",
+   "operationName": null,
+   "operations": [
+    {
+     "type": "query",
+     "nom": "Q"
+    }
+   ],
+   "choisie": {
+    "type": "query",
+    "nom": "Q"
+   },
+   "introspection": false
+  },
+  {
+   "source": "query Q($ids: [ID!] = [\"1\", \"2\"]) { nodes(ids: $ids) { id } }",
+   "operationName": null,
+   "operations": [
+    {
+     "type": "query",
+     "nom": "Q"
+    }
+   ],
+   "choisie": {
+    "type": "query",
+    "nom": "Q"
+   },
+   "introspection": false
+  },
+  {
+   "source": "query  ,  Q2  { a }",
+   "operationName": null,
+   "operations": [
+    {
+     "type": "query",
+     "nom": "Q2"
+    }
+   ],
+   "choisie": {
+    "type": "query",
+    "nom": "Q2"
+   },
+   "introspection": false
+  },
+  {
+   "source": "query Q($f: Filter = {a: {b: [1, {c: 2}]}}) { list(filter: $f) { id } }",
+   "operationName": null,
+   "operations": [
+    {
+     "type": "query",
+     "nom": "Q"
+    }
+   ],
+   "choisie": {
+    "type": "query",
+    "nom": "Q"
+   },
+   "introspection": false
+  },
+  {
+   "source": "mutation { like(id: 1) { count } }",
+   "operationName": null,
+   "operations": [
+    {
+     "type": "mutation",
+     "nom": null
+    }
+   ],
+   "choisie": {
+    "type": "mutation",
+    "nom": null
+   },
+   "introspection": false
+  },
+  {
+   "source": "query Frag { ...on Query { __schema { types { name } } } }",
+   "operationName": null,
+   "operations": [
+    {
+     "type": "query",
+     "nom": "Frag"
+    }
+   ],
+   "choisie": {
+    "type": "query",
+    "nom": "Frag"
+   },
+   "introspection": true
+  },
+  {
+   "source": "﻿query Bom { a }",
+   "operationName": null,
+   "operations": [
+    {
+     "type": "query",
+     "nom": "Bom"
+    }
+   ],
+   "choisie": {
+    "type": "query",
+    "nom": "Bom"
+   },
+   "introspection": false
+  },
+  {
+   "source": "query Num($n: Float = -1.5e3) { a(n: $n) }",
+   "operationName": null,
+   "operations": [
+    {
+     "type": "query",
+     "nom": "Num"
+    }
+   ],
+   "choisie": {
+    "type": "query",
+    "nom": "Num"
+   },
+   "introspection": false
+  },
+  {
+   "source": "query First { a } query Second { b }",
+   "operationName": "Second",
+   "operations": [
+    {
+     "type": "query",
+     "nom": "First"
+    },
+    {
+     "type": "query",
+     "nom": "Second"
+    }
+   ],
+   "choisie": {
+    "type": "query",
+    "nom": "Second"
+   },
+   "introspection": false
+  },
+  {
+   "source": "{ a } { b }",
+   "operationName": null,
+   "operations": [
+    {
+     "type": "query",
+     "nom": null
+    },
+    {
+     "type": "query",
+     "nom": null
+    }
+   ],
+   "choisie": null,
+   "introspection": false
+  }
+ ]
+}

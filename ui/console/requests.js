@@ -1,4 +1,4 @@
-/* Vue « Requetes » — tableau virtualise — INTERCEPTOR (by NeoZ)
+/* Vue « Requetes » — tableau virtualise — SWIFT (by NeoZ)
  *
  * Le tableau n impose aucune limite d affichage : seules les lignes visibles
  * sont construites, ce qui permet de garder des centaines de milliers
@@ -29,6 +29,7 @@ const FACETS = [
   { key: 'doc',    label: 'Pages',      test: r => r.type === 'main_frame' || r.type === 'sub_frame' },
   { key: 'asset',  label: 'Ressources', test: r => ['image', 'media', 'font', 'stylesheet', 'script', 'imageset'].includes(r.type) },
   { key: 'flux',   label: 'Flux',       test: r => r.type === 'websocket' || r.wsFrames > 0 || r.sseEvents > 0 },
+  { key: 'gql',    label: 'GraphQL',    test: r => !!r.gql },
   { key: 'err',    label: 'Erreurs',    test: r => !!r.error || r.statusCode >= 400 },
   { key: 'risk',   label: 'Alertes',    test: r => r.risk && r.risk !== 'none' && r.risk !== 'info', warn: true },
   { key: 'third',  label: 'Tiers',      test: r => r.thirdParty },
@@ -148,15 +149,24 @@ function rowHeight() {   // hauteur reelle, suit echelle et densite (voir rowsiz
 }
 
 /* --------------------------------- En-tete -------------------------------- */
+const COLONNES_ETROITES = new Set(['risk', 'flag', 'color']);
+
 function buildHead() {
   const head = clear($('#thead'));
   for (const key of activeColumns()) {
     const col = COLUMNS[key];
+    const triee = state.sort.key === key;
+    const fleche = triee ? (state.sort.dir === 'asc' ? '↑' : '↓') : '';
+    /* Une colonne d une seule marque (« ! », « ★ », « ● ») n a pas la place
+       d une fleche en plus : triee, elle montre la fleche a la place. */
+    const libelle = COLONNES_ETROITES.has(key)
+      ? (triee ? fleche : columnLabel(key))
+      : columnLabel(key) + (triee ? ' ' + fleche : '');
     const cell = el('div', {
-      class: (state.sort.key === key ? 'sorted ' : '') + (col.num ? 'num' : ''),
+      class: (triee ? 'sorted ' : '') + (col.num ? 'num' : ''),
       title: columnTitle(key) + ' — ' + t('cliquer pour trier'),
       dataset: { col: key }
-    }, columnLabel(key) + (state.sort.key === key ? (state.sort.dir === 'asc' ? ' ↑' : ' ↓') : ''));
+    }, libelle);
     cell.addEventListener('click', () => setSort(key));
     cell.appendChild(grip(key, cell, { columns: activeColumns }));
     head.appendChild(cell);
@@ -302,7 +312,10 @@ export function renderRows(depuisDefilement = false) {
   const ctx = {
     timeFormat: (state.config && state.config.timeFormat) || 'clock',
     first: firstTime,
-    span: Math.max(1, lastTime - firstTime)
+    span: Math.max(1, lastTime - firstTime),
+    /* Le chemin d un appel GraphQL porte le nom de son operation, sauf si la
+       colonne GraphQL l affiche deja : jamais deux fois la meme chose. */
+    gqlDansChemin: !columns.includes('graphql')
   };
   const out = frag();
 

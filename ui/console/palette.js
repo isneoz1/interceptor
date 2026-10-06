@@ -1,4 +1,4 @@
-/* Palette de commandes — INTERCEPTOR (by NeoZ)
+/* Palette de commandes — SWIFT (by NeoZ)
  *
  * Ctrl+K, on tape ce qu on veut faire, Entree. Dix-sept vues, vingt-trois
  * outils et les actions de l en-tete deviennent atteignables sans savoir ou

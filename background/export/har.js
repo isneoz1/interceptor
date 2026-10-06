@@ -1,4 +1,4 @@
-/* Export HAR 1.2 — INTERCEPTOR (by NeoZ)
+/* Export HAR 1.2 — SWIFT (by NeoZ)
  * Format standard, relisible par Firefox DevTools, Charles, Fiddler, Postman...
  */
 import { headerGet, parseContentType } from '../lib/util.js';
@@ -49,7 +49,7 @@ function contentOf(rec) {
     text: body.text || body.base64 || ''
   };
   if (body.base64) content.encoding = 'base64';
-  if (body.truncated) content.comment = 'tronque par INTERCEPTOR';
+  if (body.truncated) content.comment = 'tronque par SWIFT';
   return content;
 }
 
@@ -140,7 +140,7 @@ export function buildHar(records, meta = {}) {
       connection: rec.requestId ? String(rec.requestId) : undefined,
       comment: rec.error || undefined,
       // Extensions proprietaires : prefixe _ conforme a la specification HAR.
-      _interceptor: {
+      _swift: {
         id: rec.id,
         sources: rec.sources,
         type: rec.type,
@@ -182,11 +182,11 @@ export function buildHar(records, meta = {}) {
   return {
     log: {
       version: '1.2',
-      creator: { name: 'INTERCEPTOR', version: VERSION, comment: 'cree par NeoZ' },
+      creator: { name: 'SWIFT', version: VERSION, comment: 'cree par NeoZ' },
       browser: { name: 'Firefox', version: meta.browserVersion || 'unknown' },
       pages,
       entries,
-      comment: 'Export INTERCEPTOR — ' + entries.length + ' requetes, sans doublon.'
+      comment: 'Export SWIFT — ' + entries.length + ' requetes, sans doublon.'
     }
   };
 }

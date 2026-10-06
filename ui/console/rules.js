@@ -1,4 +1,4 @@
-/* Vue « Regles » — interception active — INTERCEPTOR (by NeoZ)
+/* Vue « Regles » — interception active — SWIFT (by NeoZ)
  *
  * Editeur visuel : chaque regle se construit avec des champs et des boutons.
  * Le mode JSON reste disponible pour les cas avances et les copier-coller.
@@ -49,7 +49,7 @@ const PRESETS = [
     rule: () => ({
       id: uid('user-agent'), enabled: false, name: 'User-Agent impose',
       match: { host: 'exemple.com' }, action: 'modifyHeaders',
-      requestHeaders: [{ name: 'User-Agent', value: 'INTERCEPTOR', op: 'set' }]
+      requestHeaders: [{ name: 'User-Agent', value: 'SWIFT', op: 'set' }]
     })
   },
   {
@@ -64,7 +64,7 @@ const PRESETS = [
     rule: () => ({
       id: uid('simulation'), enabled: false, name: 'Reponse simulee',
       match: { urlRegex: '/api/statut' }, action: 'mock',
-      mock: { contentType: 'application/json; charset=utf-8', body: '{"statut":"simule par INTERCEPTOR"}' }
+      mock: { contentType: 'application/json; charset=utf-8', body: '{"statut":"simule par SWIFT"}' }
     })
   },
   {
@@ -106,7 +106,7 @@ export function render() {
 
   box.appendChild(sec('Interception active', tp('{n} regle(s)', { n: list.length })));
   box.appendChild(el('p', { class: 'note warn', text: t(
-    'Par defaut INTERCEPTOR observe sans jamais modifier le trafic. Activer le moteur autorise le blocage, la redirection et la reecriture d entetes. A n utiliser que sur des cibles dont vous avez la responsabilite.') }));
+    'Par defaut SWIFT observe sans jamais modifier le trafic. Activer le moteur autorise le blocage, la redirection et la reecriture d entetes. A n utiliser que sur des cibles dont vous avez la responsabilite.') }));
 
   /* Interrupteur principal */
   const master = el('div', { class: 'opt' }, [

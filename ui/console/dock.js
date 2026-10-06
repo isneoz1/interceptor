@@ -1,4 +1,4 @@
-/* Emplacement de la console — INTERCEPTOR (by NeoZ)
+/* Emplacement de la console — SWIFT (by NeoZ)
  *
  * Le menu d ancrage de la barre d en-tete : le meme choix qu au clic sur
  * l icone (onglet, fenetre detachee, panneau lateral, fenetre compacte), plus

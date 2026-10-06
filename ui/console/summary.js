@@ -1,4 +1,4 @@
-/* Vue « Synthese » — agregats de la capture — INTERCEPTOR (by NeoZ)
+/* Vue « Synthese » — agregats de la capture — SWIFT (by NeoZ)
  *
  * Tous les chiffres sont calcules a partir des enregistrements reels du
  * perimetre choisi. Aucune estimation, aucune extrapolation : si une donnee
@@ -216,7 +216,7 @@ function textSummary(list) {
   const errors = list.filter(r => r.error || r.statusCode >= 400).length;
   const alerts = list.reduce((n, r) => n + (r.findings || 0), 0);
   const lines = [
-    'INTERCEPTOR — synthese',
+    'SWIFT — synthese',
     'Requetes : ' + list.length,
     'Domaines : ' + hosts.size,
     'Recu : ' + bytes(down),

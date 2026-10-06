@@ -1,4 +1,4 @@
-/* Panneau « Cles et signatures » — INTERCEPTOR (by NeoZ)
+/* Panneau « Cles et signatures » — SWIFT (by NeoZ)
  *
  * Les operations qui demandent une cle ou un essai systematique : XOR,
  * Cesar, Vigenere. Plus la reconnaissance d une empreinte et la lecture des

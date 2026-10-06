@@ -1,4 +1,4 @@
-/* English content for the Help and Tutorial views — INTERCEPTOR (by NeoZ)
+/* English content for the Help and Tutorial views — SWIFT (by NeoZ)
  *
  * The French text lives in the views themselves; this file mirrors it in
  * English so the language switch changes everything, not just the labels.
@@ -12,7 +12,7 @@ export const HELP_SECTIONS = [
   },
   {
     h: 'Three steps to get going',
-    p: ['INTERCEPTOR starts on its own and captures continuously. There is nothing to configure to begin.'],
+    p: ['SWIFT starts on its own and captures continuously. There is nothing to configure to begin.'],
     ul: [
       '1. Browse normally: every request appears live in the Requests view.',
       '2. Click a row: the bottom panel shows EVERYTHING captured, tab by tab.',
@@ -82,7 +82,7 @@ export const HELP_SECTIONS = [
       'One working text, twenty-one tabs looking at it. You paste a value once — from the clipboard, from a row context menu, or from a detail tab — and every tool works on it. Everything is computed in the page: none of these functions sends a single request.'
     ],
     table: [
-      ['Transform', '137 transformations in eighteen families: base64 and base64 URL, base32, base58, base45, Ascii85, URL, HTML entities, hexadecimal, binary, octal, Unicode escapes, punycode, JSON, YAML, CSV, XML, SAML, DNS messages, WebAuthn, gzip and deflate, letter case, lines, string escaping, Protocol Buffers, MessagePack, CBOR, ASN.1. "Try everything" applies every decoding — except DNS and WebAuthn, which would read any bytes — and keeps only the readable results.'],
+      ['Transform', '138 transformations in eighteen families: base64 and base64 URL, base32, base58, base45, Ascii85, URL, HTML entities, hexadecimal, binary, octal, Unicode escapes, punycode, JSON, YAML, CSV, XML, SAML, DNS messages, WebAuthn, gzip and deflate, letter case, lines, string escaping, Protocol Buffers, MessagePack, CBOR, ASN.1. "Try everything" applies every decoding — except DNS and WebAuthn, which would read any bytes — and keeps only the readable results.'],
       ['Keys and trials', 'XOR with a repeated key, a sweep of the 255 single-byte keys, all twenty-five Caesar shifts, Vigenere. These ciphers protect nothing: they read back a deliberately obscured value.'],
       ['JWT', 'Header, payload, validity, time left. The signature is really verified across the twelve common algorithms: HS256 to HS512 with the shared key, RS, PS and ES with the public key pasted as PEM or JWK. With no key the screen says so, rather than letting a decoded token pass for a valid one.'],
       ['Encryption', 'AES-GCM, AES-CBC and AES-CTR both ways, with initialisation vector and authenticated data; PBKDF2 and HKDF derivation; verification of a detached RSA, RSA-PSS, ECDSA or HMAC signature. Everything goes through the browser engine, nothing leaves the machine.'],
@@ -122,6 +122,17 @@ export const HELP_SECTIONS = [
     ]
   },
   {
+    h: 'What is read inside the traffic',
+    p: ['Some exchanges tell nothing to whoever only looks at the URL and the status. A request detail opens them.'],
+    table: [
+      ['GraphQL', 'The operation that runs (GraphQL column, gql: search), the variables, batches, the Apollo persisted query with its SHA-256 recomputed, and the real verdict of the response: complete, partial, execution error or request error.'],
+      ['Browser reports', 'CSP violations, network errors (NEL), deprecated APIs, interventions: the POSTs the browser sends on its own, read field by field (tag:rapport-navigateur), and the Reporting-Endpoints, Report-To and NEL headers that ask for them.'],
+      ['gRPC-Web', 'The frames, the protobuf they carry, and the grpc-status of the trailers: it alone says whether the call succeeded.'],
+      ['Signatures and passkeys', 'HTTP message signatures (RFC 9421) rebuilt and verified, WebAuthn registrations and sign-ins, DNS over HTTPS.'],
+      ['Security', 'OAuth 2.0 and OpenID Connect, SAML, content digests, response protections, a CSP derived from what actually loaded.']
+    ]
+  },
+  {
     h: 'Why there are never duplicates',
     p: [
       'Three layers can see the same request: webRequest, the page probes and PerformanceObserver. Without correlation, one row per layer would appear.',
@@ -152,15 +163,16 @@ export const HELP_SECTIONS = [
       ['Markdown', 'Alert report sorted by severity.'],
       ['cURL script', 'Every filtered request, ready to replay from a terminal.'],
       ['Postman collection', 'v2.1 format, grouped by domain, with the responses actually observed.'],
+      ['OpenAPI 3.1', 'The API calls described: operations, path parameters, schemas of the bodies sent and received, statuses, authentication. One origin per document, only what was observed, with no captured value.'],
       ['URL list', 'A text file, one URL per line.'],
-      ['HAR import', 'Read a capture made elsewhere. A HAR exported by INTERCEPTOR comes back identical.']
+      ['HAR import', 'Read a capture made elsewhere. A HAR exported by SWIFT comes back identical.']
     ],
     p: ['Per request, the Copy menu produces cURL, wget, HTTPie, fetch, Node, Python, PowerShell, the raw HTTP request or response, a Markdown sheet or the complete JSON record.']
   },
   {
     h: 'Changing traffic: rules and replay',
     p: [
-      'By default INTERCEPTOR observes without ever modifying or emitting anything.',
+      'By default SWIFT observes without ever modifying or emitting anything.',
       'The Rules view can block, redirect (with $1..$9 capture groups), force HTTPS, rewrite headers and mock a response. While mocking, the real server body is still recorded: the page receives the mock, you see both. The original status code is kept, because Firefox does not let an extension rewrite it.',
       'The Replay tab, inside a request detail, sends an editable copy of the request. Rules and replay are off by default and require explicit confirmation. Use them only on targets you are responsible for.'
     ]
@@ -199,9 +211,9 @@ export const HELP_SECTIONS = [
 export const LESSONS = {
   bienvenue: {
     title: 'Welcome',
-    goal: 'Understand what INTERCEPTOR does',
+    goal: 'Understand what SWIFT does',
     body: [
-      { p: 'INTERCEPTOR watches everything Firefox sends and receives: pages, images, API calls, WebSockets, cookies, certificates. It starts on its own and needs no configuration.' },
+      { p: 'SWIFT watches everything Firefox sends and receives: pages, images, API calls, WebSockets, cookies, certificates. It starts on its own and needs no configuration.' },
       { p: 'Several capture layers watch the traffic at once, and a correlator glues them back together: one real request always yields one row, never two.' },
       { ul: [
         'The **console** (this page) is the full workbench.',
@@ -295,6 +307,7 @@ export const LESSONS = {
         '**Markdown** alert report.',
         '**cURL script**: every filtered request, ready to replay.',
         '**Postman collection**: grouped by domain, with the observed responses.',
+        '**OpenAPI 3.1 description**: the API calls described, for Swagger UI, Redoc or a client generator.',
         '**URL list**: a plain text file.'
       ] },
       { p: 'Exports cover the filtered rows, or your selection when you have one. The file is written by the core: closing this window interrupts nothing.' },
@@ -321,7 +334,7 @@ export const LESSONS = {
     title: 'Changing traffic',
     goal: 'Block, redirect, mock, replay — knowingly',
     body: [
-      { p: 'By default INTERCEPTOR **observes without ever changing anything**. Two mechanisms can change that, both off at first.' },
+      { p: 'By default SWIFT **observes without ever changing anything**. Two mechanisms can change that, both off at first.' },
       { ul: [
         'The **rules engine**: block a request, redirect it, force HTTPS, rewrite headers, or **mock a response** (the real body is still recorded).',
         '**Replay**: send a request again after editing method, URL, headers or body.'
@@ -337,7 +350,7 @@ export const LESSONS = {
       { p: 'One **working text**, twenty-one tabs looking at it. You paste a value once — from the clipboard, from a row context menu, or from the "Toolbox" button on a response body — and every tool works on it.' },
       { p: 'Everything is computed in the page. None of these tools sends a single request: not on load, not on click.' },
       { ul: [
-        '**Transform**: 137 transformations. "Try everything" applies each decoding (except DNS and WebAuthn) and keeps only the readable results — the right first move on an unknown value.',
+        '**Transform**: 138 transformations. "Try everything" applies each decoding (except DNS and WebAuthn) and keeps only the readable results — the right first move on an unknown value.',
         '**JWT**: header, payload, expiry, and the signature really verified when you provide the key (twelve algorithms, shared key or public key).',
         '**Encryption** and **Hashes**: AES, PBKDF2, HKDF, MD5, SHA, CRC-32, HMAC.',
         '**Binary**: Protocol Buffers, MessagePack, CBOR, X.509 certificates, character sets.',
@@ -352,7 +365,7 @@ export const LESSONS = {
     goal: 'Know what is captured, and what cannot be',
     body: [
       { p: 'The **coverage test** in Diagnostics fires real requests from the active tab, towards its own origin only: fetch, POST with body, XHR, image, sendBeacon, EventSource, WebSocket and a script tag. It then counts the rows that appeared.' },
-      { p: 'What no Firefox extension can do, and INTERCEPTOR therefore does not claim to do:' },
+      { p: 'What no Firefox extension can do, and SWIFT therefore does not claim to do:' },
       { ul: [
         'Privileged pages: about:config, about:addons, New Tab, error pages.',
         'Domains reserved by Mozilla: accounts.firefox.com, addons.mozilla.org.',

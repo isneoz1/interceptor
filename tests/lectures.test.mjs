@@ -1,4 +1,4 @@
-/* Lectures de la 4.4 — INTERCEPTOR (by NeoZ)
+/* Lectures de la 4.4 — SWIFT (by NeoZ)
  *
  *   node tests/lectures.test.mjs
  *

@@ -1,5 +1,5 @@
 name: Feature request
-description: Something INTERCEPTOR should be able to do
+description: Something SWIFT should be able to do
 labels: [enhancement]
 body:
   - type: markdown

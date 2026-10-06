@@ -1,4 +1,4 @@
-/* Demonstration filmee — INTERCEPTOR (by NeoZ)
+/* Demonstration filmee — SWIFT (by NeoZ)
  *
  *   node tools/demo.mjs
  *
@@ -32,7 +32,7 @@ const MS_PAR_LETTRE = 90;
 
 const scene = await ouvrirScene({ langue: 'en' });
 const SORTIE = path.join(scene.RACINE, 'docs');
-const IMAGES = fs.mkdtempSync(path.join(process.env.TEMP || '/tmp', 'interceptor-demo-'));
+const IMAGES = fs.mkdtempSync(path.join(process.env.TEMP || '/tmp', 'swift-demo-'));
 
 const navigateur = await ouvrirChrome({ largeur: LARGEUR, hauteur: HAUTEUR, echelle: 1 });
 const page = navigateur.page;
@@ -177,7 +177,7 @@ console.log('Tournage…');
       spectateur decide de rester : lui faire chercher ce qu il regarde les
       gaspille. */
 await agir('window.__vue("requests")', 0.1);
-await carton('INTERCEPTOR',
+await carton('SWIFT',
   'Every request Firefox makes — captured, explained, rewritable.', 2.0);
 await decouvrir(0.4);
 

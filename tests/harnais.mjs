@@ -1,4 +1,4 @@
-/* Harnais de test — INTERCEPTOR (cree par NeoZ)
+/* Harnais de test — SWIFT (cree par NeoZ)
  *
  * Les modules du noyau et de l interface sont ecrits pour un navigateur : ils
  * lisent `browser`, `document`, `window`. Ce fichier fournit le strict
@@ -105,9 +105,9 @@ function stockage() {
 export function installerNavigateur() {
   const api = {
     runtime: {
-      id: 'interceptor@test',
+      id: 'swift@test',
       getURL: chemin => 'moz-extension://test/' + String(chemin).replace(/^\//, ''),
-      getManifest: () => ({ version: '0.0.0-test', name: 'INTERCEPTOR' }),
+      getManifest: () => ({ version: '0.0.0-test', name: 'SWIFT' }),
       sendMessage: async () => ({}),
       connect: () => ({ onMessage: evenement(), onDisconnect: evenement(), postMessage() {} }),
       reload() {},
@@ -341,6 +341,8 @@ export function installerDom() {
     body: new Noeud('body'),
     head: new Noeud('head'),
     createElement: nom => new Noeud(nom),
+    /* Les icones de l interface sont du SVG : meme noeud, autre espace de noms. */
+    createElementNS: (_espace, nom) => new Noeud(nom),
     createTextNode: texte => Object.assign(new Noeud('#text'), { textContent: String(texte) }),
     createDocumentFragment: () => new Noeud('#fragment'),
     getElementById: () => null,

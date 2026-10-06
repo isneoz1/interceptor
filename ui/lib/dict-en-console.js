@@ -1,4 +1,4 @@
-/* Dictionnaire anglais — reste de la console — INTERCEPTOR (by NeoZ)
+/* Dictionnaire anglais — reste de la console — SWIFT (by NeoZ)
  *
  * Les libelles du tableau, du detail, des flux, des menus et de la fenetre
  * compacte. Avec ce fichier, le bouton FR / EN bascule vraiment toute
@@ -50,6 +50,22 @@ export const EN_CONSOLE = {
   'Fenetres': 'Windows',
   'Ouvrir dans un onglet': 'Open in a tab',
   'Ouvrir le panneau lateral': 'Open the sidebar panel',
+  'Console complete': 'Full console',
+  'Panneau': 'Sidebar',
+  'Ouvrir la console complete dans un onglet': 'Open the full console in a tab',
+  'Suivre le flux en direct': 'Follow the live stream',
+  'Capture active — cliquer pour mettre en pause': 'Capturing — click to pause',
+  'Capture en pause — cliquer pour reprendre': 'Capture paused — click to resume',
+  'Filtres enregistres et recherches recentes': 'Saved filters and recent searches',
+  'Cherche aussi dans les corps, les entetes, les trames et les piles': 'Also searches bodies, headers, frames and stacks',
+  'Perimetre': 'Scope',
+  'Comparer exactement deux lignes selectionnees': 'Compare exactly two selected rows',
+  'Creer une regle de blocage': 'Create a blocking rule',
+  'Francais / Anglais': 'French / English',
+  'Emplacement': 'Placement',
+  'Navigation principale': 'Main navigation',
+  'Tableau des requetes': 'Request table',
+  'Onglets du detail': 'Detail tabs',
   'Maintenance': 'Maintenance',
   'Voir les raccourcis clavier': 'Show the keyboard shortcuts',
   'Rafraichir la liste des onglets': 'Refresh the tab list',
@@ -146,7 +162,7 @@ export const EN_CONSOLE = {
   'Meme statut': 'Same status',
   'Activez « Journal interne » dans Reglages -> Journal interne pour enregistrer les erreurs et les commandes du noyau.':
     'Turn on « Internal log » in Settings -> Internal log to record the errors and commands of the core.',
-  'INTERCEPTOR observe par lui-meme': 'INTERCEPTOR observed by itself',
+  'SWIFT observe par lui-meme': 'SWIFT observed by itself',
   'ce qui doit s arreter': 'what must stop',
   'Vider ce journal': 'Clear this log',
   'un entete par ligne, format « Nom: valeur »': 'one header per line, « Name: value » format',

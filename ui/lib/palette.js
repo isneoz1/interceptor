@@ -1,4 +1,4 @@
-/* Palette de commandes — INTERCEPTOR (by NeoZ)
+/* Palette de commandes — SWIFT (by NeoZ)
  *
  * Dix-sept vues, vingt-trois outils, une trentaine d actions d en-tete et les
  * sept cents lignes des tables de reference : tout cela s atteint a la souris,

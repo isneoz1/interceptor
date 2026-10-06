@@ -1,4 +1,4 @@
-# Getting INTERCEPTOR known
+# Getting SWIFT known
 
 Everything here needs your own accounts, so none of it can be automated. The steps are in
 order of impact. Every claim in the texts below is checkable in the repository — keep it
@@ -33,16 +33,18 @@ comment yourself, and never repost the same text elsewhere on the same day.
 Title (80 characters at most):
 
 ```
-Show HN: Interceptor – a Firefox network inspector that proves what it shows
+Show HN: SWIFT – a Firefox network inspector that proves what it shows
 ```
 
 Text:
 
 ```
-I built Interceptor, a Firefox extension, for the questions the network panel can't
+I built SWIFT, a Firefox extension, for the questions the network panel can't
 answer: which line of JavaScript made this call, what a WebSocket frame means (socket.io,
 STOMP, MQTT, GraphQL…), which preflight made a CORS request fail, whether a
-Content-Digest really matches the body, what a passkey sign-in actually proved.
+Content-Digest really matches the body, what a passkey sign-in actually proved, which
+GraphQL operation hides behind yet another POST /graphql. It can also turn the captured API
+calls into an OpenAPI 3.1 description.
 
 Its one rule: show only what the browser measured or sent. When a value can't be proven,
 it says why instead of guessing — a cross-origin timing hidden without Timing-Allow-Origin
@@ -54,8 +56,8 @@ sees a response body, so a Content-Digest can't be checked on most compressed re
 an HTTP message signature (RFC 9421) can only be verified if the signature base is rebuilt
 byte for byte — the test suite rebuilds and verifies the RFC's own worked examples.
 
-No telemetry, no server, no dependencies, MIT. 1788 assertions run under Node, many of
-them against published vectors (RFCs, Yubico's fido2, dnspython).
+No telemetry, no server, no dependencies, MIT. 1956 assertions run under Node, many of
+them against published vectors (RFCs, Yubico's fido2, dnspython, graphql-core).
 
 https://github.com/isneoz1/interceptor
 ```
@@ -74,11 +76,12 @@ I made a network inspector for Firefox that shows the JS stack behind every requ
 Text:
 
 ```
-Interceptor sits next to the built-in network panel and answers what it can't: the
+SWIFT sits next to the built-in network panel and answers what it can't: the
 JavaScript call stack behind each fetch/XHR/WebSocket, WebSocket frames decoded by
 subprotocol, the CORS preflight that blocked a request, cookies rejected and why, every
-certificate of the chain read in full. It also verifies things rather than repeating them:
-digests, HTTP message signatures, passkey sign-ins.
+certificate of the chain read in full, the GraphQL operation behind each POST /graphql. It
+also verifies things rather than repeating them: digests, HTTP message signatures, passkey
+sign-ins — and exports the API calls it saw as an OpenAPI 3.1 description.
 
 Nothing leaves your machine — no telemetry, no server, no dependencies. English and French.
 Source and install: https://github.com/isneoz1/interceptor
@@ -101,13 +104,14 @@ read.
 Un journal, pas une dépêche :
 
 ```
-INTERCEPTOR : un inspecteur réseau pour Firefox qui prouve ce qu'il affiche
+SWIFT : un inspecteur réseau pour Firefox qui prouve ce qu'il affiche
 
-Je développe INTERCEPTOR, une extension Firefox qui répond aux questions que le panneau
+Je développe SWIFT, une extension Firefox qui répond aux questions que le panneau
 réseau intégré laisse sans réponse : quelle ligne de JavaScript a lancé cet appel, ce que
 veut dire une trame WebSocket (socket.io, STOMP, MQTT, GraphQL…), quel preflight a fait
 échouer une requête CORS, si un Content-Digest correspond vraiment au corps, ce qu'une
-connexion par clé d'accès a réellement prouvé.
+connexion par clé d'accès a réellement prouvé, quelle opération GraphQL se cache derrière
+un énième POST /graphql. Il sait aussi décrire en OpenAPI 3.1 les appels d'API capturés.
 
 Sa règle : n'afficher que ce que le navigateur a mesuré ou envoyé. Quand une valeur ne
 peut pas être prouvée, il dit pourquoi au lieu de deviner.

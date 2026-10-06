@@ -1,4 +1,4 @@
-/* gRPC-Web — INTERCEPTOR (by NeoZ)
+/* gRPC-Web — SWIFT (by NeoZ)
  *
  * gRPC ne passe pas tel quel dans un navigateur : HTTP/2 y est hors de portee
  * du code de page, et les trailers HTTP aussi. gRPC-Web est la variante que

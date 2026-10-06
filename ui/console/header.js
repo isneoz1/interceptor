@@ -1,4 +1,4 @@
-/* Barre d en-tete de la console — INTERCEPTOR (by NeoZ)
+/* Barre d en-tete de la console — SWIFT (by NeoZ)
  *
  * Libelles traduits, bouton de capture, perimetre, langue, menus Exporter et
  * Actions, imports de fichiers. La coquille (console.js) fournit ce dont ce
@@ -34,8 +34,8 @@ export function applyCaptureButton() {
   const btn = $('#capture');
   btn.classList.toggle('paused', !on);
   $('#capture-label').textContent = on ? t('Capture') : t('En pause');
-  btn.title = on ? 'Capture active — cliquer pour mettre en pause'
-                 : 'Capture en pause — cliquer pour reprendre';
+  btn.title = on ? t('Capture active — cliquer pour mettre en pause')
+                 : t('Capture en pause — cliquer pour reprendre');
 }
 
 export async function buildScope() {
@@ -89,6 +89,9 @@ function applyStaticLabels() {
   set('#keys-title', 'Raccourcis clavier');
   set('#keys-close', 'Fermer');
   set('#dock', null, 'Emplacement de la console');
+  set('#q-saved', null, 'Filtres enregistres et recherches recentes');
+  set('#q-help', null, 'Aide sur la recherche');
+  set('#deep-chip', null, 'Cherche aussi dans les corps, les entetes, les trames et les piles');
   set('#lang', null, 'Francais / Anglais');
   set('#prefs', null, 'Reglages');
 
@@ -104,6 +107,11 @@ function applyStaticLabels() {
   nommer('#dock', 'Emplacement');
   nommer('#lang', 'Langue');
   nommer('#prefs', 'Reglages');
+  /* Boutons du detail reduits a une icone : sans nom, ils ne s annoncent pas. */
+  nommer('#d-prev', 'Ligne precedente');
+  nommer('#d-next', 'Ligne suivante');
+  nommer('#d-flag', 'Epingler');
+  nommer('#d-close', 'Fermer le detail');
   nommer('#side', 'Navigation principale');
   nommer('#tablewrap', 'Tableau des requetes');
   nommer('#dtabs', 'Onglets du detail');
@@ -232,6 +240,7 @@ function bindHeader() {
       { label: t('HAR 1.2 — secrets masques, pour partage'), action: () => exportAs('har-masque') },
       { label: t('JSON complet'), action: () => exportAs('json') },
       { label: 'Collection Postman v2.1', action: () => exportAs('postman') },
+      { label: t('Description OpenAPI 3.1 des appels d API'), action: () => exportAs('openapi') },
       { label: t('Tableau CSV'), action: () => exportAs('csv') },
       { label: t('Rapport d alertes (Markdown)'), action: () => exportAs('findings') },
       { label: t('Liste d URL (.txt)'), action: () => exportAs('urls') },
@@ -283,6 +292,15 @@ async function exportAs(format) {
     // fermeture de cette fenetre.
     const res = await cmd('exportFile', { format, ids: rows.map(r => r.id) });
     if (res.error) return toast(res.error, false);
+    /* Une description OpenAPI vaut pour une origine : on dit laquelle, et ce
+       qui a ete laisse de cote, pour qu un document partiel ne passe pas pour
+       la description de toute la selection. */
+    if (res.openapi) {
+      const o = res.openapi;
+      return toast(tp('{ops} operation(s) de {origine} decrites — {fichier}',
+        { ops: o.operations, origine: o.origine, fichier: res.filename })
+        + (o.ecartees ? ' · ' + tp('{n} appel(s) vers d autres origines laisses de cote', { n: o.ecartees }) : ''));
+    }
     /* Dire combien de valeurs ont ete masquees evite de prendre un export
        assaini pour un trafic qui n avait rien a cacher. */
     return toast(res.masques == null
@@ -368,7 +386,7 @@ async function forgetLastFilter() {
   toast('Dernier filtre enregistre oublie');
 }
 
-/** Import d une session complete exportee en JSON par INTERCEPTOR. */
+/** Import d une session complete exportee en JSON par SWIFT. */
 function importSession() {
   const picker = el('input', { type: 'file', accept: '.json,application/json', style: 'display:none' });
   document.body.appendChild(picker);

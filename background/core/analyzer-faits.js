@@ -1,4 +1,4 @@
-/* Faits constates, et nonce CSP reutilise — INTERCEPTOR (by NeoZ)
+/* Faits constates, et nonce CSP reutilise — SWIFT (by NeoZ)
  *
  * Suite d analyzer-regles.js, dont elle suit la regle : une ALERTE ne sort que
  * pour une faille demontrable ; ce qui est exact sans etre une faille reste un
@@ -16,12 +16,24 @@
  *     l URL qui l a produite. C est la forme d une redirection ouverte ; on ne
  *     pretend pas que le serveur accepterait n importe quelle valeur.
  *
+ *   Mutation GraphQL executee sur une requete GET (fait)
+ *     GraphQL over HTTP (§4.3) interdit d executer une mutation recue en GET ;
+ *     le serveur l a pourtant fait, avec un statut 2xx. Une requete GET part
+ *     d un simple lien ou d une image : c est la forme d une CSRF, que seuls
+ *     les cookies et l absence d autre protection rendraient exploitable.
+ *
+ *   Schema GraphQL livre par introspection (fait)
+ *     La reponse contient data.__schema : le schema entier de l API, avec ses
+ *     types et ses mutations. Beaucoup d API publiques le veulent ainsi.
+ *
  *   Nonce CSP reutilise (alerte)
  *     Un nonce n autorise un script que parce qu il est imprevisible : il doit
  *     changer a chaque reponse. Le meme nonce dans deux reponses distinctes se
  *     constate, et il suffit a un script injecte de le reprendre.
  */
 import { addFinding } from './analyzer-regles.js';
+import { graphqlDe } from './store.js';
+import { lireReponseGraphql } from '../../ui/lib/graphql-http.js';
 
 /* Une valeur plus courte se retrouve partout par hasard (« fr », « 1 », « true ») :
    la dire « renvoyee » ne dirait rien. */
@@ -41,6 +53,8 @@ export const GABARITS_FAITS = {
   reflexionBrute: 'le parametre {nom} ({ou}) revient {n} fois dans la reponse, avec ses caracteres speciaux non echappes',
   reflexion: 'le parametre {nom} ({ou}) revient {n} fois tel quel dans la reponse',
   redirection: 'la redirection {statut} mene exactement a la valeur du parametre {nom} : {cible}',
+  graphqlGetMutation: 'mutation GraphQL executee sur une requete GET (statut {statut}) : GraphQL over HTTP (§4.3) l interdit, et un simple lien ou une image peut la declencher avec les cookies du site',
+  graphqlSchema: 'le serveur a repondu a une introspection GraphQL : son schema ({n} types) est livre a qui le demande',
   ouUrl: 'URL',
   ouCorps: 'corps de la requete'
 };
@@ -126,6 +140,30 @@ export function constaterRedirections(rec, faits, tags) {
       tags.add('redirection-parametree');
     }
   }
+}
+
+/** Les faits d une requete GraphQL : marqueur, mutation en GET, schema livre. */
+export function constaterGraphql(rec, faits, tags) {
+  const requete = graphqlDe(rec);
+  if (!requete) return;
+  tags.add('graphql');
+  const statut = rec.statusCode;
+  const enGet = String(rec.method || '').toUpperCase() === 'GET';
+  if (enGet && statut >= 200 && statut < 300
+      && requete.requetes.some(r => r.operation && r.operation.type === 'mutation')) {
+    faits.push({ type: 'graphql', texte: GABARITS_FAITS.graphqlGetMutation, valeurs: { statut } });
+    tags.add('graphql-mutation-get');
+  }
+  /* Le corps de la reponse n est relu que si la requete demandait le schema :
+     une reponse GraphQL ordinaire peut peser des megaoctets. */
+  if (!requete.requetes.some(r => r.introspection)) return;
+  const corps = rec.responseBody;
+  if (!corps || typeof corps.text !== 'string' || !corps.text || corps.text.length > CORPS_MAX) return;
+  const reponse = lireReponseGraphql(corps.text);
+  const schema = reponse && reponse.resultats.map(r => r.schema).find(Boolean);
+  if (!schema) return;
+  faits.push({ type: 'graphql', texte: GABARITS_FAITS.graphqlSchema, valeurs: { n: schema.types } });
+  tags.add('graphql-introspection');
 }
 
 /* ------------------------------ Nonce CSP --------------------------------- */

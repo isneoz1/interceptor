@@ -1,4 +1,4 @@
-/* Vue « Reglages » — INTERCEPTOR (by NeoZ)
+/* Vue « Reglages » — SWIFT (by NeoZ)
  *
  * Chaque option affichee ici existe dans le noyau et a un effet reel.
  * Les modifications sont appliquees immediatement et conservees.

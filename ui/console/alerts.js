@@ -1,4 +1,4 @@
-/* Vue « Securite » — toutes les alertes de la capture — INTERCEPTOR (by NeoZ) */
+/* Vue « Securite » — toutes les alertes de la capture — SWIFT (by NeoZ) */
 import { $, el, clear, sec, button, vide } from '../lib/dom.js';
 import { redessinerEnPlace } from '../lib/redessin.js';
 import { clock, middle, preuveLisible } from '../lib/format.js';
@@ -59,8 +59,10 @@ function dessiner() {
   const tiles = el('div', { class: 'tiles' });
   const counts = cache.counts || {};
   for (const [key, label] of LEVELS) {
+    /* La couleur d une tuile est celle de sa gravite, comme le filet des
+       constats en dessous — et seulement s il y a quelque chose a compter. */
     const tile = el('div', {
-      class: 'tile' + (key === 'critical' || key === 'high' ? ' alert' : '') + (key === 'critical' && counts[key] ? ' hot' : ''),
+      class: 'tile' + (counts[key] ? ' sev-' + key : ''),
       title: t('Cliquer pour ne garder que ce niveau')
     }, [
       el('b', { text: String(counts[key] || 0) }),

@@ -1,4 +1,4 @@
-/* Un certificat X.509, lu en entier — INTERCEPTOR (by NeoZ)
+/* Un certificat X.509, lu en entier — SWIFT (by NeoZ)
  *
  * Le meme rendu sert a la boite a outils (un bloc PEM colle) et a l onglet
  * Securite (le certificat que Firefox a recu du serveur) : un seul endroit

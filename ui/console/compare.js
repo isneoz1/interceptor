@@ -1,4 +1,4 @@
-/* Vue « Comparaison » — deux requetes cote a cote — INTERCEPTOR (by NeoZ)
+/* Vue « Comparaison » — deux requetes cote a cote — SWIFT (by NeoZ)
  *
  * Selectionnez exactement deux lignes (Ctrl+clic) puis « Comparer ».
  * Les entetes et les corps sont confrontes ligne a ligne : ce qui est identique
@@ -209,7 +209,7 @@ function renderBodyDiff(box, title, a, b, mime) {
 }
 
 function textDiff() {
-  const lines = ['INTERCEPTOR — comparaison', '', 'A : #' + left.id + ' ' + left.method + ' ' + (left.finalUrl || left.url),
+  const lines = ['SWIFT — comparaison', '', 'A : #' + left.id + ' ' + left.method + ' ' + (left.finalUrl || left.url),
                  'B : #' + right.id + ' ' + right.method + ' ' + (right.finalUrl || right.url), ''];
   for (const row of diffHeaders(left.responseHeaders, right.responseHeaders)) {
     if (row.kind === 'same') continue;

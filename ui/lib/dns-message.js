@@ -1,4 +1,4 @@
-/* Messages DNS au format filaire — INTERCEPTOR (by NeoZ)
+/* Messages DNS au format filaire — SWIFT (by NeoZ)
  *
  * DNS par HTTPS (RFC 8484) transporte des messages DNS binaires, dans le
  * parametre `dns=` d un GET (base64url) ou dans le corps d un POST, avec le

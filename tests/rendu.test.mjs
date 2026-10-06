@@ -1,4 +1,4 @@
-/* Rendu reel de l interface — INTERCEPTOR (cree par NeoZ)
+/* Rendu reel de l interface — SWIFT (cree par NeoZ)
  *
  * Les autres suites lisent le source de l interface ; celle-ci l execute. Elle
  * construit les vues, les onglets du detail et les panneaux de la boite a
@@ -209,7 +209,7 @@ const entreeHar = () => ({
     cookies: [{ name: 'sid', value: 'abc', secure: true }]
   },
   timings: { blocked: 1, dns: 2, connect: 3, ssl: 4, send: 1, wait: 200, receive: 3 },
-  _interceptor: {
+  _swift: {
     sources: ['webRequest'], type: 'xhr', tabId: 3, frameId: 0,
     redirects: [{ statusCode: 301, from: 'https://a.test/', to: 'https://b.test/' }],
     websocket: { sent: 1, received: 2, protocols: ['chat'], frames: [{ dir: 'send', ts: 1, data: 'x' }] },
@@ -241,12 +241,12 @@ function deformer(objet, chemin, valeur) {
    personne ne les a verifies. */
 const CHEMINS_HAR = ['request', 'request.headers', 'request.postData',
   'request.postData.params', 'response', 'response.headers', 'response.content',
-  'response.cookies', 'timings', '_interceptor', '_interceptor.sources',
-  '_interceptor.tabId', '_interceptor.redirects', '_interceptor.stack',
-  '_interceptor.websocket', '_interceptor.websocket.frames', '_interceptor.sse',
-  '_interceptor.sse.messages', '_interceptor.rulesApplied',
-  '_interceptor.urlClassification', '_interceptor.frameAncestors',
-  '_interceptor.cookiesChanged', '_interceptor.timeline', '_interceptor.transferSize'];
+  'response.cookies', 'timings', '_swift', '_swift.sources',
+  '_swift.tabId', '_swift.redirects', '_swift.stack',
+  '_swift.websocket', '_swift.websocket.frames', '_swift.sse',
+  '_swift.sse.messages', '_swift.rulesApplied',
+  '_swift.urlClassification', '_swift.frameAncestors',
+  '_swift.cookiesChanged', '_swift.timeline', '_swift.transferSize'];
 const VALEURS_HAR = [undefined, null, 0, -1, '', 'texte', true, [], {}, [null], [0]];
 
 setLang('fr');

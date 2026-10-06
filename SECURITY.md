@@ -11,7 +11,7 @@ what an attacker gains. You will get an acknowledgement within a few days.
 
 ## Scope
 
-INTERCEPTOR runs with broad browser permissions — `<all_urls>`, `webRequest`,
+SWIFT runs with broad browser permissions — `<all_urls>`, `webRequest`,
 `webRequestBlocking`, `cookies`. That makes the following especially worth reporting:
 
 | Area | Why it matters |
@@ -31,7 +31,7 @@ INTERCEPTOR runs with broad browser permissions — `<all_urls>`, `webRequest`,
   think a rule should exist, open a normal feature request.
 - Anything requiring the user to install a modified build.
 
-## What INTERCEPTOR does with your data
+## What SWIFT does with your data
 
 Nothing leaves the machine. No telemetry, no account, no server. Captured traffic lives in
 memory, and reaches disk only if you turn persistence on. See the *Privacy* section of the

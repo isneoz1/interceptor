@@ -1,4 +1,4 @@
-/* Captures d ecran de la documentation — INTERCEPTOR (by NeoZ)
+/* Captures d ecran de la documentation — SWIFT (by NeoZ)
  *
  *   node tools/captures.mjs                     les images
  *   node tools/captures.mjs --texte --lang=fr   le texte rendu, pour le
@@ -190,6 +190,27 @@ if (cible) {
     + '  (' + Math.round(fs.statSync(chemin).size / 1024) + ' Ko)');
 }
 
+/* Un appel GraphQL : sur le reseau, un POST de plus, statut 200. L onglet
+   Reponse dit ce que le statut tait — un resultat partiel, et pourquoi. */
+const appelGraphql = premier.records.find(r => /\/graphql$/.test(r.url || ''));
+if (appelGraphql) {
+  await page('Runtime.evaluate', {
+    expression: 'document.dispatchEvent(new CustomEvent("ic:goto",'
+      + '{ detail: { view: "requests", id: ' + appelGraphql.id + ' } }))'
+  });
+  await patienter(800);
+  await page('Runtime.evaluate', {
+    expression: '(() => { const b = [...document.querySelectorAll("#dtabs .dtab")]'
+      + '.find(x => /^(Response|Reponse)/.test(x.textContent.trim())); if (b) b.click(); })()'
+  });
+  await patienter(600);
+  const { data } = await page('Page.captureScreenshot', { format: 'png' });
+  const chemin = path.join(SORTIE, 'console-graphql.png');
+  fs.writeFileSync(chemin, Buffer.from(data, 'base64'));
+  console.log('  ' + path.relative(RACINE, chemin).replace(/\\/g, '/')
+    + '  (' + Math.round(fs.statSync(chemin).size / 1024) + ' Ko)');
+}
+
 /* L onglet « En-tetes » de la page principale : c est la que se lisent la
    politique CSP et la fraicheur de cache, calculees a partir des entetes. */
 const page1 = premier.records.find(r => r.type === 'main_frame');
@@ -217,9 +238,16 @@ if (page1) {
     + '  (' + Math.round(fs.statSync(chemin).size / 1024) + ' Ko)');
 }
 
-/* La popup, dans sa taille reelle. */
+/* La popup, dans sa taille reelle : celle que fixe ui/popup.css. Une fenetre
+   plus etroite coupait l image a droite, sur le bouton de capture. */
+const TAILLE_POPUP = (() => {
+  const css = fs.readFileSync(path.join(RACINE, 'ui', 'popup.css'), 'utf8');
+  const m = /body\s*\{[^}]*?width:\s*(\d+)px;\s*height:\s*(\d+)px/.exec(css);
+  if (!m) throw new Error('taille de la popup introuvable dans ui/popup.css');
+  return { largeur: Number(m[1]), hauteur: Number(m[2]) };
+})();
 await page('Emulation.setDeviceMetricsOverride', {
-  width: 380, height: 560, deviceScaleFactor: 2, mobile: false
+  width: TAILLE_POPUP.largeur, height: TAILLE_POPUP.hauteur, deviceScaleFactor: 2, mobile: false
 });
 const popupChargee = new Promise(resolve => navigateur.surEvenement('Page.loadEventFired', resolve));
 await page('Page.navigate', { url: 'http://127.0.0.1:' + scene.port + '/ui/popup.html' });

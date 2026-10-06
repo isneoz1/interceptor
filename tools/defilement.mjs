@@ -1,4 +1,4 @@
-/* Audit du defilement — INTERCEPTOR (by NeoZ)
+/* Audit du defilement — SWIFT (by NeoZ)
  *
  *   node tools/defilement.mjs              20 000 lignes
  *   node tools/defilement.mjs --lignes=5000

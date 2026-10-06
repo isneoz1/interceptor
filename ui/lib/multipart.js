@@ -1,4 +1,4 @@
-/* Corps multipart/form-data — INTERCEPTOR (by NeoZ)
+/* Corps multipart/form-data — SWIFT (by NeoZ)
  *
  * Decoupe un corps de formulaire (RFC 7578) en ses parties : nom du champ,
  * nom de fichier, type de contenu, contenu. La frontiere est lue dans
@@ -88,7 +88,7 @@ function remarques(parties, termine) {
 
 /** Fabrique un corps multipart a partir de champs, pour tester un serveur. */
 export function fabriquerMultipart(champs, frontiere = '') {
-  const f = frontiere || ('INTERCEPTOR' + Math.random().toString(36).slice(2, 12));
+  const f = frontiere || ('SWIFT' + Math.random().toString(36).slice(2, 12));
   let out = '';
   for (const c of champs || []) {
     out += '--' + f + '\r\n';

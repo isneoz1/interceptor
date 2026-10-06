@@ -1,4 +1,4 @@
-/* Dictionnaire anglais — palette de commandes — INTERCEPTOR (by NeoZ)
+/* Dictionnaire anglais — palette de commandes — SWIFT (by NeoZ)
  *
  * La palette n a que trois textes a elle : son invite, sa ligne d aide et le
  * message quand rien ne correspond. Tout le reste — noms de vues, d outils,

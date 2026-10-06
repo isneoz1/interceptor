@@ -1,4 +1,4 @@
-/* Operations de texte et chiffres classiques — INTERCEPTOR (by NeoZ)
+/* Operations de texte et chiffres classiques — SWIFT (by NeoZ)
  *
  * ROT47, Atbash, Cesar, Vigenere, XOR, morse, alphabet radio, casse, lignes,
  * normalisation Unicode. Fonctions pures, sans DOM : la boite a outils les

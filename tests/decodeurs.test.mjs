@@ -1,4 +1,4 @@
-/* Signatures HTTP, WebAuthn, DNS — INTERCEPTOR (by NeoZ)
+/* Signatures HTTP, WebAuthn, DNS — SWIFT (by NeoZ)
  *
  *   node tests/decodeurs.test.mjs
  *

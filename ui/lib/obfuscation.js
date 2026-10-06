@@ -1,4 +1,4 @@
-/* Brouillage et lecture de code — INTERCEPTOR (by NeoZ)
+/* Brouillage et lecture de code — SWIFT (by NeoZ)
  *
  * Deux operations reciproques, toutes deux exactes :
  *   obfusquer   enveloppe un code dans une forme qui s auto-decode a

@@ -1,4 +1,4 @@
-/* Audit de transparence — INTERCEPTOR (by NeoZ)
+/* Audit de transparence — SWIFT (by NeoZ)
  *
  *   node tools/transparence.mjs
  *
@@ -167,7 +167,7 @@ window.__releve = function () {
   /* 7. Le nombre de proprietes propres de window ne doit pas exploser. */
   noter('window:proprietes', function () {
     return Object.getOwnPropertyNames(window).filter(function (n) {
-      return /^__INTERCEPTOR|^__ic/.test(n);
+      return /^__SWIFT|^__ic/.test(n);
     }).sort().join(',') || 'aucune';
   });
 

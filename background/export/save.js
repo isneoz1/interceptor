@@ -1,4 +1,4 @@
-/* Ecriture de fichier depuis la page d arriere-plan — INTERCEPTOR (by NeoZ)
+/* Ecriture de fichier depuis la page d arriere-plan — SWIFT (by NeoZ)
  *
  * L export est construit et telecharge ici, jamais dans la popup : une popup se
  * ferme des qu elle perd le focus, ce qui revoquerait l URL du blob en pleine
@@ -17,7 +17,7 @@ function stamp() {
 }
 
 export async function saveFile(baseName, extension, content, mime) {
-  const filename = 'interceptor-' + baseName + '-' + stamp() + '.' + extension;
+  const filename = 'swift-' + baseName + '-' + stamp() + '.' + extension;
   const blob = new Blob([content], { type: mime + ';charset=utf-8' });
   const url = URL.createObjectURL(blob);
 

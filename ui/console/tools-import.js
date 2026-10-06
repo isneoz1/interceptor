@@ -1,4 +1,4 @@
-/* Panneau « Importer une requete » — INTERCEPTOR (by NeoZ)
+/* Panneau « Importer une requete » — SWIFT (by NeoZ)
  *
  * Deux entrees possibles, un seul resultat : une ligne dans le tableau, a
  * l etat « pending », que l on peut ensuite rejouer, comparer ou regenerer
@@ -32,7 +32,7 @@ export function panneauImport(entree, etat, redessiner) {
   if (!brut) {
     box.appendChild(el('p', { class: 'note', text: modeBrut
       ? t('Collez une requete complete dans le texte de travail : ligne de commande, entetes, ligne vide, corps.')
-      : t('Collez une commande cURL dans le texte de travail. Celles que produit INTERCEPTOR sont relues telles quelles, tout comme celles copiees depuis un autre navigateur.') }));
+      : t('Collez une commande cURL dans le texte de travail. Celles que produit SWIFT sont relues telles quelles, tout comme celles copiees depuis un autre navigateur.') }));
     return box;
   }
 

@@ -3,7 +3,7 @@
 Everything the AMO submission form asks for, ready to paste. Nothing here can be automated:
 Mozilla requires a signed-in developer account, so these are the steps only you can take.
 
-**Why it matters.** Right now the only way to install INTERCEPTOR is to sideload an unsigned
+**Why it matters.** Right now the only way to install SWIFT is to sideload an unsigned
 `.xpi`, which Firefox refuses outright on the release channel. That limits the audience to
 people running Developer Edition, Nightly or ESR *and* willing to flip
 `xpinstall.signatures.required`. AMO removes both barriers and adds its own search traffic.
@@ -12,13 +12,18 @@ people running Developer Edition, Nightly or ESR *and* willing to flip
 
 ## Before you submit
 
-- [ ] **The add-on ID is now `interceptor@neoz`.** It becomes permanent the moment you first
+- [ ] **The add-on ID is now `swift@neoz`.** It becomes permanent the moment you first
       publish. Changing it later means publishing a different add-on and orphaning every
       existing install, so make sure it is what you want *before* the first upload.
 - [ ] **Bump the version.** AMO refuses a version number it has already seen. The repository
-      is at `4.6.0`, which has never been submitted, so it can go up as-is. Only bump again if
+      is at `5.0.0`, which has never been submitted, so it can go up as-is. Only bump again if
       a submission gets rejected and you need to resubmit.
-- [ ] **Build a fresh package**: `npm run build` produces `dist/interceptor-<version>.xpi`.
+- [ ] **Build a fresh package**: `npm run build` produces `dist/swift-<version>.xpi`.
+- [x] **Data collection is declared**: `data_collection_permissions` is `{"required": ["none"]}`,
+      which AMO requires of every new extension since 3 November 2025. Mozilla's linter
+      (`npx web-ext lint` on the unpacked package) reports 0 errors and two warnings: Firefox
+      115 to 139 do not know this key. That is expected — they ignore it, and since SWIFT
+      collects nothing there is no consent to ask for on those versions.
 - [ ] The reviewer will read the source. It is plain ES modules with no build step, no
       minification and no bundler, so no separate source upload is required — say so in the
       notes below.
@@ -30,7 +35,7 @@ people running Developer Edition, Nightly or ESR *and* willing to flip
 **Name**
 
 ```
-INTERCEPTOR
+SWIFT
 ```
 
 **Summary** (250 characters max)
@@ -73,7 +78,7 @@ MIT (already declared in `LICENSE` and in the manifest metadata).
 Paste as-is. AMO accepts a limited subset of HTML; plain paragraphs and lists are safest.
 
 ```
-Firefox's own network panel tells you THAT a request happened. INTERCEPTOR tells you
+Firefox's own network panel tells you THAT a request happened. SWIFT tells you
 everything about it — and lets you change it.
 
 WHAT IT CAPTURES
@@ -106,9 +111,10 @@ WHAT YOU CAN DO WITH IT
 • Block, redirect, or rewrite requests and responses with rules you build in the interface
 • Pause a request before it leaves, edit it, then let it go
 • Replay any request after confirmation
-• Export to HAR, JSON, CSV or Postman, or generate ready-to-run code in 39 formats
+• Export to HAR, JSON, CSV, Postman or an OpenAPI 3.1 description of the API calls, or
+  generate ready-to-run code in 39 formats
   (curl, fetch, Python, PowerShell, Node, HTTPie and others)
-• 137 local transformations across 23 tools: encodings, digests, JWT, OTP, timestamps,
+• 138 local transformations across 23 tools: encodings, digests, JWT, OTP, timestamps,
   identifiers, structured headers, HPACK, SAML, DNS messages, WebAuthn, and more
 
 A SECURITY ANALYSER THAT DOES NOT GUESS
@@ -128,6 +134,11 @@ HTTP message signatures (RFC 9421) are rebuilt byte for byte and can be verified
 key you paste. Passkey (WebAuthn) registrations and sign-ins are opened, and a sign-in
 signature is verified with the public key of the captured registration. DNS over HTTPS
 queries and answers are decoded.
+
+GraphQL calls are named: the operation that runs gets its own column and search filter,
+with its variables, batches, Apollo persisted queries (SHA-256 recomputed) and the real
+verdict of the response. Reports the browser sends on its own — CSP violations, network
+errors (NEL), deprecations — are opened field by field.
 
 PRIVACY
 

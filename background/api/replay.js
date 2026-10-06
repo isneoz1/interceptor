@@ -1,4 +1,4 @@
-/* Rejouer une requete — INTERCEPTOR (by NeoZ)
+/* Rejouer une requete — SWIFT (by NeoZ)
  *
  * SEULE fonction de l extension qui emet volontairement du trafic, et la seule
  * a le faire vers une destination choisie. Elle est :
@@ -7,7 +7,7 @@
  *   - executee par la page d arriere-plan, ce qui rend la requete visible par
  *     nos propres couches de capture : le rejeu apparait dans la liste.
  *
- * L entete X-Interceptor-Replay marque la requete pour qu elle ne puisse jamais
+ * L entete X-Swift-Replay marque la requete pour qu elle ne puisse jamais
  * etre confondue avec un trafic reel du site.
  */
 import { config } from '../core/config.js';
@@ -33,7 +33,7 @@ function buildHeaders(list) {
     if (FORBIDDEN.has(name.toLowerCase()) || /^proxy-|^sec-/i.test(name)) { refused.push(name); continue; }
     headers[name] = String(h.value ?? '');
   }
-  headers['X-Interceptor-Replay'] = '1';
+  headers['X-Swift-Replay'] = '1';
   return { headers, refused };
 }
 

@@ -1,4 +1,4 @@
-/* Analyse automatique de chaque requete — INTERCEPTOR (by NeoZ)
+/* Analyse automatique de chaque requete — SWIFT (by NeoZ)
  *
  * Aucune action de l'utilisateur : chaque enregistrement termine est audite.
  * Ce module orchestre — reglages, motifs personnels, compteurs, mise en cache ;
@@ -12,7 +12,7 @@
 import { store } from './store.js';
 import { config } from './config.js';
 import { appliquerRegles } from './analyzer-regles.js';
-import { constaterReflexions, constaterRedirections, verifierNonces } from './analyzer-faits.js';
+import { constaterReflexions, constaterRedirections, constaterGraphql, verifierNonces } from './analyzer-faits.js';
 
 export const SEVERITY = { critical: 4, high: 3, medium: 2, low: 1, info: 0 };
 const LEVELS = ['critical', 'high', 'medium', 'low', 'info'];
@@ -80,6 +80,7 @@ export function analyze(rec, { force = false } = {}) {
   if (config.get('analyzeHeaders')) verifierNonces(rec, findings, seen);
   constaterReflexions(rec, faits, tags);
   constaterRedirections(rec, faits, tags);
+  constaterGraphql(rec, faits, tags);
 
   /* --- Anomalies de la requete elle-meme --- */
   if (rec.statusCode >= 500) tags.add('server-error');
@@ -92,6 +93,9 @@ export function analyze(rec, { force = false } = {}) {
   if (rec.replay) tags.add('rejoue');
   if (rec.rulesApplied.length) tags.add('regle-appliquee');
   if (rec.sources.includes('page') && !rec.sources.includes('webRequest')) tags.add('js-only');
+  /* Un rapport que le navigateur envoie de lui-meme (CSP, NEL, API
+     depreciee) : il se retrouve par tag:rapport-navigateur. */
+  if (/^application\/(reports\+json|csp-report)\b/i.test(String(reqH['content-type'] || ''))) tags.add('rapport-navigateur');
 
   const maxSeverity = findings.reduce((acc, f) => Math.max(acc, SEVERITY[f.severity] ?? 0), -1);
   const previous = rec.analysis;

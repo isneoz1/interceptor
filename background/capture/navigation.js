@@ -1,4 +1,4 @@
-/* Contexte de navigation (webNavigation, 7 evenements) — INTERCEPTOR (by NeoZ)
+/* Contexte de navigation (webNavigation, 7 evenements) — SWIFT (by NeoZ)
  * Fournit le contexte de page : qui a declenche quoi, transitions, erreurs,
  * navigations d'historique et fragments — invisible pour webRequest.
  */
@@ -58,7 +58,7 @@ export function startNavigation() {
   wn.onReferenceFragmentUpdated.addListener(d => push('fragmentUpdated', d, { transitionType: d.transitionType }));
   wn.onHistoryStateUpdated.addListener(d => push('historyStateUpdated', d, { transitionType: d.transitionType }));
 
-  console.info('[INTERCEPTOR] webNavigation actif — 8 evenements');
+  console.info('[SWIFT] webNavigation actif — 8 evenements');
 }
 
 export function clearNavLog() { navLog.length = 0; navKeys.clear(); }

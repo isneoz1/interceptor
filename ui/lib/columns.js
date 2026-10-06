@@ -1,4 +1,4 @@
-/* Colonnes du tableau de requetes — INTERCEPTOR (by NeoZ)
+/* Colonnes du tableau de requetes — SWIFT (by NeoZ)
  *
  * Chaque colonne sait s afficher et se trier. La liste affichee est libre :
  * elle se choisit dans le menu « Colonnes » et se conserve dans les reglages.
@@ -6,6 +6,7 @@
 import { el } from './dom.js';
 import { bytes, ms, timeText, statusClass, statusText, typeLabel, layers, middle } from './format.js';
 import { t } from './i18n.js';
+import { texteGraphql } from './graphql-http.js';
 
 const RISK_ORDER = { critical: 5, high: 4, medium: 3, low: 2, info: 1, none: 0 };
 const text = (value, cls) => el('div', { class: cls || null, text: value == null || value === '' ? '—' : String(value) });
@@ -50,8 +51,21 @@ export const COLUMNS = {
   scheme: { label: 'Schema', width: '62px', cell: rec => text(rec.scheme, 'dim'), cmp: cmpText('scheme') },
   type: { label: 'Type', width: '84px', cell: rec => text(typeLabel(rec.type), 'dim'), cmp: cmpText('type') },
   host: { label: 'Hote', width: 'minmax(130px, 240px)', cell: rec => text(rec.host), cmp: cmpText('host') },
-  path: { label: 'Chemin', width: 'minmax(200px, 3fr)', cell: rec => text(rec.path || '/'), cmp: cmpText('path') },
+  path: {
+    label: 'Chemin', width: 'minmax(200px, 3fr)',
+    /* Tous les appels GraphQL partagent un chemin : l operation, a cote, est ce
+       qui les distingue d un regard. */
+    cell: (rec, ctx) => (rec.gql && (!ctx || ctx.gqlDansChemin !== false)
+      ? el('div', null, [rec.path || '/', el('span', { class: 'gql', text: '   ' + texteGraphql(rec.gql, t('requete persistee')) })])
+      : text(rec.path || '/')),
+    cmp: cmpText('path')
+  },
   url: { label: 'URL complete', width: 'minmax(240px, 4fr)', cell: rec => text(rec.url), cmp: cmpText('url') },
+  graphql: {
+    label: 'GraphQL', width: 'minmax(150px, 1.5fr)', title: 'Operation GraphQL executee',
+    cell: rec => text(texteGraphql(rec.gql, t('requete persistee')) || '—', rec.gql ? null : 'dim'),
+    cmp: (a, b) => texteGraphql(a.gql).localeCompare(texteGraphql(b.gql))
+  },
   initiator: {
     label: 'Origine', width: 'minmax(140px, 2fr)',
     cell: rec => text(rec.initiator ? middle(rec.initiator, 70) : '—', 'dim'),
@@ -142,7 +156,7 @@ export const COLUMNS = {
 /** Ordre propose dans le menu « Colonnes ». */
 export const COLUMN_ORDER = [
   'flag', 'risk', 'id', 'time', 'method', 'status', 'state', 'proto', 'scheme', 'type',
-  'host', 'path', 'url', 'initiator', 'mime', 'size', 'transfer', 'reqsize', 'duration',
+  'host', 'path', 'url', 'graphql', 'initiator', 'mime', 'size', 'transfer', 'reqsize', 'duration',
   'ip', 'classified', 'tls', 'sources', 'findings', 'tags', 'wire', 'redirects', 'ws', 'sse', 'cookies',
   'merged', 'tab', 'frame', 'rules', 'note', 'color', 'waterfall'
 ];
@@ -168,6 +182,12 @@ export function columnTitle(key) {
   return t(col.title || col.label);
 }
 
+/* Les largeurs par defaut suivent la taille du texte (`--scale`) : a 106 px,
+   l heure « 17:07:39.912 » tenait a l echelle 1 et se coupait des 1,1 — le
+   texte grandissait, pas sa colonne. Une largeur tiree a la main reste, elle,
+   exactement celle qu on a choisie. */
+const aLEchelle = largeur => largeur.replace(/(\d+(?:\.\d+)?)px/g, 'calc($1px * var(--scale))');
+
 export function template(list, widths = {}) {
-  return normalize(list).map(k => widths[k] || COLUMNS[k].width).join(' ');
+  return normalize(list).map(k => widths[k] || aLEchelle(COLUMNS[k].width)).join(' ');
 }

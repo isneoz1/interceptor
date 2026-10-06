@@ -1,4 +1,4 @@
-/* Panneaux de la boite a outils — INTERCEPTOR (by NeoZ)
+/* Panneaux de la boite a outils — SWIFT (by NeoZ)
  *
  * Inspection d une valeur : jeton JWT, empreintes et signatures, mesures,
  * vidage hexadecimal, structures reconnues, expression reguliere.
@@ -91,7 +91,7 @@ function panneauSignatureJwt(entree, jwt, etat, redessiner) {
 
   if (!connu) {
     box.appendChild(el('p', { class: 'note', text:
-      t('La signature n est pas verifiee : INTERCEPTOR ne detient pas la cle du serveur. Un JWT decode n est pas un JWT valide.') }));
+      t('La signature n est pas verifiee : SWIFT ne detient pas la cle du serveur. Un JWT decode n est pas un JWT valide.') }));
     box.appendChild(el('p', { class: 'note', text:
       t('Cet algorithme ne se verifie pas dans un navigateur : les douze familles HS, RS, PS et ES le peuvent, les autres non.') }));
     return box;

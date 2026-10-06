@@ -1,4 +1,4 @@
-/* Fenetre du defilement virtuel — INTERCEPTOR (by NeoZ)
+/* Fenetre du defilement virtuel — SWIFT (by NeoZ)
  *
  * Le tableau ne dessine que les lignes visibles ; deux cales tiennent la place
  * des autres. Tout le probleme tient dans une invariante :

@@ -1,5 +1,5 @@
 /* Chromium sans interface, pilote par le protocole DevTools
- * INTERCEPTOR (by NeoZ)
+ * SWIFT (by NeoZ)
  *
  * Quatre outils avaient besoin de la meme chose — trouver un Chrome, le
  * lancer sans fenetre, lui parler par CDP — et chacun en portait sa copie.
@@ -47,7 +47,7 @@ export async function ouvrirChrome(options = {}) {
   const chrome = trouverChrome();
   if (!chrome) throw new Error('aucun Chrome ou Chromium trouve sur cette machine');
 
-  const profil = fs.mkdtempSync(path.join(process.env.TEMP || '/tmp', 'interceptor-'));
+  const profil = fs.mkdtempSync(path.join(process.env.TEMP || '/tmp', 'swift-'));
   const navigateur = spawn(chrome, [
     '--headless=new', '--remote-debugging-port=0', '--no-first-run',
     '--no-default-browser-check', '--disable-gpu', '--hide-scrollbars',

@@ -1,4 +1,4 @@
-/* Outils de securite — INTERCEPTOR (by NeoZ)
+/* Outils de securite — SWIFT (by NeoZ)
  *
  *   node tests/securite.test.mjs
  *

@@ -1,4 +1,4 @@
-/* Persistance IndexedDB — INTERCEPTOR (by NeoZ)
+/* Persistance IndexedDB — SWIFT (by NeoZ)
  *
  * Optionnelle (reglage `persist`). Ecrit les enregistrements termines par lots
  * pour ne jamais bloquer la capture, et les recharge au demarrage du navigateur.
@@ -44,10 +44,10 @@ export async function startPersistence() {
     persistStats.enabled = true;
     if (!subscribed) { store.on('finalize', rec => enqueue(rec)); subscribed = true; }
     await restore();
-    console.info('[INTERCEPTOR] persistance active —', persistStats.restored, 'enregistrements restaures');
+    console.info('[SWIFT] persistance active —', persistStats.restored, 'enregistrements restaures');
   } catch (e) {
     persistStats.failed++;
-    console.warn('[INTERCEPTOR] persistance indisponible', e);
+    console.warn('[SWIFT] persistance indisponible', e);
   } finally {
     starting = false;
   }

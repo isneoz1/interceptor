@@ -1,5 +1,5 @@
 /* Dictionnaire anglais — integrite du corps et Server-Timing
- * INTERCEPTOR (by NeoZ)
+ * SWIFT (by NeoZ)
  *
  * Les noms d en-tete et d algorithme ne se traduisent pas : « Content-Digest »
  * et « sha-256 » sont ce que porte le fil, et les chercher dans une

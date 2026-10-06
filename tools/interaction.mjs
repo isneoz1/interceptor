@@ -1,4 +1,4 @@
-/* Audit d interaction — INTERCEPTOR (by NeoZ)
+/* Audit d interaction — SWIFT (by NeoZ)
  *
  *   node tools/interaction.mjs
  *

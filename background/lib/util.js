@@ -1,4 +1,4 @@
-/* INTERCEPTOR (by NeoZ) — utilitaires partages (cree par NeoZ) */
+/* SWIFT (by NeoZ) — utilitaires partages (cree par NeoZ) */
 
 export const B = typeof browser !== 'undefined' ? browser : chrome;
 

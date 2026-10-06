@@ -1,7 +1,8 @@
-/* Magasin memoire des enregistrements reseau — INTERCEPTOR (by NeoZ) */
+/* Magasin memoire des enregistrements reseau — SWIFT (by NeoZ) */
 import { Emitter } from '../lib/emitter.js';
 import { config } from './config.js';
 import { hostOf, pathOf, schemeOf, throttleFlush } from '../lib/util.js';
+import { lireRequeteGraphql, resumeGraphql } from '../../ui/lib/graphql-http.js';
 
 let SEQ = 0;
 
@@ -220,6 +221,23 @@ class Store extends Emitter {
   all() { return this.order.map(id => this.records.get(id)).filter(Boolean); }
 }
 
+/* La requete GraphQL d un enregistrement, lue une seule fois par corps et par
+   URL : le resume est reconstruit a chaque envoi vers l interface, la lecture
+   du document, elle, ne se refait que si la requete a change. */
+const lecturesGraphql = new WeakMap();
+
+/** La requete GraphQL que porte un enregistrement, ou null. */
+export function graphqlDe(rec) {
+  const corps = rec.requestBody || null;
+  const deja = lecturesGraphql.get(rec);
+  if (deja && deja.corps === corps && deja.url === rec.url) return deja.lu;
+  let lu = null;
+  try { lu = lireRequeteGraphql({ methode: rec.method, url: rec.url, corps }); }
+  catch { lu = null; }
+  lecturesGraphql.set(rec, { corps, url: rec.url, lu });
+  return lu;
+}
+
 /** Les noms d entetes, en minuscules, separes par un saut de ligne. */
 function nomsEntetes(liste) {
   if (!Array.isArray(liste) || !liste.length) return '';
@@ -279,6 +297,9 @@ export function summarize(rec) {
     hasAuth: !!rec.auth,
     hasProxy: !!rec.proxy,
     setCookies: rec.cookies.set.length,
+    /* L operation GraphQL executee : sur le reseau, toutes ces requetes se
+       ressemblent (POST /graphql) ; c est son nom qui les distingue. */
+    gql: resumeGraphql(graphqlDe(rec)),
     /* Pour les filtres du moniteur reseau de Firefox (has-response-header:,
        set-cookie-name:...) : les NOMS d entetes seulement, jamais leurs
        valeurs, et les Set-Cookie de la reponse. Un saut de ligne ne peut

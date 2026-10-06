@@ -1,4 +1,4 @@
-/* Codes a usage unique — INTERCEPTOR (by NeoZ)
+/* Codes a usage unique — SWIFT (by NeoZ)
  *
  * HOTP (RFC 4226), TOTP (RFC 6238) et les liens otpauth:// que lisent les
  * applications d authentification. Verifie contre les vecteurs publies dans

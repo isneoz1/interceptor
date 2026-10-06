@@ -1,4 +1,4 @@
-/* ASN.1 / DER et certificats X.509 — INTERCEPTOR (by NeoZ)
+/* ASN.1 / DER et certificats X.509 — SWIFT (by NeoZ)
  *
  * Un bloc PEM colle depuis un serveur, une cle publique, une chaine de
  * certificats : tout cela est du DER. On le parcourt ici sans bibliotheque, et

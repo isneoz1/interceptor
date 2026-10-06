@@ -1,4 +1,4 @@
-/* Dictionnaire anglais — phrases longtemps ecrites par morceaux — INTERCEPTOR (by NeoZ)
+/* Dictionnaire anglais — phrases longtemps ecrites par morceaux — SWIFT (by NeoZ)
  *
  * Complete dict-en.js (`...EN_MORCEAUX`). Ces textes s affichaient en francais
  * dans l interface anglaise : une phrase construite par concatenation
@@ -73,8 +73,8 @@ export const EN_MORCEAUX = {
   /* ------------------ Ecrit directement dans la page, avant ----------------- */
   'Ce tutoriel se relance a tout moment depuis la barre laterale ou les reglages. Les verifications lisent l etat reel de la capture : rien n est coche a votre place.':
     'This tutorial can be restarted at any time from the sidebar or the settings. The checks read the real state of the capture: nothing is ticked for you.',
-  'Le rejeu envoie une vraie requete depuis le navigateur, avec vos cookies pour ce site. Elle porte l entete X-Interceptor-Replay et reapparait dans la liste comme une ligne normale. A n utiliser que sur des cibles dont vous avez la responsabilite.':
-    'Replay sends a real request from the browser, with your cookies for this site. It carries the X-Interceptor-Replay header and shows up in the list as a normal row. Use it only on targets you are responsible for.',
+  'Le rejeu envoie une vraie requete depuis le navigateur, avec vos cookies pour ce site. Elle porte l entete X-Swift-Replay et reapparait dans la liste comme une ligne normale. A n utiliser que sur des cibles dont vous avez la responsabilite.':
+    'Replay sends a real request from the browser, with your cookies for this site. It carries the X-Swift-Replay header and shows up in the list as a normal row. Use it only on targets you are responsible for.',
   'Autoriser le rejeu': 'Allow replay',
   'Envoyer': 'Send',
   'Restaurer l original': 'Restore the original',

@@ -1,4 +1,4 @@
-/* Dictionnaire anglais — messages d erreur — INTERCEPTOR (by NeoZ)
+/* Dictionnaire anglais — messages d erreur — SWIFT (by NeoZ)
  *
  * Un decodeur qui refuse une entree dit pourquoi : « caractere invalide dans
  * le base32 : @ ». Ces messages s affichaient en francais dans l interface
@@ -289,6 +289,7 @@ export const MODELES_ERREURS = {
   'valeur hors d un octet : {x}': 'value beyond one byte: {x}',
   'chiffre « {c} » impossible en base {base}': 'digit “{c}” impossible in base {base}',
   'ligne {n} illisible en JSON': 'line {n} unreadable as JSON',
+  'JSON invalide : {detail}': 'invalid JSON: {detail}',
   'caractere sans code morse : {c}': 'character without a Morse code: {c}',
   'code morse inconnu : {c}': 'unknown Morse code: {c}',
   'aucun inverse modulaire pour {a}': 'no modular inverse for {a}',

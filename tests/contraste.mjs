@@ -1,4 +1,4 @@
-/* Mesure du contraste des jetons de couleur — INTERCEPTOR (cree par NeoZ)
+/* Mesure du contraste des jetons de couleur — SWIFT (cree par NeoZ)
  *
  * Une interface sombre a neons est vite jolie et illisible. Ce module lit les
  * couleurs declarees dans `ui/theme.css` et calcule le contraste reel de
@@ -108,25 +108,40 @@ export function pairesAControler(jetons) {
     paires.push({ quoi, ratio: contraste(avant, arriere), seuil });
 
   /* Le texte courant, sur chacune des surfaces ou il apparait. */
-  for (const fond of ['--bg', '--elev', '--surface', '--surface-2', '--surface-3', '--code-bg']) {
+  for (const fond of ['--bg', '--elev', '--surface', '--surface-2', '--surface-3', '--code-bg', '--champ']) {
     ajouter('texte sur ' + fond, c('--text'), c(fond), 4.5);
   }
-  /* Texte secondaire : libelles, unites, notes. */
-  for (const fond of ['--bg', '--elev', '--surface', '--surface-2']) {
+  /* Texte secondaire : libelles, unites, notes — et l invite grisee d un
+     champ, ecrite en `--mute` sur `--champ`. */
+  for (const fond of ['--bg', '--elev', '--surface', '--surface-2', '--champ']) {
     ajouter('texte attenue sur ' + fond, c('--dim'), c(fond), 4.5);
     ajouter('texte discret sur ' + fond, c('--mute'), c(fond), 3);
   }
-  /* L accent porte du texte : nom de l element actif, boutons. */
-  ajouter('accent sur --bg', c('--accent'), c('--bg'), 3);
-  ajouter('accent sur --surface', c('--accent'), c('--surface'), 3);
-  ajouter('accent sur sa teinte faible', c('--accent'), sur('--accent-weak', '--surface'), 3);
-  ajouter('texte du bouton d accent', c('--on-accent'), c('--accent'), 4.5);
+  /* L accent ecrit du vrai texte, en petit : valeur mise en avant, touche
+     d un raccourci, onglet actif. Il doit donc se lire comme du texte. */
+  for (const fond of ['--bg', '--elev', '--surface', '--surface-2']) {
+    ajouter('accent sur ' + fond, c('--accent'), c(fond), 4.5);
+  }
+  ajouter('accent sur sa teinte faible', c('--accent'), sur('--accent-weak', '--surface'), 4.5);
+  /* Les aplats pleins portent un texte blanc ou presque : bouton principal,
+     son survol, bouton de suppression arme. Mesures sur la couleur de l aplat,
+     pas sur celle du texte d accent, qui est une autre couleur. */
+  ajouter('texte du bouton principal', c('--on-accent'), c('--accent-fill'), 4.5);
+  ajouter('texte du bouton principal survole', c('--on-accent'), c('--accent-fill-hover'), 4.5);
+  ajouter('texte du bouton de suppression arme', c('--on-accent'), c('--red-fill'), 4.5);
   /* Les etats portent du sens : ils doivent se lire, pas seulement se voir. */
-  for (const etat of ['--green', '--red', '--amber', '--blue', '--violet']) {
+  for (const etat of ['--green', '--red', '--orange', '--amber', '--blue', '--violet']) {
     ajouter(etat + ' sur --surface', c(etat), c('--surface'), 4.5);
     ajouter(etat + ' sur --bg', c(etat), c('--bg'), 4.5);
     ajouter(etat + ' sur sa teinte faible',
       c(etat), sur(etat.replace('--', '--') + '-soft', '--surface'), 3);
+  }
+  /* Une ligne selectionnee du tableau garde ses couleurs de methode et de
+     statut, posees sur la teinte d accent qui recouvre le fond. */
+  ajouter('texte sur une ligne selectionnee', c('--text'), sur('--accent-weak', '--bg'), 4.5);
+  ajouter('texte discret sur une ligne selectionnee', c('--mute'), sur('--accent-weak', '--bg'), 3);
+  for (const etat of ['--green', '--red', '--amber', '--blue']) {
+    ajouter(etat + ' sur une ligne selectionnee', c(etat), sur('--accent-weak', '--bg'), 4.5);
   }
   /* Les marquages manuels d une ligne. */
   for (const mk of ['--mk-rouge', '--mk-orange', '--mk-jaune', '--mk-vert', '--mk-bleu', '--mk-violet']) {

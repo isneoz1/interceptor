@@ -1,4 +1,4 @@
-# Contributing to INTERCEPTOR
+# Contributing to SWIFT
 
 Thank you for considering it. This file is the practical side — what to run, what the
 conventions are, and what gets a change rejected. The [README](README.md) explains what the
@@ -16,7 +16,7 @@ The one rule that decides most of it:
 
 > **No feature that claims something it cannot prove.**
 
-INTERCEPTOR reports what it can demonstrate from captured data, and stays silent otherwise.
+SWIFT reports what it can demonstrate from captured data, and stays silent otherwise.
 A heuristic that is right most of the time is not welcome here — a network tool that
 occasionally invents a finding is worse than one that admits it does not know. This is why
 there is no TLS fingerprinting, for instance: a WebExtension cannot see the ClientHello, so

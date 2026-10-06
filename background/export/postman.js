@@ -1,4 +1,4 @@
-/* Export au format Postman Collection v2.1 — INTERCEPTOR (by NeoZ)
+/* Export au format Postman Collection v2.1 — SWIFT (by NeoZ)
  *
  * Chaque requete capturee devient un element de collection, groupe par hote.
  * La reponse reellement observee est jointe : la collection est un dossier de
@@ -87,7 +87,7 @@ export function buildPostman(records, meta = {}) {
         url: urlObject(rec.finalUrl || rec.url),
         body: bodyOf(rec),
         description: [
-          'Capture par INTERCEPTOR (by NeoZ).',
+          'Capture par SWIFT (by NeoZ).',
           'Identifiant interne : ' + rec.id,
           rec.ip ? 'Serveur : ' + rec.ip : null,
           rec.security ? 'TLS : ' + (rec.security.protocolVersion || 'inconnu') : null,
@@ -102,8 +102,8 @@ export function buildPostman(records, meta = {}) {
 
   return {
     info: {
-      name: 'INTERCEPTOR — ' + new Date(meta.startedAt || Date.now()).toLocaleString('fr-FR'),
-      description: records.length + ' requetes capturees par INTERCEPTOR (by NeoZ). ' +
+      name: 'SWIFT — ' + new Date(meta.startedAt || Date.now()).toLocaleString('fr-FR'),
+      description: records.length + ' requetes capturees par SWIFT (by NeoZ). ' +
                    'Les reponses jointes sont celles reellement observees.',
       schema: 'https://schema.getpostman.com/json/collection/v2.1.0/collection.json'
     },

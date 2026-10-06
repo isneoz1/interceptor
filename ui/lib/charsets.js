@@ -1,4 +1,4 @@
-/* Jeux de caracteres — INTERCEPTOR (by NeoZ)
+/* Jeux de caracteres — SWIFT (by NeoZ)
  *
  * Un corps servi sans « charset » dans son Content-Type, ou servi avec le
  * mauvais, arrive illisible. Le navigateur sait decoder une quarantaine de

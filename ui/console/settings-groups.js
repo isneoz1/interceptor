@@ -1,4 +1,4 @@
-/* Description des reglages — INTERCEPTOR (by NeoZ)
+/* Description des reglages — SWIFT (by NeoZ)
  *
  * Donnees pures : la liste des groupes affiches par console/settings.js et les
  * profils rapides. Chaque cle citee ici existe dans DEFAULTS (core/config.js)
@@ -123,7 +123,7 @@ export const GROUPS = [
   },
   {
     title: 'Journal interne',
-    note: 'Le journal observe INTERCEPTOR lui-meme, pas le trafic : erreurs du noyau, commandes et leur duree. Il vit en memoire et ne sort jamais du navigateur.',
+    note: 'Le journal observe SWIFT lui-meme, pas le trafic : erreurs du noyau, commandes et leur duree. Il vit en memoire et ne sort jamais du navigateur.',
     fields: [
       ['debugEnabled', 'Journal de diagnostic', 'bool', 'Alimente la vue « Journal interne ». Desactive, plus rien n est enregistre.'],
       ['debugCaptureErrors', 'Enregistrer les erreurs internes', 'bool', 'Erreurs, avertissements et promesses rejetees du noyau, avec leur pile d appel.'],

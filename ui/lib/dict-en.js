@@ -1,4 +1,4 @@
-/* Dictionnaire anglais — INTERCEPTOR (by NeoZ)
+/* Dictionnaire anglais — SWIFT (by NeoZ)
  *
  * La cle est le texte francais tel qu il apparait dans le code. Une entree
  * absente laisse le texte francais s afficher : jamais de vide ni de cle brute.
@@ -19,6 +19,9 @@ import { EN_SECURITE } from './dict-en-securite.js';
 import { EN_PREUVES } from './dict-en-preuves.js';
 import { EN_MORCEAUX } from './dict-en-morceaux.js';
 import { EN_ERREURS } from './dict-en-erreurs.js';
+import { EN_GRAPHQL } from './dict-en-graphql.js';
+import { EN_RAPPORTS } from './dict-en-rapports.js';
+import { EN_OPENAPI } from './dict-en-openapi.js';
 
 export const EN = {
   /* ------------------------------ Navigation ----------------------------- */
@@ -141,6 +144,8 @@ export const EN = {
   'Ligne precedente': 'Previous row',
   'Ligne suivante': 'Next row',
   'Epingler': 'Pin',
+  'Epingler cette ligne': 'Pin this row',
+  'Retirer l epingle': 'Unpin',
 
   /* -------------------------------- Etats -------------------------------- */
   'Aucune requete': 'No requests',
@@ -405,6 +410,9 @@ export const EN = {
   'entrant': 'inbound',
   'sortant': 'outbound',
   'req/s': 'req/s',
+  '{n} requetes/s': '{n} requests/s',
+  'Debit : {debit} requetes par seconde — pointe a {pointe}/s sur 30 s':
+    'Rate: {debit} requests per second — peak {pointe}/s over 30 s',
 
   /* Menus Exporter, Copier et generateurs de code : voir dict-en-menus.js.
      Boite a outils, Cible et Diagnostic interne : voir dict-en-tools.js. */
@@ -423,5 +431,8 @@ export const EN = {
   ...EN_SECURITE,
   ...EN_PREUVES,
   ...EN_MORCEAUX,
-  ...EN_ERREURS
+  ...EN_ERREURS,
+  ...EN_GRAPHQL,
+  ...EN_RAPPORTS,
+  ...EN_OPENAPI
 };

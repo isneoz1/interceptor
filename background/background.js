@@ -1,5 +1,5 @@
 /* ============================================================
- * INTERCEPTOR — noyau  (cree par NeoZ)
+ * SWIFT — noyau  (cree par NeoZ)
  * Demarrage entierement automatique : aucune action requise.
  * ============================================================ */
 import { B } from './lib/util.js';
@@ -65,9 +65,9 @@ async function boot() {
     updateBadge(true);
   });
 
-  console.info('%cINTERCEPTOR actif — cree par NeoZ', 'color:#FF6611;font-weight:bold');
-  console.info('[INTERCEPTOR] console complete :', CONSOLE_URL);
-  console.info('[INTERCEPTOR] etat initial', collectStats());
+  console.info('%cSWIFT actif — cree par NeoZ', 'color:#FF6611;font-weight:bold');
+  console.info('[SWIFT] console complete :', CONSOLE_URL);
+  console.info('[SWIFT] etat initial', collectStats());
 }
 
 /* ---------------- Badge : compteur temps reel sur l'icone ---------------- */
@@ -135,10 +135,10 @@ function startNotifications() {
       const granted = await B.permissions.contains({ permissions: ['notifications'] });
       if (!granted) return;
       const first = rec.analysis.findings.find(f => f.severity === 'critical');
-      await B.notifications.create('interceptor-' + rec.id, {
+      await B.notifications.create('swift-' + rec.id, {
         type: 'basic',
         iconUrl: B.runtime.getURL('icons/icon.svg'),
-        title: 'INTERCEPTOR — alerte critique',
+        title: 'SWIFT — alerte critique',
         message: (first ? first.title : 'Alerte critique') + '\n' + rec.method + ' ' + rec.host
       });
     } catch {}
@@ -166,10 +166,10 @@ function buildMenus() {
   const add = (id, title, contexts) => {
     try { MENUS.create({ id, title, contexts }); } catch {}
   };
-  add('ic-console', 'INTERCEPTOR : ouvrir la console', ['browser_action', 'page', 'tools_menu']);
-  add('ic-console-tab', 'INTERCEPTOR : voir le trafic de cet onglet', ['page']);
-  add('ic-block-host', 'INTERCEPTOR : bloquer ce domaine', ['link', 'image', 'page']);
-  add('ic-toggle', 'INTERCEPTOR : capture marche / arret', ['browser_action']);
+  add('ic-console', 'SWIFT : ouvrir la console', ['browser_action', 'page', 'tools_menu']);
+  add('ic-console-tab', 'SWIFT : voir le trafic de cet onglet', ['page']);
+  add('ic-block-host', 'SWIFT : bloquer ce domaine', ['link', 'image', 'page']);
+  add('ic-toggle', 'SWIFT : capture marche / arret', ['browser_action']);
 
   if (!MENUS.onClicked) return;
   MENUS.onClicked.addListener(async (info, tab) => {
@@ -202,7 +202,7 @@ function hostOfUrl(url) {
 /** L emplacement est celui que l utilisateur a choisi ; `forcer` le contourne. */
 async function openConsole(intent, forcer) {
   const r = await ouvrirSurface(intent || null, forcer || null);
-  if (!r.ok) console.warn('[INTERCEPTOR] ouverture de la console impossible', r.erreur);
+  if (!r.ok) console.warn('[SWIFT] ouverture de la console impossible', r.erreur);
   return r;
 }
 
@@ -219,9 +219,9 @@ if (B.commands && B.commands.onCommand) {
 
 B.runtime.onInstalled.addListener(details => {
   if (details.reason === 'install') {
-    console.info('[INTERCEPTOR] installe — la capture demarre automatiquement.');
+    console.info('[SWIFT] installe — la capture demarre automatiquement.');
     openConsole({ view: 'help' });
   }
 });
 
-boot().catch(e => console.error('[INTERCEPTOR] echec de demarrage', e));
+boot().catch(e => console.error('[SWIFT] echec de demarrage', e));

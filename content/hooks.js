@@ -1,5 +1,5 @@
 /* ============================================================
- * INTERCEPTOR — sondes du contexte page  (cree par NeoZ)
+ * SWIFT — sondes du contexte page  (cree par NeoZ)
  *
  * Execute dans le monde de la page pour observer ce que webRequest
  * ne peut pas voir : trames WebSocket, messages SSE, piles d'appel,
@@ -14,14 +14,14 @@
 
   var script = document.currentScript;
   var TOKEN = script && script.dataset ? script.dataset.icToken : null;
-  if (!TOKEN || window.__INTERCEPTOR__) return;
+  if (!TOKEN || window.__SWIFT__) return;
   /* Le drapeau qui evite une double installation. Non enumerable : du code de
      page qui parcourt `window` — certains le font — ne doit pas tomber sur
      une propriete qui n etait pas la sans nous. */
   try {
-    Object.defineProperty(window, '__INTERCEPTOR__',
+    Object.defineProperty(window, '__SWIFT__',
       { value: true, enumerable: false, configurable: true, writable: false });
-  } catch (e) { window.__INTERCEPTOR__ = true; }
+  } catch (e) { window.__SWIFT__ = true; }
 
   var CFG = { wsFrames: true, maxFrameBytes: 0, maxBodyBytes: 0, perf: true,
                 stacks: true, sse: true, rtc: true, workers: true,
@@ -29,7 +29,7 @@
                 workerFrames: false };
   try { if (script.dataset.icCfg) CFG = Object.assign(CFG, JSON.parse(script.dataset.icCfg)); } catch (e) {}
 
-  try { document.documentElement.setAttribute('data-interceptor-ready', '1'); } catch (e) {}
+  try { document.documentElement.setAttribute('data-swift-ready', '1'); } catch (e) {}
 
   /* -------------------------- Transport -------------------------- */
   var queue = [];

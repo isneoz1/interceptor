@@ -1,4 +1,4 @@
-/* Configuration persistante — INTERCEPTOR (by NeoZ)
+/* Configuration persistante — SWIFT (by NeoZ)
  *
  * Regle du projet : toute option presente ici a un effet reel dans le code, et
  * toute option de l interface existe ici. Aucun reglage decoratif.
@@ -148,7 +148,7 @@ class Config extends Emitter {
         // Une version anterieure nommait « console » l ouverture en onglet.
         if (this.values.iconOpens === 'console') this.values.iconOpens = 'onglet';
       }
-    } catch (e) { console.warn('[INTERCEPTOR] lecture de la configuration', e); }
+    } catch (e) { console.warn('[SWIFT] lecture de la configuration', e); }
     this._compile();
     this.emit('change', this.values);
     return this.values;
@@ -170,7 +170,7 @@ class Config extends Emitter {
     Object.assign(this.values, patch);
     this._compile();
     try { await B.storage.local.set({ config: this.values }); }
-    catch (e) { console.warn('[INTERCEPTOR] ecriture de la configuration', e); }
+    catch (e) { console.warn('[SWIFT] ecriture de la configuration', e); }
     this.emit('change', this.values);
     return this.values;
   }

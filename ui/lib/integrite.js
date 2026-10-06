@@ -1,9 +1,9 @@
 /* Integrite d un corps : Content-Digest, Repr-Digest, Digest
- * INTERCEPTOR (by NeoZ)
+ * SWIFT (by NeoZ)
  *
  * Un serveur peut annoncer l empreinte de ce qu il envoie. Un client peut
  * annoncer celle de ce qu il envoie. Lire cette annonce n a qu un interet
- * limite — mais INTERCEPTOR a le corps sous la main, et peut donc faire ce
+ * limite — mais SWIFT a le corps sous la main, et peut donc faire ce
  * que personne d autre ne fait dans un navigateur : la VERIFIER.
  *
  * C est exactement la promesse du projet. On ne dit pas « le serveur annonce

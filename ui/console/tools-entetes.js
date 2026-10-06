@@ -1,4 +1,4 @@
-/* Panneau « Entetes » — INTERCEPTOR (by NeoZ)
+/* Panneau « Entetes » — SWIFT (by NeoZ)
  *
  * La table de reference dit a quoi sert un entete ; ce panneau lit sa valeur.
  * On colle une ligne ou un bloc entier, et chaque entete connu est decoupe,

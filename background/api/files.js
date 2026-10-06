@@ -1,6 +1,6 @@
-/* Commandes de fichiers — INTERCEPTOR (by NeoZ)
+/* Commandes de fichiers — SWIFT (by NeoZ)
  *
- * Exports (HAR, JSON, CSV, Markdown, Postman, URL, reglages, et un script
+ * Exports (HAR, JSON, CSV, Markdown, Postman, OpenAPI, URL, reglages, et un script
  * dans chacun des langages du generateur de code), import
  * d une capture HAR externe, import d une session JSON, lecture des cookies
  * d une URL. Tout est construit et ecrit par la page d arriere-plan : fermer
@@ -13,6 +13,7 @@ import { store, detail } from '../core/store.js';
 import { buildHar } from '../export/har.js';
 import { assainirHar } from '../export/assainir.js';
 import { buildPostman } from '../export/postman.js';
+import { buildOpenApi } from '../export/openapi.js';
 import { buildCsv, buildFindingsReport } from '../export/report.js';
 import { generateScript } from '../export/codegen.js';
 import { saveFile } from '../export/save.js';
@@ -40,7 +41,7 @@ export const FILE_COMMANDS = {
     if (format === 'debug') {
       const instantane = journal.instantane({ limite: 0 });
       const content = JSON.stringify({
-        tool: 'INTERCEPTOR', author: 'NeoZ', exportedAt: new Date().toISOString(),
+        tool: 'SWIFT', author: 'NeoZ', exportedAt: new Date().toISOString(),
         journal: instantane
       }, null, 2);
       const res = await saveFile('diagnostic', 'json', content, 'application/json');
@@ -54,6 +55,7 @@ export const FILE_COMMANDS = {
 
     let content, extension, mime;
     let masques = null;
+    let openapi = null;
     switch (format) {
       case 'har':
         content = JSON.stringify(buildHar(records, { startedAt: store.stats.startedAt }), null, 2);
@@ -72,7 +74,7 @@ export const FILE_COMMANDS = {
       }
       case 'json':
         content = JSON.stringify({
-          tool: 'INTERCEPTOR', author: 'NeoZ', exportedAt: new Date().toISOString(),
+          tool: 'SWIFT', author: 'NeoZ', exportedAt: new Date().toISOString(),
           stats: collectStats(), records: records.map(detail)
         }, null, 2);
         extension = 'json'; mime = 'application/json';
@@ -91,6 +93,17 @@ export const FILE_COMMANDS = {
         content = records.map(r => r.finalUrl || r.url).join(String.fromCharCode(10));
         extension = 'txt'; mime = 'text/plain';
         break;
+      /* Les appels d API, decrits en OpenAPI 3.1. Une description vaut pour
+         une origine : le resultat dit laquelle, et combien d appels vers
+         d autres origines il a laisses de cote. */
+      case 'openapi': {
+        const decrit = buildOpenApi(records);
+        if (!decrit.document) return { error: 'aucun appel d API parmi ces lignes : ni XHR, ni fetch, ni beacon' };
+        content = JSON.stringify(decrit.document, null, 2);
+        extension = 'openapi.json'; mime = 'application/json';
+        openapi = { origine: decrit.origine, operations: decrit.operations, decrites: decrit.decrites, ecartees: decrit.ecartees };
+        break;
+      }
       default: {
         // Tout generateur de code est aussi un format d export : un langage
         // disponible pour une requete l est pour un lot entier.
@@ -105,7 +118,7 @@ export const FILE_COMMANDS = {
     /* `masques` ne remonte que pour l export assaini : l interface s en sert
        pour dire combien de valeurs ont disparu du fichier. */
     return { ok: true, count: records.length, filename: res.filename, bytes: res.bytes,
-             ...(masques == null ? {} : { masques }) };
+             ...(masques == null ? {} : { masques }), ...(openapi == null ? {} : { openapi }) };
   },
 
   /** Cookies reellement disponibles pour une URL, HttpOnly compris. */
@@ -132,7 +145,7 @@ export const FILE_COMMANDS = {
     return res.error ? res : { ok: true, ...res, stats: collectStats() };
   },
 
-  /** Restauration d une session exportee en JSON par INTERCEPTOR. */
+  /** Restauration d une session exportee en JSON par SWIFT. */
   importSession: ({ session }) => {
     const list = session && Array.isArray(session.records) ? session.records : null;
     if (!list) return { error: 'fichier de session invalide : la cle records est absente' };

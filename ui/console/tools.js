@@ -1,4 +1,4 @@
-/* Vue « Boite a outils » — INTERCEPTOR (by NeoZ)
+/* Vue « Boite a outils » — SWIFT (by NeoZ)
  *
  * Un seul texte de travail, tous les outils dessus : on colle une valeur une
  * fois, et chaque panneau la regarde. Le texte peut venir du presse-papiers,
@@ -295,7 +295,7 @@ function panneauTransformer() {
     }
   } else {
     box.appendChild(el('p', { class: 'note', text:
-      t('Choisissez une transformation, ou « Tout essayer » pour laisser INTERCEPTOR reconnaitre l encodage.') }));
+      t('Choisissez une transformation, ou « Tout essayer » pour laisser SWIFT reconnaitre l encodage.') }));
   }
   return box;
 }

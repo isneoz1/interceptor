@@ -1,4 +1,4 @@
-/* Apercu de l icone aux tailles reelles — INTERCEPTOR (by NeoZ)
+/* Apercu de l icone aux tailles reelles — SWIFT (by NeoZ)
  *
  * Une icone se juge a 16 px dans une barre d outils, pas a 128 px dans un
  * editeur. Ce rendu la pose cote a cote aux tailles ou Firefox l affiche

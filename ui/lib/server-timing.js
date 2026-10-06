@@ -1,5 +1,5 @@
 /* Server-Timing : ou le serveur a passe son temps
- * INTERCEPTOR (by NeoZ)
+ * SWIFT (by NeoZ)
  *
  * Une requete a mis 214 ms. Combien le serveur en revendique-t-il ? C est la
  * seule question qui permette de savoir si le probleme est chez lui ou sur le
@@ -14,7 +14,7 @@
  *
  * https://w3c.github.io/server-timing/
  *
- * Le rapprochement avec la duree mesuree par INTERCEPTOR est ce qui donne sa
+ * Le rapprochement avec la duree mesuree par SWIFT est ce qui donne sa
  * valeur a la lecture. On ne dit pas « le serveur annonce 100 ms », on dit
  * « le serveur revendique 100 des 214 ms mesurees ; les 114 restantes sont
  * ailleurs ».

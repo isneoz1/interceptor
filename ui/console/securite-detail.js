@@ -1,4 +1,4 @@
-/* Lectures de securite du panneau de detail — INTERCEPTOR (by NeoZ)
+/* Lectures de securite du panneau de detail — SWIFT (by NeoZ)
  *
  * Ce que les onglets du detail montrent d une requete du point de vue de la
  * securite, quand il y a quelque chose a montrer — sinon rien, pour ne pas
@@ -37,7 +37,7 @@ function traduireValeurs(ligne) {
 const note = (texte, classe = 'note') => el('p', { class: classe, text: texte });
 
 /* ------------------------ Integrite du corps ------------------------------ */
-/* Un serveur peut annoncer l empreinte de ce qu il envoie. INTERCEPTOR a le
+/* Un serveur peut annoncer l empreinte de ce qu il envoie. SWIFT a le
    corps : il peut donc la VERIFIER, ce que le navigateur ne fait pas. On ne
    dit pas « le serveur annonce sha-256=… », on dit si cela correspond. */
 export function integrite(rec) {

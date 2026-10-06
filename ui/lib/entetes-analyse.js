@@ -1,4 +1,4 @@
-/* Analyse d un entete HTTP — INTERCEPTOR (by NeoZ)
+/* Analyse d un entete HTTP — SWIFT (by NeoZ)
  *
  * La table de reference dit a quoi sert un entete ; ce module lit sa valeur.
  * Un Set-Cookie, une politique de securite, un Cache-Control ou un Accept ne

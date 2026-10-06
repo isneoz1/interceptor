@@ -1,5 +1,5 @@
 /* ============================================================
- * INTERCEPTOR — pont content script  (cree par NeoZ)
+ * SWIFT — pont content script  (cree par NeoZ)
  *
  * Monde isole. Role :
  *   1. injecter les sondes dans le monde de la page, des document_start ;
@@ -15,8 +15,8 @@
 
   var B = typeof browser !== 'undefined' ? browser : chrome;
   if (!B || !B.runtime || !B.runtime.id) return;
-  if (window.__INTERCEPTOR_BRIDGE__) return;
-  window.__INTERCEPTOR_BRIDGE__ = true;
+  if (window.__SWIFT_BRIDGE__) return;
+  window.__SWIFT_BRIDGE__ = true;
 
   var TOKEN = makeToken();
   var CFG = { wsFrames: true, maxFrameBytes: 0, maxBodyBytes: 0, perf: true,
@@ -95,7 +95,7 @@
 
     setTimeout(function () {
       var ready = false;
-      try { ready = document.documentElement.hasAttribute('data-interceptor-ready'); } catch (e) {}
+      try { ready = document.documentElement.hasAttribute('data-swift-ready'); } catch (e) {}
       if (ready) mode = 'page';
       else if (mode !== 'page') installXrayProbes('timeout');
     }, 1200);

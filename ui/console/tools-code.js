@@ -1,4 +1,4 @@
-/* Panneau « Code » — INTERCEPTOR (by NeoZ)
+/* Panneau « Code » — SWIFT (by NeoZ)
  *
  * Deux gestes reciproques sur le meme texte de travail :
  *   Brouiller   enveloppe le code dans une forme qui s auto-decode a

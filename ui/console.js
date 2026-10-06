@@ -1,5 +1,5 @@
 /* ============================================================
- * INTERCEPTOR — console complete  (cree par NeoZ)
+ * SWIFT — console complete  (cree par NeoZ)
  *
  * Coquille de l application : en-tete, navigation laterale, routage des
  * vues, pied de page temps reel et raccourcis clavier.
@@ -8,6 +8,7 @@
  * ============================================================ */
 import { $, el, clear } from './lib/dom.js';
 import { t } from './lib/i18n.js';
+import { icone, poserIcones } from './lib/icones.js';
 import {
   B, cmd, state, toast, copy, dropdown, closeMenus, connect, bootstrap, saveConfig
 } from './app.js';
@@ -35,72 +36,72 @@ import { initHeader, applyStaticLabels, applyCaptureButton, buildScope, saveFilt
  *
  * `hint` est une phrase en clair, affichee au survol : elle dit ce que la vue
  * MONTRE, pas comment elle marche. C est ce qui permet a quelqu un qui ouvre
- * INTERCEPTOR pour la premiere fois de savoir ou aller sans lire l aide.
+ * SWIFT pour la premiere fois de savoir ou aller sans lire l aide.
  *
  * Les noms evitent le jargon interne : « Sites et chemins » plutot que
  * « Cible », « Etat du systeme » plutot que « Diagnostic », qui se confondait
  * avec « Journal interne ». */
 const VIEWS = {
   /* ------------------------------- Le trafic ------------------------------ */
-  requests:   { label: 'Requetes', ico: '▤', group: 'Trafic',
+  requests:   { label: 'Requetes', ico: 'requetes', group: 'Trafic',
                 hint: 'Tout le trafic, requete par requete',
                 render: () => requests.render() },
-  alerts:     { label: 'Securite', ico: '⚠', group: 'Trafic',
+  alerts:     { label: 'Securite', ico: 'securite', group: 'Trafic',
                 hint: 'Ce qui est risque : secrets, cookies mal proteges, HTTP en clair',
                 render: () => alerts.render() },
-  summary:    { label: 'Synthese', ico: '◫', group: 'Trafic',
+  summary:    { label: 'Synthese', ico: 'synthese', group: 'Trafic',
                 hint: 'Les chiffres d ensemble : statuts, types, domaines, debit',
                 render: () => summary.render() },
-  sitemap:    { label: 'Sites et chemins', ico: '⌂', group: 'Trafic', advanced: true,
+  sitemap:    { label: 'Sites et chemins', ico: 'sites', group: 'Trafic', advanced: true,
                 hint: 'Ce qui existe sur les sites visites, hote par hote',
                 render: () => sitemap.render() },
-  streams:    { label: 'Flux temps reel', ico: '≈', group: 'Trafic', advanced: true,
+  streams:    { label: 'Flux temps reel', ico: 'flux', group: 'Trafic', advanced: true,
                 hint: 'WebSocket et Server-Sent Events, message par message',
                 render: () => streams.render() },
-  compare:    { label: 'Comparaison', ico: '⇄', group: 'Trafic', hidden: true,
+  compare:    { label: 'Comparaison', ico: 'comparaison', group: 'Trafic', hidden: true,
                 hint: 'Deux requetes confrontees ligne a ligne',
                 render: () => compare.render() },
 
   /* ------------------------------ Les journaux ---------------------------- */
-  cookies:    { label: 'Cookies', ico: '◍', group: 'Journaux', advanced: true,
+  cookies:    { label: 'Cookies', ico: 'cookies', group: 'Journaux', advanced: true,
                 hint: 'Chaque cookie pose, modifie ou supprime',
                 render: () => journal.render('cookies') },
-  navigation: { label: 'Navigation', ico: '→', group: 'Journaux', advanced: true,
+  navigation: { label: 'Navigation', ico: 'navigation', group: 'Journaux', advanced: true,
                 hint: 'Les changements de page et de cadre',
                 render: () => journal.render('navigation') },
-  context:    { label: 'Workers et WebRTC', ico: '◇', group: 'Journaux', advanced: true,
+  context:    { label: 'Workers et WebRTC', ico: 'contexte', group: 'Journaux', advanced: true,
                 hint: 'Workers, Service Workers, WebRTC et mesures de page',
                 render: () => journal.render('context') },
 
   /* -------------------------------- Les outils ---------------------------- */
-  tools:      { label: 'Boite a outils', ico: '⚒', group: 'Outils',
+  tools:      { label: 'Boite a outils', ico: 'outils', group: 'Outils',
                 hint: 'Decoder, hacher, mesurer ou inspecter une valeur',
                 render: () => tools.render() },
 
   /* -------------------------- Agir sur le trafic -------------------------- */
-  rules:      { label: 'Regles', ico: '⛨', group: 'Agir sur le trafic', advanced: true,
+  rules:      { label: 'Regles', ico: 'regles', group: 'Agir sur le trafic', advanced: true,
                 hint: 'Bloquer, rediriger, modifier le trafic automatiquement',
                 render: () => rules.render() },
-  intercept:  { label: 'Interception', ico: '⏸', group: 'Agir sur le trafic', advanced: true,
+  intercept:  { label: 'Interception', ico: 'interception', group: 'Agir sur le trafic', advanced: true,
                 hint: 'Suspendre une requete pour la modifier avant son depart',
                 render: () => intercept.render() },
 
   /* ------------------------------- Le systeme ----------------------------- */
-  stats:      { label: 'Etat du systeme', ico: '▣', group: 'Systeme', advanced: true,
+  stats:      { label: 'Etat du systeme', ico: 'etat', group: 'Systeme', advanced: true,
                 hint: 'Ce que chaque couche capture reellement, et les chiffres du noyau',
                 render: () => stats.render() },
-  debug:      { label: 'Journal interne', ico: '≡', group: 'Systeme', advanced: true,
-                hint: 'Les erreurs d INTERCEPTOR lui-meme, et ses commandes',
+  debug:      { label: 'Journal interne', ico: 'journal', group: 'Systeme', advanced: true,
+                hint: 'Les erreurs de SWIFT lui-meme, et ses commandes',
                 render: () => debugview.render() },
-  settings:   { label: 'Reglages', ico: '⚙', group: 'Systeme',
+  settings:   { label: 'Reglages', ico: 'reglages', group: 'Systeme',
                 hint: 'Toutes les options, et quatre profils tout prets',
                 render: () => settings.render() },
 
   /* ------------------------------- Apprendre ------------------------------ */
-  tutorial:   { label: 'Tutoriel', ico: '★', group: 'Apprendre',
+  tutorial:   { label: 'Tutoriel', ico: 'tutoriel', group: 'Apprendre',
                 hint: 'Douze lecons pour prendre l outil en main',
                 render: () => tutorial.render() },
-  help:       { label: 'Aide', ico: '?', group: 'Apprendre',
+  help:       { label: 'Aide', ico: 'aide', group: 'Apprendre',
                 hint: 'Le mode d emploi complet, hors ligne',
                 render: () => help.render() }
 };
@@ -120,7 +121,11 @@ export function setView(name) {
     if (node) node.hidden = key !== name;
   }
   for (const btn of document.querySelectorAll('.navbtn')) {
-    btn.classList.toggle('on', btn.dataset.view === name);
+    const active = btn.dataset.view === name;
+    btn.classList.toggle('on', active);
+    /* Le lecteur d ecran annonce la vue ouverte, comme l oeil la voit. */
+    if (active) btn.setAttribute('aria-current', 'page');
+    else btn.removeAttribute('aria-current');
   }
   renderView();
 }
@@ -156,11 +161,14 @@ function buildSidebar() {
       currentGroup = view.group;
       side.appendChild(el('div', { class: 'group', text: t(currentGroup) }));
     }
+    /* La barre se reconstruit a chaque changement de reglage (langue, mode
+       simple) : sans cette marque, la vue ouverte perdait sa surbrillance. */
     const btn = el('button', {
-      class: 'navbtn', type: 'button', dataset: { view: key },
+      class: 'navbtn' + (state.view === key ? ' on' : ''), type: 'button', dataset: { view: key },
+      'aria-current': state.view === key ? 'page' : null,
       title: view.hint ? t(view.hint) : null
     }, [
-      el('span', { class: 'ico', text: view.ico }),
+      icone(view.ico) || el('span', { class: 'ico' }),
       el('span', { class: 'lbl', text: t(view.label) }),
       el('span', { class: 'badge', id: 'badge-' + key, hidden: true })
     ]);
@@ -289,6 +297,7 @@ function bindKeyboard() {
 
 /* ------------------------------- Demarrage ------------------------------- */
 (async function boot() {
+  poserIcones(document);
   buildSidebar();
   initHeader({ setView, renderView, buildSidebar, toggleKeys });
   bindKeyboard();

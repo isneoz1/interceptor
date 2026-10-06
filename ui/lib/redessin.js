@@ -1,4 +1,4 @@
-/* Redessiner une vue sans deranger celui qui la lit — INTERCEPTOR (by NeoZ)
+/* Redessiner une vue sans deranger celui qui la lit — SWIFT (by NeoZ)
  *
  * Plusieurs vues se redessinent d elles-memes : a chaque changement du trafic
  * (le « Flux direct », la vue Securite), a chaque lecture d une session suivie,

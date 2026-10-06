@@ -1,7 +1,7 @@
-/* Vue « Journal interne » — INTERCEPTOR (by NeoZ)
+/* Vue « Journal interne » — SWIFT (by NeoZ)
  *
  * Cette vue n observe pas le trafic : elle observe l extension. Elle repond a
- * « qu est-ce qui a echoue chez INTERCEPTOR, et qu a-t-il fait ? ».
+ * « qu est-ce qui a echoue chez SWIFT, et qu a-t-il fait ? ».
  *
  * A ne pas confondre avec « Etat du systeme », qui compte ce qui a ete
  * capture. Ici : erreurs internes, commandes et leur duree, evenements du
@@ -67,7 +67,7 @@ function dessiner() {
   const box = el('div', { class: 'pane' });
   pane.appendChild(box);
 
-  box.appendChild(sec('Journal interne', 'INTERCEPTOR observe par lui-meme'));
+  box.appendChild(sec('Journal interne', 'SWIFT observe par lui-meme'));
 
   if (!cache) {
     if (erreur) {

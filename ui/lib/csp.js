@@ -1,4 +1,4 @@
-/* Content-Security-Policy — INTERCEPTOR (by NeoZ)
+/* Content-Security-Policy — SWIFT (by NeoZ)
  *
  * Lit une politique CSP et dit, en clair, ce qu elle AUTORISE. On ne parle pas
  * de « faille » : on decrit ce que la politique laisse passer, en citant la

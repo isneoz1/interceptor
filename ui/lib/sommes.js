@@ -1,4 +1,4 @@
-/* Sommes de controle — INTERCEPTOR (by NeoZ)
+/* Sommes de controle — SWIFT (by NeoZ)
  *
  * Un seul moteur CRC parametre (largeur, polynome, valeur initiale, reflexion,
  * ou-exclusif final) et le catalogue des variantes reellement utilisees.

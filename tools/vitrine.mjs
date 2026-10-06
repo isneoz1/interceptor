@@ -1,4 +1,4 @@
-/* Vitrines pour le depot — INTERCEPTOR (by NeoZ)
+/* Vitrines pour le depot — SWIFT (by NeoZ)
  *
  *   node tools/vitrine.mjs
  *
@@ -30,7 +30,7 @@ const VITRINES = [
     phrase: 'Eight capture layers observe the same call. A correlator merges them, so you '
       + 'never see it twice — and two identical polling GETs stay two rows, because they are '
       + 'two requests.',
-    cadre: { x: 12, y: 0, largeur: 88, hauteur: 62 }
+    cadre: { x: 14.2, y: 5.8, largeur: 85.8, hauteur: 58 }
   },
   {
     fichier: 'vitrine-securite',
@@ -39,7 +39,7 @@ const VITRINES = [
     phrase: 'Every finished request is audited on its own: exposed secrets, credentials sent '
       + 'in clear, exploitable CORS, cookies that will be rejected and why. Nothing is '
       + 'reported that cannot be demonstrated from the captured data.',
-    cadre: { x: 12, y: 0, largeur: 88, hauteur: 62 }
+    cadre: { x: 14.2, y: 5.8, largeur: 85.8, hauteur: 58 }
   },
   {
     fichier: 'vitrine-palette',
@@ -58,7 +58,7 @@ const VITRINES = [
     titre: TRANSFORMATIONS.length + ' transformations, all local',
     phrase: 'Encodings, digests, JWT, OTP, timestamps, identifiers, structured headers, '
       + 'HPACK. Nothing is uploaded anywhere to be decoded — there is no server to upload to.',
-    cadre: { x: 12, y: 0, largeur: 88, hauteur: 62 }
+    cadre: { x: 14.2, y: 5.8, largeur: 85.8, hauteur: 58 }
   }
 ];
 
@@ -112,7 +112,7 @@ function page(v) {
   }
 </style></head><body>
   <div class="fond"></div>
-  <div class="pied">INTERCEPTOR</div>
+  <div class="pied">SWIFT</div>
   <div class="texte"><h1>${v.titre}</h1><p>${v.phrase}</p></div>
   <div class="ecran"><img src="${dataUri(v.source)}"></div>
 </body></html>`;

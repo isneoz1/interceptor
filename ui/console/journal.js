@@ -1,4 +1,4 @@
-/* Vues « Cookies », « Navigation » et « Contexte » — INTERCEPTOR (by NeoZ)
+/* Vues « Cookies », « Navigation » et « Contexte » — SWIFT (by NeoZ)
  *
  * Trois journaux tenus par le noyau, affiches ici en entier : chaque entree
  * est visible, avec son heure exacte et son detail complet.

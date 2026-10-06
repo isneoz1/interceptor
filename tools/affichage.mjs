@@ -1,19 +1,21 @@
-/* Audit d affichage — INTERCEPTOR (by NeoZ)
+/* Audit d affichage — SWIFT (by NeoZ)
  *
  *   node tools/affichage.mjs
  *   node tools/affichage.mjs --largeurs=360,1600
+ *   node tools/affichage.mjs --lang=fr
  *
  * La meme page sert d onglet plein ecran, de panneau lateral et de page
  * d options. Un panneau lateral fait 350 px de large : ce qui tient dans
  * 1600 px n y tient pas forcement, et personne ne l avait regarde.
  *
- * Cet outil ouvre chaque vue a plusieurs largeurs et cherche quatre choses
+ * Cet outil ouvre chaque vue a plusieurs largeurs et cherche cinq choses
  * qui se voient toutes a l oeil nu, mais qu il faut avoir l idee de regarder :
  *
  *   1. un debordement horizontal de la page — la barre du bas qui apparait ;
  *   2. un element plus large que son parent, donc coupe ;
  *   3. deux elements qui se chevauchent alors qu ils devraient s empiler ;
- *   4. un texte tronque sans que rien ne l annonce.
+ *   4. un texte tronque sans que rien ne l annonce ;
+ *   5. un en-tete de colonne coupe, meme avec des points de suspension.
  *
  * Il ne produit aucune image : un verdict, et un code de sortie.
  */
@@ -21,7 +23,7 @@ import { ouvrirScene } from './scene.mjs';
 import { ouvrirChrome, patienter } from './chrome.mjs';
 
 const ARGS = process.argv.slice(2);
-const LARGEURS = (ARGS.find(a => a.startsWith('--largeurs=')) || '--largeurs=350,700,1100,1600')
+const LARGEURS = (ARGS.find(a => a.startsWith('--largeurs=')) || '--largeurs=350,700,1100,1280,1600')
   .slice(11).split(',').map(Number).filter(n => n > 0);
 const HAUTEUR = 900;
 
@@ -29,7 +31,8 @@ const HAUTEUR = 900;
 const VUES = ['requests', 'alerts', 'summary', 'streams', 'sitemap', 'stats',
   'rules', 'intercept', 'tools', 'settings', 'debug', 'tutorial', 'help'];
 
-const scene = await ouvrirScene({ langue: 'en', volume: 400 });
+const LANGUE = (ARGS.find(a => a.startsWith('--lang=')) || '--lang=en').slice(7);
+const scene = await ouvrirScene({ langue: LANGUE, volume: 400 });
 const navigateur = await ouvrirChrome({ largeur: Math.max(...LARGEURS), hauteur: HAUTEUR, echelle: 1 });
 const page = navigateur.page;
 
@@ -127,6 +130,16 @@ const INSPECTION = `
         chevauchements.push(nom(freres[i]) + ' recouvre ' + nom(freres[i - 1]));
         break;
       }
+    }
+  }
+
+  /* Un en-tete de colonne a des points de suspension n est pas « annonce » :
+     « METH… » ne dit pas quelle colonne on lit. Les largeurs par defaut doivent
+     tenir leur libelle, a toutes les tailles de fenetre. */
+  for (const cellule of [...vue.querySelectorAll('.thead > div')].filter(visible)) {
+    if (cellule.scrollWidth > cellule.clientWidth + 1) {
+      coupes.push('en-tete de colonne coupe : « ' + cellule.textContent.trim() + ' » ('
+        + (cellule.scrollWidth - cellule.clientWidth) + ' px)');
     }
   }
 

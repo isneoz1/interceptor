@@ -1,4 +1,4 @@
-/* Generateurs de code par langage — INTERCEPTOR (by NeoZ)
+/* Generateurs de code par langage — SWIFT (by NeoZ)
  *
  * Un client HTTP pour chaque grand langage du monde. Chaque fonction recoit un
  * enregistrement capture et rend un extrait pret a coller. Aucune sortie
@@ -339,7 +339,7 @@ export function toK6(rec) {
 
 /* ------------------------------- Ansible ---------------------------------- */
 export function toAnsible(rec) {
-  const lines = ['- name: INTERCEPTOR — ' + rec.method + ' ' + target(rec),
+  const lines = ['- name: SWIFT — ' + rec.method + ' ' + target(rec),
     '  hosts: localhost', '  gather_facts: false', '  tasks:',
     '    - name: Requete HTTP', '      ansible.builtin.uri:',
     '        url: ' + yq(target(rec)), '        method: ' + rec.method,

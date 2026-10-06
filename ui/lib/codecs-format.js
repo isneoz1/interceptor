@@ -1,4 +1,4 @@
-/* Formats structures et echappements — INTERCEPTOR (by NeoZ)
+/* Formats structures et echappements — SWIFT (by NeoZ)
  *
  * JSON, YAML, CSV, XML, listes de proprietes, et les echappements de chaine
  * pour JavaScript, JSON, expressions regulieres et lignes de commande.

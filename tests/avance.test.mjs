@@ -1,4 +1,4 @@
-/* Tests des outils avances — INTERCEPTOR (cree par NeoZ)
+/* Tests des outils avances — SWIFT (cree par NeoZ)
  *
  * Couvre les modules d analyse de protocole : trames sur le fil, politiques de
  * securite, fraicheur de cache, corps multipart, URL canoniques, tables de
@@ -948,7 +948,7 @@ verifier('un code de statut hors table est signale',
     .statut.sens.includes('hors de la table'));
 
 /* --------------------- Integrite du corps (RFC 9530) ---------------------- */
-/* Un serveur peut annoncer l empreinte de ce qu il envoie. INTERCEPTOR a le
+/* Un serveur peut annoncer l empreinte de ce qu il envoie. SWIFT a le
    corps : il peut donc la verifier, ce que le navigateur ne fait pas. Le
    vecteur vient de l annexe de la RFC 9530. */
 const { lireEmpreintes, verifierEmpreintes, resumerVerification, lirePreferences } =

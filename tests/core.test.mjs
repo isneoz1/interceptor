@@ -1,4 +1,4 @@
-/* Tests du noyau — INTERCEPTOR (cree par NeoZ)
+/* Tests du noyau — SWIFT (cree par NeoZ)
  *
  * Le noyau tourne dans le processus d arriere-plan de Firefox. Ici il tourne
  * sous Node, avec le harnais qui imite l API WebExtension : la logique testee
@@ -285,6 +285,23 @@ verifier('adresse IP du serveur reportee', entree.serverIPAddress === '203.0.113
 verifier('minutage present', entree.timings && typeof entree.timings.wait === 'number');
 egal('HAR vide reste valide', buildHar([]).log.entries.length, 0);
 
+/* Le nom a change : les HAR des versions qui s appelaient INTERCEPTOR portent
+   l extension `_interceptor`. Ils doivent se relire aussi fidelement. */
+{
+  const { importHar } = await import('../background/ingest/har.js');
+  const { store: magasin } = await import('../background/core/store.js');
+  const exporte = buildHar([enregistrementExemple({ id: 7001, sources: ['webRequest', 'pageHook'], type: 'xmlhttprequest' })]);
+  const e0 = exporte.log.entries[0];
+  verifier('extension SWIFT exportee sous _swift', !!e0._swift && !('_interceptor' in e0));
+  const ancien = JSON.parse(JSON.stringify(exporte).replace('"_swift":', '"_interceptor":'));
+  const relu = r => { const avant = new Set(magasin.order); importHar(r); return magasin.get(magasin.order.find(id => !avant.has(id))); };
+  const neuf = relu(exporte);
+  const vieux = relu(ancien);
+  egal('HAR actuel : couches restaurees', neuf.sources.join(','), 'import,webRequest,pageHook');
+  egal('HAR d INTERCEPTOR : couches restaurees de meme', vieux.sources.join(','), neuf.sources.join(','));
+  egal('HAR d INTERCEPTOR : type restaure', vieux.type, 'xmlhttprequest');
+}
+
 /* ------------------------------ Import curl ------------------------------- */
 memeListe('decoupage en respectant les guillemets',
   decouper("curl 'https://a.fr/x' -H 'A: 1'"), ['curl', 'https://a.fr/x', '-H', 'A: 1']);
@@ -403,7 +420,7 @@ egal('« tokenizer » n est pas pris pour un secret',
 
 verifier('le compte de valeurs masquees est remonte', assaini.masques > 0);
 verifier('le fichier declare lui-meme avoir ete assaini',
-  /Assaini par INTERCEPTOR/.test(assaini.har.log.comment));
+  /Assaini par SWIFT/.test(assaini.har.log.comment));
 verifier('le commentaire porte le compte',
   assaini.har.log.comment.includes(String(assaini.masques)));
 egal('la version du HAR est preservee', assaini.har.log.version, '1.2');

@@ -1,4 +1,4 @@
-/* Vue « Aide » — mode d emploi complet, hors ligne — INTERCEPTOR (by NeoZ) */
+/* Vue « Aide » — mode d emploi complet, hors ligne — SWIFT (by NeoZ) */
 import { $, el, clear, button } from '../lib/dom.js';
 import { fieldHelp } from '../lib/filters.js';
 import { cmd, toast } from '../app.js';
@@ -13,7 +13,7 @@ const SECTIONS = [
   },
   {
     h: 'Prise en main en trois etapes',
-    p: ['INTERCEPTOR demarre seul et capture en permanence. Il n y a rien a configurer pour commencer.'],
+    p: ['SWIFT demarre seul et capture en permanence. Il n y a rien a configurer pour commencer.'],
     ul: [
       '1. Naviguez normalement : chaque requete apparait en direct dans la vue Requetes.',
       '2. Cliquez sur une ligne : le panneau du bas montre TOUT ce qui a ete capture, onglet par onglet.',
@@ -84,7 +84,7 @@ const SECTIONS = [
       'Un seul texte de travail, vingt et un onglets qui le regardent. On colle une valeur une fois — depuis le presse-papiers, depuis le menu contextuel d une ligne, ou depuis un onglet du detail — et chaque outil travaille dessus. Tout se calcule dans la page : aucune de ces fonctions n emet la moindre requete.'
     ],
     table: [
-      ['Transformer', '137 transformations classees en dix-huit familles : base64 et base64 URL, base32, base58, base45, Ascii85, URL, entites HTML, hexadecimal, binaire, octal, echappements Unicode, punycode, JSON, YAML, CSV, XML, SAML, messages DNS, WebAuthn, gzip et deflate, casse, lignes, echappements de chaine, Protocol Buffers, MessagePack, CBOR, ASN.1. « Tout essayer » applique chaque decodage — sauf DNS et WebAuthn, qui liraient n importe quels octets — et ne garde que les resultats lisibles.'],
+      ['Transformer', '138 transformations classees en dix-huit familles : base64 et base64 URL, base32, base58, base45, Ascii85, URL, entites HTML, hexadecimal, binaire, octal, echappements Unicode, punycode, JSON, YAML, CSV, XML, SAML, messages DNS, WebAuthn, gzip et deflate, casse, lignes, echappements de chaine, Protocol Buffers, MessagePack, CBOR, ASN.1. « Tout essayer » applique chaque decodage — sauf DNS et WebAuthn, qui liraient n importe quels octets — et ne garde que les resultats lisibles.'],
       ['Cles et essais', 'XOR avec cle repetee, recherche des 255 cles d un octet, les vingt-cinq decalages de Cesar, Vigenere. Ces chiffres ne protegent rien : ils relisent une valeur volontairement obscurcie.'],
       ['JWT', 'Entete, charge utile, validite, temps restant. La signature se verifie vraiment, sur les douze algorithmes courants : HS256 a HS512 avec la cle partagee, RS, PS et ES avec la cle publique collee en PEM ou en JWK. Sans cle, l ecran le dit, plutot que de laisser croire qu un jeton decode est un jeton valide.'],
       ['Chiffrement', 'AES-GCM, AES-CBC et AES-CTR dans les deux sens, avec vecteur d initialisation et donnees authentifiees ; derivation PBKDF2 et HKDF ; verification d une signature detachee RSA, RSA-PSS, ECDSA ou HMAC. Tout passe par le moteur du navigateur, rien ne sort de la machine.'],
@@ -124,6 +124,17 @@ const SECTIONS = [
     ]
   },
   {
+    h: 'Ce qui est lu dans le trafic',
+    p: ['Certains echanges ne disent rien a qui ne regarde que l URL et le statut. Le detail d une requete les ouvre.'],
+    table: [
+      ['GraphQL', 'L operation executee (colonne GraphQL, recherche gql:), les variables, les lots, la requete persistee d Apollo dont le SHA-256 est recalcule, et le vrai verdict de la reponse : complete, partielle, erreur d execution ou erreur de requete.'],
+      ['Rapports du navigateur', 'Violations de CSP, erreurs reseau (NEL), API depreciees, interventions : les POST que le navigateur envoie de lui-meme, lus champ par champ (tag:rapport-navigateur), et les en-tetes Reporting-Endpoints, Report-To et NEL qui les demandent.'],
+      ['gRPC-Web', 'Les cadres, le protobuf qu ils portent, et le grpc-status des trailers : lui seul dit si l appel a reussi.'],
+      ['Signatures et cles d acces', 'Signatures de messages HTTP (RFC 9421) reconstruites et verifiees, inscriptions et connexions WebAuthn, DNS par HTTPS.'],
+      ['Securite', 'OAuth 2.0 et OpenID Connect, SAML, empreintes de contenu, protections de la reponse, CSP deduite des chargements reels.']
+    ]
+  },
+  {
     h: 'Pourquoi il n y a jamais de doublon',
     p: [
       'Trois couches peuvent voir la meme requete : webRequest, les sondes de page et PerformanceObserver. Sans correlation, une ligne apparaitrait par couche.',
@@ -156,15 +167,16 @@ const SECTIONS = [
       ['Markdown', 'Rapport d alertes classe par gravite.'],
       ['Script cURL', 'Toutes les requetes filtrees, pretes a rejouer en ligne de commande.'],
       ['Collection Postman', 'Format v2.1, groupee par domaine, avec les reponses reellement observees.'],
+      ['OpenAPI 3.1', 'Les appels d API decrits : operations, parametres de chemin, schemas des corps envoyes et recus, statuts, authentification. Une origine par document, seulement ce qui a ete observe, sans aucune valeur capturee.'],
       ['Liste d URL', 'Un fichier texte, une URL par ligne.'],
-      ['Import HAR', 'Relire ici une capture faite ailleurs. Un HAR exporte par INTERCEPTOR est restaure a l identique.']
+      ['Import HAR', 'Relire ici une capture faite ailleurs. Un HAR exporte par SWIFT est restaure a l identique.']
     ],
     p: ['Par requete, le menu « Copier » produit cURL, wget, HTTPie, fetch, Node, Python, PowerShell, la requete ou la reponse HTTP brute, une fiche Markdown ou l enregistrement JSON complet.']
   },
   {
     h: 'Modifier le trafic : regles et rejeu',
     p: [
-      'Par defaut, INTERCEPTOR observe sans jamais rien modifier ni emettre.',
+      'Par defaut, SWIFT observe sans jamais rien modifier ni emettre.',
       'La vue Regles permet de bloquer, de rediriger (avec groupes captures $1..$9), de forcer le HTTPS, ' +
       'de reecrire des entetes, et de simuler une reponse. Lors d une simulation, le corps reel du serveur ' +
       'reste enregistre : la page recoit le contenu simule, vous voyez les deux. Le code de statut d origine ' +
@@ -180,7 +192,7 @@ const SECTIONS = [
     ul: [
       'Pages privilegiees : about:config, about:addons, Nouvel onglet, pages d erreur. Toute extension y est interdite.',
       'Domaines reserves par Mozilla : accounts.firefox.com, addons.mozilla.org.',
-      'Trafic hors Firefox : INTERCEPTOR observe le navigateur, pas le systeme.',
+      'Trafic hors Firefox : SWIFT observe le navigateur, pas le systeme.',
       'Requetes emises depuis un Worker : capturees, mais sans pile JavaScript.',
       'Flux de donnees WebRTC : la signalisation et les candidats sont journalises, pas le contenu des flux.',
       'Corps compresses : Firefox les decode (gzip, deflate, Brotli, zstd) avant toute extension, et le flux compresse lui-meme n est pas vu. Un corps qui arrive encore compresse est decompresse ici s il est en gzip ou deflate.'
@@ -211,7 +223,7 @@ export function render() {
   const box = el('div', { class: 'pane narrow help' });
   pane.appendChild(box);
 
-  box.appendChild(el('h2', { text: lang() === 'en' ? 'INTERCEPTOR — user manual' : 'INTERCEPTOR — mode d emploi' }));
+  box.appendChild(el('h2', { text: lang() === 'en' ? 'SWIFT — user manual' : 'SWIFT — mode d emploi' }));
   box.appendChild(el('p', { text: lang() === 'en'
     ? 'Network supervision station for Firefox, created by NeoZ. This page holds everything you need to know: it works offline and always matches the installed version.'
     : 'Poste de supervision reseau pour Firefox, cree par NeoZ. Cette page contient tout ce qu il faut savoir : elle fonctionne hors ligne et suit exactement la version installee.' }));

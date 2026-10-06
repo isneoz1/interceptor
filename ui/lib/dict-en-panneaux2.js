@@ -1,5 +1,5 @@
 /* Dictionnaire anglais — panneaux Chiffrement, Binaire, Entetes, Comparer,
- * Chercher et operations sur les prefixes. INTERCEPTOR (by NeoZ)
+ * Chercher et operations sur les prefixes. SWIFT (by NeoZ)
  *
  * Suite de dict-en-panneaux.js, dont il complete la table (`...EN_PANNEAUX2`).
  * Meme regle : la cle est le texte francais tel qu il apparait dans le code.
@@ -59,8 +59,8 @@ export const EN_PANNEAUX2 = {
     'Nothing leaves the machine: the browser engine does all of this locally.',
 
   /* --------------------------- Import (complements) ----------------------- */
-  'Collez une commande cURL dans le texte de travail. Celles que produit INTERCEPTOR sont relues telles quelles, tout comme celles copiees depuis un autre navigateur.':
-    'Paste a cURL command into the working text. The ones INTERCEPTOR produces are read back as they are, and so are those copied from another browser.',
+  'Collez une commande cURL dans le texte de travail. Celles que produit SWIFT sont relues telles quelles, tout comme celles copiees depuis un autre navigateur.':
+    'Paste a cURL command into the working text. The ones SWIFT produces are read back as they are, and so are those copied from another browser.',
   'La requete creee n a pas ete emise : elle apparait dans le tableau avec l etat « pending ». Utilisez l onglet « Rejouer » de son detail pour l envoyer reellement.':
     'The created request has not been sent: it appears in the table in the « pending » state. Use the « Replay » tab of its detail to actually send it.',
 

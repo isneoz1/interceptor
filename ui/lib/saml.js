@@ -1,4 +1,4 @@
-/* SAML 2.0 — INTERCEPTOR (by NeoZ)
+/* SAML 2.0 — SWIFT (by NeoZ)
  *
  * Le SSO d entreprise passe souvent par SAML : le navigateur transporte une
  * demande (SAMLRequest) vers le fournisseur d identite, puis une reponse

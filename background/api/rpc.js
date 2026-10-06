@@ -1,5 +1,5 @@
 /* Pont de communication content script <-> coeur <-> interface
- * INTERCEPTOR (by NeoZ)
+ * SWIFT (by NeoZ)
  *
  * Durcissement :
  *   - toute commande d'interface exige un expediteur interne a l'extension ;
@@ -341,18 +341,18 @@ export function startRpc() {
         return Promise.resolve(fn(msg.args || {}))
           .then(res => tracerCommande(msg.cmd, debut, res))
           .catch(e => {
-            console.error('[INTERCEPTOR] cmd', msg.cmd, e);
+            console.error('[SWIFT] cmd', msg.cmd, e);
             return tracerCommande(msg.cmd, debut, { error: String(e && e.message || e) });
           });
       } catch (e) {
-        console.error('[INTERCEPTOR] cmd', msg.cmd, e);
+        console.error('[SWIFT] cmd', msg.cmd, e);
         return Promise.resolve(tracerCommande(msg.cmd, debut, { error: String(e && e.message || e) }));
       }
     }
   });
 
   B.runtime.onConnect.addListener(port => {
-    if (port.name !== 'interceptor-ui') return;
+    if (port.name !== 'swift-ui') return;
     if (!isInternal(port.sender)) { try { port.disconnect(); } catch {} return; }
     ports.add(port);
     port.onDisconnect.addListener(() => {

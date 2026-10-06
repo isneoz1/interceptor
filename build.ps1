@@ -1,5 +1,5 @@
-# Fabrication du paquet INTERCEPTOR - cree par NeoZ
-#   .\build.ps1            -> dist/interceptor-<version>.xpi
+# Fabrication du paquet SWIFT - cree par NeoZ
+#   .\build.ps1            -> dist/swift-<version>.xpi
 #   .\build.ps1 -Verify    -> verifie seulement, ne construit pas
 
 param([switch]$Verify)
@@ -10,7 +10,7 @@ Set-Location $root
 
 $manifest = Get-Content 'manifest.json' -Raw | ConvertFrom-Json
 $version  = $manifest.version
-Write-Host "INTERCEPTOR $version - by NeoZ" -ForegroundColor DarkYellow
+Write-Host "SWIFT $version - by NeoZ" -ForegroundColor DarkYellow
 
 # --- Verification d integrite -------------------------------------------------
 $required = @(
@@ -183,6 +183,16 @@ $required = @(
   'ui/console/intercept.js',
   'ui/console/content-en.js',
   'ui/console/content-fr.js',
+  'ui/lib/icones.js',
+  'ui/lib/graphql-http.js',
+  'ui/lib/dict-en-graphql.js',
+  'ui/console/graphql-detail.js',
+  'ui/lib/rapports.js',
+  'ui/lib/dict-en-rapports.js',
+  'ui/console/rapports-detail.js',
+  'ui/lib/schema-json.js',
+  'ui/lib/dict-en-openapi.js',
+  'background/export/openapi.js',
   'icons/icon.svg'
 )
 $missing = $required | Where-Object { -not (Test-Path $_) }
@@ -237,7 +247,9 @@ if ($node) {
     @{ titre = 'Outils de securite';          fichier = 'tests/securite.test.mjs';
        echec = 'Un outil de securite affirme ce qui n est pas prouve' },
     @{ titre = 'Signatures, WebAuthn et DNS';  fichier = 'tests/decodeurs.test.mjs';
-       echec = 'Une signature, une ceremonie WebAuthn ou un message DNS est mal lu' }
+       echec = 'Une signature, une ceremonie WebAuthn ou un message DNS est mal lu' },
+    @{ titre = 'GraphQL, rapports et OpenAPI'; fichier = 'tests/protocoles.test.mjs';
+       echec = 'Une lecture GraphQL, un rapport du navigateur ou une description OpenAPI est faux' }
   )
 
   $totalAssertions = 0
@@ -285,7 +297,7 @@ foreach ($item in $include) {
   Copy-Item $item -Destination $stage -Recurse -Force
 }
 
-$xpi = Join-Path $dist "interceptor-$version.xpi"
+$xpi = Join-Path $dist "swift-$version.xpi"
 if (Test-Path $xpi) { Remove-Item $xpi -Force }
 Compress-Archive -Path (Join-Path $stage '*') -DestinationPath "$xpi.zip" -CompressionLevel Optimal -Force
 Move-Item "$xpi.zip" $xpi -Force

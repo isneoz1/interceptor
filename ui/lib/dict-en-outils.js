@@ -1,5 +1,5 @@
 /* Dictionnaire anglais — catalogue des transformations et onglets d outils
- * INTERCEPTOR (by NeoZ)
+ * SWIFT (by NeoZ)
  *
  * Suite de dict-en-tools.js, dont il complete la table (`...EN_OUTILS`).
  * Meme regle : la cle est le texte francais tel qu il apparait dans le code.

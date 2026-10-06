@@ -1,4 +1,4 @@
-/* Catalogue des transformations — INTERCEPTOR (by NeoZ)
+/* Catalogue des transformations — SWIFT (by NeoZ)
  *
  * Le registre unique de tout ce que la boite a outils sait appliquer a un
  * texte. Chaque entree porte sa cle, son groupe, son libelle, sa fonction, et
@@ -58,6 +58,7 @@ import { lirePhpStrict, versJs, ecrirePhp } from './php-serialise.js';
 import { decoderSamlTexte } from './saml.js';
 import { dnsVersTexte } from './dns-message.js';
 import { webauthnVersTexte } from './webauthn.js';
+import { jsonVersSchema } from './schema-json.js';
 
 /* Raccourcis d ecriture : e = encodage, d = decodage, a = asynchrone. */
 const e = (cle, groupe, libelle, fn) => ({ cle, groupe, libelle, fn, decode: false, asynchrone: false });
@@ -142,6 +143,9 @@ export const TRANSFORMATIONS = [
   d('lignes-json', 'JSON', 'JSON Lines vers JSON', lignesVersJson),
   d('json-yaml', 'JSON', 'JSON vers YAML', jsonVersYaml),
   e('json-csv', 'JSON', 'JSON vers CSV', jsonVersCsv),
+  /* Un document, ou plusieurs exemples en JSON Lines : le schema qui les
+     accepte tous, sans exemples ni valeurs recopiees. */
+  e('json-schema', 'JSON', 'JSON vers schema JSON (2020-12)', jsonVersSchema),
   d('csv-json', 'JSON', 'CSV vers JSON', csvVersJson),
 
   /* ----------------------------- XML et balises --------------------------- */

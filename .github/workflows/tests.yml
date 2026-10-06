@@ -56,6 +56,6 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: interceptor-xpi
+          name: swift-xpi
           path: dist/*.xpi
           if-no-files-found: error

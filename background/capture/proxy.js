@@ -1,4 +1,4 @@
-/* Couche proxy (proxy.onRequest / proxy.onError) — INTERCEPTOR (by NeoZ)
+/* Couche proxy (proxy.onRequest / proxy.onError) — SWIFT (by NeoZ)
  *
  * Point d'observation le PLUS precoce de Firefox : declenche avant meme
  * onBeforeRequest, et donne la decision de proxy appliquee a chaque requete.
@@ -49,12 +49,12 @@ export function startProxy() {
     // Aucun retour : Firefox conserve integralement sa configuration de proxy.
   };
 
-  errorListener = err => { proxyStats.errors++; console.warn('[INTERCEPTOR] proxy error', err); };
+  errorListener = err => { proxyStats.errors++; console.warn('[SWIFT] proxy error', err); };
 
   B.proxy.onRequest.addListener(listener, { urls: ['<all_urls>'] });
   if (B.proxy.onError) B.proxy.onError.addListener(errorListener);
   proxyStats.enabled = true;
-  console.info('[INTERCEPTOR] proxy.onRequest actif (observation passive)');
+  console.info('[SWIFT] proxy.onRequest actif (observation passive)');
 }
 
 export function stopProxy() {

@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<title>INTERCEPTOR — console</title>
+<title>SWIFT — console</title>
 <link rel="stylesheet" href="theme.css">
 <link rel="stylesheet" href="console.css">
 </head>
@@ -12,7 +12,7 @@
   <div class="brand">
     <img class="mark" src="../icons/icon.svg" alt="" width="24" height="24">
     <div class="title">
-      <strong>INTERCEPTOR</strong>
+      <strong>SWIFT</strong>
       <span>by NeoZ</span>
     </div>
   </div>
@@ -21,14 +21,14 @@
     <span class="dot"></span><span id="capture-label">Capture</span>
   </button>
 
-  <div class="spark" id="spark" title="Requetes par seconde — 30 dernieres secondes"></div>
+  <div class="spark" id="spark"></div>
 
   <div class="grow">
     <input id="q" type="search" autocomplete="off" spellcheck="false"
            placeholder="Filtrer :  method:POST   status:5xx   host:api.   size:>100000   -image   /regex/">
-    <div class="menu-wrap"><button id="q-saved" class="btn sm ghost ico-only" type="button" title="Filtres enregistres et recherches recentes" aria-label="Filtres enregistres">★</button></div>
-    <button id="q-help" class="btn sm ghost ico-only" type="button" title="Aide sur la recherche" aria-label="Aide sur la recherche">?</button>
-    <label class="chip" title="Cherche aussi dans les corps, les entetes, les trames et les piles">
+    <div class="menu-wrap"><button id="q-saved" class="btn sm ghost ico-only" type="button" data-icone="etoile" title="Filtres enregistres et recherches recentes" aria-label="Filtres enregistres">★</button></div>
+    <button id="q-help" class="btn sm ghost ico-only" type="button" data-icone="aide" title="Aide sur la recherche" aria-label="Aide sur la recherche">?</button>
+    <label class="chip" id="deep-chip" title="Cherche aussi dans les corps, les entetes, les trames et les piles">
       <input type="checkbox" id="deep"><span id="deep-label">corps</span>
     </label>
   </div>
@@ -39,9 +39,9 @@
     <div class="menu-wrap"><button id="more" class="btn" type="button">Actions</button></div>
     <button id="clear" class="btn danger" type="button" title="Vider toute la capture">Vider</button>
     <span class="sep"></span>
-    <div class="menu-wrap"><button id="dock" class="btn sm ghost ico-only" type="button" title="Emplacement de la console" aria-label="Emplacement">⧉</button></div>
+    <div class="menu-wrap"><button id="dock" class="btn sm ghost ico-only" type="button" data-icone="ancrage" title="Emplacement de la console" aria-label="Emplacement">⧉</button></div>
     <button id="lang" class="btn sm ghost" type="button" title="Francais / Anglais" aria-label="Langue">FR</button>
-    <button id="prefs" class="btn sm ghost ico-only" type="button" title="Reglages" aria-label="Reglages">⚙</button>
+    <button id="prefs" class="btn sm ghost ico-only" type="button" data-icone="reglages" title="Reglages" aria-label="Reglages">⚙</button>
   </div>
 </header>
 
@@ -74,13 +74,13 @@
         <section class="detail" id="detail" hidden>
           <div class="detail-head">
             <div class="who" id="detail-who"></div>
-            <button class="btn sm" id="d-prev" type="button" title="Ligne precedente">↑</button>
-            <button class="btn sm" id="d-next" type="button" title="Ligne suivante">↓</button>
-            <button class="btn sm" id="d-flag" type="button" title="Epingler">★</button>
+            <button class="btn sm ico-only" id="d-prev" type="button" data-icone="haut" title="Ligne precedente">↑</button>
+            <button class="btn sm ico-only" id="d-next" type="button" data-icone="bas" title="Ligne suivante">↓</button>
+            <button class="btn sm ico-only" id="d-flag" type="button" data-icone="etoile" title="Epingler">★</button>
             <button class="btn sm" id="d-open" type="button" title="Ouvrir l URL dans un onglet">Ouvrir</button>
             <button class="btn sm" id="d-block" type="button" title="Creer une regle de blocage">Bloquer</button>
             <div class="menu-wrap"><button class="btn sm" id="d-copy" type="button">Copier</button></div>
-            <button class="btn sm ghost" id="d-close" type="button" title="Fermer le detail">✕</button>
+            <button class="btn sm ghost ico-only" id="d-close" type="button" data-icone="fermer" title="Fermer le detail">✕</button>
           </div>
           <div class="dtabs" id="dtabs" role="tablist" aria-label="Onglets du detail"></div>
           <div class="dbody" id="dbody"></div>

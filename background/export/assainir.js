@@ -1,4 +1,4 @@
-/* Assainissement d un export — INTERCEPTOR (by NeoZ)
+/* Assainissement d un export — SWIFT (by NeoZ)
  *
  * Un fichier HAR est fait pour etre partage : joint a un ticket, envoye a un
  * collegue, depose sur un outil d analyse. Il contient pourtant tout ce que le
@@ -36,7 +36,7 @@ const ENTETES_SECRETES = new Set([
 const PARAM_SECRET =
   /(^|[_.-])(token|api[_.-]?key|apikey|secret|password|passwd|pwd|auth|access[_.-]?token|refresh[_.-]?token|id[_.-]?token|session|sig|signature|credential|client[_.-]?secret)($|[_.-])/i;
 
-const MARQUE = '[masque par INTERCEPTOR]';
+const MARQUE = '[masque par SWIFT]';
 
 /**
  * Masque une valeur en gardant de quoi la reconnaitre sans la reveler : sa
@@ -178,7 +178,7 @@ export function assainirHar(har) {
            peut savoir si les valeurs manquantes ont ete masquees ou n ont
            jamais existe. */
         comment: [(har && har.log && har.log.comment) || '',
-          'Assaini par INTERCEPTOR : ' + compte.n + ' valeur(s) masquee(s).']
+          'Assaini par SWIFT : ' + compte.n + ' valeur(s) masquee(s).']
           .filter(Boolean).join(' '),
         entries: entrees
       }

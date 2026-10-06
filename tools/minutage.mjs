@@ -1,4 +1,4 @@
-/* Audit du minutage — INTERCEPTOR (by NeoZ)
+/* Audit du minutage — SWIFT (by NeoZ)
  *
  *   node tools/minutage.mjs
  *

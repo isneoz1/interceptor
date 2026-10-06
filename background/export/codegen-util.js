@@ -1,4 +1,4 @@
-/* Aides partagees de generation de code — INTERCEPTOR (by NeoZ)
+/* Aides partagees de generation de code — SWIFT (by NeoZ)
  *
  * Tout le monde tape la meme requete dans un langage different : ce module
  * porte les briques communes (entetes utilisables, corps, echappement par

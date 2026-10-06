@@ -1,4 +1,4 @@
-/* Chargement de l interface — INTERCEPTOR (cree par NeoZ)
+/* Chargement de l interface — SWIFT (cree par NeoZ)
  *
  * Un module d interface qui ne se charge pas laisse une vue vide, sans erreur
  * visible ailleurs que dans la console du navigateur. Ce test importe TOUS les
@@ -239,7 +239,7 @@ function desechapper(litteral) {
 
 /* Ce qui n a pas a etre traduit : symboles, syntaxe de filtre, noms propres. */
 const SANS_TRADUCTION = new Set([
-  'INTERCEPTOR', 'NeoZ', 'JSON', 'HTTP', 'URL', 'IP', 'TLS', 'DNS', 'CSP', 'JWT',
+  'SWIFT', 'NeoZ', 'JSON', 'HTTP', 'URL', 'IP', 'TLS', 'DNS', 'CSP', 'JWT',
   'HMAC-', 'Vary', 'Opcode', 'CORS', 'HAR', 'UUID', 'ULID', 'MIME'
 ]);
 
@@ -268,6 +268,49 @@ for (const [texte, ou] of sansEntree) {
   verifier('la chaine ' + JSON.stringify(texte.slice(0, 60)) + ' a une traduction', false, ou);
 }
 egal('aucune chaine visible sans traduction anglaise', sansEntree.size, 0);
+
+/* Les libelles statiques passent par de petites fonctions locales —
+   set('#console', 'Console complete', 'Ouvrir…') et nommer('#side', '…') —
+   que la lecture des appels a t() ne voit pas : « Console complete » et
+   « Panneau » sont ainsi restes en francais dans la popup anglaise. Leur texte
+   et leur bulle sont donc lus ici aussi. */
+const LIBELLES_STATIQUES = /\b(?:set|nommer)\(\s*'#[^']*'\s*,\s*(?:'((?:[^'\\]|\\.)*)'|null)\s*(?:,\s*'((?:[^'\\]|\\.)*)')?/g;
+const statiquesSansEntree = [];
+for (const rel of fichiersJs(path.join(racine, 'ui'))) {
+  if (rel.includes('/dict-en')) continue;
+  const source = fs.readFileSync(path.join(racine, rel), 'utf8');
+  for (const m of source.matchAll(LIBELLES_STATIQUES)) {
+    for (const brut of [m[1], m[2]]) {
+      if (brut === undefined) continue;
+      const texte = desechapper(brut);
+      if (!/[a-zA-Z]/.test(texte) || SANS_TRADUCTION.has(texte) || EN[texte] !== undefined) continue;
+      statiquesSansEntree.push(rel + ' : ' + texte);
+    }
+  }
+}
+for (const reste of statiquesSansEntree) verifier('le libelle statique a une traduction', false, reste);
+egal('aucun libelle statique sans traduction anglaise', statiquesSansEntree.length, 0);
+
+/* Les pages HTML portent un premier texte — libelles, bulles, aria-label,
+   invites — que le script remplace dans la langue choisie. Un texte que le
+   script ne reprend jamais reste en francais : c etait le cas de la bulle des
+   filtres enregistres. Chaque texte des pages doit donc avoir sa traduction ET
+   figurer dans le code de l interface, qui le repose par t(). */
+const sourcesUi = fichiersJs(path.join(racine, 'ui'))
+  .filter(rel => !rel.includes('/dict-en'))
+  .map(rel => fs.readFileSync(path.join(racine, rel), 'utf8'))
+  .join('\n');
+const SANS_TRADUCTION_PAGES = new Set(['SWIFT', 'by NeoZ', 'FR', 'req/s']);
+const textesDePage = [];
+for (const page of ['ui/console.html', 'ui/popup.html']) {
+  const html = fs.readFileSync(path.join(racine, page), 'utf8').replace(/<(title|script)[^>]*>[\s\S]*?<\/\1>/g, '');
+  for (const m of html.matchAll(/(?:title|aria-label|placeholder)="([^"]*)"/g)) textesDePage.push([page, m[1]]);
+  for (const m of html.matchAll(/>([^<>]*[A-Za-z][^<>]*)</g)) textesDePage.push([page, m[1].trim()]);
+}
+const textesNonRepris = textesDePage.filter(([, texte]) => texte && !SANS_TRADUCTION_PAGES.has(texte)
+  && (EN[texte] === undefined || !sourcesUi.includes("'" + texte + "'")));
+for (const [page, texte] of textesNonRepris) verifier('le texte de la page est traduit et repose', false, page + ' : ' + texte);
+egal('aucun texte des pages HTML laisse en francais', textesNonRepris.length, 0);
 
 /* Une cle definie deux fois est un piege silencieux : la derniere ecrase la
    precedente selon l ordre de fusion, sans erreur ni trace. C est ainsi que la
@@ -356,6 +399,14 @@ for (const rel of ['background/core/analyzer-regles.js', 'background/core/analyz
 }
 const { GABARITS_FAITS } = await import('../background/core/analyzer-faits.js');
 for (const gabarit of Object.values(GABARITS_FAITS)) exigerTraduction('fait constate', gabarit);
+const { FAITS_GRAPHQL, FORMES_GRAPHQL } = await import('../ui/lib/graphql-http.js');
+for (const gabarit of Object.values(FAITS_GRAPHQL)) exigerTraduction('fait GraphQL', gabarit);
+for (const forme of Object.values(FORMES_GRAPHQL)) exigerTraduction('transport GraphQL', forme);
+const { FAITS_RAPPORTS, TYPES_NEL, CHAMPS_RAPPORTS, NOMS_TYPES } = await import('../ui/lib/rapports.js');
+for (const gabarit of Object.values(FAITS_RAPPORTS)) exigerTraduction('fait sur un rapport', gabarit);
+for (const [, sens] of Object.values(TYPES_NEL)) exigerTraduction('sens d une erreur NEL', sens);
+for (const champs of Object.values(CHAMPS_RAPPORTS)) for (const [, libelle] of champs) exigerTraduction('champ de rapport', libelle);
+for (const nom of Object.values(NOMS_TYPES)) exigerTraduction('type de rapport', nom);
 
 /* Les lectures de securite produisent des gabarits traduits a l affichage :
    les faits OAuth et SAML, les limites de la CSP deduite, les raisons d une

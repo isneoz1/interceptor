@@ -4,6 +4,132 @@ All notable changes to this project are documented here.
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning follows
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.0.0] — 2026-10-06
+
+INTERCEPTOR becomes **SWIFT**: a new name, a new logo and a new interface — and three readings
+of traffic that browsers do not offer: the GraphQL operation behind each call, the reports
+the browser sends on its own, and an OpenAPI description of the API calls seen.
+
+### Changed — read before upgrading
+
+- **The add-on is now called SWIFT and its ID is `swift@neoz`** (it was
+  `interceptor@neoz`). Firefox treats a new ID as a new add-on: an installed 4.x copy does
+  not update in place — remove it, then install 5.0. Settings and the persisted session live
+  in the browser's storage of the old ID: to bring the settings over, export them from 4.x
+  (Export → *Export settings*) and paste the file into the import field of the Settings view
+  in 5.0.
+- The package is `swift-<version>.xpi`, the replay and probe headers are
+  `X-Swift-Replay` and `X-Swift-Probe`, and SWIFT's own HAR field is `_swift`. **A HAR
+  exported by an earlier version (`_interceptor`) is still restored in full.** The
+  repository keeps its address.
+- **A new logo**: an "S" drawn as two opposing arrows — the request leaving, the response
+  coming back — on a blue-to-violet tile, legible down to 16 pixels.
+- **A new interface.** Navy-tinted surfaces and a single indigo accent taken from the logo, in
+  both themes; one set of original line icons for the navigation and the icon buttons,
+  instead of Unicode symbols that changed shape from one font to another and sometimes
+  turned into colour emoji; a capture button that shows its state by its colour; a
+  magnifier in every search field; column labels in small capitals; the open view marked with
+  the logo's gradient. Every text and background pair is still measured against WCAG 2.1,
+  now 55 pairs per theme instead of 49.
+- **Severity "high" is orange**, no longer the accent colour: a selected row and a
+  high-severity finding could not be told apart.
+
+### Added
+
+- **GraphQL over HTTP.** Every GraphQL call looks the same on the network — `POST /graphql`,
+  status 200. The operation that runs now has **its own column** and **search filter**
+  (`gql:mutation`, `gql:GetUser`) and a quick filter chip. The Request tab reads the four
+  forms (URL parameters, JSON body, batch, file-upload multipart form), picks the operation
+  the way GraphQL's GetOperation does, and names a document with several operations and no
+  `operationName`, or an `operationName` that names none. An Apollo persisted query is
+  shown with its hash, **recomputed with SHA-256** against the text sent with it. The
+  Response tab gives the real verdict — complete result, partial result, execution error,
+  request error (GraphQL §7.1) — every error with its path, position and code, an HTTP 200
+  that hides errors, the status rules of `application/graphql-response+json`, and the schema
+  an introspection query handed out. A mutation sent with `GET`, which GraphQL over HTTP
+  §4.3 forbids, is pointed out along with what the server did. The analyser records two
+  facts, never alerts: a mutation executed from a `GET`, and a schema handed to anyone.
+  The document reader is checked against **graphql-core**, the Python port of the reference
+  implementation, on 27 documents chosen for their traps (strings, block strings, comments,
+  default values, directives, fragments).
+- **Browser reports.** The `POST`s a browser sends on its own are opened report by report:
+  `application/reports+json` (Reporting API) and `application/csp-report` (CSP
+  `report-uri`) — CSP violation, network error with the meaning of each of the 30 NEL error
+  types, deprecation, intervention, Permissions-Policy violation; a type without a table
+  shows its fields as they came. Report-only CSP violations are told apart from blocked
+  ones. They are tagged `rapport-navigateur`. The Headers tab reads **report collection**:
+  `Reporting-Endpoints` (a structured-field dictionary), `Report-To` and `NEL` — and says
+  which endpoints the browser ignores (a value that is not a string, an origin that is not
+  secure, a response served without a secure connection), the NEL sampling fractions with
+  their defaults, and `max_age: 0`, which removes the policy. Field names and rules come from
+  the W3C and WICG specifications, read in their text.
+- **OpenAPI 3.1 export.** Export → *OpenAPI 3.1 description of the API calls*: operations,
+  path parameters, request and response schemas, statuses and Bearer or Basic
+  authentication, ready for Swagger UI, Redoc, Postman or a client generator. It holds what
+  crossed the network and says so: a path segment becomes a parameter only when shaped like
+  an identifier (integer, UUID, 16 or more hexadecimal digits), a query parameter is never
+  marked required, a truncated body is not read, and **no captured value is copied into the
+  document**. One origin per document; the export says which one, and how many calls to other
+  origins it left out. Checked with **openapi-spec-validator** (`tools/verifier-openapi.mjs`
+  and `.py` redo the check).
+- **JSON to JSON Schema 2020-12** in the toolbox (138 transformations): from one document or
+  several examples in JSON Lines. A property is required only when present in every example,
+  a format (date-time, date, uuid, uri) is claimed only when every value matches it, and a
+  value too large to be read in full gets no constraint rather than a false one. Every
+  example is accepted by its schema under **jsonschema** (Draft 2020-12, formats checked) —
+  a 300,000-element array included.
+
+### Fixed
+
+- **The text of the primary button read at 3.26:1** on the dark accent, below the 4.5 that
+  WCAG asks of text of that size, and the armed *Delete* button at 2.86:1. The white was
+  written straight into the stylesheet, where the contrast test could not see it; solid
+  fills are now tokens of their own, and the test measures the text on them.
+- **The time column cut the time** (`17:07:39.9…`) as soon as the text size was above 100%:
+  the default column widths did not follow the text. They do now; a width dragged by hand
+  stays the one you chose.
+- **The open view lost its highlight in the navigation** after any change of setting —
+  switching the language, the simple mode. It is kept, and screen readers are now told which
+  view is open.
+- The icon buttons of the detail panel had no name for screen readers; the pin button now
+  announces whether the row is pinned. Its tooltip, and those of the throughput chart, were
+  French in the English interface.
+- **Seventeen more texts were French in the English interface**: the popup's *Full
+  console* and *Sidebar* buttons and two of its tooltips; in the console, the tooltips of the
+  capture button (both states), *Follow*, *Compare*, *Block*, the language button, the saved
+  filters, the search help and the *bodies* box, and four names read by screen readers
+  (navigation, request table, detail tabs, placement). They were set by small helpers or
+  written in the HTML pages, where the translation check did not look. It now reads both:
+  every text of the pages must have its translation and be set again by the script.
+- At start-up, the throughput chart drew **a solid block**: a single measurement filled the
+  whole width, as if thirty seconds of traffic had been seen. Each second now has its own
+  bar.
+- The toolbox family names used a colour that does not exist (`--muted`), so they were drawn
+  in the body text colour.
+- The method in the detail header showed in grey instead of its colour.
+- The popup screenshot of the documentation was cut on the right: it was taken at 380 × 560
+  pixels, the popup measures 420 × 600.
+- The manifest now declares that SWIFT collects no data
+  (`data_collection_permissions: none`), which addons.mozilla.org requires of every new
+  extension; Mozilla's linter reports no error on the package.
+
+### Tests
+
+- **`tests/protocoles.test.mjs`**, a tenth suite: GraphQL documents compared with
+  `graphql-core` (`tests/vecteurs-graphql.json`), the Apollo persisted-query example, the
+  four transport forms and the facts about responses; browser reports and report
+  collection, with the field names of the specifications; JSON Schema inference and the
+  OpenAPI export. `tools/verifier-openapi.mjs` and `.py` check the export with
+  `openapi-spec-validator` and `jsonschema`.
+- The contrast test measures the text of solid buttons and of a selected row: 55 pairs per
+  theme.
+- The interface suite reads the labels set by helper functions and every text of the HTML
+  pages, which must be translated and set again by the script.
+- The display audit refuses a truncated column header — even with an ellipsis — runs at 1280
+  pixels as well, and can run in French (`--lang=fr`).
+
+1956 assertions across ten suites, plus six browser audits.
+
 ## [4.6.0] — 2026-09-29
 
 Three readings of traffic that no browser offers, each verified against an independent

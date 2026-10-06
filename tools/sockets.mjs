@@ -1,4 +1,4 @@
-/* Audit des sockets — INTERCEPTOR (by NeoZ)
+/* Audit des sockets — SWIFT (by NeoZ)
  *
  *   node tools/sockets.mjs
  *

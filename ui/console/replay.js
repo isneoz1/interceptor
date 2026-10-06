@@ -1,4 +1,4 @@
-/* Onglet « Rejouer » — INTERCEPTOR (by NeoZ)
+/* Onglet « Rejouer » — SWIFT (by NeoZ)
  *
  * Seule fonction de l extension qui emet volontairement une requete. Elle est
  * desactivee par defaut, s active ici en un clic, et n envoie jamais rien sans
@@ -32,7 +32,7 @@ export function replayPanel(rec, onDone) {
 
   box.appendChild(sec('Rejouer la requete', enabled ? 'active' : 'desactive'));
   box.appendChild(el('p', { class: 'note warn', text:
-    t('Le rejeu envoie une vraie requete depuis le navigateur, avec vos cookies pour ce site. Elle porte l entete X-Interceptor-Replay et reapparait dans la liste comme une ligne normale. A n utiliser que sur des cibles dont vous avez la responsabilite.') }));
+    t('Le rejeu envoie une vraie requete depuis le navigateur, avec vos cookies pour ce site. Elle porte l entete X-Swift-Replay et reapparait dans la liste comme une ligne normale. A n utiliser que sur des cibles dont vous avez la responsabilite.') }));
 
   if (!enabled) {
     const enable = el('button', { class: 'btn accent', type: 'button' }, t('Autoriser le rejeu'));

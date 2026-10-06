@@ -1,5 +1,5 @@
 /* Dictionnaire anglais — boite a outils, cible, diagnostic interne
- * INTERCEPTOR (by NeoZ)
+ * SWIFT (by NeoZ)
  *
  * Suite de dict-en.js, dont il complete la table (`...EN_TOOLS`). Meme regle :
  * la cle est le texte francais tel qu il apparait dans le code.
@@ -52,8 +52,8 @@ export const EN_TOOLS = {
     'Hold a request to edit it before it leaves',
   'Ce que chaque couche capture reellement, et les chiffres du noyau':
     'What each layer actually captures, and the core figures',
-  'Les erreurs d INTERCEPTOR lui-meme, et ses commandes':
-    'INTERCEPTOR own errors, and its commands',
+  'Les erreurs de SWIFT lui-meme, et ses commandes':
+    "SWIFT's own errors, and its commands",
   'Toutes les options, et quatre profils tout prets':
     'Every option, and four ready-made profiles',
   'Douze lecons pour prendre l outil en main': 'Twelve lessons to get started',
@@ -71,8 +71,8 @@ export const EN_TOOLS = {
   'Resultats lisibles': 'Readable results',
   'Aucun decodage ne rend un resultat lisible : le texte est probablement deja en clair.':
     'No decoding yields a readable result: the text is probably already plain.',
-  'Choisissez une transformation, ou « Tout essayer » pour laisser INTERCEPTOR reconnaitre l encodage.':
-    'Pick a transformation, or use "Try everything" to let INTERCEPTOR recognise the encoding.',
+  'Choisissez une transformation, ou « Tout essayer » pour laisser SWIFT reconnaitre l encodage.':
+    'Pick a transformation, or use "Try everything" to let SWIFT recognise the encoding.',
 
   /* ---------------------------------- JWT --------------------------------- */
   'Jeton JWT': 'JWT token',
@@ -80,8 +80,8 @@ export const EN_TOOLS = {
   'Ce texte n est pas un JWT : ': 'This text is not a JWT: ',
   'Algorithme « none » : ce jeton n est pas signe. Un serveur qui l accepte est vulnerable.':
     'Algorithm "none": this token is unsigned. A server accepting it is vulnerable.',
-  'La signature n est pas verifiee : INTERCEPTOR ne detient pas la cle du serveur. Un JWT decode n est pas un JWT valide.':
-    'The signature is not verified: INTERCEPTOR does not hold the server key. A decoded JWT is not a valid JWT.',
+  'La signature n est pas verifiee : SWIFT ne detient pas la cle du serveur. Un JWT decode n est pas un JWT valide.':
+    'The signature is not verified: SWIFT does not hold the server key. A decoded JWT is not a valid JWT.',
   'Ce jeton est expire.': 'This token has expired.',
   'Ce jeton n est pas encore valide.': 'This token is not valid yet.',
   'Entete': 'Header',

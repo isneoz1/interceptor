@@ -1,4 +1,4 @@
-/* Moteur de correlation / anti-doublon — INTERCEPTOR (by NeoZ)
+/* Moteur de correlation / anti-doublon — SWIFT (by NeoZ)
  *
  * Principe : une requete reelle = UN enregistrement, quel que soit le nombre de
  * couches de capture qui l'observent.
@@ -103,7 +103,7 @@ class Correlator {
       if (!host.rec.dedup.mergedFrom.includes(layer)) host.rec.dedup.mergedFrom.push(layer);
       store.stats.merged++;
       store.addSource(host.rec, layer);
-      try { apply(host.rec); } catch (e) { console.error('[INTERCEPTOR] merge', e); }
+      try { apply(host.rec); } catch (e) { console.error('[SWIFT] merge', e); }
       store.touch(host.rec.id);
       return host.rec;
     }
@@ -124,7 +124,7 @@ class Correlator {
         if (!host.rec.dedup.mergedFrom.includes(p.layer)) host.rec.dedup.mergedFrom.push(p.layer);
         store.stats.merged++;
         store.addSource(host.rec, p.layer);
-        try { p.apply(host.rec); } catch (e) { console.error('[INTERCEPTOR] drain', e); }
+        try { p.apply(host.rec); } catch (e) { console.error('[SWIFT] drain', e); }
         store.touch(host.rec.id);
       } else keep.push(p);
     }
@@ -142,7 +142,7 @@ class Correlator {
       for (const p of list) {
         if (nowTs < p.expires) { keep.push(p); continue; }
         if (this.onPromote) {
-          try { this.onPromote(p, sig); } catch (e) { console.error('[INTERCEPTOR] promote', e); }
+          try { this.onPromote(p, sig); } catch (e) { console.error('[SWIFT] promote', e); }
         }
       }
       if (keep.length) this.pending.set(sig, keep); else this.pending.delete(sig);

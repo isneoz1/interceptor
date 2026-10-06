@@ -1,4 +1,4 @@
-/* WebAuthn et cles d acces (passkeys) — INTERCEPTOR (by NeoZ)
+/* WebAuthn et cles d acces (passkeys) — SWIFT (by NeoZ)
  *
  * Une inscription ou une connexion par cle d acces traverse le reseau sous la
  * forme d un JSON dont les morceaux sont du base64url opaque :

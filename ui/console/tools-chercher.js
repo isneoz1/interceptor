@@ -1,4 +1,4 @@
-/* Panneau « Chercher » — INTERCEPTOR (by NeoZ)
+/* Panneau « Chercher » — SWIFT (by NeoZ)
  *
  * Trois facons d extraire une valeur du texte de travail : un motif tout pret,
  * un chemin dans du JSON, un selecteur dans du HTML. La quatrieme, l expression

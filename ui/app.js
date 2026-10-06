@@ -1,4 +1,4 @@
-/* Etat partage et services communs — INTERCEPTOR (by NeoZ)
+/* Etat partage et services communs — SWIFT (by NeoZ)
  *
  * Utilise a l identique par la console plein ecran, le panneau lateral et la
  * popup : une seule logique d acces au noyau, une seule mise en forme.
@@ -154,7 +154,7 @@ export function applyTheme(config) {
 export function connect(handlers) {
   let port = null;
   try {
-    port = B.runtime.connect({ name: 'interceptor-ui' });
+    port = B.runtime.connect({ name: 'swift-ui' });
   } catch {
     toast('Noyau injoignable — rechargez l extension', false);
     return null;

@@ -1,4 +1,4 @@
-/* Types de media et signatures de fichier — INTERCEPTOR (by NeoZ)
+/* Types de media et signatures de fichier — SWIFT (by NeoZ)
  *
  * Deux tables complementaires : ce qu un serveur declare (Content-Type) et ce
  * que les premiers octets d un corps revelent reellement. L ecart entre les

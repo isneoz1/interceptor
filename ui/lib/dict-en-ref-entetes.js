@@ -1,5 +1,5 @@
 /* Dictionnaire anglais — descriptions des entetes HTTP
- * INTERCEPTOR (by NeoZ)
+ * SWIFT (by NeoZ)
  *
  * Traduction des descriptions de ref-entetes.js. La cle reste le texte francais.
  */
@@ -250,8 +250,8 @@ export const EN_REF_ENTETES = {
     'The identifier of the compression dictionary used (RFC 9842).',
 
   /* ---------------------- Empreintes de corps (RFC 9530) ------------------ */
-  'Empreinte des octets transmis. INTERCEPTOR la recalcule et dit si elle correspond (RFC 9530).':
-    'A digest of the bytes transmitted. INTERCEPTOR recomputes it and says whether it matches (RFC 9530).',
+  'Empreinte des octets transmis. SWIFT la recalcule et dit si elle correspond (RFC 9530).':
+    'A digest of the bytes transmitted. SWIFT recomputes it and says whether it matches (RFC 9530).',
   'Empreinte de la representation, avant encodage de transfert (RFC 9530).':
     'A digest of the representation, before any transfer encoding (RFC 9530).',
   'Empreintes souhaitees en retour ; un poids nul vaut refus (RFC 9530).':

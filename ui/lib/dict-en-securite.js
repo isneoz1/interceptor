@@ -1,4 +1,4 @@
-/* Dictionnaire anglais — outils de securite de la 4.5 — INTERCEPTOR (by NeoZ)
+/* Dictionnaire anglais — outils de securite de la 4.5 — SWIFT (by NeoZ)
  *
  * Complete dict-en.js (`...EN_SECURITE`) : faits constates par l analyseur,
  * protections de la reponse, politique CSP observee, OAuth, SAML, SRI. Et les
@@ -32,8 +32,8 @@ export const EN_SECURITE = {
     'No stack: the request was made outside JavaScript (navigation, HTML resource), from a Worker, or stack capture is disabled.',
   'Copier la pile': 'Copy the stack',
   'Pile copiee': 'Stack copied',
-  'Chaque champ conserve par INTERCEPTOR figure ici, y compris ceux qui n ont pas de presentation dediee.':
-    'Every field INTERCEPTOR keeps is here, including those without a dedicated presentation.',
+  'Chaque champ conserve par SWIFT figure ici, y compris ceux qui n ont pas de presentation dediee.':
+    'Every field SWIFT keeps is here, including those without a dedicated presentation.',
   'Aucun entete capture pour cette phase.': 'No header captured for this phase.',
   'oui (cache, Service Worker ou requete bloquee)': 'yes (cache, Service Worker or blocked request)',
   'importee depuis un fichier HAR': 'imported from a HAR file',

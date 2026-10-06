@@ -1,4 +1,4 @@
-/* Contenu francais du tutoriel — INTERCEPTOR (by NeoZ)
+/* Contenu francais du tutoriel — SWIFT (by NeoZ)
  *
  * Douze lecons. Chaque lecon peut proposer des boutons qui font reellement
  * l action decrite, et des verifications qui lisent l etat reel de la capture.
@@ -18,9 +18,9 @@ export const LESSONS = [
   {
     id: 'bienvenue',
     title: 'Bienvenue',
-    goal: 'Comprendre ce que fait INTERCEPTOR',
+    goal: 'Comprendre ce que fait SWIFT',
     body: [
-      { p: 'INTERCEPTOR observe tout ce que Firefox envoie et recoit : pages, images, appels d API, WebSocket, cookies, certificats. Il demarre seul et n a besoin d aucun reglage pour fonctionner.' },
+      { p: 'SWIFT observe tout ce que Firefox envoie et recoit : pages, images, appels d API, WebSocket, cookies, certificats. Il demarre seul et n a besoin d aucun reglage pour fonctionner.' },
       { p: 'Plusieurs couches de capture regardent le trafic en meme temps, et un correlateur les recolle : une vraie requete donne toujours une seule ligne, jamais deux.' },
       { ul: [
         'La **console** (cette page) est le poste de travail complet.',
@@ -198,6 +198,7 @@ export const LESSONS = [
         '**Rapport d alertes** en Markdown.',
         '**Script cURL** : toutes les requetes filtrees, pretes a rejouer.',
         '**Collection Postman** : groupee par domaine, avec les reponses observees.',
+        '**Description OpenAPI 3.1** : les appels d API decrits, pour Swagger UI, Redoc ou un generateur de client.',
         '**Liste d URL** : un fichier texte.'
       ] },
       { p: 'L export porte sur les lignes filtrees, ou sur votre selection si vous en avez une. Le fichier est ecrit par le noyau : fermer la fenetre n interrompt rien.' },
@@ -244,7 +245,7 @@ export const LESSONS = [
     title: 'Modifier le trafic',
     goal: 'Bloquer, rediriger, simuler, rejouer — en connaissance de cause',
     body: [
-      { p: 'Par defaut INTERCEPTOR **observe sans jamais rien modifier**. Deux mecanismes peuvent changer cela, tous deux desactives au depart.' },
+      { p: 'Par defaut SWIFT **observe sans jamais rien modifier**. Deux mecanismes peuvent changer cela, tous deux desactives au depart.' },
       { ul: [
         'Le **moteur de regles** : bloquer une requete, rediriger vers une autre URL, forcer le HTTPS, reecrire des entetes, ou **simuler une reponse** (le corps reel reste enregistre).',
         'Le **rejeu** : renvoyer une requete apres avoir modifie la methode, l URL, les entetes ou le corps.'
@@ -269,7 +270,7 @@ export const LESSONS = [
       { p: 'Un seul **texte de travail**, vingt et un onglets qui le regardent. On colle une valeur une fois — depuis le presse-papiers, depuis le menu contextuel d une ligne, ou depuis le bouton « Boite a outils » d un corps de reponse — et chaque outil travaille dessus.' },
       { p: 'Tout se calcule dans la page. Aucun de ces outils n emet la moindre requete : ni au chargement, ni au clic.' },
       { ul: [
-        '**Transformer** : 137 transformations. « Tout essayer » applique chaque decodage (sauf DNS et WebAuthn) et ne garde que les resultats lisibles — c est la bonne premiere action sur une valeur inconnue.',
+        '**Transformer** : 138 transformations. « Tout essayer » applique chaque decodage (sauf DNS et WebAuthn) et ne garde que les resultats lisibles — c est la bonne premiere action sur une valeur inconnue.',
         '**JWT** : entete, charge utile, expiration, et la signature reellement verifiee si vous fournissez la cle (douze algorithmes, cle partagee ou cle publique).',
         '**Chiffrement** et **Empreintes** : AES, PBKDF2, HKDF, MD5, SHA, CRC-32, HMAC.',
         '**Binaire** : Protocol Buffers, MessagePack, CBOR, certificats X.509, jeux de caracteres.',
@@ -296,7 +297,7 @@ export const LESSONS = [
     goal: 'Savoir ce qui est capture, et ce qui ne peut pas l etre',
     body: [
       { p: 'Le **test de couverture** du Diagnostic declenche de vraies requetes depuis l onglet actif, vers sa propre origine uniquement : fetch, POST avec corps, XHR, image, sendBeacon, EventSource, WebSocket, balise script. Il compte ensuite les lignes apparues.' },
-      { p: 'Ce qu aucune extension Firefox ne peut faire, et qu INTERCEPTOR ne pretend donc pas faire :' },
+      { p: 'Ce qu aucune extension Firefox ne peut faire, et que SWIFT ne pretend donc pas faire :' },
       { ul: [
         'Les pages privilegiees : about:config, about:addons, Nouvel onglet, pages d erreur.',
         'Les domaines reserves par Mozilla : accounts.firefox.com, addons.mozilla.org.',

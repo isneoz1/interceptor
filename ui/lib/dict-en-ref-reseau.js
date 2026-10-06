@@ -1,5 +1,5 @@
 /* Dictionnaire anglais — types de media et ports
- * INTERCEPTOR (by NeoZ)
+ * SWIFT (by NeoZ)
  *
  * Traduction des descriptions de ref-mime.js et ref-ports.js.
  */

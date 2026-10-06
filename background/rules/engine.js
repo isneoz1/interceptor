@@ -1,4 +1,4 @@
-/* Moteur de regles d'interception active — INTERCEPTOR (by NeoZ)
+/* Moteur de regles d'interception active — SWIFT (by NeoZ)
  *
  * Desactive par defaut : l'extension observe sans jamais alterer le trafic.
  * Une fois active, chaque regle peut bloquer, rediriger, forcer le HTTPS,

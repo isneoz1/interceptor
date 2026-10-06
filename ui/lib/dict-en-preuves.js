@@ -1,4 +1,4 @@
-/* Dictionnaire anglais — signatures HTTP, WebAuthn, DNS (4.6) — INTERCEPTOR (by NeoZ)
+/* Dictionnaire anglais — signatures HTTP, WebAuthn, DNS (4.6) — SWIFT (by NeoZ)
  *
  * Complete dict-en.js (`...EN_PREUVES`) : signatures de messages HTTP
  * (RFC 9421), ceremonies WebAuthn et leurs options, messages DNS par HTTPS.

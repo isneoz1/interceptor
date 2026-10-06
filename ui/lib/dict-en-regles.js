@@ -1,5 +1,5 @@
 /* Dictionnaire anglais — vue « Regles » et fin des reglages
- * INTERCEPTOR (by NeoZ)
+ * SWIFT (by NeoZ)
  *
  * La vue « Regles » ecrit en clair ce que chaque regle fera : « Si hote
  * contient « api.example.com », alors la requete part avec 750 ms de retard. »
@@ -14,8 +14,8 @@ export const EN_REGLES = {
   'Moteur de regles arrete': 'Rules engine stopped',
   'Desactive, aucune regle n est evaluee : les regles restent enregistrees.':
     'Turned off, no rule is evaluated: the rules stay saved.',
-  'Par defaut INTERCEPTOR observe sans jamais modifier le trafic. Activer le moteur autorise le blocage, la redirection et la reecriture d entetes. A n utiliser que sur des cibles dont vous avez la responsabilite.':
-    'By default INTERCEPTOR observes without ever modifying traffic. Turning the engine on allows blocking, redirection and header rewriting. Use it only on targets you are responsible for.',
+  'Par defaut SWIFT observe sans jamais modifier le trafic. Activer le moteur autorise le blocage, la redirection et la reecriture d entetes. A n utiliser que sur des cibles dont vous avez la responsabilite.':
+    'By default SWIFT observes without ever modifying traffic. Turning the engine on allows blocking, redirection and header rewriting. Use it only on targets you are responsible for.',
   'Depuis le demarrage : {e} evaluations, {b} blocages, {r} redirections, {h} entetes modifies.':
     'Since startup: {e} evaluations, {b} blocks, {r} redirects, {h} headers modified.',
   '{n} regle(s)': '{n} rule(s)',

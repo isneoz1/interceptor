@@ -1,4 +1,4 @@
-/* Protections d une reponse — INTERCEPTOR (by NeoZ)
+/* Protections d une reponse — SWIFT (by NeoZ)
  *
  * Ce qu une reponse met en place pour se defendre, lu dans ses en-tetes : HSTS,
  * CSP, protection contre l encadrement, nosniff, politique de referent,

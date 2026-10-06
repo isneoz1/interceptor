@@ -1,4 +1,4 @@
-/* Ingestion des observations du contexte page — INTERCEPTOR (by NeoZ)
+/* Ingestion des observations du contexte page — SWIFT (by NeoZ)
  *
  * Cette couche voit ce que webRequest ne peut PAS voir :
  *   - trames WebSocket (webRequest ne voit que la poignee de main)
@@ -44,7 +44,7 @@ export function ingestBatch(batch, sender) {
   let handled = 0;
   for (const ev of batch) {
     try { dispatch(ev, ctx); handled++; pageStats.events++; }
-    catch (e) { console.error('[INTERCEPTOR] ingest', ev && ev.t, e); }
+    catch (e) { console.error('[SWIFT] ingest', ev && ev.t, e); }
   }
   return { ok: true, handled };
 }
