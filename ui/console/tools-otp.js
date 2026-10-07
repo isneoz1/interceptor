@@ -9,7 +9,7 @@
  * refait le calcul public de TOTP/HOTP a partir d un secret fourni.
  */
 import { el, frag, sec, add, kv, button } from '../lib/dom.js';
-import { t, te } from '../lib/i18n.js';
+import { t, te, deuxPoints } from '../lib/i18n.js';
 import { copy, toast } from '../app.js';
 import {
   secretVersOctets, totp, hotp, totpVoisins, lireOtpauth, secretAleatoire, ALGOS_OTP
@@ -34,7 +34,7 @@ export function panneauOtp(entree, etat, redessiner) {
           etat.otpSecret = p.secret; etat.otpForme = 'base32';
           etat.otpAlgo = p.algorithme; etat.otpChiffres = p.chiffres; etat.otpPas = p.pas;
           etat.otpType = p.type;
-          toast(t('Lien otpauth lu') + ' : ' + (p.emetteur || p.compte || ''));
+          toast(deuxPoints(t('Lien otpauth lu'), p.emetteur || p.compte || ''));
           redessiner();
         } catch (e) { toast(te(e), false); }
       })));

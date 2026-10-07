@@ -21,7 +21,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import url from 'node:url';
 import {
-  installerTout, installerPage, enregistrementExemple, egal, verifier, bilan
+  installerTout, installerPage, enregistrementExemple, egal, proche, verifier, bilan
 } from './harnais.mjs';
 
 installerTout();
@@ -408,7 +408,11 @@ const IDENTIQUES = new Set([
   'Aucune alerte',           /* remplace par sa traduction, jamais identique */
   'SQL Server', 'SQL Server Analysis', 'OPC UA', 'Docker TLS', 'SIP TLS',
   'MQTT TLS', 'DHCP client', 'DHCPv6 client', 'XMPP client', 'NetBIOS session',
-  'SNMP trap'
+  'SNMP trap',
+  /* L aide n etait jamais comparee : ses deux versions n avaient pas la meme
+     forme. Alignees, elles ne different que par ces noms de formats et ces
+     valeurs litterales du critere « state: », qui s ecrivent tels quels. */
+  'HAR 1.2', 'OpenAPI 3.1', 'pending, complete, error, aborted'
 ]);
 
 const francaisRestant = [];
@@ -929,6 +933,127 @@ verifier('pas de signature HTTP sans Signature-Input', !texteOnglet(parts.header
   verifier('ouvert avec sa transformation : le resultat est deja a l ecran', ecran.includes('cdn.example.net.'), ecran.slice(0, 160));
   outils.poser('texte', { transformation: 'inexistante', bascule: false });
   verifier('transformation inconnue : rien d applique, rien ne plante', !texteDe(document.querySelector('#view-tools')).join(' ').includes('cdn.example.net.'));
+}
+
+/* ===== 13. La requete ouverte reste en vue, « suivre » se suspend ======== */
+/* Ouverte depuis une autre vue, une requete restait hors de l ecran : le mode
+   « suivre » recollait le tableau aux dernieres lignes. Et le reglage « Suivre
+   le flux par defaut » n etait lu par personne. */
+{
+  const requetes = await import('../ui/console/requests.js');
+  const { hauteurLigne } = await import('../ui/console/rowsize.js');
+  setLang('fr');
+  poserCapture(captureVariee(1000));
+  state.config = { ...(state.config || {}), autoScroll: true };
+  requetes.applyConfig();
+  requetes.render();
+  const wrap = document.querySelector('#tablewrap');
+  document.querySelector('#thead').offsetHeight = 30;   // en-tete colle, 30 px sur 800
+  const utile = wrap.clientHeight - 30;
+  const H = hauteurLigne();
+  const enVue = index => index * H >= wrap.scrollTop - 0.5 && (index + 1) * H <= wrap.scrollTop + utile + 0.5;
+  const lignes = requetes.currentRows();
+
+  verifier('reglage active : le tableau suit le flux', requetes.isFollowing());
+  wrap.scrollTop = 900 * H;
+  requetes.montrerLigne(lignes[100].id);
+  verifier('ouvrir une requete suspend « suivre »', !requetes.isFollowing());
+  verifier('la ligne lointaine est amenee a l ecran', enVue(100), 'scrollTop ' + wrap.scrollTop);
+  proche('elle est centree, pour voir ce qui l entoure', wrap.scrollTop + utile / 2, 100 * H + H / 2, 1);
+
+  /* Fleches du clavier : la ligne suivante deborde d une seule ligne. */
+  const dernierVisible = Math.floor((wrap.scrollTop + utile) / H) - 1;
+  const avant = wrap.scrollTop;
+  requetes.montrerLigne(lignes[dernierVisible + 1].id);
+  verifier('ligne voisine : elle entre a l ecran', enVue(dernierVisible + 1));
+  verifier('ligne voisine : le tableau avance de moins de deux lignes', wrap.scrollTop - avant > 0 && wrap.scrollTop - avant < 2 * H,
+    (wrap.scrollTop - avant).toFixed(1) + ' px');
+  const fixe = wrap.scrollTop;
+  requetes.montrerLigne(lignes[dernierVisible].id);
+  egal('ligne deja visible : rien ne bouge', wrap.scrollTop, fixe);
+
+  requetes.detailFerme();
+  verifier('refermer le detail relance « suivre »', requetes.isFollowing());
+  requetes.detailFerme();
+  verifier('une seconde fermeture ne change rien', requetes.isFollowing());
+
+  /* Un choix explicite (bouton, touche F) l emporte sur la reprise. */
+  requetes.montrerLigne(lignes[10].id);
+  requetes.toggleFollow();
+  requetes.toggleFollow();
+  requetes.detailFerme();
+  verifier('fige a la main pendant la lecture : la fermeture ne relance pas', !requetes.isFollowing());
+  requetes.toggleFollow();
+
+  /* Une requete connue mais ecartee par le filtre : on le dit, rien ne bouge. */
+  await requetes.runQuery('status:500');
+  const toast = () => (document.querySelector('#toast') || {}).textContent || '';
+  const ecartee = [...state.records.values()].find(r => r.statusCode !== 500);
+  requetes.montrerLigne(ecartee.id);
+  egal('requete filtree : le message le dit', toast(), 'Requete masquee dans le tableau par le filtre ou le perimetre');
+  verifier('requete filtree : « suivre » ne change pas', requetes.isFollowing());
+
+  /* Une requete pas encore arrivee (import cURL) : montree a son arrivee. */
+  document.querySelector('#toast').textContent = '';
+  requetes.montrerLigne(5000);
+  egal('requete pas encore arrivee : aucun message', toast(), '');
+  verifier('requete pas encore arrivee : « suivre » ne change pas encore', requetes.isFollowing());
+  const nouvelle = enregistrementExemple({ id: 5000 });
+  nouvelle.statusCode = 500;
+  state.records.set(5000, nouvelle);
+  state.order.push(5000);
+  wrap.scrollTop = 0;
+  requetes.render();
+  const position = requetes.currentRows().findIndex(r => r.id === 5000);
+  verifier('a son arrivee, elle est amenee a l ecran', position >= 0 && enVue(position), 'rang ' + position);
+  verifier('a son arrivee, « suivre » se suspend', !requetes.isFollowing());
+  requetes.detailFerme();
+  await requetes.runQuery('');
+
+  /* Le reglage s applique au demarrage et quand on le change, pas a chaque
+     rappel (un redimensionnement en fait un). */
+  state.config = { ...state.config, autoScroll: false };
+  requetes.applyConfig();
+  verifier('reglage desactive : le tableau ne suit pas', !requetes.isFollowing());
+  requetes.toggleFollow();
+  requetes.applyConfig();
+  verifier('un rappel sans changement ne defait pas le choix du moment', requetes.isFollowing());
+  state.config = { ...state.config, autoScroll: true };
+  requetes.applyConfig();
+  requetes.toggleFollow();
+  requetes.applyConfig();
+  verifier('fige a la main, il le reste malgre le rappel', !requetes.isFollowing());
+  state.config = { ...state.config, autoScroll: false };
+  requetes.applyConfig();
+  state.config = { ...state.config, autoScroll: true };
+  requetes.applyConfig();
+  verifier('reglage reactive : le tableau suit a nouveau', requetes.isFollowing());
+}
+
+/* ========== 14. Balisage et ponctuation, tels qu ils s affichent ========== */
+/* L aide affichait « **Tutorial** », asterisques comprises : seul le tutoriel
+   savait rendre le gras. Et une ligne assemblee a la main gardait l espace
+   francaise avant les deux-points dans l interface anglaise. */
+{
+  const { deuxPoints } = await import('../ui/lib/i18n.js');
+  const aide = await import('../ui/console/help.js');
+  const reglages = await import('../ui/console/settings.js');
+  for (const langue of ['fr', 'en']) {
+    const texte = (rendreVue('help', aide.render, langue, []) || []).join('\n');
+    verifier('aide [' + langue + '] : aucun balisage ** a l ecran', texte.length > 1000 && !texte.includes('**'));
+    verifier('aide [' + langue + '] : le gras est rendu', document.querySelector('#view-help') !== null
+      && texteDe(document.querySelector('#view-help')).some(s => s === (langue === 'en' ? 'Tutorial' : 'Tutoriel')));
+  }
+  const profilsEn = (rendreVue('settings', reglages.render, 'en', []) || []).find(s => s.startsWith('Maximum') && s.includes('·'));
+  verifier('profils en anglais : pas d espace avant les deux-points', !!profilsEn && profilsEn.startsWith('Maximum: ') && !profilsEn.includes(' : '),
+    String(profilsEn).slice(0, 60));
+  setLang('fr');
+  egal('deux-points en francais', deuxPoints('A', 'b'), 'A : b');
+  egal('cle seule en francais', deuxPoints('id'), 'id :');
+  setLang('en');
+  egal('deux-points en anglais', deuxPoints('A', 'b'), 'A: b');
+  egal('cle seule en anglais, comme dans un arbre JSON', deuxPoints('id'), 'id:');
+  setLang('fr');
 }
 
 bilan('Rendu de l interface');

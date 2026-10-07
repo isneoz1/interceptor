@@ -9,7 +9,7 @@
  * on colle une fois, tous les outils regardent la meme matiere.
  */
 import { el, frag, kv, sec, add, button, jsonTree } from '../lib/dom.js';
-import { t, tp, te } from '../lib/i18n.js';
+import { t, tp, te, deuxPoints } from '../lib/i18n.js';
 import { copy, toast } from '../app.js';
 import {
   decoderJwt, libelleClaim, entropie, vidageHex,
@@ -375,7 +375,7 @@ function arbrePhp(noeud, profondeur = 0) {
     return boite;
   }
   boite.appendChild(el('div', { class: 'row' }, [
-    el('span', { class: 'k', text: t(noeud.type) + ' :' }),
+    el('span', { class: 'k', text: deuxPoints(t(noeud.type)) }),
     el('span', { class: 'v', text: String(noeud.valeur) })
   ]));
   return boite;
@@ -391,7 +391,7 @@ function ligneOuBranche(nom, valeur, profondeur) {
     return bloc;
   }
   return el('div', { class: 'row' }, [
-    el('span', { class: 'k', text: nom + ' :' }),
+    el('span', { class: 'k', text: deuxPoints(nom) }),
     el('span', { class: 'v', text: valeur.type === 'null' ? 'null' : String(valeur.valeur) }),
     el('span', { class: 't', text: t(valeur.type) })
   ]);

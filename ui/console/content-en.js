@@ -20,31 +20,24 @@ export const HELP_SECTIONS = [
     ]
   },
   {
-    h: 'The three windows',
-    p: ['The same interface comes in three shapes, your choice.'],
+    h: 'Language and comfort',
+    p: ['The FR / EN button in the header switches the whole interface, the help and the tutorial between French and English. Settings -> Interface also offers simple mode, the light or dark theme, high contrast, text size and table density.'],
+    ul: []
+  },
+  {
+    h: 'The four windows',
+    p: ['The same interface comes in four shapes. The dock button, at the top of the console, switches between them and remembers your choice for the icon click.'],
     table: [
       ['Full console', 'Full-screen tab. Alt+Shift+I, or Actions -> Open in a tab.'],
+      ['Detached window', 'A window of its own: right, left, top, bottom, centre, full screen, or wherever you leave it.'],
       ['Sidebar panel', 'Stays beside the page while you browse. Alt+Shift+S.'],
-      ['Compact window', 'Click the toolbar icon. Ctrl+Shift+Y.']
+      ['Compact window', 'Click the toolbar icon, by default. Ctrl+Shift+Y.']
     ]
   },
   {
     h: 'Keyboard shortcuts',
-    table: [
-      ['/', 'Focus the search box'],
-      ['Arrow up / down', 'Previous / next request when the detail is open'],
-      ['Esc', 'Close the detail, a menu or the shortcut sheet'],
-      ['P', 'Pause or resume capture'],
-      ['F', 'Follow the live flow, or freeze it'],
-      ['C', 'Compare the two selected rows'],
-      ['S', 'Save the current filter'],
-      ['1 to 9', 'Jump to a view'],
-      ['?', 'Show the shortcut sheet'],
-      ['Ctrl+click', 'Add a row to the selection'],
-      ['Shift+click', 'Select a range of rows'],
-      ['Right click', 'Row context menu'],
-      ['Ctrl+Shift+U', 'Pause / resume, even outside the console']
-    ]
+    p: ['The last four work anywhere in Firefox. You can change them in about:addons, from the gear menu, under extension shortcuts.'],
+    raccourcis: true
   },
   {
     h: 'The request table',
@@ -52,7 +45,7 @@ export const HELP_SECTIONS = [
       'Columns: the Columns button offers more than thirty. Your choice is kept.',
       'Sort: click a column header; click again to reverse the order.',
       'Resize: drag the right edge of a header. Widths are remembered.',
-      'Follow: the table sticks to the newest requests, and freezes as soon as you scroll up.',
+      'Follow: the table sticks to the newest requests and freezes as soon as you scroll up. Opening a request suspends it while you read; closing the detail resumes it.',
       'Selection: Ctrl+click and Shift+click. Exports and deletion then act on the selection.',
       'Pin: the star column marks a row so the "flag:" filter can find it again.',
       'No display cap: only visible rows are drawn, the whole list stays reachable.'
@@ -63,7 +56,7 @@ export const HELP_SECTIONS = [
     table: [
       ['Requests', 'The full flow, with the twelve-tab detail panel.'],
       ['Security', 'Every alert found automatically, sorted by severity.'],
-      ['Summary', 'Session aggregates: statuses, types, heaviest domains, slowest requests, throughput over time.'],
+      ['Summary', 'Session aggregates: statuses, types, heaviest domains and domains in error, slowest requests, addresses downloaded several times, measured possible compression, throughput over time.'],
       ['Comparison', 'Two selected requests, compared line by line (headers and bodies).'],
       ['Live streams', 'WebSocket and Server-Sent Events, message by message, live.'],
       ['Cookies', 'Every cookie set, changed or removed, including those written in JavaScript.'],
@@ -238,10 +231,10 @@ export const LESSONS = {
       { p: 'Open a site in another tab, then come back: rows arrive live. The table has no display cap, even with hundreds of thousands of rows.' },
       { ul: [
         'The **colour bar** on the left shows the risk level found by the analysis.',
-        'The **Layers** column shows who saw the request: WR webRequest, JS page probes, PF performance, TLS, PX proxy.',
+        'The **Layers** column shows who saw the request: WR webRequest, JS page probes, PF performance, TLS, PX proxy; IM for an imported request (cURL or HAR).',
         'Clicking a **column header** sorts; a second click reverses the order.',
         'The **Columns** button offers more than thirty: add Server, Protocol or Tags.',
-        'The **Follow** button sticks the view to the newest requests; it freezes as soon as you scroll up.'
+        'The **Follow** button sticks the view to the newest requests; it freezes as soon as you scroll up, and while you read an open request.'
       ] },
       { p: 'Ctrl+click adds a row to the selection, Shift+click selects a range. Exports and deletion then act on the selection.' }
     ]
@@ -329,13 +322,14 @@ export const LESSONS = {
     body: [
       { p: 'Every limit means **0 = unlimited** by default. Without caps everything stays in RAM: over a long session with heavy streams, usage can reach several gigabytes.' },
       { ul: [
-        '**Maximum**: capture everything, no limits.',
+        '**Maximum**: every layer, no limits. The proxy and worker frames stay your choice.',
         '**Balanced**: observe everything, but cap memory. The best everyday compromise.',
         '**Light**: very long sessions, modest machine.',
         '**Quiet observation**: metadata only, no content kept.'
       ] },
       { p: 'Each capture layer can be switched independently, and the Diagnostics view shows for each one the setting AND whether the API really exists in your Firefox.' },
-      { p: 'Theme, language, density, time format, icon click behaviour and badge counter are set there too.' }
+      { p: 'The **language** (French or English), **simple mode**, theme, density, text size, contrast, time format, icon click behaviour and badge counter are set there too.' },
+      { p: '**Simple mode** keeps only Requests, Security, Summary, Toolbox, Settings, Tutorial and Help: enough to work without ever getting lost. The advanced views come back when you turn it off.' }
     ]
   },
   intervenir: {

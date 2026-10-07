@@ -61,9 +61,13 @@ let current = null;      // enregistrement complet affiche
 let tab = 'resume';
 let blockArmed = false;
 let onChange = null;
+let onOuverture = null;
+let onFermeture = null;
 
 export function init(deps = {}) {
   onChange = deps.onChange;
+  onOuverture = deps.onOuverture;
+  onFermeture = deps.onFermeture;
   $('#d-close').addEventListener('click', close);
   $('#d-prev').addEventListener('click', () => step(-1));
   $('#d-next').addEventListener('click', () => step(1));
@@ -90,6 +94,7 @@ export function close() {
   current = null;
   disarmBlock();
   onChange && onChange();
+  onFermeture && onFermeture();
 }
 
 export async function open(id) {
@@ -104,6 +109,7 @@ export async function open(id) {
   paint();
   $('#dbody').scrollTop = 0;
   onChange && onChange();
+  onOuverture && onOuverture(id);
 }
 
 /* ---------------------- Suivi d une session ouverte ----------------------- */

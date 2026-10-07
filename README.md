@@ -9,15 +9,16 @@ Every request the browser makes — captured without duplicates, explained in pl
 
 Created by **NeoZ** · <sub>formerly INTERCEPTOR, renamed in 5.0</sub>
 
+[![Latest release](https://img.shields.io/github/v/release/isneoz1/interceptor?style=flat&label=Release&color=5155E8)](https://github.com/isneoz1/interceptor/releases/latest)
 [![Tests](https://github.com/isneoz1/interceptor/actions/workflows/tests.yml/badge.svg)](https://github.com/isneoz1/interceptor/actions/workflows/tests.yml)
 ![Firefox 115+](https://img.shields.io/badge/Firefox-115%2B-FF6611?style=flat&logo=firefoxbrowser&logoColor=white)
 ![Manifest V2](https://img.shields.io/badge/Manifest-V2-444?style=flat)
 [![MIT licence](https://img.shields.io/badge/Licence-MIT-00DDFF?style=flat)](LICENSE)
 ![No dependencies](https://img.shields.io/badge/Dependencies-none-2ea043?style=flat)
-![2084 assertions](https://img.shields.io/badge/Assertions-2084-2ea043?style=flat)
+![2404 assertions](https://img.shields.io/badge/Assertions-2404-2ea043?style=flat)
 ![English and French](https://img.shields.io/badge/UI-EN%20%2F%20FR-444?style=flat)
 
-[**Try it in 60 seconds**](#try-it-in-60-seconds) · [**Why not the built-in panel?**](#firefox-already-has-a-network-panel-why-this) · [**Screenshots**](#2-screenshots) · [**How it works**](#4-how-it-works-the-capture-layers) · [**Changelog**](CHANGELOG.md)
+[**Try it in 60 seconds**](#try-it-in-60-seconds) · [**Download**](https://github.com/isneoz1/interceptor/releases/latest) · [**Why not the built-in panel?**](#firefox-already-has-a-network-panel-why-this) · [**Screenshots**](#2-screenshots) · [**How it works**](#4-how-it-works-the-capture-layers) · [**Changelog**](CHANGELOG.md)
 
 <img src="docs/demo.gif" alt="SWIFT in use: the request table, the command palette, the security findings, the detail panel and a status code explained from the palette" width="100%">
 
@@ -34,11 +35,22 @@ the running tool, driven the way you would drive it.</sub>
 > Eight capture layers, zero duplicated rows, no telemetry, no dependencies, and an analyser
 > that refuses to report anything it cannot prove.
 
+> [!NOTE]
+> **New in 5.3** — the Summary measures what gzip would have saved and lists the addresses
+> downloaded several times. A request opened from anywhere is brought into view. And
+> turning body capture off now really stops fetch and XHR bodies too.
+>
+> **Since 5.0** — every GraphQL, JSON-RPC and SOAP call named in the table, a one-sentence
+> verdict on every request, browser reports opened, an OpenAPI 3.1 export.
+> [Every change →](CHANGELOG.md)
+
 ---
 
 ## In one look
 
 <img src="docs/images/vitrine-capture.png" alt="One request, one row: eight capture layers observe the same call, and a correlator merges them" width="100%">
+
+<img src="docs/images/vitrine-api.png" alt="GraphQL, JSON-RPC and SOAP calls named in the table, and a 200 response that carries an error, read with its path and code" width="100%">
 
 <img src="docs/images/vitrine-palette.png" alt="Ctrl+K opens a command palette over every view, tool and action" width="100%">
 
@@ -158,8 +170,8 @@ specific points:
 **What it is not**: not a proxy, not a vulnerability scanner, not an attack tool. Everything
 happens inside your Firefox, on your machine.
 
-**By the numbers**: 220 JavaScript modules, ~44,900 lines, zero external dependencies,
-2084 automated assertions, English and French interface.
+**By the numbers**: 221 JavaScript modules, ~45,200 lines, zero external dependencies,
+2404 automated assertions, English and French interface.
 
 ---
 
@@ -228,8 +240,11 @@ measured.
 
 ### The numeric summary
 
-The figures for the observed scope: statuses, resource types, domains by volume and by
-count, real protocols, active capture layers.
+The figures for the observed scope: statuses, resource types, real protocols, active capture
+layers, content types, analysis tags, and domains by volume, by count and in error; the
+requests over time; the slowest, heaviest and most flagged requests, and the same addresses
+downloaded several times. On demand, it measures what gzip would have saved on the text
+responses served without compression.
 
 ![Summary view](docs/images/console-synthese.png)
 
@@ -321,7 +336,7 @@ Nothing to configure. On first start the console opens on the help page. After t
 
 | Permission | What it is for |
 |---|---|
-| `<all_urls>`, `webRequest`, `webRequestBlocking` | Seeing requests and, if you enable it, modifying them |
+| `<all_urls>`, `webRequest`, `webRequestBlocking` | Seeing requests, reading response bodies and TLS details — Firefox allows both only from a blocking listener — and, if you enable rules or interception, modifying requests |
 | `webNavigation` | Knowing which page originated which request |
 | `cookies` | Logging every cookie set, changed or removed |
 | `dns` | Resolving names to show the address actually contacted |
@@ -352,7 +367,8 @@ one sees something the others cannot.
    │
    └─ page probes ───── injected into the page (content/hooks.js):
        fetch, XMLHttpRequest, WebSocket, EventSource (SSE), sendBeacon,
-       WebRTC, Service Workers, PerformanceObserver, JS call stacks
+       WebRTC, WebTransport, workers and Service Workers,
+       PerformanceObserver, page perception metrics, JS call stacks
 ```
 
 **Why several layers?** Because none of them is enough on its own:
@@ -401,19 +417,21 @@ The **Merges** counter in the status bar shows how many observations were paired
 
 ## 6. Surfaces: popup, sidebar, console
 
-The **same page** serves as popup, sidebar panel, full-screen tab and options page. The
-layout adapts to the available width, and the typographic scale is recomputed so it stays
-readable from a 340 px sidebar to a 4,000 px display.
+One **console page** serves as sidebar panel, full-screen tab, detached window and options
+page; the popup is a separate, lighter page. The layout adapts to the available width, and
+the type scale follows the window — tighter in a narrow sidebar, larger on a wide display,
+never below 88 % or above 130 % of the size you chose.
 
 | Surface | How to open | What for |
 |---|---|---|
-| **Popup** | Click the toolbar icon | A quick glance: counters, pause, jump to the console |
+| **Popup** | Click the toolbar icon (by default), `Ctrl+Shift+Y` | A quick glance: counters, pause, jump to the console |
 | **Sidebar panel** | `Alt+Shift+S` | Watching while you browse — the page stays visible |
 | **Full console** | `Alt+Shift+I` | The complete workstation |
+| **Detached window** | The dock button at the top of the console | A window of its own: right, left, top, bottom, centre, full screen, or wherever you leave it |
 | **Options page** | Add-ons manager | The same console |
 
-What clicking the icon does is configurable in the settings (popup, tab, sidebar or
-detached window).
+What clicking the icon opens is your choice — popup, tab, sidebar or detached window — in
+the settings or from the dock button, which remembers it.
 
 <div align="center"><img src="docs/images/popup.png" width="380" alt="Popup"></div>
 
@@ -430,7 +448,7 @@ advanced views and keeps only the essentials.
 |---|---|
 | **Requests** | All traffic, request by request. The table is virtualised with an exact-height invariant, so `scrollHeight` never shifts while you scroll and the wheel stays smooth at any zoom level. Configurable columns, sorting on any column, quick facets (API, pages, resources, streams, errors, alerts, third-party, slow…), multiple selection, per-row context menu, free-text annotation and colour marking. The table is virtualised: only visible rows are drawn. |
 | **Security** | The analyser's findings, grouped by severity, each with its evidence and a link to the request. Rendered in batches as you scroll, so nothing is capped and nothing freezes. The report can be exported as Markdown. |
-| **Summary** | The overall figures: requests, domains, volumes received and sent, median duration, errors, third-party share, encrypted share, cache, frames, cookies. Then the breakdowns: statuses, resource types, domains by volume and by count, real protocols, content types, capture layers. |
+| **Summary** | The overall figures: requests, domains, volumes received and sent, median duration, errors, third-party share, encrypted share, cache, frames, cookies. Then the breakdowns: statuses, resource types, domains by volume, by count and **in error**, real protocols, content types, capture layers; the slowest, heaviest and most-flagged requests, **the same addresses downloaded several times**, and — on demand — **the compression possible across the whole capture**, measured by compressing with gzip every text response that was served without it. |
 | **Sites and paths** | The tree of what exists on each visited host, reconstructed from traffic. Useful to see an application's real surface. |
 | **Live streams** | WebSocket and Server-Sent Events, message by message, with direction (in/out), timestamp and payload. **It keeps your place while traffic keeps arriving**, and draws a long session in batches as you scroll, so nothing is left out and nothing freezes. Frames riding a known subprotocol are also read: `42["order",{...}]` is shown as *socket.io EVENT "order"*, alongside the raw frame. Eleven families are decoded, each by its published specification: **Engine.IO / socket.io**, **STOMP**, **SignalR**, **GraphQL over WebSocket** (both `graphql-transport-ws` and Apollo's older `graphql-ws`, with the operation name), **JSON-RPC 2.0** (web3, LSP), **WAMP** (JSON, batched, MessagePack, CBOR), **SockJS** (with the STOMP it usually carries), **Phoenix Channels**, **Action Cable**, **Pusher** and binary **MQTT 3.1.1 / 5**, packet by packet. **A frame gets a label only when something proves it**: its form cannot belong to anything else (`"jsonrpc":"2.0"`), or the connection says so — the subprotocol the server negotiated, or a URL such as `/socket.io/?EIO=4`. A text like `2024` or `3` is not called an Engine.IO ping, and binary bytes are never read as MQTT without the `mqtt` subprotocol. |
 | **Comparison** | Two requests side by side, line by line: headers, bodies, timings. Select two rows and press `C`. |
@@ -597,6 +615,12 @@ the Alerts tab with their evidence, tagged in the table, and **never counted as 
   context the value lands, so nothing more is claimed.
 - **A redirect leads exactly to a parameter's value** — the shape of an open redirect (tag
   `redirection-parametree`); it does not prove the server would accept any value.
+- **A GraphQL mutation ran over `GET`** — answered 2xx, which GraphQL over HTTP (§4.3)
+  forbids: a plain link or image can then trigger it with the site's cookies (tag
+  `graphql-mutation-get`).
+- **The server answered a GraphQL introspection query** — its schema, with the number of
+  types, is handed to whoever asks (tag `graphql-introspection`). Read only when the request
+  asked for the schema.
 
 ### What was deliberately removed, and why
 
@@ -671,8 +695,9 @@ resource type. They combine with AND.
 | `delay` | The request leaves with a delay, to simulate a slow network (capped at 30 s) |
 | `replaceBody` | The page receives the server's body with a pattern replaced |
 
-Seven ready-made templates ship with the tool (block known trackers, simulate an API
-outage, force HTTPS, inject a header…). Every rule states in plain language what it does:
+Seven ready-made templates ship with the tool: block common telemetry, block a domain's
+images, redirect one domain to another, impose a User-Agent, force HTTPS on a domain,
+simulate a JSON response, remove a response header. Every rule states in plain language what it does:
 *"If host contains 'example.com' AND method is POST, then the request is blocked."*
 
 A rule whose URL expression is unparseable is **inert** and flagged as such: a forgotten
@@ -746,34 +771,50 @@ A multiple selection exports a complete, ready-to-run script.
 ## 15. Settings
 
 Project rule: **every option present has a real effect in the code, and every option in the
-interface exists in the configuration. No decorative settings.**
+interface exists in the configuration. No decorative settings.** A test enforces the first
+half: each of the 75 settings must be read somewhere other than its own declaration, its
+default value or its translation.
 
 ### Four ready-made profiles
 
+A profile changes only the settings listed here; everything else keeps your value.
+
 | Profile | What it does |
 |---|---|
-| **Full** | Every layer, every body, no limits |
-| **Light** | Captures the essentials, caps bodies — for long sessions |
-| **Discreet** | No bodies, no stacks — minimal memory footprint |
-| **Security** | Everything that feeds the analyser, the rest reduced |
+| **Maximum** | Every capture layer on, every body kept, no cap on bodies, frames, messages or rows. Two layers stay your decision: the proxy, which asks for a permission, and worker frames, which change what a worker reads from `self.location` |
+| **Balanced** | Everything observed, memory capped: sent bodies up to 256 KiB, received bodies up to 1 MiB, no binary data, no bodies for images, media and fonts; 500 frames of up to 16 KiB per socket, 500 messages per SSE stream; 20,000 requests in memory |
+| **Light** | For very long sessions: no received bodies, no JavaScript stacks, no bodies for images, media, fonts, stylesheets and scripts; 100 frames of up to 4 KiB per socket, 100 messages per SSE stream; 5,000 requests |
+| **Quiet observation** | Metadata only: no sent, received or binary bodies, no WebSocket frames, SSE messages or WebRTC data, no stacks; 10,000 requests |
 
-### The settings groups
+### The ten settings groups
 
-- **Appearance and language** — French / English, dark / light / automatic theme, high
-  contrast, text scale (with automatic screen adaptation), density, time format, simple mode
-- **Capture layers** — 16 independent switches, from the webRequest layer down
-  to WebTransport and page vitals
-- **Bodies** — request and response body capture, byte caps, binary bodies, resource types
-  to skip
-- **Streams** — WebSocket frames (text and binary), SSE messages, WebRTC data channels, WebTransport datagrams, caps
-- **Analysis** — analyser on/off, secrets, transport, cookies, CORS, secret masking, custom
-  secret and tracker patterns
-- **Interface** — auto-scroll, default scope, body wrapping, JSON formatting, icon click
-  behaviour, console position
-- **Badge and notifications** — what the toolbar badge shows, desktop notification on a
-  critical finding
-- **Persistence** — keep the capture across restarts, storage cap
-- **Cleanup** — clear on navigation, cap on rows held in memory
+- **Interface** (17) — language, simple mode, theme (dark, light or the system's), higher
+  contrast, text size and adaptation to the window, clearing a tab on each navigation,
+  table density, time format, following the stream by default, default scope, wrapping and
+  JSON formatting of bodies, what the icon opens and where the detached window goes, the
+  icon counter, a desktop notification on a critical alert
+- **Capture layers** (17) — one switch per layer: webRequest, page-context probes,
+  WebSocket frames, Server-Sent Events, PerformanceObserver, JavaScript call stacks,
+  WebRTC, workers and Service Workers, WebSocket frames inside workers, cookies set from
+  JavaScript, WebTransport, page perception metrics, navigation, cookie changes, TLS and
+  certificates, DNS resolution, and the optional proxy layer
+- **Request and response bodies** (10) — sent, received and binary bodies, a byte limit
+  for each, a limit per frame or message, frames kept per socket, SSE messages kept per
+  stream, resource types with no body capture. They apply to what the page probes read
+  as well
+- **Duplicate-free correlation** (3) — on or off, the correlation window, the sweep period
+- **Storage** (3) — requests kept in memory, on-disk persistence, requests reloaded at
+  startup
+- **Ingestion filters** (4) — ignore the extension's own requests, ignored resource types,
+  URLs to ignore, or the only URLs to capture
+- **Automatic analysis** (9) — the analyser, and each family on its own: exposed secrets,
+  transport, exploitable CORS, cookies, known trackers (a label, never an alert); masking
+  of sensitive values; your own tracking domains and secret patterns
+- **Internal log** (5) — the diagnostic log, internal errors, commands, internal events,
+  entries kept
+- **Active interception** (2) — the rules engine, request replay
+- **Live interception** (5) — hold outgoing requests, incoming responses, or both; which
+  requests to hold; the safety timeout that releases them
 
 ---
 
@@ -783,21 +824,25 @@ interface exists in the configuration. No decorative settings.**
 |---|---|
 | `Ctrl+K` | Open the command palette — every view, tool and action by name, and every reference entry by its protocol name |
 | `/` | Focus the search box |
-| `↑` `↓` | Previous / next request |
-| `Esc` | Close the detail panel, a menu, or this window |
+| `↑` `↓` | Open the previous / next request |
+| `Esc` | Close the detail, the palette, a menu or the shortcut list |
 | `P` | Pause or resume capture |
 | `F` | Follow the stream or freeze it |
 | `C` | Compare the two selected rows |
 | `S` | Save the current filter |
 | `1` to `9` | Switch to a view |
-| `?` | Show the keyboard help |
+| `?` | Show the shortcut list |
 | `Ctrl+click` | Add a row to the selection |
 | `Shift+click` | Select a range of rows |
 | `Right click` | Row context menu |
-| `Ctrl+Shift+Y` | Open the compact window |
+| `Ctrl+Shift+Y` | Same as clicking the icon: the compact window, by default |
 | `Alt+Shift+S` | Open the sidebar panel |
 | `Alt+Shift+I` | Open the console in a tab |
 | `Ctrl+Shift+U` | Pause / resume, even outside the console |
+
+The last four work anywhere in Firefox. You can change them in `about:addons`, from the
+gear menu, under extension shortcuts. The console's own list (`?`) and the Help read the
+same table, `ui/console/raccourcis.js`.
 
 ---
 
@@ -834,6 +879,8 @@ background/                The kernel — persistent background page
 │   ├── dedup.js           Anti-duplicate correlator
 │   ├── analyzer.js        Analysis orchestration
 │   ├── analyzer-regles.js The security rules and their evidence
+│   ├── analyzer-faits.js  Facts shown with their evidence, never counted as alerts
+│   ├── webauthn-liens.js  Links a passkey sign-in to its registration and challenge
 │   ├── secrets.js         Secret and tracker patterns
 │   ├── persist.js         Session kept across restarts
 │   └── debug.js           Internal log
@@ -841,6 +888,7 @@ background/                The kernel — persistent background page
 │   ├── webrequest.js      9 webRequest events
 │   ├── streamfilter.js    Response bodies on the wire
 │   ├── bodies.js          Body decoding and decompression
+│   ├── empreintes.js      Digests computed on the bytes actually received
 │   ├── security.js        TLS and certificates
 │   ├── dnsinfo.js         DNS resolution
 │   ├── navigation.js      Page context
@@ -871,7 +919,7 @@ ui/                        The interface — one page for all four surfaces
 ├── console/               One view per file, plus the detail panel
 └── lib/                   Codecs, digests, network, reference tables, i18n
 
-tests/                     2084 assertions, no browser required
+tests/                     2404 assertions, no browser required
 tools/sockets.mjs          Real WebSockets against a real server: page, worker, WebRTC
 tools/transparence.mjs     What a page can tell about the probes — it should be nothing
 tools/minutage.mjs         Network timing phases in a real browser: only real measurements
@@ -941,23 +989,23 @@ French at the flip of a setting.
 npm test
 ```
 
-2084 assertions, with no browser and no dependencies. The kernel and interface modules are
+2404 assertions, with no browser and no dependencies. The kernel and interface modules are
 written for Firefox; `tests/harnais.mjs` supplies the minimum WebExtension API and DOM they
 need to import and run under Node. **The logic under test is exactly the logic that runs in
 the browser, with no rewriting.**
 
 | Suite | Assertions | What it covers |
 |---|---|---|
-| `core.test.mjs` | 232 | URL normalisation, correlation signatures, the store, the rule engine (both ways: what matches **and** what must not), the security analyser rule by rule, HAR export, curl import, all 39 code generators |
+| `core.test.mjs` | 240 | URL normalisation, correlation signatures, the store, the rule engine (both ways: what matches **and** what must not), the security analyser rule by rule, HAR export, curl import, all 39 code generators, and the settings applied to what the page probes send — a body the settings refuse is not kept |
 | `avance.test.mjs` | 469 | WebSocket and HTTP/2 frames, CSP, RFC 9111 freshness, multipart, canonical URLs and homographs, protocol tables, binary structures, rare digests, generators |
-| `ui-load.test.mjs` | 281 | Actual loading of the 174 interface modules, complete module graph (no dead import, no file outside the graph), consistency with the HTML pages and the manifest, **full translation coverage** — every displayed string must have a dictionary entry, including labels that reach the translator through a table (`allRows` labels, search help, CSP directive meanings), **no text written straight into the page or built by concatenation**, which no dictionary entry can match, and **every text of the HTML pages** — labels, tooltips, screen-reader names, placeholders — translated and set again by the script — and **measured contrast**: every colour pair in both themes is checked against the WCAG 2.1 thresholds |
+| `ui-load.test.mjs` | 560 | Actual loading of the 175 interface modules, complete module graph (no dead import, no file outside the graph), consistency with the HTML pages and the manifest, **full translation coverage** — every displayed string must have a dictionary entry, including labels that reach the translator through a table (`allRows` labels, search help, CSP directive meanings), **no text written straight into the page or built by concatenation**, which no dictionary entry can match, and **every text of the HTML pages** — labels, tooltips, screen-reader names, placeholders — translated and set again by the script — and **measured contrast**: every colour pair in both themes is checked against the WCAG 2.1 thresholds. It also holds the documentation to the code: **both help pages and both tutorials must have the same sections, item for item**, every setting must be read by the code, the profiles must do what they say, and the README must name every settings group, profile, search criterion, analyser fact and kernel file |
 | `detail-coverage.test.mjs` | 130 | Each of a record's 60 fields is displayed, each tab has a render function, each searchable field exists |
 | `outils.test.mjs` | 108 | The toolbox, against published vectors |
-| `rendu.test.mjs` | 85 | The interface **actually rendered**: sixteen views against three captures, the eleven detail tabs, the twenty-two toolbox panels against thirty-two hostile inputs, and 264 deliberately malformed HAR files — then a fragment-by-fragment comparison of both languages, so nothing can stay in French on an English screen. It also counts the commands each view sends the kernel: **a view that re-renders itself in a loop is caught in a second instead of freezing the tab**. Finally the translator itself reports every text it could not translate while everything is rendered in English: a French sentence that arrives through a variable can no longer hide |
+| `rendu.test.mjs` | 114 | The interface **actually rendered**: sixteen views against three captures, the eleven detail tabs, the twenty-two toolbox panels against thirty-two hostile inputs, and 264 deliberately malformed HAR files — then a fragment-by-fragment comparison of both languages, so nothing can stay in French on an English screen. It also counts the commands each view sends the kernel: **a view that re-renders itself in a loop is caught in a second instead of freezing the tab**. Finally the translator itself reports every text it could not translate while everything is rendered in English: a French sentence that arrives through a variable can no longer hide. Then the table's **Follow** mode: a request opened from elsewhere is brought into view, reading suspends Follow and closing resumes it, the setting applies when it changes and only then; and what the screen shows — no bold markers left raw, punctuation that follows the language |
 | `lectures.test.mjs` | 166 | What 4.4 reads, checked against its sources: the HAR timing rules (TLS inside `connect`, counted once), every WebSocket subprotocol **and every text that must receive no label**, MQTT packet by packet, the certificate reader **cross-checked against the OpenSSL X.509 parser built into Node**, and the Firefox search criteria |
 | `securite.test.mjs` | 141 | The security tools against independent references — gzip and DEFLATE made by `node:zlib`, digests by `node:crypto`: the analyser's facts and the reused-nonce alert, digests judged only on what the captured bytes can prove, hostile SAML input and DEFLATE bombs, every response protection, the derived CSP, OAuth 2.0 against RFC 9700, and SAML in both bindings, down to **which element is signed** |
 | `decodeurs.test.mjs` | 209 | What 4.6 reads, against independent references: every example of **RFC 9421** (Appendix B and section 2) — signature bases **identical byte for byte**, RSA-PSS, ECDSA, HMAC and Ed25519 signatures verified with the published keys, a tampered base refused — and every case where a base cannot be rebuilt; the strict **RFC 9651** serialisation; **WebAuthn** registrations and sign-ins made by Yubico's `fido2` in ES256, EdDSA and RS256, signatures verified and a tampered one refused; **DNS** messages made by `dnspython` and the RFC 8484 example, with hostile inputs (pointer loops, oversized names, truncation) |
-| `protocoles.test.mjs` | 263 | What 5.0, 5.1 and 5.2 read, against independent references: **GraphQL** documents — the operations, the one that runs and introspection — compared with `graphql-core`, the Python port of the reference implementation, on 27 documents chosen for their traps; the Apollo persisted-query hash against the example Apollo publishes; the four transport forms, batches and the facts about responses; **browser reports** with the field names of the W3C and WICG specifications and the 30 NEL error types; report collection and the endpoints the browser ignores; **JSON Schema** inference and the **OpenAPI 3.1** export — whose output is also checked with `openapi-spec-validator` and `jsonschema` by `tools/verifier-openapi.mjs`; **JSON-RPC 2.0** against every exchange of its specification (§7) copied as is; **SOAP 1.1 and 1.2** against the examples of the SOAP 1.1 Note and the SOAP 1.2 Primer; the **RFC 9457** example; **`security.txt`** against the RFC 9116 example; and the **measured compression**, whose gzip is decompressed back to the identical text by `node:zlib`; the **verdict** in every case and its order of precedence, **Fetch Metadata**, **Clear-Site-Data** and **source maps** against their specifications |
+| `protocoles.test.mjs` | 267 | What 5.0 to 5.3 read, against independent references: **GraphQL** documents — the operations, the one that runs and introspection — compared with `graphql-core`, the Python port of the reference implementation, on 27 documents chosen for their traps; the Apollo persisted-query hash against the example Apollo publishes; the four transport forms, batches and the facts about responses; **browser reports** with the field names of the W3C and WICG specifications and the 30 NEL error types; report collection and the endpoints the browser ignores; **JSON Schema** inference and the **OpenAPI 3.1** export — whose output is also checked with `openapi-spec-validator` and `jsonschema` by `tools/verifier-openapi.mjs`; **JSON-RPC 2.0** against every exchange of its specification (§7) copied as is; **SOAP 1.1 and 1.2** against the examples of the SOAP 1.1 Note and the SOAP 1.2 Primer; the **RFC 9457** example; **`security.txt`** against the RFC 9116 example; and the **measured compression**, whose gzip is decompressed back to the identical text by `node:zlib`; the **verdict** in every case and its order of precedence, **Fetch Metadata**, **Clear-Site-Data** and **source maps** against their specifications |
 
 Expected values come from published sources: RFC vectors (4226, 6238, 6455, 4231, 7541, 9113,
 3986, 7578, 9111, 8187, 2231, 2047, 6266, 7638, 8941, 9421, 9651, 8484, and ZeroMQ RFC 32),
@@ -1062,7 +1110,7 @@ the file. It contains internal errors and the command log — not your traffic.
 Before opening a pull request:
 
 ```bash
-npm test              # all 2084 assertions must pass
+npm test              # all 2404 assertions must pass
 .\build.ps1 -Verify   # the build must be green
 ```
 

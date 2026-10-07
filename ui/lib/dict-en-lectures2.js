@@ -84,6 +84,57 @@ export const EN_LECTURES2 = {
   'type {v} inconnu de la specification': 'type {v} unknown to the specification',
   'reponse servie sans https : le navigateur ne traite pas Clear-Site-Data': 'response served without https: the browser does not process Clear-Site-Data',
 
+  /* -------------------------------- Synthese -------------------------------- */
+  'Domaines en erreur': 'Domains in error',
+  '{n} requete(s)': '{n} request(s)',
+  'Memes adresses telechargees plusieurs fois': 'Same addresses downloaded several times',
+  '{n} fois · {taille}': '{n} times · {taille}',
+  'Compression possible': 'Possible compression',
+  'mesuree sur les octets recus': 'measured on the bytes received',
+  'mesure impossible': 'measurement impossible',
+  'Aucune reponse texte d au moins un kilo-octet servie sans compression.': 'No text response of at least one kilobyte served without compression.',
+  '{n} reponse(s) texte servies sans compression : {avant} ; en gzip, {apres} — {gain} % de moins.':
+    '{n} text response(s) served without compression: {avant}; with gzip, {apres} — {gain} % less.',
+  'Les plus grosses economies': 'The largest savings',
+  '{avant} → {apres}': '{avant} → {apres}',
+  'Compresse en gzip chaque reponse texte servie sans compression, pour dire ce qu elle aurait pese.':
+    'Compresses with gzip every text response served without compression, to tell what it would have weighed.',
+  'Mesurer': 'Measure',
+  'Mesure en cours…': 'Measuring…',
+  'SWIFT — synthese': 'SWIFT — summary',
+  'Requetes : {n}': 'Requests: {n}',
+  'Domaines : {n}': 'Domains: {n}',
+  'Recu : {n}': 'Received: {n}',
+  'En erreur : {n}': 'In error: {n}',
+  'Alertes : {n}': 'Alerts: {n}',
+  'Domaines par volume :': 'Domains by volume:',
+  'SWIFT — comparaison': 'SWIFT — comparison',
+  'Corps :': 'Body:',
+
+  /* ------------------------------ Tableau ----------------------------------- */
+  'Requete masquee dans le tableau par le filtre ou le perimetre': 'This request is hidden in the table by the filter or the scope',
+
+  /* ----------------------------- Raccourcis --------------------------------- */
+  /* La liste vit dans ui/console/raccourcis.js : la fenetre « ? » l affichait
+     en francais dans l interface anglaise, faute de ces entrees. */
+  'Fleche haut / bas': 'Arrow up / down',
+  'Ouvrir la requete precedente / suivante': 'Open the previous / next request',
+  'Echap': 'Esc',
+  'Fermer le detail, la palette, un menu ou la liste des raccourcis': 'Close the detail, the palette, a menu or the shortcut list',
+  'Comparer les deux lignes selectionnees': 'Compare the two selected rows',
+  '1 a 9': '1 to 9',
+  'Basculer sur une vue': 'Switch to a view',
+  'Afficher la liste des raccourcis': 'Show the shortcut list',
+  'Ctrl+clic': 'Ctrl+click',
+  'Ajouter une ligne a la selection': 'Add a row to the selection',
+  'Maj+clic': 'Shift+click',
+  'Selectionner une plage de lignes': 'Select a range of rows',
+  'Clic droit': 'Right click',
+  'Menu contextuel de la ligne': 'Row context menu',
+  'Comme un clic sur l icone : la fenetre compacte, par defaut': 'Same as clicking the icon: the compact window, by default',
+  'Ouvrir la console dans un onglet': 'Open the console in a tab',
+  'Pause / reprise, meme hors de la console': 'Pause / resume, even outside the console',
+
   /* ---------------------------- Cartes de source ---------------------------- */
   'Carte de source': 'Source map',
   'Adresse de la carte': 'Map address',

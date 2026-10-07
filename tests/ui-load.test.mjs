@@ -505,6 +505,35 @@ verifier('les tables de donnees verifiees ne sont pas vides',
   GROUPS.length + ' sections, ' + PROFILES.length + ' profils, ' +
   TRANSFORMATIONS.length + ' transformations');
 
+/* « Observation discrete » promet « aucun contenu conserve » : il laissait
+   pourtant passer les messages SSE, contenu compris. Chaque capture de
+   contenu doit y etre eteinte — les trames des workers et les datagrammes
+   WebTransport suivent l interrupteur des trames WebSocket. */
+{
+  const discret = PROFILES.find(p => p[0] === 'Observation discrete');
+  for (const cle of ['captureRequestBodies', 'captureResponseBodies', 'captureBinaryBodies',
+    'captureWebSocketFrames', 'captureSse', 'captureWebRtc']) {
+    egal('« Observation discrete » eteint ' + cle, discret && discret[2][cle], false);
+  }
+
+  /* « Maximum » disait « tout capturer » et laissait trois couches comme il
+     les trouvait. Il les allume toutes, sauf deux choix qu il annonce : le
+     proxy (une permission) et les trames des workers (un effet sur la page). */
+  const maximum = PROFILES.find(p => p[0] === 'Maximum');
+  const couches = GROUPS.find(g => g.title === 'Couches de capture').fields.map(f => f[0]);
+  verifier('les couches de capture sont lues dans les reglages', couches.length > 10, couches.length + ' couches');
+  for (const cle of couches) {
+    if (['captureProxy', 'captureWorkerFrames'].includes(cle)) {
+      verifier('« Maximum » laisse ' + cle + ' a votre choix', !(cle in maximum[2]));
+    } else {
+      egal('« Maximum » allume ' + cle, maximum[2][cle], true);
+    }
+  }
+  for (const cle of Object.keys(maximum[2]).filter(k => /^max/.test(k))) {
+    egal('« Maximum » ne plafonne rien : ' + cle, maximum[2][cle], 0);
+  }
+}
+
 /* ------------ 8 bis. Les tables de reference, en anglais aussi ------------ */
 /* Le panneau de reference appelle bien `t` sur chaque description, mais rien
    ne verifiait que le dictionnaire les avait. Il lui en manquait 250 : les
@@ -699,8 +728,54 @@ const ANNONCES = [
   ['ports', /([0-9]+) ports/g, REF_PORTS.length],
   ['suites TLS', /([0-9]+) TLS cipher suites/g, REF_TLS.length],
   /* Le total que la palette propose : il se recompte, il ne se recopie pas. */
-  ['lignes de reference', /([0-9]+) reference lines/g, lignesDeReference]
+  ['lignes de reference', /([0-9]+) reference lines/g, lignesDeReference],
+  ['reglages', /([0-9]+) settings/g, GROUPS.flatMap(g => g.fields).length]
 ];
+
+/* Chaque fait que l analyseur peut constater est decrit dans la section 10,
+   avec son marqueur : les deux faits GraphQL de la 5.0 n y etaient pas. */
+{
+  const section10 = readme.slice(readme.indexOf('## 10. '), readme.indexOf('## 11. '));
+  const sourceFaits = fs.readFileSync(path.join(racine, 'background/core/analyzer-faits.js'), 'utf8');
+  const marqueurs = [...new Set([...sourceFaits.matchAll(/tags\.add\((?:[^)]*\? )?'([a-z-]+)'(?: : '([a-z-]+)')?\)/g)]
+    .flatMap(m => [m[1], m[2]]).filter(Boolean))].filter(m => m !== 'graphql');
+  verifier('les marqueurs des faits sont lus', marqueurs.length >= 5, marqueurs.join(', '));
+  for (const m of marqueurs) {
+    verifier('la section 10 du README decrit le fait marque « ' + m + ' »', section10.includes('`' + m + '`'));
+  }
+}
+
+/* Chaque critere de recherche est documente dans la section 9 du README. */
+{
+  const { fieldHelp } = await import('../ui/lib/filters.js');
+  const section9 = readme.slice(readme.indexOf('## 9. Search'), readme.indexOf('## 10. '));
+  const criteres = fieldHelp();
+  verifier('les criteres de recherche sont lus', criteres.length > 40, criteres.length + ' criteres');
+  for (const c of criteres) {
+    verifier('le README documente le critere « ' + c.name + ': »', section9.includes('`' + c.name + ':'));
+  }
+}
+
+/* L arborescence du README detaille quatre dossiers du noyau fichier par
+   fichier : trois modules y manquaient, ajoutes apres elle. */
+for (const dossier of ['background/core', 'background/capture', 'background/ingest', 'background/rules']) {
+  for (const nom of fs.readdirSync(path.join(racine, dossier)).filter(n => n.endsWith('.js'))) {
+    verifier('l arborescence du README cite ' + dossier + '/' + nom, readme.includes('── ' + nom + ' '));
+  }
+}
+
+/* La section des reglages decrivait quatre profils dont trois n existaient
+   pas (« Full », « Discreet », « Security ») et neuf groupes pour dix. Elle
+   doit nommer chaque groupe avec son nombre de reglages, et chaque profil,
+   comme l interface anglaise les nomme. */
+for (const groupe of GROUPS) {
+  const titre = EN[groupe.title] || groupe.title;
+  verifier('le README decrit le groupe de reglages « ' + titre + ' »',
+    readme.includes('**' + titre + '** (' + groupe.fields.length + ')'));
+}
+for (const [nom] of PROFILES) {
+  verifier('le README decrit le profil « ' + (EN[nom] || nom) + ' »', readme.includes('| **' + (EN[nom] || nom) + '** |'));
+}
 
 for (const [quoi, motif, reel] of ANNONCES) {
   const annonces = chiffresAnnonces(motif);
@@ -868,6 +943,107 @@ egal('aucun texte affiche ecrit en dur ni construit par morceaux', enDur.length,
     egal('te : message inconnu rendu tel quel', te('Unexpected token < in JSON'), 'Unexpected token < in JSON');
   } finally { setLang('fr'); }
   egal('te : en francais, le message ne change pas', te('message DNS tronque'), 'message DNS tronque');
+}
+
+/* Les raccourcis clavier : une seule liste, lue par la fenetre « ? » et par
+   l aide. Recopiee a la main, elle avait diverge (dix-sept, treize, dix
+   lignes), et la fenetre s affichait en francais dans l interface anglaise :
+   ses textes ne passaient par aucun t(). */
+{
+  const { RACCOURCIS } = await import('../ui/console/raccourcis.js');
+  /* Une touche universelle (« Ctrl+K », « P », « ? ») n a rien a traduire ;
+     « Echap », « Maj+clic » ou « 1 a 9 » si. */
+  const universelle = touche => touche.split('+').every(m => m.length === 1 || ['Ctrl', 'Alt', 'Shift'].includes(m));
+  for (const [touche, effet] of RACCOURCIS) {
+    exigerTraduction('raccourci clavier', effet);
+    if (!universelle(touche)) exigerTraduction('touche', touche);
+  }
+  egal('chaque touche n apparait qu une fois', new Set(RACCOURCIS.map(([k]) => k)).size, RACCOURCIS.length);
+
+  /* Les touches du manifeste sont celles que la liste annonce. */
+  const duManifeste = Object.values(manifest.commands || {}).map(c => c.suggested_key && c.suggested_key.default);
+  for (const touche of duManifeste) {
+    verifier('raccourci du manifeste present dans la liste : ' + touche, RACCOURCIS.some(([k]) => k === touche));
+  }
+  /* L aide dit « les quatre derniers fonctionnent dans tout Firefox » : ce
+     sont donc les raccourcis du manifeste, et eux seuls, qui ferment la liste. */
+  egal('les raccourcis du manifeste ferment la liste',
+    RACCOURCIS.slice(-duManifeste.length).map(([k]) => k).sort().join(' '), [...duManifeste].sort().join(' '));
+  egal('le manifeste declare quatre raccourcis, comme l aide l annonce', duManifeste.length, 4);
+
+  /* Aucune liste recopiee ne doit revenir dans les sources. */
+  for (const rel of ['ui/console.js', 'ui/console/help.js', 'ui/console/content-en.js']) {
+    const source = fs.readFileSync(path.join(racine, rel), 'utf8');
+    verifier('pas de table de raccourcis recopiee dans ' + rel, !/\['Ctrl\+Shift\+U',/.test(source));
+  }
+}
+
+/* « Si un reglage est ajoute, il a un effet reel dans le code », dit le
+   gabarit de pull request. Rien ne le verifiait : « Suivre le flux par
+   defaut » etait enregistre et lu par personne, et « Proposer le tutoriel a
+   l installation » ne pouvait rien faire — avant l installation, aucun
+   reglage n existe. Chaque champ doit donc etre lu ailleurs que dans sa
+   declaration, sa valeur par defaut ou sa traduction. */
+{
+  const sources = [];
+  const parcourir = dir => {
+    for (const nom of fs.readdirSync(dir)) {
+      const p = path.join(dir, nom);
+      if (fs.statSync(p).isDirectory()) { parcourir(p); continue; }
+      if (!nom.endsWith('.js') || nom === 'settings-groups.js' || /^dict-en/.test(nom)) continue;
+      let texte = fs.readFileSync(p, 'utf8');
+      /* Dans config.js, seules les valeurs par defaut sont ecartees : ses
+         methodes (allowUrl, pageOptions…) sont de vrais lecteurs. */
+      if (relatif(p) === 'background/core/config.js') {
+        const debut = texte.indexOf('export const DEFAULTS');
+        texte = texte.slice(0, debut) + texte.slice(texte.indexOf('});', debut) + 3);
+      }
+      sources.push(texte);
+    }
+  };
+  parcourir(path.join(racine, 'ui'));
+  parcourir(path.join(racine, 'background'));
+  let champs = 0;
+  for (const champ of GROUPS.flatMap(g => g.fields)) {
+    champs++;
+    const lecture = new RegExp('(\\.|\'|")' + champ[0] + '\\b');
+    verifier('le reglage « ' + champ[0] + ' » est lu par le code', sources.some(s => lecture.test(s)));
+  }
+  verifier('les reglages ont ete passes en revue', champs > 50, champs + ' champs');
+}
+
+/* L aide existe en deux langues, ecrites chacune a la main. L anglaise
+   n avait pas la section « Langue et confort », ni la ligne sur la largeur
+   des colonnes : la meme forme, section par section, est exigee. */
+{
+  const { SECTIONS } = await import('../ui/console/help.js');
+  const { HELP_SECTIONS, LESSONS: LECONS_EN } = await import('../ui/console/content-en.js');
+  const { LESSONS: LECONS_FR } = await import('../ui/console/content-fr.js');
+  const forme = s => [(s.p || []).length, (s.ul || []).length, (s.table || []).length, !!s.raccourcis].join('/');
+  egal('l aide a autant de sections dans les deux langues', HELP_SECTIONS.length, SECTIONS.length);
+  for (let i = 0; i < Math.max(SECTIONS.length, HELP_SECTIONS.length); i++) {
+    const fr = SECTIONS[i] || {};
+    const en = HELP_SECTIONS[i] || {};
+    egal('meme forme pour la section « ' + fr.h + ' »', forme(en), forme(fr));
+  }
+  /* Le mode simple garde les vues sans la marque « advanced » : la phrase qui
+     les nomme oubliait la boite a outils, ajoutee apres elle. */
+  const vuesSimples = [...sourceConsole.matchAll(/^\s{2}\w+:\s*\{ label: '([^']+)'(.*)$/gm)]
+    .filter(m => !/advanced: true|hidden: true/.test(m[2])).map(m => m[1]);
+  verifier('les vues du mode simple sont lues dans console.js', vuesSimples.length >= 5, vuesSimples.join(', '));
+  const champSimple = GROUPS.flatMap(g => g.fields).find(f => f[0] === 'simpleMode');
+  const leconFr = JSON.stringify(LECONS_FR.find(l => l.id === 'regler').body);
+  for (const vue of vuesSimples) {
+    verifier('le reglage « Mode simple » nomme la vue ' + vue, champSimple[3].includes(vue));
+    verifier('le tutoriel nomme la vue ' + vue + ' du mode simple', leconFr.includes(vue));
+  }
+  const corps = l => (l.body || []).map(b => b.p ? 'p' : 'ul' + (b.ul || []).length).join(',');
+  egal('le tutoriel a autant de lecons dans les deux langues', Object.keys(LECONS_EN).length, LECONS_FR.length);
+  for (const lecon of LECONS_FR) {
+    const en = LECONS_EN[lecon.id];
+    verifier('la lecon « ' + lecon.id + ' » existe en anglais', !!en);
+    if (en) egal('meme forme pour la lecon « ' + lecon.id + ' »', corps(en), corps(lecon));
+  }
 }
 
 bilan('Chargement de l interface');

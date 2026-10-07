@@ -92,7 +92,6 @@ export const DEFAULTS = Object.freeze({
   debugCaptureEvents: false,     // flot detaille des evenements internes
 
   /* ------------------------------ Tutoriel ------------------------- */
-  tutorialAuto: true,            // proposer le tutoriel au premier lancement
   tutorialDone: [],              // lecons terminees
 
   /* ---------------------------- Interface ------------------------- */

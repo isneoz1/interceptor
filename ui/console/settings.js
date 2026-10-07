@@ -7,7 +7,7 @@ import { $, el, clear, sec, button } from '../lib/dom.js';
 import { RESOURCE_TYPES } from '../lib/format.js';
 import { COLUMNS, COLUMN_ORDER, DEFAULT_COLUMNS } from '../lib/columns.js';
 import { state, cmd, toast, saveConfig, B, copy } from '../app.js';
-import { t, tp, dictionarySize, te } from '../lib/i18n.js';
+import { t, tp, dictionarySize, te, deuxPoints } from '../lib/i18n.js';
 import { GROUPS, PROFILES } from './settings-groups.js';
 
 let importText = '';
@@ -55,7 +55,7 @@ export function render() {
   /* Le nom du profil ET sa description passent par le dictionnaire : sans
      cela, la ligne de resume restait en francais sous des boutons anglais. */
   box.appendChild(el('p', { class: 'note',
-    text: PROFILES.map(p => t(p[0]) + ' : ' + t(p[1])).join('   ·   ') }));
+    text: PROFILES.map(p => deuxPoints(t(p[0]), t(p[1]))).join('   ·   ') }));
 
   for (const group of GROUPS) {
     box.appendChild(sec(group.title));

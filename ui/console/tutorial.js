@@ -5,7 +5,7 @@
  * une case ne se coche que si la chose a vraiment ete faite.
  * La progression est conservee dans les reglages (`tutorialDone`).
  */
-import { $, el, clear, sec, button } from '../lib/dom.js';
+import { $, el, clear, sec, button, richText } from '../lib/dom.js';
 import { t, tp } from '../lib/i18n.js';
 import { state, toast, saveConfig } from '../app.js';
 import { lang } from '../lib/i18n.js';
@@ -126,17 +126,6 @@ function localized(lesson) {
   if (lang() !== 'en') return lesson;
   const en = LESSONS_EN[lesson.id];
   return en ? { ...lesson, title: en.title, goal: en.goal, body: en.body } : lesson;
-}
-
-/** Petit balisage : **gras** uniquement, sans jamais passer par innerHTML. */
-function richText(tag, source) {
-  const node = el(tag);
-  const parts = String(source).split(/\*\*/);
-  parts.forEach((part, i) => {
-    if (!part) return;
-    node.appendChild(i % 2 ? el('b', { text: part }) : document.createTextNode(part));
-  });
-  return node;
 }
 
 /** Nombre de lecons, utile aux badges de la barre laterale. */

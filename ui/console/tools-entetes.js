@@ -5,7 +5,7 @@
  * explique, et suivi de ce qui pose reellement probleme.
  */
 import { el, frag, kv, sec, add, button } from '../lib/dom.js';
-import { t, tp } from '../lib/i18n.js';
+import { t, tp, deuxPoints } from '../lib/i18n.js';
 import { copy } from '../app.js';
 import { analyserBloc, ENTETES_ANALYSABLES } from '../lib/entetes-analyse.js';
 import { decrireEntete } from '../lib/ref-entetes.js';
@@ -55,7 +55,7 @@ export function panneauEntetes(entree) {
     }
     for (const risque of ligne.risques) {
       carte.appendChild(el('p', { class: 'note warn',
-        text: (risque.ou ? risque.ou + ' : ' : '') + t(risque.texte) }));
+        text: risque.ou ? deuxPoints(risque.ou, t(risque.texte)) : t(risque.texte) }));
     }
     carte.appendChild(el('div', { class: 'actions' },
       button('Copier la valeur', () => copy(ligne.valeur, 'Valeur copiee'))));

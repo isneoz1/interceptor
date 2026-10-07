@@ -4,6 +4,104 @@ All notable changes to this project are documented here.
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning follows
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.3.0] — 2026-10-07
+
+The Summary view now says where bandwidth is wasted — measured, not estimated.
+
+### Added
+
+- **The same addresses downloaded several times**: GET requests answered 2xx from the
+  network (not from the cache) for the same URL, ranked by the volume they cost. It may be
+  intended (polling) or a missing cache; the view states the fact.
+- **The compression possible across the whole capture**, on demand: the kernel compresses
+  with gzip every text response served without compression — only when its captured text
+  gives back the exact bytes received — and gives the total saving and the largest ones.
+- **Domains in error**, next to the other breakdowns.
+
+### Fixed
+
+- **Turning body capture off did not stop fetch and XHR bodies.** The page probes read
+  them in every case, and the kernel kept them as a fallback without asking the settings:
+  with "Response bodies" off — or the **Quiet observation** profile, which promises
+  "metadata only, no content kept" — every fetch and XHR body was still stored. The
+  kernel now applies "Request bodies", "Response bodies" and "Resource types without
+  bodies" to what the probes send, and the request body cap as well, which they escaped.
+  The same profile also left **Server-Sent Events** messages on, content included; it now
+  turns them off. Nothing ever left the machine: this was about what stays in memory.
+- The **Maximum** profile said "capture everything" but left JavaScript cookies,
+  WebTransport and page vitals as it found them. It now turns on every layer except two it
+  names: the proxy, which asks for a permission, and worker frames, which change what a
+  worker reads from `self.location`.
+- In the Statuses chart, **101** (opening a WebSocket) and requests still in progress were
+  drawn in red, like errors. They keep the neutral colour.
+- Three texts were French in the English interface: a bar tooltip of the throughput chart,
+  the alert count of the "most flagged" ranking, and the whole **copied summary**.
+- **A request opened from another view stayed off screen.** From the Summary, the alerts,
+  the site map or a cURL import, the detail opened but the table kept following the newest
+  rows: the selected row was not even drawn. The same happened when walking the table
+  with the arrow keys. The row is now brought into view — one row at a time with the
+  keys, centred when it comes from elsewhere — and a request hidden by the current filter
+  says so instead of opening silently.
+- **Reading a request suspends Follow**, and closing its detail resumes it: new rows no
+  longer push the open one out of sight. Pressing F or the Follow button stays your choice.
+- The **"Follow the stream by default"** setting was saved but read by nothing: the table
+  followed in every case. It now applies when the console opens and whenever it is changed.
+  A test now requires every setting to be read by the code.
+- The **keyboard shortcut sheet** (the ? key) was in French in the English interface. The
+  sheet and both help pages now read one list; the help pages had drifted to ten and
+  thirteen shortcuts out of seventeen.
+- The English help lacked the "Language and comfort" section and the line on resizing
+  columns; the help also described three console windows where there are four (the
+  detached window was missing). A test now requires both languages to have the same
+  sections and lessons, item for item.
+- The **simple mode** description forgot the Toolbox, which simple mode keeps. A test now
+  checks the sentence against the views actually kept.
+- The tutorial's Layers line now names **IM**, the mark of an imported request.
+- The Help printed its **bold markers** as is ("\*\*Tutorial\*\*"): only the tutorial knew how
+  to render them. Both now share the same renderer.
+- In English, labels built by hand kept the French space before the colon ("Maximum :
+  Capture everything", "id : 42" in JSON trees, the dock and OTP messages, the quick-filter
+  tooltips). Punctuation now follows the language.
+- The **copied comparison** of two requests started in French ("SWIFT — comparaison") in
+  the English interface.
+- The README's settings section described three profiles that do not exist ("Full",
+  "Discreet", "Security") and nine groups out of ten. It is rewritten from the real tables —
+  each group with its number of settings, each profile with what it actually changes — and
+  a test keeps it in step. The same review corrected three other places: the popup is a
+  page of its own, not the console page, and the detached window was missing from the
+  surfaces; the analyser section lacked the two GraphQL facts; the code tree lacked three
+  kernel files. Tests now hold each of them, and every search criterion, to the code.
+- The submission notes for addons.mozilla.org (`docs/amo-listing.md`) said
+  `webRequestBlocking` served interception alone. Firefox also requires it to read response
+  bodies (`filterResponseData`) and TLS details (`getSecurityInfo`), and the rules use it;
+  the notes now say so, and that the listeners change nothing when no rule applies. They
+  also named local storage where persistence uses IndexedDB.
+- The "WebSocket frames" switch and the frame size limit also govern **WebRTC data channel
+  messages and WebTransport datagrams**; their descriptions now say so, and that an SSE
+  message follows the limit for received bodies.
+
+### Removed
+
+- The **"Offer the tutorial on install"** setting. Nothing read it, and it could not act:
+  no setting exists before the extension is installed. On install, SWIFT opens its Help,
+  which points to the Tutorial, as it already did.
+
+### Tests
+
+- `tests/core.test.mjs`: the settings applied to what the page probes send — request and
+  response bodies, resource types without bodies, the request body cap.
+- `tests/rendu.test.mjs`: Follow mode and the opened row — brought into view, centred from
+  afar, one row at a time with the keys, suspended while reading and resumed on close, the
+  setting applied when it changes and only then; raw bold markers and the colon's spacing.
+- `tests/ui-load.test.mjs`: one shortcut list, translated; both help pages and both
+  tutorials item for item; every setting read by the code; the two profiles held to their
+  promise; the README's settings groups, profiles, search criteria, analyser facts and
+  kernel files held to the code.
+- `tools/defilement.mjs`: a request opened from another view among 20,000 rows, then walked
+  with the arrow keys in a real browser. On the previous code it reports five anomalies.
+
+2404 assertions across ten suites, plus six browser audits.
+
 ## [5.2.0] — 2026-10-06
 
 Simpler to read: every request now opens on a one-sentence verdict. And three readings

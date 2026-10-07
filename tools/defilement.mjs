@@ -10,7 +10,7 @@
  * sous la molette, liste qui cesse de se charger — n avait jamais ete regarde.
  *
  * Cet outil descend pour de bon, dans un vrai navigateur, et verifie a chaque
- * palier quatre choses :
+ * palier quatre choses, puis deux autres :
  *
  *   1. les lignes dessinees se suivent sans trou ni doublon d indice ;
  *   2. elles couvrent toute la zone visible, du haut au bas de l ecran ;
@@ -19,6 +19,8 @@
  *   4. les listes rendues par lots finissent par tout poser, sans se bloquer ;
  *   5. le panneau de detail — la surface la plus lourde — s ouvre sans a-coup
  *      sur vingt mille trames et sur un corps de cinq megaoctets.
+ *   6. une requete ouverte depuis une autre vue, puis parcourue au clavier,
+ *      reste a l ecran ; refermer le detail relance « suivre ».
  *
  * Il ne produit aucune image : il rend un verdict, et un code de sortie.
  */
@@ -170,7 +172,67 @@ if (depart) {
   if (parPalier > 16) noter('fluidite', parPalier.toFixed(1) + ' ms par palier (au-dela d une image a 60 Hz)');
 }
 
-/* ============== 3. Les listes rendues par lots, en descendant ============= */
+/* ========== 3. La requete ouverte depuis ailleurs reste en vue ============ */
+/* Ouverte depuis la Synthese, les alertes ou la palette, une requete restait
+   hors de l ecran : le mode « suivre » recollait le tableau en bas. On l ouvre
+   ici par le meme evenement que ces vues, puis on la parcourt au clavier. */
+if (depart) {
+  const vue = await dans(`
+    return (async () => {
+      const req = await import('/ui/console/requests.js');
+      const pause = ms => new Promise(r => setTimeout(r, ms));
+      const wrap = document.getElementById('tablewrap');
+      const enVue = () => {
+        const ligne = document.querySelector('#tbody .trow.sel');
+        if (!ligne) return 'non dessinee';
+        const r = ligne.getBoundingClientRect();
+        const plafond = document.getElementById('thead').getBoundingClientRect().bottom;
+        const plancher = wrap.getBoundingClientRect().top + wrap.clientTop + wrap.clientHeight;
+        return r.top >= plafond - 1 && r.bottom <= plancher + 1 ? 'visible' : 'hors de vue';
+      };
+      if (!req.isFollowing()) req.toggleFollow();
+      await pause(150);
+      const lignes = req.currentRows();
+      const cible = lignes[Math.floor(lignes.length / 3)].id;
+      document.dispatchEvent(new CustomEvent('ic:goto', { detail: { view: 'requests', id: cible } }));
+      await pause(700);
+      const apresOuverture = { etat: enVue(), suit: req.isFollowing(),
+        selectionnee: Number((document.querySelector('#tbody .trow.sel') || { dataset: {} }).dataset.id) === cible };
+
+      /* Quarante pas vers le bas puis vers le haut : la ligne doit suivre. */
+      const pas = [];
+      for (const [touche, n] of [['ArrowDown', 40], ['ArrowUp', 60]]) {
+        for (let i = 0; i < n; i++) {
+          document.dispatchEvent(new KeyboardEvent('keydown', { key: touche, bubbles: true }));
+          await pause(45);
+          pas.push(enVue());
+        }
+      }
+      await pause(300);
+      const finPas = enVue();
+
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+      await pause(300);
+      const apresFermeture = { suit: req.isFollowing(),
+        enBas: wrap.scrollHeight - wrap.scrollTop - wrap.clientHeight < 24 };
+      return { apresOuverture, horsDeVue: pas.filter(e => e !== 'visible').length, pas: pas.length, finPas, apresFermeture };
+    })();
+  `);
+  console.log('  requete ouverte depuis une autre vue : ' + vue.apresOuverture.etat
+    + ', puis ' + (vue.pas - vue.horsDeVue) + '/' + vue.pas + ' pas au clavier en vue');
+  if (vue.apresOuverture.etat !== 'visible') noter('ouverture depuis une autre vue', 'ligne ' + vue.apresOuverture.etat);
+  if (!vue.apresOuverture.selectionnee) noter('ouverture depuis une autre vue', 'la ligne ouverte n est pas marquee');
+  if (vue.apresOuverture.suit) noter('ouverture depuis une autre vue', '« suivre » est reste actif');
+  /* Un pas peut etre lu avant que le detail ait fini de charger : seul compte
+     l etat une fois le clavier relache. */
+  if (vue.finPas !== 'visible') noter('parcours au clavier', 'ligne ' + vue.finPas + ' a la fin');
+  if (vue.horsDeVue > vue.pas / 10) noter('parcours au clavier', vue.horsDeVue + ' pas sur ' + vue.pas + ' hors de vue');
+  if (!vue.apresFermeture.suit || !vue.apresFermeture.enBas) {
+    noter('fermeture du detail', '« suivre » ne reprend pas (' + JSON.stringify(vue.apresFermeture) + ')');
+  }
+}
+
+/* ============== 4. Les listes rendues par lots, en descendant ============= */
 /* Cinq vues rendent par lots. La carte des sites est la seule a recevoir du
    volume ici : un hote frequente y porte des milliers de requetes, et c est
    exactement le cas ou un chargement qui se bloque se verrait. */
@@ -240,7 +302,7 @@ for (let i = 0; i < 30 && apres.sentinelles; i++) {
 console.log('  carte des sites : ' + avant.elements + ' elements au depart, '
   + apres.elements + ' apres defilement, ' + apres.sentinelles + ' sentinelle(s) restante(s)');
 
-/* ============= 4. Le panneau de detail, la surface la plus lourde ========= */
+/* ============= 5. Le panneau de detail, la surface la plus lourde ========= */
 /* Trois listes sans plafond y vivent — trames WebSocket, messages SSE,
    evenements de chronologie — et un corps de reponse qui peut peser plusieurs
    megaoctets. Le panneau doit etre OUVERT pour que la mesure veuille dire

@@ -63,6 +63,15 @@ function allowed(ev) {
   return true;
 }
 
+/* Les sondes lisent les corps de fetch et de XHR quoi qu il arrive : c est
+   ici, comme pour les trames et les messages, que les reglages decident.
+   Sans ce filtre, « Corps de reponse » eteint — ou le profil « Observation
+   discrete » — laissait passer chaque corps de fetch et de XHR. */
+function corpsAdmis(rec, sens) {
+  const reglage = sens === 'requete' ? 'captureRequestBodies' : 'captureResponseBodies';
+  return !!config.get(reglage) && config.allowBodyForType(rec.type);
+}
+
 function dispatch(ev, ctx) {
   if (!allowed(ev)) return;
   if (ev.stack && !config.get('captureStacks')) ev.stack = null;
@@ -128,7 +137,7 @@ function applyStart(rec, ev, ctx) {
     rec.pageMeta.requestHeaders = ev.headers;
     if (!rec.requestHeaders) rec.requestHeaders = ev.headers;
   }
-  if (ev.body && !rec.requestBody) {
+  if (ev.body && !rec.requestBody && corpsAdmis(rec, 'requete')) {
     rec.requestBody = normalizePageBody(ev.body);
     store.stats.bytesUp += rec.requestBody.size || 0;
   }
@@ -150,7 +159,7 @@ function onRequestEnd(ev, ctx) {
 /** Corps de requete lu de maniere asynchrone apres l emission du debut. */
 function onRequestBody(ev, ctx) {
   withPageRecord(ev, ctx, rec => {
-    if (!ev.body) return;
+    if (!ev.body || !corpsAdmis(rec, 'requete')) return;
     const body = normalizePageBody(ev.body);
     if (!rec.requestBody || !rec.requestBody.text) {
       rec.requestBody = body;
@@ -183,7 +192,7 @@ function applyEnd(rec, ev) {
 
   // Corps de reponse de secours : utile quand StreamFilter n'a rien pu capturer
   // (reponse servie par un Service Worker, cache memoire, requete inter-origines).
-  if (ev.bodyText != null && (!rec.responseBody || !rec.responseBody.text)) {
+  if (ev.bodyText != null && corpsAdmis(rec, 'reponse') && (!rec.responseBody || !rec.responseBody.text)) {
     const t = truncateText(ev.bodyText, cap(config.get('maxResponseBodyBytes')));
     /* Les empreintes calculees a la capture suivent le nouveau corps. */
     rec.responseBody = {

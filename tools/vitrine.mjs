@@ -33,6 +33,15 @@ const VITRINES = [
     cadre: { x: 14.2, y: 5.8, largeur: 85.8, hauteur: 58 }
   },
   {
+    fichier: 'vitrine-api',
+    source: 'console-graphql.png',
+    titre: 'What the status hides',
+    phrase: 'GraphQL, JSON-RPC and SOAP calls all look alike on the wire: one address, status 200. '
+      + 'SWIFT names the operation in the table and reads the answer — here, a 200 that carries '
+      + 'an error, with its path and its code.',
+    cadre: { x: 14.2, y: 57, largeur: 85.8, hauteur: 43 }
+  },
+  {
     fichier: 'vitrine-securite',
     source: 'console-securite.png',
     titre: 'Findings it can prove',

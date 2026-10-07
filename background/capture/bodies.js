@@ -94,15 +94,19 @@ export function decodeRequestBody(requestBody, contentType) {
 /** Corps remonte par les hooks page (fetch / XHR / beacon) : deja du texte. */
 export function normalizePageBody(body) {
   if (body == null) return null;
+  const limite = cap(config.get('maxRequestBodyBytes'));
   if (typeof body === 'string') {
-    const t = truncateText(body, cap(config.get('maxRequestBodyBytes')));
+    const t = truncateText(body, limite);
     return { kind: 'page', text: t.text, size: t.size, truncated: t.truncated };
   }
+  /* La sonde coupe a la taille des corps de reponse, la seule limite qu elle
+     connaisse : le plafond des corps de requete s applique donc ici. */
+  const t = truncateText(body.text || '', limite);
   return {
     kind: body.kind || 'page',
-    text: body.text || '',
+    text: t.text,
     size: body.size || (body.text ? body.text.length : 0),
-    truncated: !!body.truncated,
+    truncated: !!body.truncated || t.truncated,
     contentType: body.contentType || '',
     note: body.note || null
   };

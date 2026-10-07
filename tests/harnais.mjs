@@ -188,7 +188,12 @@ class Noeud {
     this.childNodes = [];
     this.attributes = new Map();
     this.dataset = {};
-    this.style = {};
+    /* Les proprietes personnalisees (--cols) passent par setProperty. */
+    this.style = {
+      setProperty(nom, valeur) { this[nom] = String(valeur); },
+      getPropertyValue(nom) { return this[nom] || ''; },
+      removeProperty(nom) { delete this[nom]; }
+    };
     this.classList = ensembleDeClasses(this);
     this.textContent = '';
     this.hidden = false;

@@ -3,7 +3,7 @@
  * Aucune donnee capturee n est jamais injectee en HTML : tout passe par
  * textContent. Un site observe ne peut donc rien injecter dans l interface.
  */
-import { t } from './i18n.js';
+import { t, deuxPoints } from './i18n.js';
 
 export function el(tag, attrs, children) {
   const node = document.createElement(tag);
@@ -146,7 +146,7 @@ export function jsonTree(value, key = null, depth = 0) {
 
   if (type !== 'object' && type !== 'array') {
     return el('div', { class: 'row' }, [
-      key == null ? null : el('span', { class: 'k', text: key + ' :' }),
+      key == null ? null : el('span', { class: 'k', text: deuxPoints(key) }),
       el('span', { class: 'v', text: type === 'string' ? value : String(value) }),
       el('span', { class: 't', text: type === 'string' ? '' : '(' + type + ')' })
     ]);
@@ -163,6 +163,18 @@ export function jsonTree(value, key = null, depth = 0) {
   if (!entries.length) box.appendChild(el('div', { class: 'row' }, el('span', { class: 't', text: t('vide') })));
   for (const [k, v] of entries) box.appendChild(jsonTree(v, k, depth + 1));
   return box;
+}
+
+/** Petit balisage : **gras** uniquement, sans jamais passer par innerHTML.
+ *  L aide et le tutoriel l emploient tous deux. */
+export function richText(tag, source) {
+  const node = el(tag);
+  const parts = String(source).split(/\*\*/);
+  parts.forEach((part, i) => {
+    if (!part) return;
+    node.appendChild(i % 2 ? el('b', { text: part }) : document.createTextNode(part));
+  });
+  return node;
 }
 
 /** Ajoute des noeuds en ignorant les absents : `kv()` peut rendre null quand

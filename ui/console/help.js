@@ -1,11 +1,12 @@
 /* Vue « Aide » — mode d emploi complet, hors ligne — SWIFT (by NeoZ) */
-import { $, el, clear, button } from '../lib/dom.js';
+import { $, el, clear, button, richText } from '../lib/dom.js';
 import { fieldHelp } from '../lib/filters.js';
 import { cmd, toast } from '../app.js';
 import { t, tp, lang } from '../lib/i18n.js';
 import { HELP_SECTIONS as SECTIONS_EN } from './content-en.js';
+import { RACCOURCIS } from './raccourcis.js';
 
-const SECTIONS = [
+export const SECTIONS = [
   {
     h: 'Par ou commencer',
     p: ['Si vous decouvrez l outil, ouvrez le **Tutoriel** dans la barre laterale : douze lecons guidees, avec des boutons qui font reellement l action decrite et des verifications qui lisent l etat reel de votre capture. Cette page-ci est la reference complete, a garder sous la main.'],
@@ -26,35 +27,27 @@ const SECTIONS = [
     ul: []
   },
   {
-    h: 'Les trois fenetres',
-    p: ['La meme interface se presente sous trois formes, au choix.'],
+    h: 'Les quatre fenetres',
+    p: ['La meme interface se presente sous quatre formes. Le bouton d ancrage, en haut de la console, passe de l une a l autre et retient votre choix pour le clic sur l icone.'],
     table: [
       ['Console complete', 'Onglet plein ecran. Alt+Shift+I, ou le bouton « Actions -> Ouvrir dans un onglet ».'],
+      ['Fenetre detachee', 'Une fenetre a part : a droite, a gauche, en haut, en bas, au centre, en plein ecran, ou la ou vous la laissez.'],
       ['Panneau lateral', 'Colle a la fenetre du navigateur pendant que vous naviguez. Alt+Shift+S.'],
-      ['Fenetre compacte', 'Clic sur l icone de la barre d outils. Ctrl+Shift+Y.']
+      ['Fenetre compacte', 'Clic sur l icone de la barre d outils, par defaut. Ctrl+Shift+Y.']
     ]
   },
   {
     h: 'Raccourcis clavier',
-    table: [
-      ['/', 'Placer le curseur dans la recherche'],
-      ['fleche haut / bas', 'Requete precedente / suivante, avec le detail ouvert'],
-      ['Echap', 'Fermer le detail ou un menu'],
-      ['P', 'Mettre la capture en pause ou la reprendre'],
-      ['F', 'Activer ou figer le suivi du flux'],
-      ['1 a 9', 'Basculer directement sur une vue'],
-      ['Ctrl+Shift+U', 'Pause / reprise, meme hors de la console'],
-      ['Ctrl+clic', 'Ajouter une ligne a la selection'],
-      ['Maj+clic', 'Selectionner une plage de lignes'],
-      ['2 lignes + Comparer', 'Confronter deux requetes ligne a ligne']
-    ]
+    p: ['Les quatre derniers fonctionnent dans tout Firefox. Vous pouvez les changer dans about:addons, depuis la roue dentee, a la gestion des raccourcis des extensions.'],
+    raccourcis: true
   },
   {
     h: 'Le tableau des requetes',
     ul: [
       'Colonnes : le bouton « Colonnes » en propose une trentaine. Votre choix est conserve.',
       'Tri : cliquez sur un en-tete de colonne ; un second clic inverse l ordre.',
-      'Suivre : le tableau reste colle aux dernieres requetes. Il se fige des que vous remontez.',
+      'Largeur : tirez le bord droit d un en-tete. Les largeurs sont conservees.',
+      'Suivre : le tableau reste colle aux dernieres requetes et se fige des que vous remontez. Ouvrir une requete le suspend le temps de la lire ; refermer le detail le relance.',
       'Selection : Ctrl+clic et Maj+clic. Les exports et la suppression portent alors sur la selection.',
       'Epingler : la colonne etoile marque une ligne pour la retrouver avec le filtre « flag: ».',
       'Aucune limite d affichage : seules les lignes visibles sont dessinees, la liste entiere reste accessible.'
@@ -65,7 +58,7 @@ const SECTIONS = [
     table: [
       ['Requetes', 'Le flux complet, avec le detail en douze onglets.'],
       ['Securite', 'Toutes les alertes trouvees automatiquement, classees par gravite.'],
-      ['Synthese', 'Agregats de la session : statuts, types, domaines les plus lourds, requetes les plus lentes, debit dans le temps.'],
+      ['Synthese', 'Agregats de la session : statuts, types, domaines les plus lourds et en erreur, requetes les plus lentes, adresses telechargees plusieurs fois, compression possible mesuree, debit dans le temps.'],
       ['Comparaison', 'Deux requetes selectionnees, confrontees ligne a ligne (entetes et corps).'],
       ['Flux temps reel', 'WebSocket et Server-Sent Events, message par message, en direct.'],
       ['Cookies', 'Chaque pose, modification ou suppression de cookie, y compris en JavaScript.'],
@@ -239,13 +232,15 @@ export function render() {
   const sections = lang() === 'en' ? SECTIONS_EN : SECTIONS;
   for (const section of sections) {
     box.appendChild(el('h2', { text: section.h }));
-    for (const p of section.p || []) box.appendChild(el('p', { text: p }));
+    for (const p of section.p || []) box.appendChild(richText('p', p));
     if (section.ul) {
       const ul = el('ul');
-      for (const li of section.ul) ul.appendChild(el('li', { text: li }));
+      for (const li of section.ul) ul.appendChild(richText('li', li));
       box.appendChild(ul);
     }
     if (section.table) box.appendChild(table(['', ''], section.table));
+    /* Les raccourcis viennent de la liste que lit aussi la fenetre « ? ». */
+    if (section.raccourcis) box.appendChild(table(['', ''], RACCOURCIS.map(([k, d]) => [t(k), t(d)])));
   }
 
   /* Syntaxe de recherche : construite depuis le code, donc toujours exacte. */

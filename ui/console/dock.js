@@ -6,7 +6,7 @@
  * prochaine ouverture. C est l equivalent du menu d ancrage des outils Firefox.
  */
 import { $ } from '../lib/dom.js';
-import { t } from '../lib/i18n.js';
+import { t, deuxPoints } from '../lib/i18n.js';
 import { cmd, state, toast, dropdown } from '../app.js';
 
 const DOCK_EMPLACEMENTS = [
@@ -45,7 +45,7 @@ export function bindDock() {
     for (const [cle, libelle] of DOCK_EMPLACEMENTS) {
       items.push({
         label: libelle, checked: actuel === cle, keepOpen: true,
-        action: async () => { if (await appliquer(cle, null)) toast(t('Console') + ' : ' + t(libelle)); }
+        action: async () => { if (await appliquer(cle, null)) toast(deuxPoints(t('Console'), t(libelle))); }
       });
     }
 
@@ -53,7 +53,7 @@ export function bindDock() {
     for (const [cle, libelle] of DOCK_POSITIONS) {
       items.push({
         label: libelle, checked: position === cle, keepOpen: true,
-        action: async () => { if (await appliquer('fenetre', cle)) toast(t('Fenetre') + ' : ' + t(libelle)); }
+        action: async () => { if (await appliquer('fenetre', cle)) toast(deuxPoints(t('Fenetre'), t(libelle))); }
       });
     }
     return items;

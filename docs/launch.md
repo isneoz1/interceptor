@@ -56,7 +56,7 @@ sees a response body, so a Content-Digest can't be checked on most compressed re
 an HTTP message signature (RFC 9421) can only be verified if the signature base is rebuilt
 byte for byte — the test suite rebuilds and verifies the RFC's own worked examples.
 
-No telemetry, no server, no dependencies, MIT. 2084 assertions run under Node, many of
+No telemetry, no server, no dependencies, MIT. 2404 assertions run under Node, many of
 them against published vectors (RFCs, Yubico's fido2, dnspython, graphql-core).
 
 https://github.com/isneoz1/interceptor

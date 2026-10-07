@@ -6,7 +6,7 @@
  */
 import { $, el, clear, sec, button, kv, add, vide } from '../lib/dom.js';
 import { bytes, ms, clock, middle, pretty } from '../lib/format.js';
-import { t, tp } from '../lib/i18n.js';
+import { t, tp, deuxPoints } from '../lib/i18n.js';
 import { state, cmd, toast, copy } from '../app.js';
 
 const MAX_DIFF_LINES = 1200;
@@ -209,18 +209,19 @@ function renderBodyDiff(box, title, a, b, mime) {
 }
 
 function textDiff() {
-  const lines = ['SWIFT — comparaison', '', 'A : #' + left.id + ' ' + left.method + ' ' + (left.finalUrl || left.url),
-                 'B : #' + right.id + ' ' + right.method + ' ' + (right.finalUrl || right.url), ''];
+  const lines = [t('SWIFT — comparaison'), '',
+    deuxPoints('A', '#' + left.id + ' ' + left.method + ' ' + (left.finalUrl || left.url)),
+    deuxPoints('B', '#' + right.id + ' ' + right.method + ' ' + (right.finalUrl || right.url)), ''];
   for (const row of diffHeaders(left.responseHeaders, right.responseHeaders)) {
     if (row.kind === 'same') continue;
-    lines.push((SIGN[row.kind] || '') + ' ' + row.key + ' : ' + (row.a || '—') + '  ->  ' + (row.b || '—'));
+    lines.push((SIGN[row.kind] || '') + ' ' + deuxPoints(row.key, (row.a || '—') + '  ->  ' + (row.b || '—')));
   }
   const body = diffLines(
     pretty((left.responseBody && left.responseBody.text) || '', left.mime),
     pretty((right.responseBody && right.responseBody.text) || '', right.mime)
   ).filter(r => r.kind !== 'same');
   if (body.length) {
-    lines.push('', 'Corps :');
+    lines.push('', t('Corps :'));
     for (const row of body.slice(0, 500)) lines.push(SIGN[row.kind] + ' ' + row.line);
   }
   return lines.join('\n');

@@ -27,6 +27,7 @@ import * as compare from './console/compare.js';
 import * as tools from './console/tools.js';
 import * as sitemap from './console/sitemap.js';
 import * as palette from './console/palette.js';
+import { RACCOURCIS } from './console/raccourcis.js';
 import * as debugview from './console/debug.js';
 import * as intercept from './console/intercept.js';
 import { renderFoot, renderSpark } from './console/statusbar.js';
@@ -203,34 +204,14 @@ function refreshBadges() {
 }
 
 /* --------------------------- Aide clavier -------------------------------- */
-const SHORTCUTS = [
-  ['/', 'Placer le curseur dans la recherche'],
-  ['Fleche haut / bas', 'Requete precedente / suivante'],
-  ['Echap', 'Fermer le detail, un menu ou cette fenetre'],
-  ['P', 'Mettre la capture en pause ou la reprendre'],
-  ['F', 'Suivre le flux ou le figer'],
-  ['C', 'Comparer les deux lignes selectionnees'],
-  ['S', 'Enregistrer le filtre courant'],
-  ['1 a 9', 'Basculer sur une vue'],
-  ['Ctrl+K', 'Palette : une vue, un outil, ou un nom du protocole a expliquer'],
-  ['?', 'Afficher cette aide'],
-  ['Ctrl+clic', 'Ajouter une ligne a la selection'],
-  ['Maj+clic', 'Selectionner une plage de lignes'],
-  ['Clic droit', 'Menu contextuel de la ligne'],
-  ['Ctrl+Shift+Y', 'Ouvrir la fenetre compacte'],
-  ['Alt+Shift+S', 'Ouvrir le panneau lateral'],
-  ['Alt+Shift+I', 'Ouvrir la console dans un onglet'],
-  ['Ctrl+Shift+U', 'Pause / reprise, meme hors de la console']
-];
-
 function toggleKeys(show) {
   const box = $('#keys');
   if (show === undefined) show = box.hidden;
   if (show) {
     const list = clear($('#keys-list'));
-    for (const [key, what] of SHORTCUTS) {
-      list.appendChild(el('b', { text: key }));
-      list.appendChild(el('span', { text: what }));
+    for (const [touche, effet] of RACCOURCIS) {
+      list.appendChild(el('b', { text: t(touche) }));
+      list.appendChild(el('span', { text: t(effet) }));
     }
   }
   box.hidden = !show;
@@ -334,7 +315,12 @@ function bindKeyboard() {
   $('#keys-close').addEventListener('click', () => toggleKeys(false));
   $('#keys').addEventListener('click', ev => { if (ev.target.id === 'keys') toggleKeys(false); });
   requests.init({ onOpen: id => detail.open(id) });
-  detail.init({ onChange: () => requests.renderRows() });
+  detail.init({
+    onChange: () => requests.renderRows(),
+    /* La requete ouverte doit se voir dans le tableau, d ou qu on l ouvre. */
+    onOuverture: id => requests.montrerLigne(id),
+    onFermeture: () => requests.detailFerme()
+  });
 
   connect({
     onDelta: records => {

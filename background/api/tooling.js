@@ -8,12 +8,16 @@
  *   debugJournal  lit le journal de diagnostic interne
  *   clearDebug    vide ce journal
  *   debugNote     y ecrit un repere depuis l interface
+ *   mesurerCompressions  ce que gzip ferait des textes servis sans compression
  */
 import { store } from '../core/store.js';
 import { analyze } from '../core/analyzer.js';
 import { analyserCurl } from '../ingest/curl.js';
 import { journal } from '../core/debug.js';
 import { listeAttente, resoudre, relacherTout, enAttente, interceptStats } from '../rules/intercept.js';
+import { mesurerCompression } from '../../ui/lib/corps-controles.js';
+
+const MESURES_MAX = 5000;
 
 export const TOOLING_COMMANDS = {
   /* ---------------------- Interception en direct ----------------------- */
@@ -95,6 +99,31 @@ export const TOOLING_COMMANDS = {
     ({ journal: journal.instantane({ niveau, source, limite, recherche }) }),
 
   clearDebug: () => { journal.vider(); return { ok: true }; },
+
+  /** Ce que gzip ferait des reponses texte servies sans compression, mesure
+      sur les octets recus de chaque ligne. Le noyau seul garde les corps :
+      l interface n en a que les resumes. Borne a cinq mille lignes. */
+  mesurerCompressions: async ({ ids = [] } = {}) => {
+    const lignes = [];
+    for (const id of (Array.isArray(ids) ? ids : []).slice(0, MESURES_MAX)) {
+      const rec = store.get(id);
+      if (!rec || !rec.responseBody) continue;
+      let r = null;
+      try { r = await mesurerCompression(rec.responseBody, rec.responseHeaders); } catch { r = null; }
+      if (r && r.apres < r.avant) {
+        lignes.push({ id: rec.id, method: rec.method, host: rec.host, path: rec.path, url: rec.finalUrl || rec.url,
+          avant: r.avant, apres: r.apres });
+      }
+    }
+    lignes.sort((a, b) => (b.avant - b.apres) - (a.avant - a.apres));
+    return {
+      ok: true,
+      mesurees: lignes.length,
+      avant: lignes.reduce((n, l) => n + l.avant, 0),
+      apres: lignes.reduce((n, l) => n + l.apres, 0),
+      lignes: lignes.slice(0, 15)
+    };
+  },
 
   /** Ecrit une entree depuis l interface : sert a marquer un instant precis. */
   debugNote: ({ message, niveau = 'info' }) => {

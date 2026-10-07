@@ -15,7 +15,7 @@ export const GROUPS = [
     fields: [
       ['lang', 'Langue', 'select', [['fr', 'Francais'], ['en', 'Anglais']],
         'Toute l interface, l aide et le tutoriel changent de langue : {entrees} entrees traduites, et un test refuse la construction s il en manque une.'],
-      ['simpleMode', 'Mode simple', 'bool', 'Ne garde que Requetes, Securite, Synthese, Reglages, Tutoriel et Aide. Les vues avancees restent accessibles en le desactivant.'],
+      ['simpleMode', 'Mode simple', 'bool', 'Ne garde que Requetes, Securite, Synthese, Boite a outils, Reglages, Tutoriel et Aide. Les vues avancees restent accessibles en le desactivant.'],
       ['theme', 'Theme', 'select', [['sombre', 'Sombre'], ['clair', 'Clair'], ['auto', 'Suivre le systeme']]],
       ['highContrast', 'Contraste renforce', 'bool', 'Eclaircit les textes secondaires et marque davantage les separations.'],
       ['fontScale', 'Taille du texte (%)', 'number', 'Entre 80 et 140. Agit sur toute l interface : tableau, corps, journaux, boutons et aide.'],
@@ -30,8 +30,7 @@ export const GROUPS = [
       ['iconOpens', 'Ouvrir la console', 'select', [['popup', 'Fenetre compacte'], ['onglet', 'Onglet complet'], ['panneau', 'Panneau lateral'], ['fenetre', 'Fenetre detachee']], 'Comme l ancrage des outils de developpement de Firefox : choisissez ou la console s ouvre quand vous cliquez sur l icone. Les boutons d ancrage en haut de la console font la meme chose d un clic.'],
       ['consolePosition', 'Position de la fenetre detachee', 'select', [['droite', 'A droite'], ['gauche', 'A gauche'], ['haut', 'En haut'], ['bas', 'En bas'], ['centre', 'Au centre'], ['plein', 'Plein ecran'], ['libre', 'La ou je la laisse']], 'Utilisee uniquement quand la console s ouvre en fenetre detachee. « La ou je la laisse » retient la derniere position.'],
       ['badgeMode', 'Compteur sur l icone', 'select', [['requests', 'Nombre de requetes'], ['alerts', 'Nombre d alertes'], ['none', 'Aucun']]],
-      ['notifyCritical', 'Notification bureau sur alerte critique', 'bool', 'Demande la permission « notifications » a l activation.'],
-      ['tutorialAuto', 'Proposer le tutoriel a l installation', 'bool', 'Le tutoriel reste accessible a tout moment depuis la barre laterale.']
+      ['notifyCritical', 'Notification bureau sur alerte critique', 'bool', 'Demande la permission « notifications » a l activation.']
     ]
   },
   {
@@ -40,7 +39,7 @@ export const GROUPS = [
     fields: [
       ['captureWebRequest', 'Couche webRequest', 'bool', 'Les 9 evenements du cycle de vie reseau. Prise en compte au prochain demarrage de l extension.'],
       ['capturePageHooks', 'Sondes du contexte page', 'bool', 'fetch, XHR, WebSocket, SSE, sendBeacon, WebRTC.'],
-      ['captureWebSocketFrames', 'Trames WebSocket', 'bool', 'Contenu de chaque message, dans les deux sens.'],
+      ['captureWebSocketFrames', 'Trames WebSocket', 'bool', 'Contenu de chaque message, dans les deux sens. Le meme interrupteur vaut pour les canaux de donnees WebRTC et les datagrammes WebTransport.'],
       ['captureSse', 'Server-Sent Events', 'bool'],
       ['capturePerformance', 'PerformanceObserver', 'bool', 'Capte meme ce que sert un Service Worker ou le cache memoire.'],
       ['captureStacks', 'Piles d appel JavaScript', 'bool', 'Montre quelle ligne de code declenche chaque requete.'],
@@ -72,7 +71,7 @@ export const GROUPS = [
       ['maxRequestBodyBytes', 'Limite par corps envoye (octets)', 'number'],
       ['maxResponseBodyBytes', 'Limite par corps recu (octets)', 'number'],
       ['maxBinaryBodyBytes', 'Limite du binaire conserve (octets)', 'number'],
-      ['maxFrameBytes', 'Limite par trame ou message (octets)', 'number'],
+      ['maxFrameBytes', 'Limite par trame ou message (octets)', 'number', 'Trames WebSocket, messages des canaux de donnees WebRTC et datagrammes WebTransport. Un message SSE suit la limite des corps recus.'],
       ['maxWebSocketFrames', 'Trames conservees par socket', 'number'],
       ['maxSseMessages', 'Messages SSE conserves par flux', 'number'],
       ['skipBodyTypes', 'Types sans capture de corps', 'types']
@@ -154,11 +153,14 @@ export const GROUPS = [
 ];
 
 export const PROFILES = [
-  ['Maximum', 'Tout capturer, aucune limite.', {
+  /* Le proxy demande une permission, et les trames des workers changent ce que
+     le worker lit de self.location : deux choix que nul profil ne fait a
+     votre place. Toutes les autres couches sont allumees. */
+  ['Maximum', 'Toutes les couches, aucune limite. Le proxy et les trames des workers restent a votre choix.', {
     capturing: true, captureWebRequest: true, capturePageHooks: true, captureWebSocketFrames: true,
     captureSse: true, capturePerformance: true, captureStacks: true, captureWebRtc: true,
     captureWorkers: true, captureNavigation: true, captureCookies: true, captureSecurityInfo: true,
-    captureDns: true, captureRequestBodies: true, captureResponseBodies: true, captureBinaryBodies: true,
+    captureDns: true, captureJsCookies: true, captureWebTransport: true, capturePageVitals: true, captureRequestBodies: true, captureResponseBodies: true, captureBinaryBodies: true,
     maxRequestBodyBytes: 0, maxResponseBodyBytes: 0, maxBinaryBodyBytes: 0, maxFrameBytes: 0,
     maxWebSocketFrames: 0, maxSseMessages: 0, maxRecords: 0, skipBodyTypes: [], ignoreTypes: [],
     analyzerEnabled: true
@@ -177,7 +179,7 @@ export const PROFILES = [
   }],
   ['Observation discrete', 'Metadonnees seules, aucun contenu conserve.', {
     captureRequestBodies: false, captureResponseBodies: false, captureBinaryBodies: false,
-    captureWebSocketFrames: false, captureSse: true, captureStacks: false, captureWebRtc: false,
+    captureWebSocketFrames: false, captureSse: false, captureStacks: false, captureWebRtc: false,
     maxRecords: 10000, skipBodyTypes: [], ignoreTypes: []
   }]
 ];

@@ -162,6 +162,7 @@ $required = @(
   'ui/console/detail-more.js',
   'ui/console/rowmenu.js',
   'ui/console/rowsize.js',
+  'ui/console/raccourcis.js',
   'ui/console/statusbar.js',
   'ui/console/header.js',
   'ui/console/replay.js',
@@ -289,7 +290,7 @@ if ($node) {
     $annonce = [int]$Matches[1]
     if ($annonce -ne $totalAssertions) {
       Write-Host "Le README annonce $annonce assertions, la suite en compte $totalAssertions." -ForegroundColor Red
-      Write-Host "Mettez le chiffre a jour (badge, README, CHANGELOG, gabarit de PR)." -ForegroundColor Red
+      Write-Host "Mettez le chiffre a jour (badge, README, CHANGELOG)." -ForegroundColor Red
       exit 1
     }
     Write-Host "`n  $totalAssertions assertions, conformes au README" -ForegroundColor DarkGray

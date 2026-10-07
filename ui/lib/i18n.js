@@ -35,6 +35,18 @@ export function tp(text, values) {
   return out;
 }
 
+/**
+ * « nom : valeur », avec la ponctuation de la langue courante. Le francais
+ * met une espace avant les deux-points, l anglais non : assemblee a la main,
+ * la ligne gardait l espace francaise dans l interface anglaise
+ * (« Maximum : Capture everything »). Sans valeur, rend le libelle seul,
+ * pour une cle suivie de sa valeur dans un autre element.
+ */
+export function deuxPoints(nom, valeur) {
+  const signe = current === 'en' ? ':' : ' :';
+  return valeur === undefined ? nom + signe : nom + signe + ' ' + valeur;
+}
+
 /* ----------------------------- Messages d erreur -------------------------- */
 /* Un message d erreur porte souvent une valeur : « caractere invalide dans le
    base32 : @ ». Aucune cle ne peut lui correspondre mot pour mot ; il est donc

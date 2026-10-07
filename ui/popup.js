@@ -8,7 +8,7 @@
 import { $, el, clear } from './lib/dom.js';
 import { bytes, ms, statusClass, statusText } from './lib/format.js';
 import { parseQuery } from './lib/filters.js';
-import { t, tp } from './lib/i18n.js';
+import { t, tp, deuxPoints } from './lib/i18n.js';
 import {
   B, cmd, state, toast, dropdown, connect, bootstrap, visibleRecords, scopeCount
 } from './app.js';
@@ -101,7 +101,7 @@ function applyCapture() {
 function buildQuick() {
   const host = clear($('#quick'));
   for (const [label, query] of QUICK) {
-    const chip = el('div', { class: 'chip', title: t('Filtre') + ' : ' + query }, t(label));
+    const chip = el('div', { class: 'chip', title: deuxPoints(t('Filtre'), query) }, t(label));
     chip.addEventListener('click', () => {
       const input = $('#q');
       input.value = input.value === query ? '' : query;

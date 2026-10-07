@@ -47,6 +47,9 @@ let lastHeightPercent = null;
 let rows = [];
 let follow = true;
 let lastAnchor = null;
+let aMontrer = null;               // requete ouverte, pas encore arrivee dans le tableau
+let repriseALaFermeture = false;   // « suivre » coupe le temps de lire une requete
+let reglageSuivre = null;          // dernier etat vu du reglage « Suivre le flux par defaut »
 
 /* ------------------------------- Demarrage ------------------------------- */
 export function init(deps) {
@@ -136,6 +139,15 @@ export function applyConfig() {
   // livre la configuration : sans ce rappel, ils gardent la langue de depart
   // alors que le reste de l interface a change.
   buildFacets();
+  /* « Suivre le flux par defaut » s applique a l ouverture, puis chaque fois
+     qu on change ce reglage. Pas a chaque appel : celui-ci revient aussi au
+     redimensionnement, et defairait le choix du moment. */
+  const parDefaut = !state.config || state.config.autoScroll !== false;
+  if (parDefaut !== reglageSuivre) {
+    reglageSuivre = parDefaut;
+    repriseALaFermeture = false;
+    follow = parDefaut;
+  }
   setFollow(follow);
   buildHead();
   renderRows();
@@ -270,6 +282,62 @@ export function render() {
   updateFacetCounts();
   updateCount();
   renderRows();
+  if (aMontrer != null && rows.some(r => r.id === aMontrer)) montrerLigne(aMontrer);
+}
+
+/**
+ * Amene la requete ouverte dans la partie visible du tableau, d ou qu on
+ * l ait ouverte : clic, fleches du clavier, autre vue, palette.
+ *
+ * Lire une requete fige le tableau. Sinon, en mode « suivre », la suivante
+ * fait defiler la ligne hors de vue pendant qu on la lit. Fermer le detail
+ * rend « suivre » s il n etait coupe que pour cette lecture.
+ */
+export function montrerLigne(id) {
+  const index = rows.findIndex(r => r.id === id);
+  if (index < 0) {
+    /* Une requete tout juste creee (import cURL) arrive avec le flux suivant :
+       on la montrera a ce moment-la. Une requete deja connue mais absente du
+       tableau en est ecartee par le filtre : on le dit, sans rien changer. */
+    aMontrer = state.records.has(id) ? null : id;
+    if (aMontrer == null) toast('Requete masquee dans le tableau par le filtre ou le perimetre');
+    return;
+  }
+  aMontrer = null;
+  figerPourLire();
+  defilerVers(index);
+}
+
+function figerPourLire() {
+  if (!follow) return;
+  setFollow(false);
+  repriseALaFermeture = true;
+}
+
+/** Le detail se ferme : « suivre » reprend s il n etait coupe que pour lire. */
+export function detailFerme() {
+  aMontrer = null;
+  if (!repriseALaFermeture) return;
+  repriseALaFermeture = false;
+  setFollow(true);
+}
+
+/* Defile juste ce qu il faut. Une ligne voisine du bord (fleches du clavier)
+   avance d une ligne ; une ligne lointaine est centree, pour qu on voie ce qui
+   l entoure. L en-tete colle en haut masque sa propre hauteur. */
+function defilerVers(index) {
+  const wrap = $('#tablewrap');
+  const utile = (wrap.clientHeight || 0) - ($('#thead').offsetHeight || 0);
+  if (!(utile > 0)) return;   // vue masquee : rien a mesurer
+  const H = rowHeight();
+  const haut = index * H;
+  const debut = wrap.scrollTop;
+  if (haut >= debut && haut + H <= debut + utile) return;
+  const voisine = haut >= debut - H && haut + H <= debut + utile + H;
+  wrap.scrollTop = Math.max(0, voisine
+    ? (haut < debut ? haut : haut + H - utile)
+    : haut - (utile - H) / 2);
+  renderRows();
 }
 
 /**
@@ -392,6 +460,9 @@ function onRowClick(ev) {
 
   lastAnchor = index;
   state.selected = id;
+  /* Figer AVANT que le detail s ouvre : la ligne cliquee reste sous la
+     souris au lieu de sauter quand le tableau rapetisse. */
+  figerPourLire();
   onOpen && onOpen(id);
   renderRows();
 }
@@ -421,7 +492,9 @@ function applyFilter(term) {
   runQuery(input.value);
 }
 
-export function toggleFollow() { setFollow(!follow); }
+/* Bouton ou touche F : un choix explicite, que la fermeture du detail ne
+   doit pas defaire. */
+export function toggleFollow() { repriseALaFermeture = false; setFollow(!follow); }
 
 function setFollow(value) {
   follow = value;

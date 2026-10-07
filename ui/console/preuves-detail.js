@@ -11,7 +11,7 @@
  * se verifie seule quand l inscription de la meme cle a ete capturee.
  */
 import { el, frag, kv, sec, add, button } from '../lib/dom.js';
-import { t, tp, te } from '../lib/i18n.js';
+import { t, tp, te, deuxPoints } from '../lib/i18n.js';
 import { state, copy, cmd } from '../app.js';
 import { poser } from './tools.js';
 import { lireSignaturesHttp, verifierSignatureHttp, ALGORITHMES_SIGNATURE } from '../lib/signatures-http.js';
@@ -94,7 +94,7 @@ export function signaturesHttp(rec) {
     const sens = t(s.sens === 'requete' ? 'requete' : 'reponse');
     box.appendChild(sec('Signature de message HTTP (RFC 9421)', (s.libelle ? s.libelle + '  ·  ' : '') + sens));
     if (s.erreurLecture) {
-      box.appendChild(note(t('Illisible : ') + s.erreurLecture.entete + ' : ' + gabarit(s.erreurLecture), 'note warn'));
+      box.appendChild(note(t('Illisible : ') + deuxPoints(s.erreurLecture.entete, gabarit(s.erreurLecture)), 'note warn'));
       continue;
     }
     const p = s.parametres;

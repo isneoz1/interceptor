@@ -607,5 +607,56 @@ verifier('resume d un refus cite les causes',
 verifier('un non-preflight n a pas de resume',
   resumerPreflight({ method: 'GET', requestHeaders: [] }) === null);
 
+/* ========== Les corps lus par les sondes de page suivent les reglages ======= */
+/* Les sondes de page lisent les corps de fetch et de XHR quoi qu il arrive.
+   Le noyau les gardait meme « Corps de reponse » eteint : le profil
+   « Observation discrete » promettait « aucun contenu conserve » et gardait
+   chaque corps de fetch. Le plafond des corps de requete leur echappait aussi. */
+{
+  const { ingestBatch } = await import('../background/ingest/page.js');
+  const expediteur = { tab: { id: 77 }, frameId: 0, url: 'https://corps.exemple.fr/' };
+  let pid = 9000;
+  const appel = async reglages => {
+    await config.set(reglages);
+    const ts = Date.now();
+    pid++;
+    const url = 'https://corps.exemple.fr/api/' + pid;
+    const hote = store.create({ url, method: 'POST', tabId: 77, frameId: 0, type: 'xmlhttprequest',
+      startTime: ts, sources: ['webRequest'] });
+    correlator.register(hote);
+    ingestBatch([
+      { t: 'req:start', pid, api: 'fetch', method: 'POST', url, ts,
+        body: { kind: 'text', text: 'jeton=abc123', size: 12, truncated: false } },
+      { t: 'req:end', pid, status: 200, ts: ts + 5, duration: 5,
+        bodyText: '{"secret":"x"}', bodySize: 14, mime: 'application/json' }
+    ], expediteur);
+    return store.get(hote.id);
+  };
+  const ouvert = { captureRequestBodies: true, captureResponseBodies: true, maxRequestBodyBytes: 0, skipBodyTypes: [] };
+
+  const tout = await appel(ouvert);
+  egal('sondes : corps de requete garde quand le reglage le permet', tout.requestBody && tout.requestBody.text, 'jeton=abc123');
+  egal('sondes : corps de reponse garde quand le reglage le permet', tout.responseBody && tout.responseBody.text, '{"secret":"x"}');
+
+  const sansReponse = await appel({ ...ouvert, captureResponseBodies: false });
+  verifier('« Corps de reponse » eteint : aucun corps de reponse venu des sondes',
+    !sansReponse.responseBody || !sansReponse.responseBody.text);
+  egal('« Corps de reponse » eteint : le corps de requete reste', sansReponse.requestBody && sansReponse.requestBody.text, 'jeton=abc123');
+
+  const sansRequete = await appel({ ...ouvert, captureRequestBodies: false });
+  verifier('« Corps de requete » eteint : aucun corps de requete venu des sondes', !sansRequete.requestBody);
+
+  const ecarte = await appel({ ...ouvert, skipBodyTypes: ['xmlhttprequest'] });
+  verifier('type sans corps : ni requete ni reponse venues des sondes',
+    !ecarte.requestBody && (!ecarte.responseBody || !ecarte.responseBody.text));
+
+  const plafonne = await appel({ ...ouvert, maxRequestBodyBytes: 5 });
+  egal('le plafond des corps de requete s applique aux sondes', plafonne.requestBody && plafonne.requestBody.text, 'jeton');
+  verifier('le corps plafonne est marque tronque, sa taille reelle gardee',
+    plafonne.requestBody && plafonne.requestBody.truncated && plafonne.requestBody.size === 12);
+
+  await config.set(ouvert);
+}
+
 correlator.stop();
 bilan('Noyau');

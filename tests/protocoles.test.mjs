@@ -746,4 +746,24 @@ verifier('ECMA-426 : carte integree en URI data:',
   sm.lireSourceMap({ texte: '//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozfQ==', type: 'application/javascript' }).integree);
 egal('ECMA-426 : sans annonce, rien', sm.lireSourceMap({ texte: 'console.log(1)', type: 'application/javascript' }), null);
 
+/* ================== 17. Compression mesuree sur toute la capture =========== */
+const { TOOLING_COMMANDS } = await import('../background/api/tooling.js');
+const { store } = await import('../background/core/store.js');
+const texteSynthese = JSON.stringify({ items: Array.from({ length: 200 }, (_, i) => ({ ref: 'REF-' + (i % 9), prix: i })) });
+const octetsSynthese = new TextEncoder().encode(texteSynthese).length;
+const nouvelle = (url, entetes) => {
+  const rec = store.create({ requestId: null, sources: ['webRequest'], url, finalUrl: url, method: 'GET', type: 'xmlhttprequest',
+    tabId: 1, frameId: 0, thirdParty: false, startTime: Date.now() });
+  rec.responseHeaders = entetes;
+  rec.responseBody = { kind: 'text', text: texteSynthese, size: octetsSynthese, stored: octetsSynthese, truncated: false };
+  return rec;
+};
+const brute = nouvelle('https://api.test/catalogue', [{ name: 'Content-Type', value: 'application/json' }]);
+const deja = nouvelle('https://api.test/catalogue-gz', [{ name: 'Content-Encoding', value: 'gzip' }]);
+const synthese = await TOOLING_COMMANDS.mesurerCompressions({ ids: [brute.id, deja.id, 999999] });
+egal('synthese : seule la reponse servie sans compression est mesuree', synthese.mesurees + ' ' + synthese.lignes.map(l => l.url).join(), '1 https://api.test/catalogue');
+egal('synthese : taille avant, celle des octets recus', synthese.avant, octetsSynthese);
+egal('synthese : taille apres, celle du gzip de ces octets', synthese.apres, (await cc.gzipOctets(new TextEncoder().encode(texteSynthese))).length);
+egal('synthese : sans identifiants, rien', (await TOOLING_COMMANDS.mesurerCompressions({})).mesurees, 0);
+
 bilan('Protocoles et formats d API');

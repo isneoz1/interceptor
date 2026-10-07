@@ -16,7 +16,7 @@ people running Developer Edition, Nightly or ESR *and* willing to flip
       publish. Changing it later means publishing a different add-on and orphaning every
       existing install, so make sure it is what you want *before* the first upload.
 - [ ] **Bump the version.** AMO refuses a version number it has already seen. The repository
-      is at `5.2.0`, which has never been submitted, so it can go up as-is. Only bump again if
+      is at `5.3.0`, which has never been submitted, so it can go up as-is. Only bump again if
       a submission gets rejected and you need to resubmit.
 - [ ] **Build a fresh package**: `npm run build` produces `dist/swift-<version>.xpi`.
 - [x] **Data collection is declared**: `data_collection_permissions` is `{"required": ["none"]}`,
@@ -149,7 +149,7 @@ PRIVACY
 
 Nothing leaves your machine. No telemetry, no analytics, no remote server, no external
 dependency of any kind. Captured traffic lives in memory, and on disk only if you turn on
-persistence — in your own browser's local storage.
+persistence — in your own browser's IndexedDB.
 
 Interface in English and French. Open source under the MIT licence.
 ```
@@ -164,7 +164,7 @@ Reviewers ask why each permission is needed. These are the real reasons.
 |---|---|
 | `<all_urls>` | The point of the add-on is to observe traffic on whatever the user browses. Restricting it to a host list would mean it silently misses everything else. |
 | `webRequest` | The primary capture layer: the nine network lifecycle events. |
-| `webRequestBlocking` | Required to pause a request before it is sent so the user can edit or block it. Only active when the user turns interception on, and only while the console is open. |
+| `webRequestBlocking` | Firefox only allows `filterResponseData()` (the response body) from a blocking listener, and `getSecurityInfo()` (TLS details) inside a blocking `onHeadersReceived` listener; body capture is on by default. The same listeners apply the user's own rules (block, redirect, rewrite headers, mock, delay) and manual interception, which holds a request while the user edits it — off by default, and only while the console is open. When no rule or interception applies, they return without changing anything. |
 | `webNavigation` | Attaches each request to the document and frame that caused it. |
 | `cookies` | The cookie journal, and the analysis of why a cookie will be rejected. |
 | `tabs` | Groups traffic per tab and lets the user filter to the active one. |
@@ -198,9 +198,11 @@ explicitly replays, after a confirmation dialog.
 Data: nothing is transmitted anywhere. Captured traffic is held in memory, and written to
 IndexedDB only when the user enables persistence.
 
-webRequestBlocking is used solely for the interception feature, which is off by default,
-requires the console to be open, and always releases a held request when its deadline
-expires.
+webRequestBlocking is required by filterResponseData() (response bodies) and by
+getSecurityInfo() (TLS details), and serves the user's own rules and manual interception.
+Interception is off by default, requires the console to be open, and always releases a
+held request when its deadline expires. When no rule or interception applies, the
+listeners return without changing anything.
 ```
 
 ---

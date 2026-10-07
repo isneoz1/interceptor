@@ -194,6 +194,11 @@ if (cible) {
    Reponse dit ce que le statut tait — un resultat partiel, et pourquoi. */
 const appelGraphql = premier.records.find(r => /\/graphql$/.test(r.url || ''));
 if (appelGraphql) {
+  /* Le tableau en haut : la ligne GraphQL se pose alors juste au-dessus du
+     detail, et la vitrine peut montrer d un meme regard l operation nommee
+     dans le tableau et l erreur lue dans la reponse. */
+  await page('Runtime.evaluate', { expression: 'document.getElementById("tablewrap").scrollTop = 0' });
+  await patienter(300);
   await page('Runtime.evaluate', {
     expression: 'document.dispatchEvent(new CustomEvent("ic:goto",'
       + '{ detail: { view: "requests", id: ' + appelGraphql.id + ' } }))'

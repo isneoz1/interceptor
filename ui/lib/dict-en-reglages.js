@@ -10,7 +10,8 @@
  */
 export const EN_REGLAGES = {
   /* ---------------------------- Profils rapides --------------------------- */
-  'Tout capturer, aucune limite.': 'Capture everything, no limits.',
+  'Toutes les couches, aucune limite. Le proxy et les trames des workers restent a votre choix.':
+    'Every layer, no limits. The proxy and worker frames stay your choice.',
   'Tout observer, mais plafonner la memoire.': 'Observe everything, but cap memory use.',
   'Sessions tres longues, machine modeste.': 'Very long sessions, modest machine.',
   'Metadonnees seules, aucun contenu conserve.': 'Metadata only, no content kept.',
@@ -43,8 +44,8 @@ export const EN_REGLAGES = {
   'Profil « {nom} » applique': 'Profile "{nom}" applied',
 
   /* ------------------------------- Interface ------------------------------ */
-  'Ne garde que Requetes, Securite, Synthese, Reglages, Tutoriel et Aide. Les vues avancees restent accessibles en le desactivant.':
-    'Keeps only Requests, Security, Summary, Settings, Tutorial and Help. The advanced views come back as soon as you turn it off.',
+  'Ne garde que Requetes, Securite, Synthese, Boite a outils, Reglages, Tutoriel et Aide. Les vues avancees restent accessibles en le desactivant.':
+    'Keeps only Requests, Security, Summary, Toolbox, Settings, Tutorial and Help. The advanced views come back as soon as you turn it off.',
   'Eclaircit les textes secondaires et marque davantage les separations.':
     'Lightens secondary text and strengthens the separations.',
   'Comme le mode « ne pas conserver le journal » des outils de developpement.':
@@ -53,14 +54,15 @@ export const EN_REGLAGES = {
     'The table stays pinned to the most recent requests.',
   'Demande la permission « notifications » a l activation.':
     'Asks for the "notifications" permission when enabled.',
-  'Le tutoriel reste accessible a tout moment depuis la barre laterale.':
-    'The tutorial stays available at any time from the sidebar.',
 
   /* --------------------------- Couches de capture ------------------------- */
   'Les 9 evenements du cycle de vie reseau. Prise en compte au prochain demarrage de l extension.':
     'The 9 events of the network life cycle. Applied the next time the extension starts.',
   'fetch, XHR, WebSocket, SSE, sendBeacon, WebRTC.': 'fetch, XHR, WebSocket, SSE, sendBeacon, WebRTC.',
-  'Contenu de chaque message, dans les deux sens.': 'The content of every message, in both directions.',
+  'Contenu de chaque message, dans les deux sens. Le meme interrupteur vaut pour les canaux de donnees WebRTC et les datagrammes WebTransport.':
+    'The content of every message, in both directions. The same switch covers WebRTC data channels and WebTransport datagrams.',
+  'Trames WebSocket, messages des canaux de donnees WebRTC et datagrammes WebTransport. Un message SSE suit la limite des corps recus.':
+    'WebSocket frames, WebRTC data channel messages and WebTransport datagrams. An SSE message follows the limit for received bodies.',
   'Capte meme ce que sert un Service Worker ou le cache memoire.':
     'Catches even what a Service Worker or the memory cache serves.',
   'Montre quelle ligne de code declenche chaque requete.':

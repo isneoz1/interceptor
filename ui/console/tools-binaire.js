@@ -5,7 +5,7 @@
  * hexadecimal, sauf pour un bloc PEM, qui se colle tel quel.
  */
 import { el, frag, kv, sec, add, button, jsonTree } from '../lib/dom.js';
-import { t, tp, te } from '../lib/i18n.js';
+import { t, tp, te, deuxPoints } from '../lib/i18n.js';
 import { copy, toast } from '../app.js';
 import { base64VersOctets, hexVersOctets, octetsVersHex } from '../lib/bytes.js';
 import { decoderProtobuf, decoderMsgpack, decoderCbor, essayerFormats } from '../lib/binaires.js';
@@ -41,7 +41,7 @@ function arbreProtobuf(champs, profondeur = 0) {
       continue;
     }
     const ligne = el('div', { class: 'row' }, [
-      el('span', { class: 'k', text: titre + ' :' }),
+      el('span', { class: 'k', text: deuxPoints(titre) }),
       el('span', { class: 'v', text: String(champ.valeur) })
     ]);
     box.appendChild(ligne);

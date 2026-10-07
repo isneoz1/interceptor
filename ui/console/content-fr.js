@@ -50,10 +50,10 @@ export const LESSONS = [
       { p: 'Ouvrez un site dans un autre onglet, puis revenez ici : les lignes arrivent en direct. Le tableau n a aucune limite d affichage, meme avec des centaines de milliers de lignes.' },
       { ul: [
         'La **barre de couleur** a gauche donne le niveau de risque trouve par l analyse.',
-        'La colonne **Couches** montre qui a vu la requete : WR webRequest, JS sondes de page, PF performance, TLS, PX proxy.',
+        'La colonne **Couches** montre qui a vu la requete : WR webRequest, JS sondes de page, PF performance, TLS, PX proxy ; IM pour une requete importee (cURL ou HAR).',
         'Un clic sur un **en-tete de colonne** trie ; un second clic inverse l ordre.',
         'Le bouton **Colonnes** en propose une trentaine : ajoutez « Serveur », « Protocole » ou « Marqueurs ».',
-        'Le bouton **Suivre** colle la vue aux dernieres requetes ; il se fige des que vous remontez.'
+        'Le bouton **Suivre** colle la vue aux dernieres requetes ; il se fige des que vous remontez, et le temps de lire une requete ouverte.'
       ] },
       { p: 'Ctrl+clic ajoute une ligne a la selection, Maj+clic selectionne une plage. Les exports et la suppression portent alors sur la selection.' }
     ],
@@ -221,14 +221,14 @@ export const LESSONS = [
     body: [
       { p: 'Toutes les limites valent **0 = illimite** par defaut. Sans plafond, tout reste en memoire vive : sur une longue session avec des flux volumineux, la consommation peut atteindre plusieurs gigaoctets.' },
       { ul: [
-        '**Maximum** : tout capturer, aucune limite.',
+        '**Maximum** : toutes les couches, aucune limite. Le proxy et les trames des workers restent a votre choix.',
         '**Equilibre** : tout observer, mais plafonner la memoire. Le meilleur compromis au quotidien.',
         '**Leger** : sessions tres longues, machine modeste.',
         '**Observation discrete** : metadonnees seules, aucun contenu conserve.'
       ] },
       { p: 'Chaque couche de capture s active independamment, et la vue Diagnostic montre pour chacune le reglage ET la disponibilite reelle de l API dans votre Firefox.' },
       { p: 'La **langue** (francais ou anglais), le **mode simple**, le theme, la densite, la taille du texte, le contraste, le format de l heure, le comportement du clic sur l icone et le compteur du badge se reglent aussi la.' },
-      { p: 'Le **mode simple** ne garde que Requetes, Securite, Synthese, Reglages, Tutoriel et Aide : de quoi travailler sans jamais se perdre. Les vues avancees reviennent en le desactivant.' }
+      { p: 'Le **mode simple** ne garde que Requetes, Securite, Synthese, Boite a outils, Reglages, Tutoriel et Aide : de quoi travailler sans jamais se perdre. Les vues avancees reviennent en le desactivant.' }
     ],
     actions: [
       ['Ouvrir les reglages', () => go('settings')],
