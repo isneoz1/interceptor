@@ -4,6 +4,69 @@ All notable changes to this project are documented here.
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning follows
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.4.0] — 2026-10-12
+
+SWIFT now reads what a server announces in its headers: how long an address will live, how
+much quota is left, which links to follow, and what the caches did with the response. Each
+reading follows the text that defines it, and every example of those texts is a test.
+
+### Added
+
+- **The future of an address.** `Deprecation` (RFC 9745) and `Sunset` (RFC 8594): the date
+  an API is deprecated, the date it should stop responding, the documentation linked with
+  `rel="deprecation"` or `rel="sunset"`. A deprecation is a hint, not an outage (§5); a past
+  sunset means "at any time" (§3); a sunset before the deprecation is pointed out (§4). The
+  forms of the first drafts (`true`, an HTTP date) are recognised and named. Found with
+  `tag:deprecie`, gathered in a new Summary ranking, and stated under the verdict.
+- **Rate limits.** `Retry-After` (RFC 9110 §10.2.3) as seconds or date, with what it means for
+  a 503 and for a redirect; `RateLimit` and `RateLimit-Policy` in the three generations of
+  the IETF draft that servers still send — drafts -08 to -11, draft -07, drafts -00 to -06
+  (whose first four also carry the policies in `RateLimit-Limit`) —
+  each named as such, since it is not an RFC yet; and `X-RateLimit-*`, which no
+  specification defines, with the rule used to read its reset value. An exhausted quota, a
+  `Retry-After` earlier than the announced window, values served by a cache: said.
+  `tag:quota`, `tag:retry-after`. A 429 or 503 now says under its verdict how long the
+  server asked to wait.
+- **Link headers** (RFC 8288): every link with its relation explained from the **IANA
+  registry of link relations — all 134, a new reference table** searchable from the palette.
+  Relative targets resolved, `anchor`, `title*` decoded (RFC 8187), the deprecated `rev`
+  and links without `rel` pointed out. For `preload`, `modulepreload` and `prefetch`, the
+  number of requests to that address in the capture.
+- **Alternative services** (`Alt-Svc`, RFC 7838): each alternative in order of preference,
+  how long it stays valid once `Age` is deducted, `persist`, `clear`, and whether the
+  response already came over the preferred protocol.
+- **The caches crossed** (`Cache-Status`, RFC 9211): each cache from the origin to you, a hit
+  or why the request went forward, the remaining freshness, whether it stored the response.
+  `CDN-Cache-Control` (RFC 9213): what CDNs are told, next to what the other caches are told.
+- **Priority** (RFC 9218): the urgency and incremental flag the browser asked for, the
+  server's own view, and the values the RFC says to ignore.
+- A strict reader for the three HTTP date forms (RFC 9110 §5.6.7). Two other writings are read
+  and pointed out — the IMF form with a zone other than GMT, which RFC 9745's own example
+  uses, and ISO 8601 — and anything else, or an impossible date, is refused. It does not
+  rely on `Date.parse`, whose leniency differs between Firefox and Node.
+
+### Fixed
+
+- The **"Elapsed time"** format of the time column wrote French in the English interface
+  ("il y a 5 s"), and durations of a day or more kept the French "j" ("3 j 4 h") in the JWT
+  panel and the time tool.
+- The Help listed reference tables with figures that had aged (62 statuses, 9 methods,
+  129 headers) and left out five tables; it now names every table. The number of tables
+  is computed where it is shown, and a test checks the one in the README.
+
+### Tests
+
+- `tests/signaux.test.mjs` (new suite): the HTTP dates against ECMA-262's `toUTCString`
+  on five hundred instants; the examples of RFC 9745, RFC 8594, RFC 9110, RFC 8288, RFC 7838,
+  RFC 9211, RFC 9213, RFC 9218 and of drafts -11, -07 and -05 of the RateLimit draft; the
+  link registry against a snapshot of the IANA registry; the kernel tags, the summary,
+  the verdict lines and the Headers tab in both languages. Every reader also takes 3,000
+  hostile values and a 200 KB one without throwing, and a response with 5,000 links, or one
+  with 10,000 exhausted quotas, draws its tab in under a second.
+- `tests/ui-load.test.mjs`: the README's number of reference tables and link relations.
+
+2569 assertions across eleven suites, plus six browser audits.
+
 ## [5.3.0] — 2026-10-07
 
 The Summary view now says where bandwidth is wasted — measured, not estimated.

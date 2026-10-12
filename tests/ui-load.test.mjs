@@ -240,7 +240,9 @@ function desechapper(litteral) {
 /* Ce qui n a pas a etre traduit : symboles, syntaxe de filtre, noms propres. */
 const SANS_TRADUCTION = new Set([
   'SWIFT', 'NeoZ', 'JSON', 'HTTP', 'URL', 'IP', 'TLS', 'DNS', 'CSP', 'JWT',
-  'HMAC-', 'Vary', 'Opcode', 'CORS', 'HAR', 'UUID', 'ULID', 'MIME'
+  'HMAC-', 'Vary', 'Opcode', 'CORS', 'HAR', 'UUID', 'ULID', 'MIME',
+  /* Des noms d en-tetes : ils s ecrivent pareil dans toutes les langues. */
+  'Deprecation', 'Sunset', 'Retry-After', 'CDN-Cache-Control'
 ]);
 
 const sansEntree = new Map();
@@ -424,6 +426,22 @@ for (const [table, quoi] of [[VERDICTS, 'verdict'], [SENS_SITE, 'Sec-Fetch-Site'
   [FAITS_SOURCE_MAP, 'fait carte de source']]) {
   for (const texte of Object.values(table)) exigerTraduction(quoi, texte);
 }
+/* Les signaux de la 5.4 : chaque phrase de chaque table a son anglais. */
+{
+  const { FAITS_DATE } = await import('../ui/lib/date-http.js');
+  const { FAITS_CYCLE } = await import('../ui/lib/cycle-vie.js');
+  const { FAITS_DEBIT, UNITES_DEBIT } = await import('../ui/lib/limites-debit.js');
+  const { FAITS_LIENS } = await import('../ui/lib/liens-http.js');
+  const { FAITS_ALTSVC } = await import('../ui/lib/alt-svc.js');
+  const { FAITS_CACHE_STATUS, RAISONS_FWD } = await import('../ui/lib/cache-status.js');
+  const { FAITS_PRIORITE } = await import('../ui/lib/priorite-http.js');
+  for (const [table, quoi] of [[FAITS_DATE, 'fait de date HTTP'], [FAITS_CYCLE, 'fait Deprecation / Sunset'],
+    [FAITS_DEBIT, 'fait de limite de debit'], [UNITES_DEBIT, 'unite de quota'], [FAITS_LIENS, 'fait Link'],
+    [FAITS_ALTSVC, 'fait Alt-Svc'], [FAITS_CACHE_STATUS, 'fait Cache-Status'], [RAISONS_FWD, 'raison fwd'],
+    [FAITS_PRIORITE, 'fait Priority']]) {
+    for (const texte of Object.values(table)) exigerTraduction(quoi, texte);
+  }
+}
 /* Les colonnes du tableau : libelle et bulle passent par t() depuis la table,
    ou la lecture des appels ne les voit pas. */
 const { COLUMNS: COLONNES_TABLE } = await import('../ui/lib/columns.js');
@@ -553,6 +571,7 @@ const { SUITES_TLS: REF_TLS, FERMETURES_WS: REF_WS, ERREURS_H2: REF_H2,
         ERREURS_FIREFOX: REF_FF } = await import('../ui/lib/ref-reseau.js');
 const { ALERTES_TLS: REF_ALERTES, ERREURS_H3: REF_H3, ERREURS_QUIC: REF_QUIC,
         TYPES_DNS: REF_DNS, RCODES_DNS: REF_RCODES } = await import('../ui/lib/ref-protocoles.js');
+const { RELATIONS_LIENS: REF_LIENS } = await import('../ui/lib/ref-liens.js');
 
 const TABLES_DE_REFERENCE = [
   ['codes de statut', REF_STATUTS, ['sens']],
@@ -568,7 +587,8 @@ const TABLES_DE_REFERENCE = [
   ['erreurs HTTP/3', REF_H3, ['sens']],
   ['erreurs QUIC', REF_QUIC, ['sens']],
   ['types DNS', REF_DNS, ['sens']],
-  ['codes de reponse DNS', REF_RCODES, ['sens']]
+  ['codes de reponse DNS', REF_RCODES, ['sens']],
+  ['relations de liens', REF_LIENS, ['sens']]
 ];
 
 let lignesDeReference = 0;
@@ -587,7 +607,7 @@ for (const [quoi, table, champs] of TABLES_DE_REFERENCE) {
 for (const manque of refSansTraduction.slice(0, 20)) {
   verifier('la phrase de reference a une traduction anglaise', false, manque);
 }
-egal('les quatorze tables de reference sont traduites entierement',
+egal('les tables de reference sont traduites entierement',
   refSansTraduction.length, 0);
 verifier('les tables de reference comptent plus de six cents lignes',
   lignesDeReference > 600, lignesDeReference + ' lignes');
@@ -729,7 +749,11 @@ const ANNONCES = [
   ['suites TLS', /([0-9]+) TLS cipher suites/g, REF_TLS.length],
   /* Le total que la palette propose : il se recompte, il ne se recopie pas. */
   ['lignes de reference', /([0-9]+) reference lines/g, lignesDeReference],
-  ['reglages', /([0-9]+) settings/g, GROUPS.flatMap(g => g.fields).length]
+  ['reglages', /([0-9]+) settings/g, GROUPS.flatMap(g => g.fields).length],
+  /* Le nombre de tables s ecrivait en toutes lettres (« Fourteen ») et
+     n etait verifie par rien : il est desormais en chiffres, et compte. */
+  ['tables de reference', /([0-9]+) reference tables/g, new Set(entrees.map(e => e.famille)).size],
+  ['relations de liens', /([0-9]+) link relations/g, REF_LIENS.length]
 ];
 
 /* Chaque fait que l analyseur peut constater est decrit dans la section 10,

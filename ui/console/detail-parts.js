@@ -30,6 +30,7 @@ import { problemeReponse } from './probleme-detail.js';
 import { securityTxtReponse } from './security-txt-detail.js';
 import { controlesCorps } from './corps-detail.js';
 import { blocVerdict, blocProvenance, blocEffacement, blocSourceMap } from './lectures-detail.js';
+import { signaux } from './signaux-detail.js';
 import { rapportsRequete, collecteRapports } from './rapports-detail.js';
 
 /** Rend toutes les cles d un objet, y compris celles qu on n a pas prevues. */
@@ -228,6 +229,8 @@ export function headers(rec) {
   box.appendChild(securite.cspObservee(rec));
   box.appendChild(collecteRapports(rec));
   box.appendChild(blocEffacement(rec));
+  /* Avenir de l adresse, debit, liens, services alternatifs, caches, priorite. */
+  box.appendChild(signaux(rec));
   return box;
 }
 

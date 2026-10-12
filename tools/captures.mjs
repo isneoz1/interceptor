@@ -216,6 +216,13 @@ if (appelGraphql) {
     + '  (' + Math.round(fs.statSync(chemin).size / 1024) + ' Ko)');
 }
 
+/** Expression qui fait defiler le detail jusqu a la section de ce titre. */
+function defilerJusqua(titres) {
+  return '(() => { const c = document.querySelector("#dbody"); if (!c) return;'
+    + ' const s = [...c.querySelectorAll(".sec")].find(x => ' + JSON.stringify(titres) + '.some(t => x.textContent.startsWith(t)));'
+    + ' if (s) c.scrollTop = s.offsetTop - c.offsetTop - 8; })()';
+}
+
 /* L onglet « En-tetes » de la page principale : c est la que se lisent la
    politique CSP et la fraicheur de cache, calculees a partir des entetes. */
 const page1 = premier.records.find(r => r.type === 'main_frame');
@@ -230,14 +237,43 @@ if (page1) {
       + '.find(x => /Headers|En-tetes/.test(x.textContent)); if (b) b.click(); })()'
   });
   await patienter(500);
-  /* Le corps du panneau est defile jusqu aux blocs d analyse. */
-  await page('Runtime.evaluate', {
-    expression: '(() => { const c = document.querySelector("#dbody");'
-      + ' if (c) c.scrollTop = c.scrollHeight; })()'
-  });
+  /* Le panneau defile jusqu a la fraicheur, suivie de la CSP : la legende du
+     README parle de ces deux-la. Le bas de l onglet, lui, bouge a chaque
+     lecture ajoutee. */
+  await page('Runtime.evaluate', { expression: defilerJusqua(['Fraicheur HTTP', 'HTTP freshness']) });
   await patienter(400);
   const { data } = await page('Page.captureScreenshot', { format: 'png' });
   const chemin = path.join(SORTIE, 'console-entetes.png');
+  fs.writeFileSync(chemin, Buffer.from(data, 'base64'));
+  console.log('  ' + path.relative(RACINE, chemin).replace(/\\/g, '/')
+    + '  (' + Math.round(fs.statSync(chemin).size / 1024) + ' Ko)');
+}
+
+/* Ce que le serveur annonce (5.4) : l appel au catalogue, dont la version
+   d API est depreciee, avec son quota et ses liens. */
+const catalogue = premier.records.find(r => /\/v2\/catalog\?/.test(r.url || ''));
+if (catalogue) {
+  /* Un panneau plus haut le temps de cette capture : l avenir de l adresse,
+     son quota et ses liens tiennent ensemble a l ecran. Il est pose avant
+     d ouvrir la requete, pour que sa ligne soit amenee dans le tableau. */
+  await page('Runtime.evaluate', { expression: 'document.getElementById("detail").style.height = "70%"' });
+  await patienter(300);
+  await page('Runtime.evaluate', { expression: 'document.getElementById("tablewrap").scrollTop = 0' });
+  await patienter(200);
+  await page('Runtime.evaluate', {
+    expression: 'document.dispatchEvent(new CustomEvent("ic:goto",'
+      + '{ detail: { view: "requests", id: ' + catalogue.id + ' } }))'
+  });
+  await patienter(800);
+  await page('Runtime.evaluate', {
+    expression: '(() => { const b = [...document.querySelectorAll("#dtabs .dtab")]'
+      + '.find(x => /Headers|En-tetes/.test(x.textContent)); if (b) b.click(); })()'
+  });
+  await patienter(500);
+  await page('Runtime.evaluate', { expression: defilerJusqua(['Avenir de l adresse', 'Future of the address']) });
+  await patienter(400);
+  const { data } = await page('Page.captureScreenshot', { format: 'png' });
+  const chemin = path.join(SORTIE, 'console-signaux.png');
   fs.writeFileSync(chemin, Buffer.from(data, 'base64'));
   console.log('  ' + path.relative(RACINE, chemin).replace(/\\/g, '/')
     + '  (' + Math.round(fs.statSync(chemin).size / 1024) + ' Ko)');

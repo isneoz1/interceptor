@@ -15,7 +15,7 @@ Created by **NeoZ** · <sub>formerly INTERCEPTOR, renamed in 5.0</sub>
 ![Manifest V2](https://img.shields.io/badge/Manifest-V2-444?style=flat)
 [![MIT licence](https://img.shields.io/badge/Licence-MIT-00DDFF?style=flat)](LICENSE)
 ![No dependencies](https://img.shields.io/badge/Dependencies-none-2ea043?style=flat)
-![2404 assertions](https://img.shields.io/badge/Assertions-2404-2ea043?style=flat)
+![2569 assertions](https://img.shields.io/badge/Assertions-2569-2ea043?style=flat)
 ![English and French](https://img.shields.io/badge/UI-EN%20%2F%20FR-444?style=flat)
 
 [**Try it in 60 seconds**](#try-it-in-60-seconds) · [**Download**](https://github.com/isneoz1/interceptor/releases/latest) · [**Why not the built-in panel?**](#firefox-already-has-a-network-panel-why-this) · [**Screenshots**](#2-screenshots) · [**How it works**](#4-how-it-works-the-capture-layers) · [**Changelog**](CHANGELOG.md)
@@ -36,6 +36,11 @@ the running tool, driven the way you would drive it.</sub>
 > that refuses to report anything it cannot prove.
 
 > [!NOTE]
+> **New in 5.4** — SWIFT reads what servers announce: an API's deprecation and end date,
+> the quota left and when to retry, the `Link` headers against the IANA registry, the HTTP/3
+> offer, every cache on the way and the priority asked for. Each example of their
+> specifications is in the tests.
+>
 > **New in 5.3** — the Summary measures what gzip would have saved and lists the addresses
 > downloaded several times. A request opened from anywhere is brought into view. And
 > turning body capture off now really stops fetch and XHR bodies too.
@@ -51,6 +56,8 @@ the running tool, driven the way you would drive it.</sub>
 <img src="docs/images/vitrine-capture.png" alt="One request, one row: eight capture layers observe the same call, and a correlator merges them" width="100%">
 
 <img src="docs/images/vitrine-api.png" alt="GraphQL, JSON-RPC and SOAP calls named in the table, and a 200 response that carries an error, read with its path and code" width="100%">
+
+<img src="docs/images/vitrine-signaux.png" alt="An API version announcing its deprecation and end of service, with its remaining quota, read from its response headers" width="100%">
 
 <img src="docs/images/vitrine-palette.png" alt="Ctrl+K opens a command palette over every view, tool and action" width="100%">
 
@@ -152,13 +159,14 @@ specific points:
 
 | | What SWIFT does |
 |---|---|
-| **You never hunt for a feature** | `Ctrl+K` opens a command palette over every view, every tool and every action — **and over the 691 reference lines**. Type three letters — `chm` finds *Sites and paths*, `cook` finds *Cookies* — or type `cache-status`, `429`, `PROPFIND` and get the explanation itself. The registry is built from the real tables, so anything added later appears in it without anyone remembering to register it. |
+| **You never hunt for a feature** | `Ctrl+K` opens a command palette over every view, every tool and every action — **and over the 825 reference lines**. Type three letters — `chm` finds *Sites and paths*, `cook` finds *Cookies* — or type `cache-status`, `429`, `PROPFIND` and get the explanation itself. The registry is built from the real tables, so anything added later appears in it without anyone remembering to register it. |
 | **It reads what the browser cannot** | A `application/grpc-web+proto` body is a run of length-prefixed frames, and its **real verdict lives in the trailers** — a gRPC-Web call can answer HTTP 200 and still have failed. The detail panel decodes the frames, the protobuf inside them, and the `grpc-status` that actually decides. |
 | **It names every API call** | On the wire, every GraphQL request looks the same: `POST /graphql`, status 200. SWIFT reads the document and puts **the operation that runs in its own column** — `query GetUser`, `mutation Save` — searchable with `gql:`. The detail shows the variables, a batch call by call, an Apollo persisted query **with its SHA-256 recomputed**, and the response's real verdict: complete, partial, execution error or request error, each error with its path. A mutation sent with `GET`, which GraphQL over HTTP forbids, is pointed out along with what the server did with it. The document reader is checked against `graphql-core`, the Python port of the reference implementation. **JSON-RPC 2.0 and SOAP** calls get the same treatment: the method or operation next to the path (`rpc:`), results and errors with the meaning of their code, the SOAP fault, and whether the HTTP status agrees with the body — checked against the examples of their specifications. |
 | **It reads what the browser reports about itself** | CSP violations, network errors (NEL), deprecated APIs, interventions: browsers send them in `POST`s that nobody reads. SWIFT opens them field by field, and reads the `Reporting-Endpoints`, `Report-To` and `NEL` headers that ask for them — including the endpoints the browser will ignore, and why. |
 | **It turns traffic into an API description** | The captured API calls, exported as **OpenAPI 3.1**: operations, path parameters, request and response schemas, status codes, authentication schemes. It describes only what was observed, says so in the document, and copies no captured value into it. Validated with `openapi-spec-validator` and `jsonschema`. |
 | **It says what happened, in one sentence** | Every request opens on a verdict: *Succeeded: 200 OK, in 168 ms*, *Refused by the server: 403 Forbidden*, *Blocked by the “Trackers” rule*, *Response 200, but 1 GraphQL error in the body* — with a button to the tab that holds the details. Nothing in it is guessed: each verdict reuses a reading that is proven elsewhere. |
 | **It checks what a body claims** | A body announced as JSON that is in fact an HTML error page, an image announced as PNG whose bytes are a JPEG, an RFC 9457 problem whose `status` contradicts the HTTP status: said plainly. For text served without compression, SWIFT compresses the bytes it received and tells you what gzip would have saved — measured, not estimated. A site's `security.txt` is checked against RFC 9116: contacts, expiry, canonical address, signature. |
+| **It reads what the server announces** | `Deprecation` and `Sunset` give the date an API is abandoned and the date it stops (RFC 9745, RFC 8594) — gathered in the Summary, found with `tag:deprecie`, and stated under the verdict. Rate limits say what is left and when to retry: RFC 9110 `Retry-After`, and the three generations of the IETF `RateLimit` draft still in use, each one named. `Link` headers are read against the IANA registry of 134 link relations, and a preloaded resource is checked against the capture: was it requested at all? `Alt-Svc` (the HTTP/3 offer and how long it lasts), `Cache-Status` (each cache on the way, a hit or why it forwarded), `CDN-Cache-Control` and `Priority` complete the picture. Every example of these specifications runs in the tests. |
 | **It checks, rather than repeats** | When a server announces `Content-Digest: sha-256=…`, SWIFT **recomputes the digest on the exact bytes it captured and says whether it matches**, showing both values when it does not. The digest covers the compressed stream, and Firefox decodes a compressed response before any extension sees it: so a match proves itself, a mismatch is asserted only for a response that was not compressed, and otherwise the tab says why there is no verdict rather than report a false mismatch. No browser does this. RFC 9530 and the older RFC 3230 form, plus `Content-MD5`. |
 | **It says where the time went** | `Server-Timing` next to the duration actually measured: the server claims 100 of the 214 ms, and the other 114 are network, queueing, or time it does not count. |
 | **It finds the cause, not the symptom** | When a CORS request fails, the browser shows the error on *that* request — while the cause sits in the `OPTIONS` preflight a few rows above. SWIFT pairs the two and says which header blocked it: a missing `Access-Control-Allow-Methods`, an origin that does not match, or the classic `*` with credentials, which no browser accepts. |
@@ -170,8 +178,8 @@ specific points:
 **What it is not**: not a proxy, not a vulnerability scanner, not an attack tool. Everything
 happens inside your Firefox, on your machine.
 
-**By the numbers**: 221 JavaScript modules, ~45,200 lines, zero external dependencies,
-2404 automated assertions, English and French interface.
+**By the numbers**: 232 JavaScript modules, ~47,200 lines, zero external dependencies,
+2569 automated assertions, English and French interface.
 
 ---
 
@@ -197,8 +205,9 @@ list is built from the real view and tool tables, so it never falls out of step 
 the extension can actually do.
 
 **It answers questions too, not just "where is that screen".** The same box searches all
-691 reference lines — every header, status code, method, media type, port, TLS cipher
-suite, TLS alert, HTTP/2, HTTP/3, QUIC error, DNS record type and DNS response code.
+825 reference lines — every header, status code, method, media type, port, TLS cipher
+suite, TLS alert, HTTP/2, HTTP/3, QUIC error, DNS record type, DNS response code and link
+relation.
 Type `cache-status`, `429` or `PROPFIND` and press Enter: the reference opens on that
 exact entry, already explained. No tab to find, no table to pick first.
 
@@ -238,12 +247,22 @@ measured.
 
 ![Headers tab](docs/images/console-entetes.png)
 
+### What the server announces
+
+An API that says, in its headers, that this version is deprecated and when it will stop
+(RFC 9745, RFC 8594), how much quota is left (the IETF RateLimit draft), which page comes
+next (`Link`, read against the IANA registry), whether HTTP/3 is on offer (`Alt-Svc`) and
+what each cache did with the response (`Cache-Status`). Each block appears only when the
+header is there.
+
+![Server signals in the Headers tab](docs/images/console-signaux.png)
+
 ### The numeric summary
 
 The figures for the observed scope: statuses, resource types, real protocols, active capture
 layers, content types, analysis tags, and domains by volume, by count and in error; the
-requests over time; the slowest, heaviest and most flagged requests, and the same addresses
-downloaded several times. On demand, it measures what gzip would have saved on the text
+requests over time; the slowest, heaviest and most flagged requests, the same addresses
+downloaded several times, and the addresses whose server announces their retirement. On demand, it measures what gzip would have saved on the text
 responses served without compression.
 
 ![Summary view](docs/images/console-synthese.png)
@@ -263,7 +282,7 @@ computed locally, nothing leaves the machine.
 
 ### The reference
 
-Fourteen tables, 691 lines, offline. **All** searches every one of them at once, so you do
+825 reference lines in 15 reference tables, offline. **All** searches every one of them at once, so you do
 not have to know which table answers your question — type `timeout` and get the two status
 codes, the header, the HTTP/2 error and the network error together. It searches the
 explanations as well as the names: `ocsp` finds the TLS alert that mentions a stapled OCSP
@@ -498,8 +517,8 @@ previous or next request **in displayed order**, filters included.
 
 | Tab | Contents |
 |---|---|
-| **Summary** | **The verdict in one sentence**, then identity (method, URL, status with its meaning, media type), network (IP, real protocol, cache, on-the-wire sizes, performance metrics), context (tab, window, frame, document, origin, third-party, Firefox tracking classification), **where the request comes from** as Firefox declares it (`Sec-Fetch-Site`, `-Mode`, `-Dest`, `-User`, in plain words), and the free-text annotation. |
-| **Headers** | URL parameters, request headers, response headers, headers as seen by page JavaScript. Every known header is explained on hover. Then two computed analyses: **HTTP freshness** (RFC 9111: freshness lifetime, current age broken down, time remaining, validators, `Vary`, directives) and the **CSP policy** (each directive with its meaning, then a plain statement of what the policy allows). Then the **response protections** — HSTS (and whether Firefox already enforces it for the host), CSP, framing, `nosniff`, the effective Referrer-Policy, Permissions-Policy, COOP / COEP / CORP and cross-origin isolation, and what the server says about itself — as facts, never as alerts. For a page, **a CSP derived from what it actually loaded**, ready to try in Report-Only, with what the network cannot show stated plainly. An **HTTP message signature** (`Signature-Input` / `Signature`, RFC 9421) is rebuilt: the components it covers, its parameters, and **the exact signature base**, byte for byte, from what Firefox reported — then verified with a key you paste (RSA-PSS, RSA PKCS #1, ECDSA P-256 and P-384, Ed25519, HMAC). What cannot be rebuilt — a trailer, a header Firefox did not report — is named instead of producing a false "invalid". Last, **report collection**: the `Reporting-Endpoints`, `Report-To` and `NEL` headers — where reports go, which endpoints the browser will ignore (a value that is not a string, an origin that is not secure), and the NEL sampling fractions. A **`Clear-Site-Data`** header is read: what the browser will erase. |
+| **Summary** | **The verdict in one sentence** — with, under it, when the server asks to retry and any deprecation it announces — then identity (method, URL, status with its meaning, media type), network (IP, real protocol, cache, on-the-wire sizes, performance metrics), context (tab, window, frame, document, origin, third-party, Firefox tracking classification), **where the request comes from** as Firefox declares it (`Sec-Fetch-Site`, `-Mode`, `-Dest`, `-User`, in plain words), and the free-text annotation. |
+| **Headers** | URL parameters, request headers, response headers, headers as seen by page JavaScript. Every known header is explained on hover. Then two computed analyses: **HTTP freshness** (RFC 9111: freshness lifetime, current age broken down, time remaining, validators, `Vary`, directives) and the **CSP policy** (each directive with its meaning, then a plain statement of what the policy allows). Then the **response protections** — HSTS (and whether Firefox already enforces it for the host), CSP, framing, `nosniff`, the effective Referrer-Policy, Permissions-Policy, COOP / COEP / CORP and cross-origin isolation, and what the server says about itself — as facts, never as alerts. For a page, **a CSP derived from what it actually loaded**, ready to try in Report-Only, with what the network cannot show stated plainly. An **HTTP message signature** (`Signature-Input` / `Signature`, RFC 9421) is rebuilt: the components it covers, its parameters, and **the exact signature base**, byte for byte, from what Firefox reported — then verified with a key you paste (RSA-PSS, RSA PKCS #1, ECDSA P-256 and P-384, Ed25519, HMAC). What cannot be rebuilt — a trailer, a header Firefox did not report — is named instead of producing a false "invalid". Last, **report collection**: the `Reporting-Endpoints`, `Report-To` and `NEL` headers — where reports go, which endpoints the browser will ignore (a value that is not a string, an origin that is not secure), and the NEL sampling fractions. A **`Clear-Site-Data`** header is read: what the browser will erase. Then what the server announces: an address's **deprecation and end of service** (RFC 9745, RFC 8594), **rate limits** and when to retry, the **`Link` headers** with each relation explained from the IANA registry and whether a preloaded resource was requested, **alternative services** (`Alt-Svc`), the **caches crossed** (`Cache-Status`, `CDN-Cache-Control`) and the **priority** asked for (`Priority`). |
 | **Request** | The body sent: nature, source, declared type, encoding, compression. Automatic JSON formatting, form fields broken out, and **`multipart/form-data` bodies decoded part by part** (field name, filename, type, content). An **OAuth 2.0 / OpenID Connect** authorization or token request is read — flow, PKCE, `state`, `nonce`, redirect URI — and checked against RFC 6749, RFC 7636 and RFC 9700, without ever reproducing a secret. A **SAML** message is decoded in both bindings: issuer, subject, audience, validity at capture time, and **which element is signed** — the response, the assertion, or nothing. A **passkey registration or sign-in (WebAuthn)** is opened: the signed origin and challenge, the domain fingerprint (`rpIdHash`, recomputed to name the domain), the presence and verification flags, whether the key is synced, the signature counter, the authenticator model (AAGUID) and its public key. A sign-in signature is **verified automatically** with the public key of the registration when that registration was captured. A **DNS over HTTPS** query (`?dns=` or `application/dns-message`) is decoded. A **GraphQL** request is read in all four forms — URL parameters, JSON body, batch, file-upload multipart form: the operation that runs (chosen the way GraphQL's GetOperation chooses it), the variables, and an Apollo **persisted query whose SHA-256 is recomputed** against the text sent with it. A **browser report** (`application/reports+json`, `application/csp-report`) is opened report by report: CSP violation, network error with the meaning of its NEL type, deprecation, intervention, Permissions-Policy. **JSON-RPC 2.0** calls (method, id or notification, parameters, a batch call by call) and **SOAP 1.1 / 1.2** envelopes (operation and its namespace, `SOAPAction` or the `action` parameter, header blocks) are read too. |
 | **Response** | The body received, with the same treatment, plus image preview and hex rendering for binary. An OAuth token response is summarised. For a script or stylesheet, the **Subresource Integrity hashes** (SHA-256, -384, -512) and a ready `integrity` tag — computed at capture time on the exact bytes the page received, and refused only when the body was truncated. **WebAuthn options** sent by a server are read (challenge length, accepted algorithms, user verification, resident key, attestation). A **DNS over HTTPS** answer is decoded record by record — A, AAAA, CNAME, MX, TXT, SOA, SRV, CAA, HTTPS / SVCB, DS, DNSKEY, RRSIG — with the EDNS options. A **GraphQL** response is judged: complete result, partial result, execution error or request error (GraphQL §7.1), each error with its path and code, an HTTP 200 that hides errors, the status rules of `application/graphql-response+json`, and the schema an introspection query handed out. **JSON-RPC** results and errors with the meaning of each standard code, a request left without a response, a notification that got one; the **SOAP fault** (code, subcode, reason, detail) and the SOAP 1.1 rule that a fault is served with HTTP 500. An **RFC 9457 problem** (`application/problem+json`): type, title, detail, extension members, and a `status` member that contradicts the status served. **Body checks**: content that contradicts its declared type, and for text served without compression, the gzip size **measured** on the bytes received. A **`security.txt`** file is checked against RFC 9116. A script or stylesheet that announces a **source map** (ECMA-426: `SourceMap` header or `sourceMappingURL` comment) shows its address. |
 | **Cookies** | Cookies set and changed by this request, with all attributes detailed. |
@@ -572,6 +591,9 @@ Firefox's names for criteria that already exist are accepted as synonyms: `statu
 | `rpc:SOAP` | Every SOAP call |
 | `tag:security-txt` | `security.txt` files the browser loaded |
 | `tag:source-map` | Scripts and stylesheets that announce a source map |
+| `tag:deprecie` | Addresses whose server announces their deprecation or end of service (`Deprecation`, `Sunset`) |
+| `tag:quota` | Responses that state a rate limit (`RateLimit`, its draft forms, `X-RateLimit-*`) |
+| `tag:retry-after` | Responses that say when to retry |
 
 The **bodies** checkbox extends the search to bodies, headers, frames and stacks.
 The ★ button saves the current filter and recalls recent searches.
@@ -665,7 +687,7 @@ own secret and tracker patterns in the settings.
 | **Compare** | Line-by-line and word-by-word diff, Levenshtein distance, similarity |
 | **URL** | Every part of the URL, RFC 3986 canonical form, known service on the port, **homograph detection** (a Cyrillic "а" inside a Latin word is flagged) |
 | **IP address** | IPv4 and IPv6: mask, network, broadcast, usable range, category, subnetting, summarising a prefix list, range to prefixes, enumeration, reverse names `in-addr.arpa` / `ip6.arpa` (read both ways) |
-| **Reference** | The complete tables, offline, with an **All** search across the fourteen of them at once: 63 statuses, 40 methods, **229 headers (the entire IANA permanent registry)**, 70 media types, 83 ports, 31 TLS cipher suites, WebSocket close codes, HTTP/2 errors, **HTTP/3 and QPACK errors**, **QUIC transport errors**, **TLS alerts**, **DNS record types**, **DNS response codes**, Firefox network errors |
+| **Reference** | The complete tables, offline, with an **All** search across all 15 reference tables at once: 63 statuses, 40 methods, **229 headers (the entire IANA permanent registry)**, 70 media types, 83 ports, 31 TLS cipher suites, WebSocket close codes, HTTP/2 errors, **HTTP/3 and QPACK errors**, **QUIC transport errors**, **TLS alerts**, **DNS record types**, **DNS response codes**, Firefox network errors, and the **134 link relations of the IANA registry** |
 | **Generate** | UUID v3/v4/v5/v7, ULID, nanoid, passwords with strength calculation, MAC addresses, random hex and base64 |
 | **Import a request** | Paste a `curl` command and turn it back into a replayable request |
 
@@ -919,7 +941,7 @@ ui/                        The interface — one page for all four surfaces
 ├── console/               One view per file, plus the detail panel
 └── lib/                   Codecs, digests, network, reference tables, i18n
 
-tests/                     2404 assertions, no browser required
+tests/                     2569 assertions, no browser required
 tools/sockets.mjs          Real WebSockets against a real server: page, worker, WebRTC
 tools/transparence.mjs     What a page can tell about the probes — it should be nothing
 tools/minutage.mjs         Network timing phases in a real browser: only real measurements
@@ -989,7 +1011,7 @@ French at the flip of a setting.
 npm test
 ```
 
-2404 assertions, with no browser and no dependencies. The kernel and interface modules are
+2569 assertions, with no browser and no dependencies. The kernel and interface modules are
 written for Firefox; `tests/harnais.mjs` supplies the minimum WebExtension API and DOM they
 need to import and run under Node. **The logic under test is exactly the logic that runs in
 the browser, with no rewriting.**
@@ -998,7 +1020,7 @@ the browser, with no rewriting.**
 |---|---|---|
 | `core.test.mjs` | 240 | URL normalisation, correlation signatures, the store, the rule engine (both ways: what matches **and** what must not), the security analyser rule by rule, HAR export, curl import, all 39 code generators, and the settings applied to what the page probes send — a body the settings refuse is not kept |
 | `avance.test.mjs` | 469 | WebSocket and HTTP/2 frames, CSP, RFC 9111 freshness, multipart, canonical URLs and homographs, protocol tables, binary structures, rare digests, generators |
-| `ui-load.test.mjs` | 560 | Actual loading of the 175 interface modules, complete module graph (no dead import, no file outside the graph), consistency with the HTML pages and the manifest, **full translation coverage** — every displayed string must have a dictionary entry, including labels that reach the translator through a table (`allRows` labels, search help, CSP directive meanings), **no text written straight into the page or built by concatenation**, which no dictionary entry can match, and **every text of the HTML pages** — labels, tooltips, screen-reader names, placeholders — translated and set again by the script — and **measured contrast**: every colour pair in both themes is checked against the WCAG 2.1 thresholds. It also holds the documentation to the code: **both help pages and both tutorials must have the same sections, item for item**, every setting must be read by the code, the profiles must do what they say, and the README must name every settings group, profile, search criterion, analyser fact and kernel file |
+| `ui-load.test.mjs` | 574 | Actual loading of the 186 interface modules, complete module graph (no dead import, no file outside the graph), consistency with the HTML pages and the manifest, **full translation coverage** — every displayed string must have a dictionary entry, including labels that reach the translator through a table (`allRows` labels, search help, CSP directive meanings), **no text written straight into the page or built by concatenation**, which no dictionary entry can match, and **every text of the HTML pages** — labels, tooltips, screen-reader names, placeholders — translated and set again by the script — and **measured contrast**: every colour pair in both themes is checked against the WCAG 2.1 thresholds. It also holds the documentation to the code: **both help pages and both tutorials must have the same sections, item for item**, every setting must be read by the code, the profiles must do what they say, and the README must name every settings group, profile, search criterion, analyser fact and kernel file, and state the right number of reference tables and link relations |
 | `detail-coverage.test.mjs` | 130 | Each of a record's 60 fields is displayed, each tab has a render function, each searchable field exists |
 | `outils.test.mjs` | 108 | The toolbox, against published vectors |
 | `rendu.test.mjs` | 114 | The interface **actually rendered**: sixteen views against three captures, the eleven detail tabs, the twenty-two toolbox panels against thirty-two hostile inputs, and 264 deliberately malformed HAR files — then a fragment-by-fragment comparison of both languages, so nothing can stay in French on an English screen. It also counts the commands each view sends the kernel: **a view that re-renders itself in a loop is caught in a second instead of freezing the tab**. Finally the translator itself reports every text it could not translate while everything is rendered in English: a French sentence that arrives through a variable can no longer hide. Then the table's **Follow** mode: a request opened from elsewhere is brought into view, reading suspends Follow and closing resumes it, the setting applies when it changes and only then; and what the screen shows — no bold markers left raw, punctuation that follows the language |
@@ -1006,9 +1028,11 @@ the browser, with no rewriting.**
 | `securite.test.mjs` | 141 | The security tools against independent references — gzip and DEFLATE made by `node:zlib`, digests by `node:crypto`: the analyser's facts and the reused-nonce alert, digests judged only on what the captured bytes can prove, hostile SAML input and DEFLATE bombs, every response protection, the derived CSP, OAuth 2.0 against RFC 9700, and SAML in both bindings, down to **which element is signed** |
 | `decodeurs.test.mjs` | 209 | What 4.6 reads, against independent references: every example of **RFC 9421** (Appendix B and section 2) — signature bases **identical byte for byte**, RSA-PSS, ECDSA, HMAC and Ed25519 signatures verified with the published keys, a tampered base refused — and every case where a base cannot be rebuilt; the strict **RFC 9651** serialisation; **WebAuthn** registrations and sign-ins made by Yubico's `fido2` in ES256, EdDSA and RS256, signatures verified and a tampered one refused; **DNS** messages made by `dnspython` and the RFC 8484 example, with hostile inputs (pointer loops, oversized names, truncation) |
 | `protocoles.test.mjs` | 267 | What 5.0 to 5.3 read, against independent references: **GraphQL** documents — the operations, the one that runs and introspection — compared with `graphql-core`, the Python port of the reference implementation, on 27 documents chosen for their traps; the Apollo persisted-query hash against the example Apollo publishes; the four transport forms, batches and the facts about responses; **browser reports** with the field names of the W3C and WICG specifications and the 30 NEL error types; report collection and the endpoints the browser ignores; **JSON Schema** inference and the **OpenAPI 3.1** export — whose output is also checked with `openapi-spec-validator` and `jsonschema` by `tools/verifier-openapi.mjs`; **JSON-RPC 2.0** against every exchange of its specification (§7) copied as is; **SOAP 1.1 and 1.2** against the examples of the SOAP 1.1 Note and the SOAP 1.2 Primer; the **RFC 9457** example; **`security.txt`** against the RFC 9116 example; and the **measured compression**, whose gzip is decompressed back to the identical text by `node:zlib`; the **verdict** in every case and its order of precedence, **Fetch Metadata**, **Clear-Site-Data** and **source maps** against their specifications |
+| `signaux.test.mjs` | 151 | What 5.4 reads in response headers, against the texts that define them: the three HTTP date forms, and IMF-fixdate checked on five hundred instants against ECMA-262's `toUTCString`; every example of **RFC 9745** (`Deprecation`), **RFC 8594** (`Sunset`), **RFC 9110** (`Retry-After`), **RFC 8288** (`Link`), **RFC 7838** (`Alt-Svc`), **RFC 9211** (`Cache-Status`), **RFC 9213** (`CDN-Cache-Control`) and **RFC 9218** (`Priority`), and of drafts -11, -07 and -05 of the IETF **RateLimit** draft; the 134 link relations, names, references and English descriptions, against a snapshot of the IANA registry; the kernel tags, the summary, the verdict lines and the Headers tab in both languages; and **hostile input** — every reader takes 3,000 generated values and a 200 KB one without throwing, and 5,000 links or 10,000 exhausted quotas draw their tab in under a second |
 
 Expected values come from published sources: RFC vectors (4226, 6238, 6455, 4231, 7541, 9113,
-3986, 7578, 9111, 8187, 2231, 2047, 6266, 7638, 8941, 9421, 9651, 8484, and ZeroMQ RFC 32),
+3986, 7578, 9111, 8187, 2231, 2047, 6266, 7638, 8941, 9421, 9651, 8484, 9745, 8594, 9110, 8288,
+7838, 9211, 9213, 9218, and ZeroMQ RFC 32), the IANA registry of link relations, ECMA-262 for HTTP dates,
 independent libraries (Yubico `fido2` for WebAuthn, `dnspython` for DNS, `graphql-core` for
 GraphQL, `openapi-spec-validator` and `jsonschema` for the OpenAPI export, `node:crypto` and
 `node:zlib`), standard check values (all 20 CRC variants are verified against their
@@ -1110,7 +1134,7 @@ the file. It contains internal errors and the command log — not your traffic.
 Before opening a pull request:
 
 ```bash
-npm test              # all 2404 assertions must pass
+npm test              # all 2569 assertions must pass
 .\build.ps1 -Verify   # the build must be green
 ```
 

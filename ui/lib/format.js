@@ -43,14 +43,16 @@ export function clock(ts) {
 
 export function iso(ts) { return ts ? new Date(ts).toISOString() : '—'; }
 
-export function relative(ts) {
+/* Le temps ecoule passe par des gabarits : assemble a la main, il restait
+   en francais dans la colonne Heure de l interface anglaise. */
+export function relative(ts, maintenant = Date.now()) {
   if (!ts) return '—';
-  const delta = Date.now() - ts;
-  if (delta < 1000) return 'a l instant';
-  if (delta < 60000) return 'il y a ' + Math.floor(delta / 1000) + ' s';
-  if (delta < 3600000) return 'il y a ' + Math.floor(delta / 60000) + ' min';
-  if (delta < 86400000) return 'il y a ' + Math.floor(delta / 3600000) + ' h';
-  return 'il y a ' + Math.floor(delta / 86400000) + ' j';
+  const delta = maintenant - ts;
+  if (delta < 1000) return t('a l instant');
+  if (delta < 60000) return tp('il y a {n} s', { n: Math.floor(delta / 1000) });
+  if (delta < 3600000) return tp('il y a {n} min', { n: Math.floor(delta / 60000) });
+  if (delta < 86400000) return tp('il y a {n} h', { n: Math.floor(delta / 3600000) });
+  return tp('il y a {n} j', { n: Math.floor(delta / 86400000) });
 }
 
 /** Respecte le reglage « format de l heure ». */

@@ -24,6 +24,8 @@ import { EN_RAPPORTS } from './dict-en-rapports.js';
 import { EN_OPENAPI } from './dict-en-openapi.js';
 import { EN_API } from './dict-en-api.js';
 import { EN_LECTURES2 } from './dict-en-lectures2.js';
+import { EN_REF_LIENS } from './dict-en-ref-liens.js';
+import { EN_SIGNAUX } from './dict-en-signaux.js';
 
 export const EN = {
   /* ------------------------------ Navigation ----------------------------- */
@@ -437,5 +439,7 @@ export const EN = {
   ...EN_RAPPORTS,
   ...EN_OPENAPI,
   ...EN_API,
-  ...EN_LECTURES2
+  ...EN_LECTURES2,
+  ...EN_REF_LIENS,
+  ...EN_SIGNAUX
 };

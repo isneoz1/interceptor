@@ -13,7 +13,7 @@
 import { el, frag, kv, sec, add } from '../lib/dom.js';
 import { t, tp } from '../lib/i18n.js';
 import { ms } from '../lib/format.js';
-import { verdictDe, alertesDe } from '../lib/verdict.js';
+import { verdictDe, alertesDe, signauxDe } from '../lib/verdict.js';
 import { lireFetchMetadata } from '../lib/fetch-metadata.js';
 import { lireClearSiteData, TYPES_CSD } from '../lib/clear-site-data.js';
 import { lireSourceMap } from '../lib/source-map.js';
@@ -39,6 +39,7 @@ function ligneVerdict(v) {
 export function blocVerdict(rec) {
   const v = verdictDe(rec);
   const bloc = el('div', { class: 'verdict ' + v.ton, role: 'status' }, [ligneVerdict(v)]);
+  for (const signal of signauxDe(rec)) bloc.appendChild(ligneVerdict(signal));
   const alertes = alertesDe(rec);
   if (alertes) bloc.appendChild(ligneVerdict(alertes));
   return bloc;

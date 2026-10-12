@@ -15,6 +15,7 @@ import path from 'path';
 import url from 'url';
 import { rendrePages } from './chrome.mjs';
 import { TRANSFORMATIONS } from '../ui/lib/catalogue.js';
+import { entreesReference } from '../ui/console/tools-reference.js';
 
 const RACINE = path.resolve(path.dirname(url.fileURLToPath(import.meta.url)), '..');
 const SORTIE = path.join(RACINE, 'docs', 'images');
@@ -42,6 +43,15 @@ const VITRINES = [
     cadre: { x: 14.2, y: 57, largeur: 85.8, hauteur: 43 }
   },
   {
+    fichier: 'vitrine-signaux',
+    source: 'console-signaux.png',
+    titre: 'What the server announces',
+    phrase: 'An API version deprecated since January 2026 and due to stop in June 2027, with 998 of '
+      + 'its 1,000 requests still available. Servers say it in their headers; SWIFT reads Deprecation, '
+      + 'Sunset, RateLimit, Link, Alt-Svc and Cache-Status against the texts that define them.',
+    cadre: { x: 14.2, y: 52, largeur: 85.8, hauteur: 48 }
+  },
+  {
     fichier: 'vitrine-securite',
     source: 'console-securite.png',
     titre: 'Findings it can prove',
@@ -54,7 +64,9 @@ const VITRINES = [
     fichier: 'vitrine-palette',
     source: 'console-palette.png',
     titre: 'Ctrl+K, then type',
-    phrase: 'Seventeen views, twenty-three tools, every action and the 691 reference lines, '
+    /* Le nombre de lignes se compte dans les tables, comme celui des
+       transformations plus bas. */
+    phrase: 'Seventeen views, twenty-three tools, every action and the ' + entreesReference().length + ' reference lines, '
       + 'reachable by name. Ask where a screen is, or what a header means — same box. '
       + 'Commands still come first.',
     cadre: { x: 24, y: 6, largeur: 52, hauteur: 58 }

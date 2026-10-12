@@ -235,7 +235,24 @@ export function render() {
   const doublons = [...repetees.values()].filter(x => x.n > 1).sort((a, b) => b.total - a.total || b.n - a.n).slice(0, TOP);
   box.appendChild(rankList('Memes adresses telechargees plusieurs fois', doublons,
     x => tp('{n} fois · {taille}', { n: x.n, taille: bytes(x.total) })));
+
+  /* Les adresses dont le serveur annonce la depreciation ou la fin de service
+     (RFC 9745, RFC 8594) : une fois chacune, la fin la plus proche d abord. */
+  const retraits = new Map();
+  for (const rec of list) if (rec.retrait) retraits.set(rec.url, rec);
+  const annonces = [...retraits.values()]
+    .sort((a, b) => (a.retrait.fin ?? Infinity) - (b.retrait.fin ?? Infinity)).slice(0, TOP);
+  box.appendChild(rankList('Adresses qui annoncent leur retrait', annonces, x => texteRetrait(x.retrait)));
   box.appendChild(blocCompression(list));
+}
+
+/* « fin : 2024-06-30 », sinon la date de depreciation : le jour suffit ici,
+   l heure exacte est dans l onglet En-tetes. */
+function texteRetrait(r) {
+  const jour = ms => new Date(ms).toISOString().slice(0, 10);
+  if (r.fin != null) return tp('fin : {date}', { date: jour(r.fin) });
+  if (r.deprecation != null) return tp('depreciee : {date}', { date: jour(r.deprecation) });
+  return t('depreciee');
 }
 
 /* Ce que gzip ferait des textes servis sans compression : mesure a la demande,

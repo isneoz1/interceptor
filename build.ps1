@@ -163,6 +163,17 @@ $required = @(
   'ui/console/rowmenu.js',
   'ui/console/rowsize.js',
   'ui/console/raccourcis.js',
+  'ui/console/signaux-detail.js',
+  'ui/lib/date-http.js',
+  'ui/lib/cycle-vie.js',
+  'ui/lib/limites-debit.js',
+  'ui/lib/liens-http.js',
+  'ui/lib/ref-liens.js',
+  'ui/lib/alt-svc.js',
+  'ui/lib/cache-status.js',
+  'ui/lib/priorite-http.js',
+  'ui/lib/dict-en-signaux.js',
+  'ui/lib/dict-en-ref-liens.js',
   'ui/console/statusbar.js',
   'ui/console/header.js',
   'ui/console/replay.js',
@@ -266,7 +277,9 @@ if ($node) {
     @{ titre = 'Signatures, WebAuthn et DNS';  fichier = 'tests/decodeurs.test.mjs';
        echec = 'Une signature, une ceremonie WebAuthn ou un message DNS est mal lu' },
     @{ titre = 'Protocoles et formats d API'; fichier = 'tests/protocoles.test.mjs';
-       echec = 'Une lecture d API (GraphQL, JSON-RPC, SOAP, RFC 9457), un rapport ou une description OpenAPI est faux' }
+       echec = 'Une lecture d API (GraphQL, JSON-RPC, SOAP, RFC 9457), un rapport ou une description OpenAPI est faux' },
+    @{ titre = 'Signaux HTTP';                fichier = 'tests/signaux.test.mjs';
+       echec = 'Une date, une depreciation, un quota, un lien, un cache ou une priorite est mal lu' }
   )
 
   $totalAssertions = 0

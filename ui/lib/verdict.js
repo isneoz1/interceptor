@@ -14,6 +14,9 @@ import { decrireErreurReseau } from './ref-reseau.js';
 import { lireRequeteGraphql, lireReponseGraphql } from './graphql-http.js';
 import { lireAppelRpc, lireReponseJsonRpc, lireSoap } from './rpc-http.js';
 import { lireProbleme } from './probleme-http.js';
+import { lireLimitesDebit } from './limites-debit.js';
+import { lireCycleDeVie } from './cycle-vie.js';
+import { dureeLisible } from './temps.js';
 
 /* Les phrases, traduites a l affichage : exportees pour que le controle de
    traduction les verifie une a une. */
@@ -37,7 +40,11 @@ export const VERDICTS = {
   erreurServeur: 'Erreur du serveur : {statut} {phrase}',
   probleme: '{statut} {phrase} : « {titre} »',
   statutSeul: 'Statut {statut}',
-  alertes: '{n} alerte(s) de securite sur cette requete'
+  alertes: '{n} alerte(s) de securite sur cette requete',
+  attendre: 'Le serveur a demande d attendre {attente} avant de reessayer',
+  depreciee: 'Adresse depreciee par son auteur : elle fonctionne encore (RFC 9745)',
+  finPrevue: 'Fin de service annoncee pour le {jour} (Sunset, RFC 8594)',
+  finDepassee: 'Fin de service depassee depuis le {jour} : l adresse peut cesser de repondre a tout moment'
 };
 
 const entete = (liste, nom) => {
@@ -120,6 +127,25 @@ export function verdictDe(rec) {
 }
 
 /** La ligne des alertes, quand l analyseur en a trouve. */
+/**
+ * Ce que les en-tetes ajoutent au verdict : quand reessayer (Retry-After),
+ * et l avenir annonce de l adresse (Deprecation, Sunset). Des lignes de plus
+ * sous la phrase principale, jamais a sa place : un 429 reste un refus.
+ */
+export function signauxDe(rec, maintenant = Date.now()) {
+  const lignes = [];
+  const ligne = (cle, valeurs = {}) => lignes.push({ cle, texte: VERDICTS[cle], valeurs, ton: 'warn', onglet: 'headers', aTraduire: [] });
+  const instant = rec.endTime || rec.startTime || maintenant;
+  const debit = lireLimitesDebit(rec.responseHeaders, { statut: rec.statusCode, instantReponse: instant, maintenant });
+  const attente = debit && debit.retryAfter;
+  if (attente && attente.secondes > 0) ligne('attendre', { attente: dureeLisible(attente.secondes) });
+  const cycle = lireCycleDeVie(rec.responseHeaders, { url: rec.finalUrl || rec.url, maintenant });
+  const jour = ms => new Date(ms).toISOString().slice(0, 10);
+  if (cycle && cycle.deprecation) ligne('depreciee');
+  if (cycle && cycle.fin && cycle.fin.ms != null) ligne(cycle.fin.passee ? 'finDepassee' : 'finPrevue', { jour: jour(cycle.fin.ms) });
+  return lignes;
+}
+
 export function alertesDe(rec) {
   const a = rec.analysis;
   if (!a || !Array.isArray(a.findings) || !a.findings.length) return null;

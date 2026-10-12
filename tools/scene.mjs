@@ -93,7 +93,12 @@ export async function ouvrirScene(options = {}) {
       { name: 'ETag', value: '"7f3a91"' },
       { name: 'Content-Security-Policy',
         value: "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.example.com; img-src *" },
-      { name: 'Strict-Transport-Security', value: 'max-age=31536000' }
+      { name: 'Strict-Transport-Security', value: 'max-age=31536000' },
+      /* Ce qu un serveur annonce, lu par la 5.4 : deux ressources a precharger
+         (bien demandees ensuite), l offre HTTP/3, et le cache du CDN. */
+      { name: 'Link', value: '<https://cdn.example.com/style.css>; rel=preload; as=style, <https://cdn.example.com/app.js>; rel=preload; as=script' },
+      { name: 'Alt-Svc', value: 'h3=":443"; ma=86400' },
+      { name: 'Cache-Status', value: '"Example CDN"; fwd=uri-miss; stored' }
     ],
     cookies: { set: [{ name: 'session', value: 'a1b2c3', secure: true, httpOnly: true, path: '/' }], changed: [] } });
 
@@ -117,6 +122,13 @@ export async function ouvrirScene(options = {}) {
       text: '{"cart":{"lines":2,"total":12840,"currency":"USD"},"promo":null}' } });
 
   requete({ url: API + '/v2/catalog?page=1&sort=price', taille: 18422, duree: 92,
+    entetesRep: [
+      { name: 'Deprecation', value: '@1767225600' },
+      { name: 'Sunset', value: 'Wed, 30 Jun 2027 23:59:59 GMT' },
+      { name: 'Link', value: '<https://api.example.com/v2/catalog?page=2&sort=price>; rel="next", <https://developer.example.com/v2-sunset>; rel="deprecation"; type="text/html"' },
+      { name: 'RateLimit-Policy', value: '"default";q=1000;w=3600' },
+      { name: 'RateLimit', value: '"default";r=998;t=2400' }
+    ],
     corpsRep: { size: 18422, kind: 'texte', source: 'streamFilter', mime: 'application/json',
       text: '{"items":[{"ref":"REF-8842","price":6420},{"ref":"REF-1130","price":2990}],"total":248}' } });
 

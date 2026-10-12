@@ -9,7 +9,7 @@
  * Les faits exacts qui ne sont pas des failles (pisteurs, requete tierce,
  * redirection croisee) restent des etiquettes, jamais des alertes.
  */
-import { store } from './store.js';
+import { store, retraitDe } from './store.js';
 import { config } from './config.js';
 import { appliquerRegles } from './analyzer-regles.js';
 import { constaterReflexions, constaterRedirections, constaterGraphql, verifierNonces } from './analyzer-faits.js';
@@ -101,6 +101,12 @@ export function analyze(rec, { force = false } = {}) {
   /* Un rapport que le navigateur envoie de lui-meme (CSP, NEL, API
      depreciee) : il se retrouve par tag:rapport-navigateur. */
   if (/^application\/(reports\+json|csp-report)\b/i.test(String(reqH['content-type'] || ''))) tags.add('rapport-navigateur');
+  /* Ce que le serveur dit de l avenir et du debit : tag:deprecie, tag:quota,
+     tag:retry-after. Un simple lien rel=deprecation ne suffit pas : sans
+     en-tete Deprecation, l adresse n est pas (encore) depreciee (RFC 9745 §3.1). */
+  if (retraitDe(rec)) tags.add('deprecie');
+  if ((rec.responseHeaders || []).some(h => h && /^(x-)?ratelimit(-policy|-limit|-remaining|-reset)?$/i.test(h.name || ''))) tags.add('quota');
+  if ((rec.responseHeaders || []).some(h => h && /^retry-after$/i.test(h.name || ''))) tags.add('retry-after');
 
   const maxSeverity = findings.reduce((acc, f) => Math.max(acc, SEVERITY[f.severity] ?? 0), -1);
   const previous = rec.analysis;

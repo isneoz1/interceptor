@@ -8,7 +8,7 @@
 
 ## Checks
 
-- [ ] `npm test` passes — all ten suites, no failure
+- [ ] `npm test` passes — every suite, no failure
 - [ ] If the number of assertions changed, the README states the new total (the build compares them)
 - [ ] `./build.ps1 -Verify` is green
 - [ ] New behaviour is covered by a test that fails without the change

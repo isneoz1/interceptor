@@ -56,7 +56,7 @@ export const HELP_SECTIONS = [
     table: [
       ['Requests', 'The full flow, with the twelve-tab detail panel.'],
       ['Security', 'Every alert found automatically, sorted by severity.'],
-      ['Summary', 'Session aggregates: statuses, types, heaviest domains and domains in error, slowest requests, addresses downloaded several times, measured possible compression, throughput over time.'],
+      ['Summary', 'Session aggregates: statuses, types, heaviest domains and domains in error, slowest requests, addresses downloaded several times, addresses announcing their retirement, measured possible compression, throughput over time.'],
       ['Comparison', 'Two selected requests, compared line by line (headers and bodies).'],
       ['Live streams', 'WebSocket and Server-Sent Events, message by message, live.'],
       ['Cookies', 'Every cookie set, changed or removed, including those written in JavaScript.'],
@@ -93,7 +93,7 @@ export const HELP_SECTIONS = [
       ['Compare', 'The working text against another one: lines added, removed, in common, the first difference down to the character, word-by-word comparison and the unified format.'],
       ['URL', 'Every part of a URL, the service known behind the port, and a warning when a punycode domain looks like another one.'],
       ['IP address', 'Full subnet computation for IPv4 or IPv6: mask, wildcard, network, broadcast, usable range, reverse name, category (RFC 1918, 6598, 4193...) and a membership test against a prefix. Plus splitting into subnets, summarising a list of prefixes, turning a range into prefixes and enumerating addresses.'],
-      ['Reference', 'Offline: 62 status codes, 9 methods and their properties, 129 HTTP headers, 70 media types, 83 ports, 31 TLS cipher suites with their strength, 16 WebSocket close codes, 14 HTTP/2 errors and 27 Firefox network error codes. A search field covers names and descriptions alike.'],
+      ['Reference', 'Offline, complete tables: status codes, methods, headers (the whole IANA permanent registry), media types, ports, TLS cipher suites, TLS alerts, WebSocket close codes, HTTP/2, HTTP/3 and QUIC errors, DNS record types and response codes, Firefox network errors, and link relations (IANA registry). All searches every table at once, names and descriptions alike; so does Ctrl+K.'],
       ['Generate', 'UUID v3, v4, v5 and v7, ULID, NanoID, random sequences, passwords with their real entropy, hardware address, private address, dynamic port, and sixteen edge-case values that break sloppy validators.'],
       ['Import a request', 'A cURL command or a raw HTTP request becomes a row in the table, in the "pending" state. It is not sent: the "Replay" tab of its detail does that, if you ask for it.']
     ]
@@ -129,6 +129,7 @@ export const HELP_SECTIONS = [
       ['Origin', 'What Firefox says about where a request comes from (Sec-Fetch-*): same site or another site, navigation or call, triggered by the user or not.'],
       ['Clear-Site-Data', 'What a response makes the browser clear: cache, cookies, storage, open pages.'],
       ['Source maps', 'The address of the map that links a minified script to its original code (tag:source-map).'],
+      ['Server signals', 'What the headers announce: an address’s deprecation and end date (RFC 9745, RFC 8594, tag:deprecie), the quota left and when to retry (RateLimit, Retry-After, tag:quota), the links to follow or preload (Link, with the IANA registry), alternative services such as HTTP/3 (Alt-Svc), the caches crossed (Cache-Status, CDN-Cache-Control) and the priority asked for (Priority).'],
       ['Signatures and passkeys', 'HTTP message signatures (RFC 9421) rebuilt and verified, WebAuthn registrations and sign-ins, DNS over HTTPS.'],
       ['Security', 'OAuth 2.0 and OpenID Connect, SAML, content digests, response protections, a CSP derived from what actually loaded.']
     ]

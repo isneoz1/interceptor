@@ -10,12 +10,13 @@ import { STATUTS, METHODES, familleStatut } from '../lib/ref-http.js';
 import { ENTETES, chercherEntetes } from '../lib/ref-entetes.js';
 import { TYPES_MEDIA, chercherTypes } from '../lib/ref-mime.js';
 import { PORTS, chercherPorts, plagePort } from '../lib/ref-ports.js';
+import { RELATIONS_LIENS } from '../lib/ref-liens.js';
 import { SUITES_TLS, chercherSuitesTls, FERMETURES_WS, ERREURS_H2, ERREURS_FIREFOX }
   from '../lib/ref-reseau.js';
 import { ALERTES_TLS, ERREURS_H3, ERREURS_QUIC, TYPES_DNS, RCODES_DNS }
   from '../lib/ref-protocoles.js';
 
-/* Les quatorze familles, dans l ordre des boutons.
+/* Les familles, dans l ordre des boutons.
  *
  * Chaque ligne porte aussi sa table et de quoi etiqueter une entree : le
  * libelle qu on lit, et le mot qui la retrouve dans le champ de recherche.
@@ -28,7 +29,7 @@ import { ALERTES_TLS, ERREURS_H3, ERREURS_QUIC, TYPES_DNS, RCODES_DNS }
  * introuvables dans une documentation. Les fermetures WebSocket font
  * exception : leurs noms sont des phrases, et le dictionnaire les a. */
 const FAMILLES = [
-  /* « Tout » n a pas de table a elle : elle cherche dans les quatorze autres.
+  /* « Tout » n a pas de table a elle : elle cherche dans toutes les autres.
      C est la famille par defaut, parce que celui qui arrive ici avec une
      valeur en main ne sait pas toujours de quelle table elle releve. */
   ['tout', 'Tout', null, null],
@@ -59,8 +60,16 @@ const FAMILLES = [
   ['rcodes', 'Codes de reponse DNS', () => RCODES_DNS,
     e => [e.nom, e.nom, t(e.sens)]],
   ['erreurs', 'Erreurs reseau', () => ERREURS_FIREFOX,
-    e => [e.code, e.code, t(e.sens)]]
+    e => [e.code, e.code, t(e.sens)]],
+  /* Le registre IANA des relations de liens : ce que veut rel="preload",
+     rel="next" ou rel="deprecation" dans un en-tete Link. */
+  ['liens', 'Relations de liens', () => RELATIONS_LIENS,
+    r => [r.nom, r.nom, t(r.sens) + '  ·  ' + r.reference]]
 ];
+
+/* Combien de tables : « Tout » les cherche toutes, et le dit. Ecrit en
+   toutes lettres, ce nombre a fini par mentir une fois une table ajoutee. */
+const NOMBRE_DE_TABLES = FAMILLES.filter(([, , table]) => table).length;
 
 /**
  * Toutes les lignes de reference, a plat, telles que la palette doit pouvoir
@@ -117,6 +126,7 @@ export function panneauReference(entree, etat, redessiner) {
   if (famille === 'dns') return ecrireListe(box, question, TYPES_DNS, 'Types d enregistrement DNS', ['code', 'nom', 'sens']);
   if (famille === 'rcodes') return ecrireListe(box, question, RCODES_DNS, 'Codes de reponse DNS', ['code', 'nom', 'sens']);
   if (famille === 'erreurs') return ecrireListe(box, question, ERREURS_FIREFOX, 'Erreurs reseau', ['code', 'sens']);
+  if (famille === 'liens') return ecrireRelations(box, question);
   return ecrirePorts(box, question);
 }
 
@@ -125,7 +135,7 @@ export function panneauReference(entree, etat, redessiner) {
    il en reste et laisser preciser la recherche. */
 const MAX_TOUT = 60;
 
-/** Les quatorze tables a la fois, pour qui ne sait pas dans laquelle chercher. */
+/** Toutes les tables a la fois, pour qui ne sait pas dans laquelle chercher. */
 function ecrireTout(box, question) {
   const q = String(question || '').trim().toLowerCase();
   const lignes = [];
@@ -146,9 +156,9 @@ function ecrireTout(box, question) {
   /* Sans question, une liste de six cent quatre-vingt-onze lignes n apprend
      rien. On dit ce qu il y a, et ce qu il faut taper pour y arriver. */
   if (!q) {
-    box.appendChild(sec('Tout', tp('{n} lignes, quatorze tables', { n: total })));
+    box.appendChild(sec('Tout', tp('{n} lignes, {t} tables', { n: total, t: NOMBRE_DE_TABLES })));
     box.appendChild(el('p', { class: 'note',
-      text: t('Tapez un nom, un code ou un mot : les quatorze tables sont cherchees en meme temps. Ctrl+K fait la meme chose depuis n importe quelle vue.') }));
+      text: t('Tapez un nom, un code ou un mot : toutes les tables sont cherchees en meme temps. Ctrl+K fait la meme chose depuis n importe quelle vue.') }));
     for (const [, titre, table] of FAMILLES) {
       if (!table) continue;
       box.appendChild(kv(titre, table().length));
@@ -298,6 +308,26 @@ function ecrireTls(box, question) {
 }
 
 /** Rendu commun aux tables « code, nom, sens » : WebSocket, HTTP/2, erreurs. */
+/* Les relations de liens : le nom est celui du protocole, il ne se traduit
+   pas ; le sens et la specification qui le definit, si. */
+function ecrireRelations(box, question) {
+  const q = String(question || '').trim().toLowerCase();
+  const trouves = RELATIONS_LIENS.filter(r => !q || r.nom.includes(q)
+    || t(r.sens).toLowerCase().includes(q) || r.reference.toLowerCase().includes(q));
+  box.appendChild(sec('Relations de liens (registre IANA)', trouves.length + ' / ' + RELATIONS_LIENS.length));
+  if (!trouves.length) {
+    box.appendChild(el('p', { class: 'note', text: t('Aucune entree ne correspond.') }));
+    return box;
+  }
+  for (const r of trouves) {
+    box.appendChild(el('div', { class: 'find info' }, [
+      el('h4', { text: 'rel="' + r.nom + '"' }),
+      el('p', { class: 'note', text: t(r.sens) + '  ·  ' + r.reference })
+    ]));
+  }
+  return box;
+}
+
 function ecrireListe(box, question, table, titre, champs) {
   const trouves = filtrer(table, question, champs);
   box.appendChild(sec(titre, trouves.length + ' / ' + table.length));

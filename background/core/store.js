@@ -4,6 +4,7 @@ import { config } from './config.js';
 import { hostOf, pathOf, schemeOf, throttleFlush } from '../lib/util.js';
 import { lireRequeteGraphql, resumeGraphql } from '../../ui/lib/graphql-http.js';
 import { lireAppelRpc, resumeRpc } from '../../ui/lib/rpc-http.js';
+import { lireCycleDeVie } from '../../ui/lib/cycle-vie.js';
 
 let SEQ = 0;
 
@@ -254,6 +255,22 @@ export function rpcDe(rec) {
   return lu;
 }
 
+/* Ce que la reponse annonce de son retrait (Deprecation, RFC 9745 ; Sunset,
+   RFC 8594) : les dates seulement, pour la Synthese. La lecture ne se fait
+   que si l un des deux en-tetes est present : le resume se recalcule souvent. */
+export function retraitDe(rec) {
+  const entetes = rec.responseHeaders;
+  if (!Array.isArray(entetes) || !entetes.some(h => h && /^(deprecation|sunset)$/i.test(h.name || ''))) return null;
+  let lu = null;
+  try { lu = lireCycleDeVie(entetes, { url: rec.finalUrl || rec.url, sansLiens: true }); } catch { lu = null; }
+  if (!lu || (!lu.deprecation && !lu.fin)) return null;
+  return {
+    depreciee: !!lu.deprecation,
+    deprecation: lu.deprecation ? lu.deprecation.ms : null,
+    fin: lu.fin ? lu.fin.ms : null
+  };
+}
+
 /** Les noms d entetes, en minuscules, separes par un saut de ligne. */
 function nomsEntetes(liste) {
   if (!Array.isArray(liste) || !liste.length) return '';
@@ -318,6 +335,8 @@ export function summarize(rec) {
     gql: resumeGraphql(graphqlDe(rec)),
     /* De meme pour JSON-RPC et SOAP : la methode, ou l operation. */
     rpc: resumeRpc(rpcDe(rec)),
+    /* Depreciation et fin de service annoncees : leurs dates, ou null. */
+    retrait: retraitDe(rec),
     /* Pour les filtres du moniteur reseau de Firefox (has-response-header:,
        set-cookie-name:...) : les NOMS d entetes seulement, jamais leurs
        valeurs, et les Set-Cookie de la reponse. Un saut de ligne ne peut

@@ -32,7 +32,7 @@ jobs:
           node-version: ${{ matrix.node }}
 
       # No dependencies to install: the extension and its tests are plain ES
-      # modules. `npm test` runs the nine suites directly.
+      # modules. `npm test` runs every suite directly.
       - name: Run the test suites
         run: npm test
 

@@ -41,7 +41,9 @@ let tramesRendues = 0;
 /* Sous-protocole, URL et version MQTT de la connexion affichee. */
 let contexteTrames = null;
 
-function parLots(hote, elements, fabriquer) {
+/* Exportee : les listes de l onglet En-tetes (liens, caches) passent par elle,
+   pour s arreter avec les autres au redessin suivant. */
+export function parLots(hote, elements, fabriquer) {
   const liste = listeProgressive(hote, elements, fabriquer);
   enCoursDeRendu.push(liste);
   return liste;

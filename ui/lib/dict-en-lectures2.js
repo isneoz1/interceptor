@@ -111,6 +111,14 @@ export const EN_LECTURES2 = {
   'SWIFT — comparaison': 'SWIFT — comparison',
   'Corps :': 'Body:',
 
+  /* ------------------------------ Durees ------------------------------------ */
+  'a l instant': 'just now',
+  'il y a {n} s': '{n} s ago',
+  'il y a {n} min': '{n} min ago',
+  'il y a {n} h': '{n} h ago',
+  'il y a {n} j': '{n} d ago',
+  '{j} j {h} h': '{j} d {h} h',
+
   /* ------------------------------ Tableau ----------------------------------- */
   'Requete masquee dans le tableau par le filtre ou le perimetre': 'This request is hidden in the table by the filter or the scope',
 

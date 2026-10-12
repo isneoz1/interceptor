@@ -58,7 +58,7 @@ export const SECTIONS = [
     table: [
       ['Requetes', 'Le flux complet, avec le detail en douze onglets.'],
       ['Securite', 'Toutes les alertes trouvees automatiquement, classees par gravite.'],
-      ['Synthese', 'Agregats de la session : statuts, types, domaines les plus lourds et en erreur, requetes les plus lentes, adresses telechargees plusieurs fois, compression possible mesuree, debit dans le temps.'],
+      ['Synthese', 'Agregats de la session : statuts, types, domaines les plus lourds et en erreur, requetes les plus lentes, adresses telechargees plusieurs fois, adresses qui annoncent leur retrait, compression possible mesuree, debit dans le temps.'],
       ['Comparaison', 'Deux requetes selectionnees, confrontees ligne a ligne (entetes et corps).'],
       ['Flux temps reel', 'WebSocket et Server-Sent Events, message par message, en direct.'],
       ['Cookies', 'Chaque pose, modification ou suppression de cookie, y compris en JavaScript.'],
@@ -95,7 +95,7 @@ export const SECTIONS = [
       ['Comparer', 'Le texte de travail confronte a un autre : lignes ajoutees, retirees, communes, premiere difference au caractere pres, comparaison mot a mot et format unifie.'],
       ['URL', 'Chaque partie d une URL, le service connu derriere le port, et l avertissement quand un domaine punycode ressemble a un autre.'],
       ['Adresse IP', 'Calcul complet d un sous-reseau IPv4 ou IPv6 : masque, joker, reseau, diffusion, plage utilisable, nom inverse, categorie (RFC 1918, 6598, 4193...) et test d appartenance a un prefixe. Plus le decoupage en sous-reseaux, le resume d une liste de prefixes, la conversion d une plage en prefixes et l enumeration des adresses.'],
-      ['Reference', 'Hors ligne : 62 codes de statut, 9 methodes et leurs proprietes, 129 entetes HTTP, 70 types de media, 83 ports, 31 suites TLS avec leur solidite, 16 codes de fermeture WebSocket, 14 erreurs HTTP/2 et 27 codes d erreur reseau de Firefox. Champ de recherche sur le nom comme sur la description.'],
+      ['Reference', 'Hors ligne, des tables completes : codes de statut, methodes, en-tetes (tout le registre permanent de l IANA), types de media, ports, suites TLS, alertes TLS, fermetures WebSocket, erreurs HTTP/2, HTTP/3 et QUIC, types et codes de reponse DNS, erreurs reseau de Firefox, et relations de liens (registre IANA). « Tout » cherche dans toutes a la fois, sur le nom comme sur la description ; Ctrl+K aussi.'],
       ['Generer', 'UUID v3, v4, v5 et v7, ULID, NanoID, suites aleatoires, mots de passe avec leur entropie reelle, adresse materielle, adresse privee, port dynamique, et seize valeurs limites qui font tomber les validateurs mal ecrits.'],
       ['Importer une requete', 'Une commande cURL ou une requete HTTP brute devient une ligne du tableau, a l etat « pending ». Elle n est pas emise : l onglet « Rejouer » de son detail s en charge si vous le demandez.']
     ]
@@ -131,6 +131,7 @@ export const SECTIONS = [
       ['Provenance', 'Ce que Firefox dit de l origine d une requete (Sec-Fetch-*) : meme site ou autre site, navigation ou appel, declenchee ou non par l utilisateur.'],
       ['Clear-Site-Data', 'Ce qu une reponse fait effacer au navigateur : cache, cookies, stockage, pages ouvertes.'],
       ['Cartes de source', 'L adresse de la carte qui relie un script minifie a son code d origine (tag:source-map).'],
+      ['Signaux du serveur', 'Ce que les en-tetes annoncent : la depreciation et la date de fin d une adresse (RFC 9745, RFC 8594, tag:deprecie), le quota restant et quand reessayer (RateLimit, Retry-After, tag:quota), les liens a suivre ou a precharger (Link, avec le registre IANA), les services alternatifs comme HTTP/3 (Alt-Svc), les caches traverses (Cache-Status, CDN-Cache-Control) et la priorite demandee (Priority).'],
       ['Signatures et cles d acces', 'Signatures de messages HTTP (RFC 9421) reconstruites et verifiees, inscriptions et connexions WebAuthn, DNS par HTTPS.'],
       ['Securite', 'OAuth 2.0 et OpenID Connect, SAML, empreintes de contenu, protections de la reponse, CSP deduite des chargements reels.']
     ]

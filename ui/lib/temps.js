@@ -5,6 +5,7 @@
  * pas de cent nanosecondes. On ne devine pas : on montre chaque lecture, et
  * l oeil reconnait la bonne (une date de 1601 ou de l an 3000 se voit).
  */
+import { tp } from './i18n.js';
 
 const MS_PAR_JOUR = 86400000;
 
@@ -157,7 +158,7 @@ export function dureeLisible(secondes) {
   const j = Math.floor(s / 86400);
   const h = Math.floor((s % 86400) / 3600);
   const m = Math.floor((s % 3600) / 60);
-  if (j) return signe + j + ' j ' + h + ' h';
+  if (j) return signe + tp('{j} j {h} h', { j, h });
   if (h) return signe + h + ' h ' + m + ' min';
   if (m) return signe + m + ' min ' + (s % 60) + ' s';
   return signe + s + ' s';
