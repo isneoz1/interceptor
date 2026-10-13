@@ -9,7 +9,8 @@
  * Rien ne s affiche quand l echange n est pas du GraphQL. La lecture vit dans
  * ui/lib/graphql-http.js ; ce module ne fait que la montrer.
  */
-import { el, frag, kv, sec, add, jsonTree } from '../lib/dom.js';
+import { el, frag, kv, sec, add } from '../lib/dom.js';
+import { jsonTree } from '../lib/arbre-json.js';
 import { t, tp } from '../lib/i18n.js';
 import { copy } from '../app.js';
 import { poser } from './tools.js';

@@ -20,6 +20,12 @@ export const EN_GRPC = {
   '{a} octets annonces, {p} presents': '{a} bytes announced, {p} present',
   '{n} octets, compresses — voir grpc-encoding': '{n} bytes, compressed — see grpc-encoding',
   '{n} octets': '{n} bytes',
+  'champ {n}': 'field {n}',
+  'longueur prefixee': 'length-delimited',
+  'groupe (obsolete)': 'group (deprecated)',
+  'fin de groupe (obsolete)': 'end group (deprecated)',
+  '(groupe : encodage abandonne par protobuf)': '(group: an encoding protobuf abandoned)',
+  'signe': 'signed',
 
   /* Les codes de statut gRPC : le nom reste, le sens se traduit. */
   /* « succes » vit deja dans dict-en-ref-http.js : une cle ne se definit

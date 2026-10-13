@@ -6,11 +6,13 @@
  */
 import { el, frag, kv, sec, add, button } from '../lib/dom.js';
 import { t, tp } from '../lib/i18n.js';
+import { listeProgressive } from '../lib/liste-progressive.js';
 import { STATUTS, METHODES, familleStatut } from '../lib/ref-http.js';
 import { ENTETES, chercherEntetes } from '../lib/ref-entetes.js';
 import { TYPES_MEDIA, chercherTypes } from '../lib/ref-mime.js';
 import { PORTS, chercherPorts, plagePort } from '../lib/ref-ports.js';
 import { RELATIONS_LIENS } from '../lib/ref-liens.js';
+import { ERREURS_PROXY } from '../lib/ref-proxy-status.js';
 import { SUITES_TLS, chercherSuitesTls, FERMETURES_WS, ERREURS_H2, ERREURS_FIREFOX }
   from '../lib/ref-reseau.js';
 import { ALERTES_TLS, ERREURS_H3, ERREURS_QUIC, TYPES_DNS, RCODES_DNS }
@@ -64,7 +66,11 @@ const FAMILLES = [
   /* Le registre IANA des relations de liens : ce que veut rel="preload",
      rel="next" ou rel="deprecation" dans un en-tete Link. */
   ['liens', 'Relations de liens', () => RELATIONS_LIENS,
-    r => [r.nom, r.nom, t(r.sens) + '  ·  ' + r.reference]]
+    r => [r.nom, r.nom, t(r.sens) + '  ·  ' + r.reference]],
+  /* Le registre IANA des types d erreur de Proxy-Status : qui a produit un
+     502, et pourquoi. */
+  ['proxy', 'Erreurs de mandataire', () => ERREURS_PROXY,
+    e => [e.nom, e.nom, t(e.sens) + '  ·  ' + (e.statut != null ? e.statut : t(e.statutRegle)) + '  ·  ' + e.reference]]
 ];
 
 /* Combien de tables : « Tout » les cherche toutes, et le dit. Ecrit en
@@ -127,13 +133,9 @@ export function panneauReference(entree, etat, redessiner) {
   if (famille === 'rcodes') return ecrireListe(box, question, RCODES_DNS, 'Codes de reponse DNS', ['code', 'nom', 'sens']);
   if (famille === 'erreurs') return ecrireListe(box, question, ERREURS_FIREFOX, 'Erreurs reseau', ['code', 'sens']);
   if (famille === 'liens') return ecrireRelations(box, question);
+  if (famille === 'proxy') return ecrireProxys(box, question);
   return ecrirePorts(box, question);
 }
-
-/* Nombre de resultats affiches par « Tout ». Au-dela, la liste cesse d etre
-   une reponse et redevient un tableau a parcourir : mieux vaut dire combien
-   il en reste et laisser preciser la recherche. */
-const MAX_TOUT = 60;
 
 /** Toutes les tables a la fois, pour qui ne sait pas dans laquelle chercher. */
 function ecrireTout(box, question) {
@@ -172,17 +174,14 @@ function ecrireTout(box, question) {
     return box;
   }
 
-  for (const ligne of lignes.slice(0, MAX_TOUT)) {
-    box.appendChild(el('div', { class: 'find info' }, [
-      el('h4', { text: ligne.libelle + '   ·   ' + t(ligne.titre) }),
-      el('p', { class: 'note', text: ligne.explication })
-    ]));
-  }
-  if (lignes.length > MAX_TOUT) {
-    box.appendChild(el('p', { class: 'note',
-      text: tp('{n} autres entrees correspondent : precisez la recherche, ou choisissez une table.',
-        { n: lignes.length - MAX_TOUT }) }));
-  }
+  /* Toutes les entrees qui correspondent, par lots : le compte annonce est
+     celui qu on peut parcourir. */
+  const hote = el('div');
+  box.appendChild(hote);
+  listeProgressive(hote, lignes, ligne => el('div', { class: 'find info' }, [
+    el('h4', { text: ligne.libelle + '   ·   ' + t(ligne.titre) }),
+    el('p', { class: 'note', text: ligne.explication })
+  ]));
   return box;
 }
 
@@ -323,6 +322,31 @@ function ecrireRelations(box, question) {
     box.appendChild(el('div', { class: 'find info' }, [
       el('h4', { text: 'rel="' + r.nom + '"' }),
       el('p', { class: 'note', text: t(r.sens) + '  ·  ' + r.reference })
+    ]));
+  }
+  return box;
+}
+
+/* Les types d erreur des mandataires : le nom est celui du protocole ; le
+   sens, le statut recommande et les parametres propres a chaque type. */
+function ecrireProxys(box, question) {
+  const q = String(question || '').trim().toLowerCase();
+  const trouves = ERREURS_PROXY.filter(e => !q || e.nom.includes(q) || t(e.sens).toLowerCase().includes(q)
+    || String(e.statut).includes(q));
+  box.appendChild(sec('Types d erreur des mandataires (registre IANA)', trouves.length + ' / ' + ERREURS_PROXY.length));
+  if (!trouves.length) {
+    box.appendChild(el('p', { class: 'note', text: t('Aucune entree ne correspond.') }));
+    return box;
+  }
+  for (const e of trouves) {
+    const details = [tp('statut recommande : {statut}', { statut: e.statut != null ? e.statut : t(e.statutRegle) }),
+      t(e.intermediaire ? 'reponse produite par l intermediaire seul' : 'reponse produite par l intermediaire ou en amont'),
+      e.reference];
+    if (e.extras.length) details.push(tp('parametres : {liste}', { liste: e.extras.map(x => x.cle).join(', ') }));
+    box.appendChild(el('div', { class: 'find info' }, [
+      el('h4', { text: 'error=' + e.nom }),
+      el('p', { class: 'note', text: t(e.sens) }),
+      el('p', { class: 'note', text: details.join('  ·  ') })
     ]));
   }
   return box;

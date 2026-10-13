@@ -109,6 +109,12 @@ export const EN_API = {
     'announced as {type}, but the body is not JSON: {nature} — it starts with “{debut}”',
   'annonce {type}, mais le corps est du JSON valide': 'announced as {type}, but the body is valid JSON',
   'annonce {type}, mais les octets sont ceux d une image {format}': 'announced as {type}, but the bytes are those of a {format} image',
+  '{n} entier(s) qu un double ne represente pas : un client JavaScript les lit arrondis (JSON.parse) ; ils sont affiches ici tels que recus':
+    '{n} integer(s) that a double cannot represent: a JavaScript client reads them rounded (JSON.parse); they are shown here as received',
+  '{chemin} vaut {brut} ; JSON.parse le lit {lu}': '{chemin} is {brut}; JSON.parse reads it as {lu}',
+  '{n} cle(s) ecrite(s) deux fois dans un meme objet : la plupart des lecteurs, JSON.parse compris, ne gardent que la derniere valeur, d autres la premiere (RFC 8259 §4)':
+    '{n} key(s) written twice in the same object: most readers, JSON.parse included, keep only the last value, others the first (RFC 8259 §4)',
+  '« {cle} » dans {chemin}': '“{cle}” in {chemin}',
   'servi sans compression : {avant} ; en gzip, {apres} — {gain} % de moins, mesure sur les octets recus':
     'served without compression: {avant}; with gzip, {apres} — {gain} % less, measured on the bytes received',
   'une page HTML': 'an HTML page',

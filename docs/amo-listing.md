@@ -16,7 +16,7 @@ people running Developer Edition, Nightly or ESR *and* willing to flip
       publish. Changing it later means publishing a different add-on and orphaning every
       existing install, so make sure it is what you want *before* the first upload.
 - [ ] **Bump the version.** AMO refuses a version number it has already seen. The repository
-      is at `5.4.0`, which has never been submitted, so it can go up as-is. Only bump again if
+      is at `5.5.0`, which has never been submitted, so it can go up as-is. Only bump again if
       a submission gets rejected and you need to resubmit.
 - [ ] **Build a fresh package**: `npm run build` produces `dist/swift-<version>.xpi`.
 - [x] **Data collection is declared**: `data_collection_permissions` is `{"required": ["none"]}`,
@@ -148,8 +148,12 @@ Every request opens on a one-sentence verdict, with a button to the tab that exp
 What servers announce is read too: an API's deprecation and end-of-service dates
 (RFC 9745, RFC 8594), the quota left and when to retry (Retry-After and the IETF RateLimit
 draft), Link headers against the IANA registry of link relations, the HTTP/3 offer
-(Alt-Svc), every cache on the way (Cache-Status, CDN-Cache-Control) and the priority asked
-for (Priority).
+(Alt-Svc), every cache on the way (Cache-Status, CDN-Cache-Control), the proxy that generated
+a 502 or 504 itself and why (Proxy-Status) and the priority asked for (Priority).
+
+Numbers are shown as they were sent: an integer beyond 2^53, which JavaScript rounds, keeps
+its digits in the formatted body, the comparisons and the toolbox. Two requests or two texts
+of any size are compared exactly, and the toolbox produces a patch that git apply accepts.
 
 PRIVACY
 

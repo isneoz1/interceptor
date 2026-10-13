@@ -4,6 +4,7 @@
  * « Basic », corps de formulaire, transfert par morceaux, compression gzip et
  * deflate. Fonctions pures ou asynchrones, sans DOM ni API d extension.
  */
+import { lireJsonExact, ecrireJsonExact } from './json-exact.js';
 import {
   texteVersOctets, octetsVersTexte, octetsVersBase64, base64VersOctets, hexVersOctets
 } from './bytes.js';
@@ -142,60 +143,77 @@ export function basicDecoder(texte) {
 }
 
 /* --------------------------- Corps de formulaire -------------------------- */
+/* Les objets rendus n ont pas de prototype : une cle « __proto__ » y reste une
+   cle. Un nom repete garde toutes ses valeurs, dans un tableau. */
+function ajouter(objet, cle, valeur) {
+  if (!Object.prototype.hasOwnProperty.call(objet, cle)) objet[cle] = valeur;
+  else if (Array.isArray(objet[cle])) objet[cle].push(valeur);
+  else objet[cle] = [objet[cle], valeur];
+}
+
+/* La valeur texte d un noeud JSON : une chaine telle quelle, un nombre tel
+   qu il est ecrit, null vide, un objet ou un tableau en JSON compact. */
+const texteDeNoeud = n => (n.type === 'chaine' ? n.valeur
+  : n.type === 'litteral' && n.brut === 'null' ? ''
+    : n.type === 'objet' || n.type === 'tableau' ? ecrireJsonExact(n, '') : n.brut);
+
+/* Les paires d un objet JSON : un tableau donne une paire par element (un nom
+   repete), et deux cles jumelles restent deux paires, comme dans le texte. */
+function pairesJson(texte) {
+  const racine = lireJsonExact(String(texte));
+  if (racine.type !== 'objet') throw new Error('objet JSON attendu');
+  const paires = [];
+  for (const m of racine.membres) {
+    if (m.valeur.type === 'tableau') for (const e of m.valeur.elements) paires.push([m.cle, texteDeNoeud(e)]);
+    else paires.push([m.cle, texteDeNoeud(m.valeur)]);
+  }
+  return paires;
+}
+
 export function formVersJson(texte) {
   const params = new URLSearchParams(String(texte).trim().replace(/^[?&]+/, ''));
-  const objet = {};
-  for (const [cle, valeur] of params.entries()) {
-    if (objet[cle] === undefined) objet[cle] = valeur;
-    else if (Array.isArray(objet[cle])) objet[cle].push(valeur);
-    else objet[cle] = [objet[cle], valeur];
-  }
+  const objet = Object.create(null);
+  for (const [cle, valeur] of params.entries()) ajouter(objet, cle, valeur);
   return JSON.stringify(objet, null, 2);
 }
 
 export function jsonVersForm(texte) {
-  const valeur = JSON.parse(String(texte));
-  if (!valeur || typeof valeur !== 'object') throw new Error('objet JSON attendu');
   const params = new URLSearchParams();
-  for (const [cle, v] of Object.entries(valeur)) {
-    if (Array.isArray(v)) for (const x of v) params.append(cle, String(x));
-    else params.append(cle, v === null ? '' : typeof v === 'object' ? JSON.stringify(v) : String(v));
-  }
+  for (const [cle, valeur] of pairesJson(texte)) params.append(cle, valeur);
   return params.toString();
 }
 
-/** Entetes bruts « Nom: valeur » -> objet JSON, et l inverse. */
+/** Entetes bruts « Nom: valeur » -> objet JSON, et l inverse. Deux Set-Cookie
+ *  restent deux valeurs. */
 export function entetesVersJson(texte) {
-  const objet = {};
+  const objet = Object.create(null);
   for (const ligne of String(texte).split(/\r?\n/)) {
     const net = ligne.trim();
     if (!net) continue;
     const i = net.indexOf(':');
     if (i < 0) continue;
-    objet[net.slice(0, i).trim()] = net.slice(i + 1).trim();
+    ajouter(objet, net.slice(0, i).trim(), net.slice(i + 1).trim());
   }
   return JSON.stringify(objet, null, 2);
 }
 
 export function jsonVersEntetes(texte) {
-  const valeur = JSON.parse(String(texte));
-  return Object.entries(valeur).map(([k, v]) => k + ': ' + String(v)).join('\n');
+  return pairesJson(texte).map(([k, v]) => k + ': ' + v).join('\n');
 }
 
 export function cookiesVersJson(texte) {
-  const objet = {};
+  const objet = Object.create(null);
   for (const morceau of String(texte).split(';')) {
     const net = morceau.trim();
     if (!net) continue;
     const i = net.indexOf('=');
-    objet[i < 0 ? net : net.slice(0, i).trim()] = i < 0 ? '' : net.slice(i + 1).trim();
+    ajouter(objet, i < 0 ? net : net.slice(0, i).trim(), i < 0 ? '' : net.slice(i + 1).trim());
   }
   return JSON.stringify(objet, null, 2);
 }
 
 export function jsonVersCookies(texte) {
-  const valeur = JSON.parse(String(texte));
-  return Object.entries(valeur).map(([k, v]) => k + '=' + String(v)).join('; ');
+  return pairesJson(texte).map(([k, v]) => k + '=' + v).join('; ');
 }
 
 /* -------------------------- Transfert par morceaux ------------------------ */

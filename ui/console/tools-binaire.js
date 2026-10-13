@@ -4,7 +4,10 @@
  * certificats, jeux de caracteres. Le texte de travail est lu en base64 ou en
  * hexadecimal, sauf pour un bloc PEM, qui se colle tel quel.
  */
-import { el, frag, kv, sec, add, button, jsonTree } from '../lib/dom.js';
+import { el, frag, kv, sec, add, button } from '../lib/dom.js';
+import { jsonTree } from '../lib/arbre-json.js';
+import { ecrireValeurJson } from '../lib/json-exact.js';
+import { texteLong } from '../lib/texte-long.js';
 import { t, tp, te, deuxPoints } from '../lib/i18n.js';
 import { copy, toast } from '../app.js';
 import { base64VersOctets, hexVersOctets, octetsVersHex } from '../lib/bytes.js';
@@ -31,8 +34,8 @@ function octetsDuTexte(entree) {
 function arbreProtobuf(champs, profondeur = 0) {
   const box = el('div', { class: 'tree' });
   for (const champ of champs) {
-    const titre = 'champ ' + champ.numero + '  ·  ' + champ.typeNom +
-      (champ.octets != null ? '  ·  ' + champ.octets + ' octets' : '');
+    const titre = tp('champ {n}', { n: champ.numero }) + '  ·  ' + t(champ.typeNom) +
+      (champ.octets != null ? '  ·  ' + tp('{n} octets', { n: champ.octets }) : '');
     if (champ.enfants) {
       const bloc = el('details', { open: profondeur < 2 });
       bloc.appendChild(el('summary', { text: titre }));
@@ -42,13 +45,13 @@ function arbreProtobuf(champs, profondeur = 0) {
     }
     const ligne = el('div', { class: 'row' }, [
       el('span', { class: 'k', text: deuxPoints(titre) }),
-      el('span', { class: 'v', text: String(champ.valeur) })
+      el('span', { class: 'v', text: champ.type === 3 || champ.type === 4 ? t(champ.valeur) : String(champ.valeur) })
     ]);
     box.appendChild(ligne);
     if (champ.lectures) {
       const autres = Object.entries(champ.lectures)
         .filter(([, v]) => v !== null && v !== undefined)
-        .map(([k, v]) => k + ' = ' + v).join('   ·   ');
+        .map(([k, v]) => t(k) + ' = ' + v).join('   ·   ');
       if (autres) box.appendChild(el('div', { class: 'row' }, el('span', { class: 't', text: autres })));
     }
   }
@@ -97,7 +100,7 @@ export function panneauBinaire(entree, etat, redessiner, poser) {
       box.appendChild(sec(nom, 'decode sans reste'));
       if (nom === 'Protocol Buffers') box.appendChild(arbreProtobuf(valeur));
       else box.appendChild(el('div', { class: 'tree' }, jsonTree(valeur, nom)));
-      const texte = nom === 'Protocol Buffers' ? JSON.stringify(valeur, null, 2) : JSON.stringify(valeur, null, 2);
+      const texte = ecrireValeurJson(valeur, '  ');
       box.appendChild(el('div', { class: 'actions' }, [
         button('Copier en JSON', () => copy(texte, 'Structure copiee')),
         button('Poser comme texte de travail', () => poser(texte))
@@ -347,7 +350,7 @@ function ecrireCharsets(box, octets, entree, etat, redessiner, poser) {
   for (const essai of essais) {
     const carte = el('div', { class: 'find info' }, [
       el('h4', { text: essai.jeu + (essai.remplacements ? '   ·   ' + essai.remplacements + ' ' + t('caracteres perdus') : '') }),
-      el('pre', { class: 'pre', text: essai.texte.slice(0, 2000) })
+      texteLong(essai.texte, { seuil: 2000 })
     ]);
     carte.appendChild(el('div', { class: 'actions' },
       button('Reprendre comme entree', () => poser(essai.texte))));

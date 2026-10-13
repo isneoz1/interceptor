@@ -9,6 +9,18 @@
  * qui est reellement encode.
  */
 import { octetsVersHex, hexVersOctets, base64VersOctets } from './bytes.js';
+import { NombreExact, ecrireValeurJson } from './json-exact.js';
+
+/* Un entier lu sur 64 bits : un nombre quand un double le garde, sinon un
+   NombreExact, ecrit tel quel a l affichage comme en JSON. */
+const entierDe = b => (b >= -9007199254740991n && b <= 9007199254740991n ? Number(b) : new NombreExact(b.toString()));
+
+/* La cle d une carte, en texte ; posee comme propriete propre, si bien
+   qu une cle « __proto__ » reste une cle au lieu de changer le prototype. */
+const texteDeCle = cle => (cle instanceof NombreExact ? cle.brut
+  : cle !== null && typeof cle === 'object' ? ecrireValeurJson(cle, '') : String(cle));
+const poserCle = (objet, cle, valeur) =>
+  Object.defineProperty(objet, texteDeCle(cle), { value: valeur, enumerable: true, writable: true, configurable: true });
 
 /* ------------------------------ Lecture commune --------------------------- */
 class Lecteur {
@@ -31,6 +43,10 @@ class Lecteur {
 }
 
 const texteDe = octets => new TextDecoder('utf-8').decode(octets);
+/* Des octets ecrits en notation de diagnostic (RFC 8949 §8) : h'0102'. Une
+   ecriture normalisee et sans langue, la ou « (binaire 01 02) » restait
+   en francais dans l interface anglaise et dans le JSON exporte. */
+const enDiagnostic = octets => "h'" + octetsVersHex(octets, '') + "'";
 const imprimable = s => s.length > 0 && !/[\u0000-\u0008\u000b\u000c\u000e-\u001f\uFFFD]/.test(s);
 
 /* -------------------------- Protocol Buffers ------------------------------ */
@@ -131,19 +147,19 @@ function lireMsgpack(lec) {
     case 0xc0: return null;
     case 0xc2: return false;
     case 0xc3: return true;
-    case 0xc4: return '(binaire ' + octetsVersHex(lec.tranche(lec.octet()), ' ') + ')';
-    case 0xc5: return '(binaire ' + octetsVersHex(lec.tranche(lec.vue(2).getUint16(0)), ' ') + ')';
-    case 0xc6: return '(binaire ' + octetsVersHex(lec.tranche(lec.vue(4).getUint32(0)), ' ') + ')';
+    case 0xc4: return enDiagnostic(lec.tranche(lec.octet()));
+    case 0xc5: return enDiagnostic(lec.tranche(lec.vue(2).getUint16(0)));
+    case 0xc6: return enDiagnostic(lec.tranche(lec.vue(4).getUint32(0)));
     case 0xca: return lec.vue(4).getFloat32(0);
     case 0xcb: return lec.vue(8).getFloat64(0);
     case 0xcc: return lec.octet();
     case 0xcd: return lec.vue(2).getUint16(0);
     case 0xce: return lec.vue(4).getUint32(0);
-    case 0xcf: return lec.vue(8).getBigUint64(0).toString();
+    case 0xcf: return entierDe(lec.vue(8).getBigUint64(0));
     case 0xd0: return lec.vue(1).getInt8(0);
     case 0xd1: return lec.vue(2).getInt16(0);
     case 0xd2: return lec.vue(4).getInt32(0);
-    case 0xd3: return lec.vue(8).getBigInt64(0).toString();
+    case 0xd3: return entierDe(lec.vue(8).getBigInt64(0));
     case 0xd9: return texteDe(lec.tranche(lec.octet()));
     case 0xda: return texteDe(lec.tranche(lec.vue(2).getUint16(0)));
     case 0xdb: return texteDe(lec.tranche(lec.vue(4).getUint32(0)));
@@ -170,26 +186,38 @@ function carte(lec, n) {
   const out = {};
   for (let i = 0; i < n; i++) {
     const cle = lireMsgpack(lec);
-    out[typeof cle === 'object' ? JSON.stringify(cle) : String(cle)] = lireMsgpack(lec);
+    poserCle(out, cle, lireMsgpack(lec));
   }
   return out;
+}
+
+/* Un instant en secondes (BigInt) et nanosecondes, ecrit en ISO 8601 a la
+   nanoseconde ; hors de la plage des dates, les deux nombres tels quels. */
+function horodatage(secondes, nanos) {
+  if (nanos > 999999999) return '(horodatage invalide : ' + nanos + ' nanosecondes, 999 999 999 au plus)';
+  const ms = Number(secondes) * 1000;
+  if (!(Math.abs(ms) <= 8.64e15)) return '(horodatage hors de la plage des dates : ' + secondes + ' s, ' + nanos + ' ns)';
+  return new Date(ms).toISOString().replace(/\.\d{3}Z$/, '.' + String(nanos).padStart(9, '0') + 'Z');
 }
 
 function extension(lec, taille) {
   const type = lec.vue(1).getInt8(0);
   const contenu = lec.tranche(taille);
-  // Le type -1 est l horodatage normalise : on le rend lisible.
+  /* Le type -1 est l horodatage normalise (spec MessagePack, « Timestamp
+     extension type ») : 32 bits de secondes ; ou 30 bits de nanosecondes
+     puis 34 de secondes ; ou 32 bits de nanosecondes puis 64 de secondes
+     signees. Les nanosecondes sont gardees : les arrondir a la milliseconde
+     afficherait « .000 » pour une demi-seconde. */
   if (type === -1) {
     const vue = new DataView(contenu.buffer, contenu.byteOffset, contenu.byteLength);
-    if (taille === 4) return new Date(vue.getUint32(0) * 1000).toISOString();
+    if (taille === 4) return horodatage(BigInt(vue.getUint32(0)), 0);
     if (taille === 8) {
       const brut = vue.getBigUint64(0);
-      const secondes = Number(brut & 0x3ffffffffn);
-      return new Date(secondes * 1000).toISOString();
+      return horodatage(brut & 0x3ffffffffn, Number(brut >> 34n));
     }
-    if (taille === 12) return new Date(Number(vue.getBigInt64(4)) * 1000).toISOString();
+    if (taille === 12) return horodatage(vue.getBigInt64(4), vue.getUint32(0));
   }
-  return '(extension ' + type + ' : ' + octetsVersHex(contenu, ' ') + ')';
+  return 'ext(' + type + ', ' + enDiagnostic(contenu) + ')';
 }
 
 /** Decode un document MessagePack complet. */
@@ -225,24 +253,51 @@ function longueurCbor(lec, complement) {
   throw new Error('complement CBOR reserve : ' + complement);
 }
 
+/* L argument d un element CBOR (RFC 8949 §3), en BigInt : de 0 a 2^64 - 1. La
+   valeur 31 (longueur indefinie) n est permise qu aux types majeurs 2 a 5. */
+function argumentCbor(lec, complement) {
+  if (complement < 24) return BigInt(complement);
+  if (complement === 24) return BigInt(lec.octet());
+  if (complement === 25) return BigInt(lec.vue(2).getUint16(0));
+  if (complement === 26) return BigInt(lec.vue(4).getUint32(0));
+  if (complement === 27) return lec.vue(8).getBigUint64(0);
+  if (complement === 31) throw new Error('longueur indefinie interdite ici : elle ne vaut que pour les types majeurs 2 a 5 (RFC 8949 §3.2.4)');
+  throw new Error('complement CBOR reserve : ' + complement);
+}
+
 function lireCbor(lec, profondeur = 0) {
   if (profondeur > 32) throw new Error('imbrication CBOR trop profonde');
   const initial = lec.octet();
   const majeur = initial >> 5;
   const complement = initial & 0x1f;
 
-  if (majeur === 0) return longueurCbor(lec, complement);
-  if (majeur === 1) return -1 - longueurCbor(lec, complement);
+  if (majeur === 0) return entierDe(argumentCbor(lec, complement));
+  if (majeur === 1) return entierDe(-1n - argumentCbor(lec, complement));
   if (majeur === 2) {
     const n = longueurCbor(lec, complement);
-    if (n < 0) return '(binaire de longueur indefinie)';
-    return '(binaire ' + octetsVersHex(lec.tranche(n), ' ') + ')';
+    if (n >= 0) return enDiagnostic(lec.tranche(n));
+    /* Longueur indefinie (RFC 8949 §3.2.3) : des morceaux de longueur
+       definie jusqu a l octet 0xff, notes (_ h'..', h'..') (§8.1). */
+    const morceaux = [];
+    while (lec.o[lec.i] !== 0xff) {
+      const tete = lec.octet();
+      if ((tete >> 5) !== 2 || (tete & 0x1f) === 31) throw new Error('morceau non binaire dans une chaine d octets');
+      morceaux.push(enDiagnostic(lec.tranche(longueurCbor(lec, tete & 0x1f))));
+    }
+    lec.octet();
+    return morceaux.length ? '(_ ' + morceaux.join(', ') + ')' : "''_";
   }
   if (majeur === 3) {
     const n = longueurCbor(lec, complement);
     if (n < 0) {
+      /* Chaque morceau est une chaine de texte de longueur definie, valide
+         en UTF-8 a lui seul (RFC 8949 §3.2.3). */
       let out = '';
-      while (lec.o[lec.i] !== 0xff) out += lireCbor(lec, profondeur + 1);
+      while (lec.o[lec.i] !== 0xff) {
+        const tete = lec.octet();
+        if ((tete >> 5) !== 3 || (tete & 0x1f) === 31) throw new Error('morceau non textuel dans une chaine de texte');
+        out += texteDe(lec.tranche(longueurCbor(lec, tete & 0x1f)));
+      }
       lec.octet();
       return out;
     }
@@ -262,29 +317,52 @@ function lireCbor(lec, profondeur = 0) {
     const out = {};
     const poser = () => {
       const cle = lireCbor(lec, profondeur + 1);
-      out[typeof cle === 'object' ? JSON.stringify(cle) : String(cle)] = lireCbor(lec, profondeur + 1);
+      poserCle(out, cle, lireCbor(lec, profondeur + 1));
     };
     if (n < 0) { while (lec.o[lec.i] !== 0xff) poser(); lec.octet(); }
     else for (let i = 0; i < n; i++) poser();
     return out;
   }
   if (majeur === 6) {
-    const etiquette = longueurCbor(lec, complement);
+    const etiquette = entierDe(argumentCbor(lec, complement));
+    /* Grands entiers (RFC 8949 §3.4.3) : une chaine d octets lue comme un
+       entier non signe n, gros-boutiste ; l etiquette 3 vaut -1 - n. */
+    const suivant = lec.o[lec.i];
+    if ((etiquette === 2 || etiquette === 3) && suivant !== undefined && (suivant >> 5) === 2 && (suivant & 0x1f) !== 31) {
+      lec.octet();
+      let n = 0n;
+      for (const b of lec.tranche(longueurCbor(lec, suivant & 0x1f))) n = (n << 8n) | BigInt(b);
+      return entierDe(etiquette === 2 ? n : -1n - n);
+    }
+    /* Etiquette 24 (RFC 8949 §3.4.5.1) : la chaine d octets porte un autre
+       document CBOR, montre decode. */
+    if (etiquette === 24 && suivant !== undefined && (suivant >> 5) === 2 && (suivant & 0x1f) !== 31) {
+      lec.octet();
+      const dedans = lec.tranche(longueurCbor(lec, suivant & 0x1f));
+      try { return { tag: 24, content: decoderCbor(dedans) }; } catch { return { tag: 24, content: enDiagnostic(dedans) }; }
+    }
     const valeur = lireCbor(lec, profondeur + 1);
     if (etiquette === 0) return valeur;                       // date en texte
-    if (etiquette === 1 && typeof valeur === 'number') return new Date(valeur * 1000).toISOString();
-    return { etiquette, valeur };
+    if (etiquette === 1 && typeof valeur === 'number' && Math.abs(valeur * 1000) <= 8.64e15) return new Date(valeur * 1000).toISOString();
+    return { tag: etiquette, content: valeur };
   }
   // Majeur 7 : constantes simples et flottants.
   if (complement === 20) return false;
   if (complement === 21) return true;
   if (complement === 22) return null;
-  if (complement === 23) return '(non defini)';
+  if (complement === 23) return 'undefined';
   if (complement === 25) return demiFlottant(lec.vue(2).getUint16(0));
   if (complement === 26) return lec.vue(4).getFloat32(0);
   if (complement === 27) return lec.vue(8).getFloat64(0);
   if (complement === 31) throw new Error('rupture CBOR inattendue');
-  return '(valeur simple ' + longueurCbor(lec, complement) + ')';
+  /* Une valeur simple sur deux octets en dessous de 32 n est pas bien formee
+     (RFC 8949 §3.3) : chaque valeur simple n a qu une ecriture. */
+  if (complement === 24) {
+    const v = lec.octet();
+    if (v < 32) throw new Error('valeur simple ecrite sur deux octets en dessous de 32 : mal formee (RFC 8949 §3.3)');
+    return 'simple(' + v + ')';
+  }
+  return 'simple(' + longueurCbor(lec, complement) + ')';
 }
 
 /** Decode un document CBOR complet. */
@@ -404,13 +482,13 @@ function octetsDeTexte(texte) {
 }
 
 export function protobufVersJson(texte) {
-  return JSON.stringify(decoderProtobuf(octetsDeTexte(texte)), null, 2);
+  return ecrireValeurJson(decoderProtobuf(octetsDeTexte(texte)), '  ');
 }
 
 export function msgpackVersJson(texte) {
-  return JSON.stringify(decoderMsgpack(octetsDeTexte(texte)), null, 2);
+  return ecrireValeurJson(decoderMsgpack(octetsDeTexte(texte)), '  ');
 }
 
 export function cborVersJson(texte) {
-  return JSON.stringify(decoderCbor(octetsDeTexte(texte)), null, 2);
+  return ecrireValeurJson(decoderCbor(octetsDeTexte(texte)), '  ');
 }

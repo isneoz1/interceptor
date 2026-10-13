@@ -26,6 +26,7 @@ import { EN_API } from './dict-en-api.js';
 import { EN_LECTURES2 } from './dict-en-lectures2.js';
 import { EN_REF_LIENS } from './dict-en-ref-liens.js';
 import { EN_SIGNAUX } from './dict-en-signaux.js';
+import { EN_REF_PROXY } from './dict-en-ref-proxy.js';
 
 export const EN = {
   /* ------------------------------ Navigation ----------------------------- */
@@ -441,5 +442,6 @@ export const EN = {
   ...EN_API,
   ...EN_LECTURES2,
   ...EN_REF_LIENS,
-  ...EN_SIGNAUX
+  ...EN_SIGNAUX,
+  ...EN_REF_PROXY
 };

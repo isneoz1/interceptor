@@ -8,6 +8,7 @@
  * generateurs dans generateurs.js : chacun son module, aucun doublon.
  */
 import { texteVersOctets, base64UrlDecoder } from './codecs.js';
+import { lireJson } from './json-exact.js';
 
 /* --------------------------------- JWT ------------------------------------ */
 const CLAIMS = {
@@ -26,15 +27,22 @@ export function libelleClaim(cle) { return CLAIMS[cle] || cle; }
  * pas la cle. Le resultat le dit explicitement, pour qu on ne prenne jamais un
  * jeton decode pour un jeton valide.
  */
+/* Une date de revendication en ISO 8601, ou null hors de la plage des dates
+   (± 8,64e15 ms) : un « exp » demesure faisait lever toISOString, et tout le
+   jeton devenait illisible. */
+const dateIso = s => (s != null && Math.abs(s * 1000) <= 8.64e15 ? new Date(s * 1000).toISOString() : null);
+
 export function decoderJwt(jeton) {
   const brut = String(jeton || '').trim().replace(/^Bearer\s+/i, '');
   const parts = brut.split('.');
   if (parts.length !== 3) throw new Error('un JWT compte trois parties separees par des points');
 
   let entete, charge;
-  try { entete = JSON.parse(base64UrlDecoder(parts[0])); }
+  try { entete = lireJson(base64UrlDecoder(parts[0])); }
   catch { throw new Error('entete illisible'); }
-  try { charge = JSON.parse(base64UrlDecoder(parts[1])); }
+  /* Sans perte : un identifiant de 64 bits dans une revendication s affiche
+     tel qu emis. */
+  try { charge = lireJson(base64UrlDecoder(parts[1])); }
   catch { throw new Error('charge utile illisible'); }
 
   const maintenant = Math.floor(Date.now() / 1000);
@@ -48,9 +56,9 @@ export function decoderJwt(jeton) {
     algorithme: entete && entete.alg ? String(entete.alg) : 'inconnu',
     // « alg: none » est une faiblesse historique reelle : on la signale.
     algorithmeNul: !!(entete && String(entete.alg || '').toLowerCase() === 'none'),
-    emisLe: iat != null ? new Date(iat * 1000).toISOString() : null,
-    expireLe: exp != null ? new Date(exp * 1000).toISOString() : null,
-    valideDes: nbf != null ? new Date(nbf * 1000).toISOString() : null,
+    emisLe: dateIso(iat),
+    expireLe: dateIso(exp),
+    valideDes: dateIso(nbf),
     expire: exp != null ? exp < maintenant : null,
     pasEncoreValide: nbf != null ? nbf > maintenant : null,
     resteSecondes: exp != null ? exp - maintenant : null,

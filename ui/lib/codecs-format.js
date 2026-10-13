@@ -4,59 +4,38 @@
  * pour JavaScript, JSON, expressions regulieres et lignes de commande.
  * Fonctions pures : la boite a outils les affiche, les tests les executent
  * hors navigateur.
+ *
+ * Le JSON passe par lib/json-exact.js : un nombre ou une chaine ressort tel
+ * qu il est entre. JSON.parse arrondissait les entiers au-dela de 2^53
+ * (1234567890123456789 ressortait 1234567890123456800) et ne gardait qu une
+ * cle sur deux jumelles.
  */
+import { lireJsonExact, ecrireJsonExact, trierClesJson, cheminsJson } from './json-exact.js';
 
 /* ---------------------------------- JSON ---------------------------------- */
-export function jsonJoli(texte) { return JSON.stringify(JSON.parse(String(texte)), null, 2); }
-export function jsonCompact(texte) { return JSON.stringify(JSON.parse(String(texte))); }
+export function jsonJoli(texte) { return ecrireJsonExact(lireJsonExact(String(texte)), '  '); }
+export function jsonCompact(texte) { return ecrireJsonExact(lireJsonExact(String(texte)), ''); }
 
 /** Trie les cles a tous les niveaux : deux reponses deviennent comparables. */
-export function jsonTrie(texte) {
-  const trier = valeur => {
-    if (Array.isArray(valeur)) return valeur.map(trier);
-    if (valeur && typeof valeur === 'object') {
-      const out = {};
-      for (const cle of Object.keys(valeur).sort()) out[cle] = trier(valeur[cle]);
-      return out;
-    }
-    return valeur;
-  };
-  return JSON.stringify(trier(JSON.parse(String(texte))), null, 2);
-}
+export function jsonTrie(texte) { return ecrireJsonExact(trierClesJson(lireJsonExact(String(texte))), '  '); }
 
 /** Une ligne par chemin : le plus sur moyen de comparer deux structures. */
-export function jsonAplati(texte) {
-  const valeur = JSON.parse(String(texte));
-  const lignes = [];
-  const descendre = (v, chemin) => {
-    if (Array.isArray(v)) {
-      if (!v.length) return lignes.push(chemin + ' = []');
-      v.forEach((x, i) => descendre(x, chemin + '[' + i + ']'));
-    } else if (v && typeof v === 'object') {
-      const cles = Object.keys(v);
-      if (!cles.length) return lignes.push(chemin + ' = {}');
-      for (const cle of cles) descendre(v[cle], chemin ? chemin + '.' + cle : cle);
-    } else {
-      lignes.push(chemin + ' = ' + JSON.stringify(v));
-    }
-  };
-  descendre(valeur, '');
-  return lignes.join('\n');
-}
+export function jsonAplati(texte) { return cheminsJson(lireJsonExact(String(texte))).join('\n'); }
 
 /** JSON sur une ligne par enregistrement (JSON Lines) a partir d un tableau. */
 export function jsonVersLignes(texte) {
-  const valeur = JSON.parse(String(texte));
-  if (!Array.isArray(valeur)) throw new Error('JSON Lines attend un tableau');
-  return valeur.map(v => JSON.stringify(v)).join('\n');
+  const arbre = lireJsonExact(String(texte));
+  if (arbre.type !== 'tableau') throw new Error('JSON Lines attend un tableau');
+  return arbre.elements.map(e => ecrireJsonExact(e, '')).join('\n');
 }
 
 export function lignesVersJson(texte) {
   const lignes = String(texte).split(/\r?\n/).filter(l => l.trim());
-  return JSON.stringify(lignes.map((l, i) => {
-    try { return JSON.parse(l); }
+  const elements = lignes.map((l, i) => {
+    try { return lireJsonExact(l); }
     catch { throw new Error('ligne ' + (i + 1) + ' illisible en JSON'); }
-  }), null, 2);
+  });
+  return ecrireJsonExact({ type: 'tableau', elements }, '  ');
 }
 
 /* ---------------------------------- YAML ---------------------------------- */
@@ -66,19 +45,17 @@ export function lignesVersJson(texte) {
  * le sens d une valeur (« yes », « 1.0 », « null » restent du texte).
  */
 export function jsonVersYaml(texte) {
-  const valeur = JSON.parse(String(texte));
-  const scalaire = v => v === null ? 'null'
-    : typeof v === 'string' ? JSON.stringify(v)
-    : Array.isArray(v) ? '[]'
-    : typeof v === 'object' ? '{}'
-    : String(v);
-  const plein = v => v !== null && typeof v === 'object'
-    && (Array.isArray(v) ? v.length : Object.keys(v).length) > 0;
+  const racine = lireJsonExact(String(texte));
+  /* Un lexeme JSON est aussi un scalaire YAML 1.2 valide : une chaine entre
+     guillemets doubles garde ses echappements, un nombre son ecriture. */
+  const scalaire = n => (n.type === 'objet' ? '{}' : n.type === 'tableau' ? '[]' : n.brut);
+  const plein = n => (n.type === 'objet' ? n.membres.length : n.type === 'tableau' ? n.elements.length : 0) > 0;
 
-  const lignes = (v, marge) => {
+  const lignes = (n, marge) => {
+    if (marge.length > 2000) throw new Error('YAML : plus de mille niveaux d imbrication, chacun ajoute deux espaces de marge');
     const out = [];
-    if (Array.isArray(v)) {
-      for (const item of v) {
+    if (n.type === 'tableau') {
+      for (const item of n.elements) {
         if (!plein(item)) { out.push(marge + '- ' + scalaire(item)); continue; }
         const sous = lignes(item, marge + '  ');
         out.push(marge + '- ' + sous[0].slice(marge.length + 2));
@@ -86,16 +63,16 @@ export function jsonVersYaml(texte) {
       }
       return out;
     }
-    for (const [cle, val] of Object.entries(v)) {
-      if (!plein(val)) { out.push(marge + JSON.stringify(cle) + ': ' + scalaire(val)); continue; }
-      out.push(marge + JSON.stringify(cle) + ':');
-      out.push(...lignes(val, marge + '  '));
+    for (const m of n.membres) {
+      if (!plein(m.valeur)) { out.push(marge + m.brutCle + ': ' + scalaire(m.valeur)); continue; }
+      out.push(marge + m.brutCle + ':');
+      out.push(...lignes(m.valeur, marge + '  '));
     }
     return out;
   };
 
-  if (!plein(valeur)) return scalaire(valeur);
-  return lignes(valeur, '').join('\n');
+  if (!plein(racine)) return scalaire(racine);
+  return lignes(racine, '').join('\n');
 }
 
 /* ----------------------------------- CSV ---------------------------------- */
@@ -127,30 +104,49 @@ export function csvVersJson(texte, separateur = ',') {
   const lignes = lireCsv(texte, separateur).filter(l => l.length && !(l.length === 1 && l[0] === ''));
   if (!lignes.length) return '[]';
   const entetes = lignes[0];
+  /* Un objet sans prototype : une colonne « __proto__ » reste une colonne. Deux
+     colonnes de meme nom gardent leurs deux valeurs, dans un tableau. */
   const out = lignes.slice(1).map(ligne => {
-    const objet = {};
-    entetes.forEach((nom, i) => { objet[nom || 'colonne' + (i + 1)] = ligne[i] === undefined ? '' : ligne[i]; });
+    const objet = Object.create(null);
+    entetes.forEach((nom, i) => {
+      const cle = nom || 'colonne' + (i + 1);
+      const valeur = ligne[i] === undefined ? '' : ligne[i];
+      if (!Object.prototype.hasOwnProperty.call(objet, cle)) objet[cle] = valeur;
+      else if (Array.isArray(objet[cle])) objet[cle].push(valeur);
+      else objet[cle] = [objet[cle], valeur];
+    });
     return objet;
   });
   return JSON.stringify(out, null, 2);
 }
 
 export function jsonVersCsv(texte, separateur = ',') {
-  const valeur = JSON.parse(String(texte));
-  const tableau = Array.isArray(valeur) ? valeur : [valeur];
-  const colonnes = [];
-  for (const ligne of tableau) {
-    if (!ligne || typeof ligne !== 'object') throw new Error('le CSV attend un tableau d objets');
-    for (const cle of Object.keys(ligne)) if (!colonnes.includes(cle)) colonnes.push(cle);
-  }
-  const echapper = v => {
-    const s = v === null || v === undefined ? ''
-      : typeof v === 'object' ? JSON.stringify(v) : String(v);
-    return /["\r\n]/.test(s) || s.includes(separateur) ? '"' + s.split('"').join('""') + '"' : s;
+  const racine = lireJsonExact(String(texte));
+  const lignes = racine.type === 'tableau' ? racine.elements : [racine];
+  /* Une ligne est un objet (colonnes nommees) ou un tableau (colonnes
+     numerotees, comme Object.keys les nommait). */
+  const membres = ligne => {
+    if (ligne.type === 'objet') return ligne.membres;
+    if (ligne.type === 'tableau') return ligne.elements.map((valeur, k) => ({ cle: String(k), valeur }));
+    throw new Error('le CSV attend un tableau d objets');
   };
-  return [colonnes.map(echapper).join(separateur)]
-    .concat(tableau.map(ligne => colonnes.map(c => echapper(ligne[c])).join(separateur)))
-    .join('\n');
+  const colonnes = [];
+  const vues = new Set();
+  for (const ligne of lignes) {
+    for (const m of membres(ligne)) if (!vues.has(m.cle)) { vues.add(m.cle); colonnes.push(m.cle); }
+  }
+  const texteDe = n => (!n ? ''
+    : n.type === 'chaine' ? n.valeur
+      : n.type === 'litteral' && n.brut === 'null' ? ''
+        : n.type === 'objet' || n.type === 'tableau' ? ecrireJsonExact(n, '') : n.brut);
+  const echapper = s => (/["\r\n]/.test(s) || s.includes(separateur) ? '"' + s.split('"').join('""') + '"' : s);
+  /* Deux cles jumelles : la derniere, comme JSON.parse. */
+  const cellules = ligne => {
+    const parCle = new Map();
+    for (const m of membres(ligne)) parCle.set(m.cle, m.valeur);
+    return colonnes.map(c => echapper(texteDe(parCle.get(c)))).join(separateur);
+  };
+  return [colonnes.map(echapper).join(separateur)].concat(lignes.map(cellules)).join('\n');
 }
 
 /* ----------------------------------- XML ---------------------------------- */

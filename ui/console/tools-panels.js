@@ -8,7 +8,8 @@
  * Chaque panneau lit le meme texte de travail que la vue « Boite a outils » :
  * on colle une fois, tous les outils regardent la meme matiere.
  */
-import { el, frag, kv, sec, add, button, jsonTree } from '../lib/dom.js';
+import { el, frag, kv, sec, add, button } from '../lib/dom.js';
+import { jsonTree } from '../lib/arbre-json.js';
 import { t, tp, te, deuxPoints } from '../lib/i18n.js';
 import { copy, toast } from '../app.js';
 import {
@@ -23,6 +24,7 @@ import { verifierJwt, cleAttendue, ALGORITHMES_JWT } from '../lib/jwt.js';
 import { frequences, caracteresCaches } from '../lib/codecs-text.js';
 import { dureeLisible } from '../lib/temps.js';
 import { lirePhp, versJs, ressemblePhp } from '../lib/php-serialise.js';
+import { ecrireValeurJson } from '../lib/json-exact.js';
 
 /* ---------------------------------- JWT ----------------------------------- */
 export function panneauJwt(entree, etat, redessiner) {
@@ -139,7 +141,7 @@ function panneauSignatureJwt(entree, jwt, etat, redessiner) {
 
 function formaterValeur(v) {
   if (v == null) return '';
-  if (typeof v === 'object') return JSON.stringify(v);
+  if (typeof v === 'object') return ecrireValeurJson(v, '');
   return String(v);
 }
 
@@ -346,7 +348,7 @@ export function panneauAnalyse(entree) {
         box.appendChild(el('p', { class: 'note warn', text:
           t('Texte en trop apres la valeur : ') + reste.slice(0, 60) }));
       }
-      const json = JSON.stringify(versJs(valeur), null, 2);
+      const json = ecrireValeurJson(versJs(valeur), '  ');
       box.appendChild(el('div', { class: 'actions' }, [
         button('Copier en JSON', () => copy(json, 'Structure copiee'))
       ]));

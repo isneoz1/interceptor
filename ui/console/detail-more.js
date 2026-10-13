@@ -3,7 +3,8 @@
  *
  * Suite de detail-parts.js : meme principe, tout champ present est affiche.
  */
-import { el, frag, kv, sec, jsonTree, add, button } from '../lib/dom.js';
+import { el, frag, kv, sec, add, button } from '../lib/dom.js';
+import { jsonTree } from '../lib/arbre-json.js';
 import { listeProgressive } from '../lib/liste-progressive.js';
 import { base64VersOctets, octetsVersHex } from '../lib/bytes.js';
 import { essayerFormats } from '../lib/binaires.js';

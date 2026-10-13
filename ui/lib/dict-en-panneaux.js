@@ -233,8 +233,6 @@ export const EN_PANNEAUX = {
   '{n} lignes, {t} tables': '{n} lines, {t} tables',
   'Tapez un nom, un code ou un mot : toutes les tables sont cherchees en meme temps. Ctrl+K fait la meme chose depuis n importe quelle vue.':
     'Type a name, a code or a word: every table is searched at once. Ctrl+K does the same from any view.',
-  '{n} autres entrees correspondent : precisez la recherche, ou choisissez une table.':
-    '{n} more entries match: narrow the search, or pick a table.',
   'Aucune methode ne correspond.': 'No method matches.',
   'Aucun entete ne correspond.': 'No header matches.',
   'Aucun type ne correspond.': 'No media type matches.',

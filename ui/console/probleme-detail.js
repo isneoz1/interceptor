@@ -4,7 +4,8 @@
  * au statut HTTP reellement servi. Rien ne s affiche pour une autre reponse.
  * La lecture vit dans ui/lib/probleme-http.js.
  */
-import { el, frag, kv, sec, add, jsonTree } from '../lib/dom.js';
+import { el, frag, kv, sec, add } from '../lib/dom.js';
+import { jsonTree } from '../lib/arbre-json.js';
 import { tp } from '../lib/i18n.js';
 import { lireProbleme, faitsProbleme } from '../lib/probleme-http.js';
 

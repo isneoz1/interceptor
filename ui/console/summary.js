@@ -8,8 +8,25 @@ import { $, el, clear, sec, button, vide } from '../lib/dom.js';
 import { t, tp, te } from '../lib/i18n.js';
 import { bytes, ms, clock, middle, typeLabel } from '../lib/format.js';
 import { state, inScope, copy, cmd } from '../app.js';
+import { listeProgressive } from '../lib/liste-progressive.js';
 
+/* Un classement montre d emblee ses quinze premieres lignes, dit combien il
+   en compte, et un bouton montre le reste : rien n est cache sans le dire.
+   Les classements coupaient a quinze en silence, et leur titre annoncait
+   « 15 lignes » quand il y en avait quarante. */
 const TOP = 15;
+
+/** Le titre d un classement, avec son compte reel. */
+function secClassement(titre, total) {
+  return sec(titre, total > TOP ? tp('{n} premiers sur {total}', { n: TOP, total })
+    : total ? tp('{n} lignes', { n: total }) : '');
+}
+
+/** Le bouton qui montre ce qui suit les quinze premieres lignes. */
+function boutonSuite(reste, montrer) {
+  const bouton = button(tp('Tout afficher ({n} de plus)', { n: reste }), () => { bouton.remove(); montrer(); });
+  return bouton;
+}
 
 /* La derniere mesure de compression, gardee tant que le perimetre ne change
    pas : la vue se redessine, la mesure n a pas a etre refaite. */
@@ -38,7 +55,7 @@ function tally(list, keyOf, valueOf) {
 function chart(rows, format, toneOf) {
   const max = rows.reduce((m, r) => Math.max(m, r[1]), 0) || 1;
   const box = el('div', { class: 'chart' });
-  for (const [label, value] of rows) {
+  const barre = ([label, value]) => {
     box.appendChild(el('div', { class: 'lab', text: t(label), title: t(label) }));
     box.appendChild(el('div', { class: 'track' },
       el('div', {
@@ -46,8 +63,13 @@ function chart(rows, format, toneOf) {
         style: 'width:' + Math.max(2, (value / max) * 100) + '%'
       })));
     box.appendChild(el('div', { class: 'val', text: format ? format(value) : String(value) }));
-  }
-  return box;
+  };
+  rows.slice(0, TOP).forEach(barre);
+  if (rows.length <= TOP) return box;
+  const conteneur = el('div', null, [box]);
+  conteneur.appendChild(el('div', { class: 'actions' },
+    boutonSuite(rows.length - TOP, () => rows.slice(TOP).forEach(barre))));
+  return conteneur;
 }
 
 /* La couleur d une barre de statut. Un 1xx (101 : ouverture d un WebSocket)
@@ -68,18 +90,25 @@ function openRecord(id) {
 
 function rankList(title, rows, describe) {
   const box = el('div');
-  box.appendChild(sec(title, rows.length ? tp('{n} lignes', { n: rows.length }) : ''));
+  box.appendChild(secClassement(title, rows.length));
   if (!rows.length) {
     box.appendChild(el('p', { class: 'note', text: t('Rien a signaler sur ce perimetre.') }));
     return box;
   }
-  for (const rec of rows) {
+  const ligne = rec => {
     const line = el('div', { class: 'log', title: rec.url });
     line.appendChild(el('span', { class: 'ts', text: describe(rec) }));
     line.appendChild(el('b', { class: 'm-' + rec.method, text: rec.method }));
     line.appendChild(el('span', { text: middle(rec.host + rec.path, 110) }));
     line.addEventListener('click', () => openRecord(rec.id));
-    box.appendChild(line);
+    return line;
+  };
+  for (const rec of rows.slice(0, TOP)) box.appendChild(ligne(rec));
+  if (rows.length > TOP) {
+    const hote = el('div');
+    box.appendChild(hote);
+    box.appendChild(el('div', { class: 'actions' },
+      boutonSuite(rows.length - TOP, () => listeProgressive(hote, rows.slice(TOP), ligne))));
   }
   return box;
 }
@@ -165,31 +194,36 @@ export function render() {
   const right = el('div');
   cols.appendChild(right);
 
-  right.appendChild(sec('Domaines par volume recu'));
-  right.appendChild(chart(tally(list, r => r.host, r => r.size || 0).slice(0, TOP), bytes));
+  const parVolume = tally(list, r => r.host, r => r.size || 0);
+  right.appendChild(secClassement('Domaines par volume recu', parVolume.length));
+  right.appendChild(chart(parVolume, bytes));
 
-  right.appendChild(sec('Domaines par nombre de requetes'));
-  right.appendChild(chart(tally(list, r => r.host).slice(0, TOP)));
+  const parNombre = tally(list, r => r.host);
+  right.appendChild(secClassement('Domaines par nombre de requetes', parNombre.length));
+  right.appendChild(chart(parNombre));
 
-  const enErreur = tally(list.filter(r => r.error || r.statusCode >= 400), r => r.host).slice(0, TOP);
+  const enErreur = tally(list.filter(r => r.error || r.statusCode >= 400), r => r.host);
   if (enErreur.length) {
-    right.appendChild(sec('Domaines en erreur'));
+    right.appendChild(secClassement('Domaines en erreur', enErreur.length));
     right.appendChild(chart(enErreur, null, () => 's-5'));
   }
 
-  right.appendChild(sec('Types de contenu'));
-  right.appendChild(chart(tally(list, r => r.mime).slice(0, TOP)));
+  const types = tally(list, r => r.mime);
+  right.appendChild(secClassement('Types de contenu', types.length));
+  right.appendChild(chart(types));
 
-  right.appendChild(sec('Marqueurs de l analyse'));
   const tags = new Map();
   for (const rec of list) for (const marqueur of rec.tags || []) tags.set(marqueur, (tags.get(marqueur) || 0) + 1);
-  const tagRows = [...tags.entries()].sort((a, b) => b[1] - a[1]).slice(0, TOP);
+  const tagRows = [...tags.entries()].sort((a, b) => b[1] - a[1]);
+  right.appendChild(secClassement('Marqueurs de l analyse', tagRows.length));
   right.appendChild(tagRows.length ? chart(tagRows)
     : el('p', { class: 'note', text: t('Aucun marqueur pose sur ce perimetre.') }));
 
   /* ------------------------------- Debit ---------------------------------- */
-  const first = Math.min(...list.map(r => r.startTime || Date.now()));
-  const last = Math.max(...list.map(r => r.startTime || Date.now()));
+  /* Une boucle plutot que Math.min(...liste) : etaler cent mille valeurs en
+     arguments depasse la limite du moteur. */
+  let first = Infinity, last = -Infinity;
+  for (const r of list) { const ts = r.startTime || Date.now(); if (ts < first) first = ts; if (ts > last) last = ts; }
   const span = Math.max(1000, last - first);
   const buckets = 40;
   const width = span / buckets;
@@ -213,14 +247,14 @@ export function render() {
   box.appendChild(spark);
 
   /* ------------------------------ Classements ----------------------------- */
-  const slow = list.filter(r => r.duration != null).sort((a, b) => b.duration - a.duration).slice(0, TOP);
+  const slow = list.filter(r => r.duration != null).sort((a, b) => b.duration - a.duration);
   box.appendChild(rankList('Requetes les plus lentes', slow, r => ms(r.duration)));
 
-  const heavy = list.filter(r => r.size).sort((a, b) => b.size - a.size).slice(0, TOP);
+  const heavy = list.filter(r => r.size).sort((a, b) => b.size - a.size);
   box.appendChild(rankList('Reponses les plus lourdes', heavy, r => bytes(r.size)));
 
   const risky = list.filter(r => r.findings > 0)
-    .sort((a, b) => b.findings - a.findings).slice(0, TOP);
+    .sort((a, b) => b.findings - a.findings);
   box.appendChild(rankList('Requetes les plus signalees', risky, r => tp('{n} alerte(s)', { n: r.findings })));
 
   /* La meme adresse telechargee plusieurs fois depuis le reseau, avec succes :
@@ -232,7 +266,7 @@ export function render() {
     if (deja) { deja.n++; deja.total += rec.size || 0; }
     else repetees.set(rec.url, { ...rec, n: 1, total: rec.size || 0 });
   }
-  const doublons = [...repetees.values()].filter(x => x.n > 1).sort((a, b) => b.total - a.total || b.n - a.n).slice(0, TOP);
+  const doublons = [...repetees.values()].filter(x => x.n > 1).sort((a, b) => b.total - a.total || b.n - a.n);
   box.appendChild(rankList('Memes adresses telechargees plusieurs fois', doublons,
     x => tp('{n} fois · {taille}', { n: x.n, taille: bytes(x.total) })));
 
@@ -241,7 +275,7 @@ export function render() {
   const retraits = new Map();
   for (const rec of list) if (rec.retrait) retraits.set(rec.url, rec);
   const annonces = [...retraits.values()]
-    .sort((a, b) => (a.retrait.fin ?? Infinity) - (b.retrait.fin ?? Infinity)).slice(0, TOP);
+    .sort((a, b) => (a.retrait.fin ?? Infinity) - (b.retrait.fin ?? Infinity));
   box.appendChild(rankList('Adresses qui annoncent leur retrait', annonces, x => texteRetrait(x.retrait)));
   box.appendChild(blocCompression(list));
 }
@@ -309,7 +343,9 @@ function textSummary(list) {
     '',
     t('Domaines par volume :')
   ];
-  for (const [host, value] of tally(list, r => r.host, r => r.size || 0).slice(0, TOP)) {
+  /* Tous les domaines : un texte copie ne coute rien, et il ne doit pas en
+     taire un seul. */
+  for (const [host, value] of tally(list, r => r.host, r => r.size || 0)) {
     lines.push('  ' + host + '  ' + bytes(value));
   }
   return lines.join('\n');

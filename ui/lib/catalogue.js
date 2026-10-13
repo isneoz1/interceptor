@@ -55,6 +55,7 @@ import { decoderValeurEtendue, encoderValeurEtendue, decoderMotsCodes }
   from './entetes-parametres.js';
 import { z85Encoder, z85Decoder, uuencode, uudecode } from './codecs-transport.js';
 import { lirePhpStrict, versJs, ecrirePhp } from './php-serialise.js';
+import { lireJson, ecrireValeurJson } from './json-exact.js';
 import { decoderSamlTexte } from './saml.js';
 import { dnsVersTexte } from './dns-message.js';
 import { webauthnVersTexte } from './webauthn.js';
@@ -187,9 +188,9 @@ export const TRANSFORMATIONS = [
 
   /* Serialisation PHP : lecture et ecriture, sans jamais rien executer. */
   d('php-json', 'JSON', 'Serialisation PHP vers JSON',
-    v => JSON.stringify(versJs(lirePhpStrict(v)), null, 2)),
+    v => ecrireValeurJson(versJs(lirePhpStrict(v)), '  ')),
   e('json-php', 'JSON', 'JSON vers serialisation PHP',
-    v => ecrirePhp(JSON.parse(v))),
+    v => ecrirePhp(lireJson(v))),
 
   /* ------------------------------- Domaines ------------------------------- */
   e('puny-enc', 'Domaines', 'Punycode — encoder', punycodeEncoder),

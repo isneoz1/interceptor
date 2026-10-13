@@ -8,7 +8,9 @@
  * Rien ne s affiche quand l echange n est ni l un ni l autre. La lecture vit
  * dans ui/lib/rpc-http.js.
  */
-import { el, frag, kv, sec, add, jsonTree } from '../lib/dom.js';
+import { el, frag, kv, sec, add } from '../lib/dom.js';
+import { jsonTree } from '../lib/arbre-json.js';
+import { ecrireValeurJson, NombreExact } from '../lib/json-exact.js';
 import { t, tp } from '../lib/i18n.js';
 import {
   lireAppelRpc, lireReponseJsonRpc, lireSoap, faitsJsonRpc, faitsSoap, actionSoap
@@ -39,7 +41,7 @@ export function rpcRequete(rec) {
     montrer(box, faitsJsonRpc(appel, null));
     for (const a of valides) {
       const carte = el('div', { class: 'find info' }, [el('h4', { text: a.methode })]);
-      add(carte, kv('Identifiant', a.notification ? t('aucun : notification, sans reponse attendue') : JSON.stringify(a.id)));
+      add(carte, kv('Identifiant', a.notification ? t('aucun : notification, sans reponse attendue') : ecrireValeurJson(a.id, '')));
       if (a.params !== undefined) carte.appendChild(el('div', { class: 'tree' }, jsonTree(a.params, 'params')));
       box.appendChild(carte);
     }
@@ -73,13 +75,15 @@ export function rpcReponse(rec) {
         const e = r.erreur;
         const carte = el('div', { class: 'find medium' }, [
           el('h4', { text: e.message || t('(erreur sans message)') }),
-          el('p', { text: [tp('code {c}', { c: e.code }), e.sens ? e.sens : null, tp('id {id}', { id: JSON.stringify(r.id) })].filter(Boolean).join('  ·  ') })
+          el('p', { text: [tp('code {c}', { c: e.code }), e.sens ? e.sens : null, tp('id {id}', { id: ecrireValeurJson(r.id, '') })].filter(Boolean).join('  ·  ') })
         ]);
         if (e.donnees !== undefined) carte.appendChild(el('div', { class: 'tree' }, jsonTree(e.donnees, 'data')));
         box.appendChild(carte);
       } else {
-        add(box, kv(tp('Resultat, id {id}', { id: JSON.stringify(r.id) }), typeof r.resultat === 'object' && r.resultat !== null ? null : JSON.stringify(r.resultat)));
-        if (r.resultat !== null && typeof r.resultat === 'object') box.appendChild(el('div', { class: 'tree' }, jsonTree(r.resultat, 'result')));
+        /* Un resultat simple s ecrit sur la ligne ; un objet ou un tableau en arbre. */
+        const simple = r.resultat === null || typeof r.resultat !== 'object' || r.resultat instanceof NombreExact;
+        add(box, kv(tp('Resultat, id {id}', { id: ecrireValeurJson(r.id, '') }), simple ? ecrireValeurJson(r.resultat, '') : null));
+        if (!simple) box.appendChild(el('div', { class: 'tree' }, jsonTree(r.resultat, 'result')));
       }
     }
     return box;

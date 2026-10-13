@@ -19,6 +19,7 @@
  * exactement « 2.0 ».
  */
 import { sensErreurJsonRpc } from './sous-protocoles-plus.js';
+import { lireJson, ecrireValeurJson, NombreExact } from './json-exact.js';
 import { desechapper, lireAttributs, morceauxXml, lireBalise } from './xml-lecture.js';
 
 export const NS_SOAP11 = 'http://schemas.xmlsoap.org/soap/envelope/';
@@ -27,13 +28,15 @@ const SOAP_MAX = 4 * 1024 * 1024;
 const TEXTE_MAX = 2000;
 const JSONRPC = /"jsonrpc"\s*:\s*"2\.0"/;
 
-const estObjet = v => v !== null && typeof v === 'object' && !Array.isArray(v);
+const estObjet = v => v !== null && typeof v === 'object' && !Array.isArray(v) && !(v instanceof NombreExact);
 const possede = (o, cle) => Object.prototype.hasOwnProperty.call(o, cle);
 
 function jsonDe(texte) {
   const s = String(texte || '').trim();
   if (!s || (s[0] !== '{' && s[0] !== '[')) return undefined;
-  try { return JSON.parse(s); } catch { return undefined; }
+  /* Sans perte : deux identifiants qui ne different qu au-dela de 2^53 sont
+     le meme double pour JSON.parse — une reponse au mauvais id passait. */
+  try { return lireJson(s); } catch { return undefined; }
 }
 
 /* Les phrases des faits, traduites a l affichage : exportees pour que le
@@ -95,7 +98,9 @@ export function lireReponseJsonRpc(texte) {
   return { lot: Array.isArray(v), reponses };
 }
 
-const memeId = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+/* Un identifiant compare et ecrit tel qu il a ete envoye ; absent n est pas null. */
+const texteId = v => (v === undefined ? '—' : ecrireValeurJson(v, ''));
+const memeId = (a, b) => (a === undefined) === (b === undefined) && texteId(a) === texteId(b);
 
 /** Les faits d un echange JSON-RPC. */
 export function faitsJsonRpc(appel, reponse, { statut = null } = {}) {
@@ -124,13 +129,13 @@ export function faitsJsonRpc(appel, reponse, { statut = null } = {}) {
   if (!appel.lot && !reponse.lot && valides.length === 1 && !valides[0].notification && !globale) {
     const recue = reponse.reponses[0];
     if (!recue.invalide && !memeId(recue.id, valides[0].id)) {
-      dire('idInattendu', { recu: JSON.stringify(recue.id), envoye: JSON.stringify(valides[0].id) });
+      dire('idInattendu', { recu: texteId(recue.id), envoye: texteId(valides[0].id) });
     }
   }
   if (appel.lot && !globale) {
     for (const a of valides) {
       if (a.notification) continue;
-      if (!reponse.reponses.some(r => !r.invalide && memeId(r.id, a.id))) dire('sansReponse', { id: JSON.stringify(a.id) });
+      if (!reponse.reponses.some(r => !r.invalide && memeId(r.id, a.id))) dire('sansReponse', { id: texteId(a.id) });
     }
   }
   return faits;

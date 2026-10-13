@@ -3,7 +3,7 @@
  * Aucune donnee capturee n est jamais injectee en HTML : tout passe par
  * textContent. Un site observe ne peut donc rien injecter dans l interface.
  */
-import { t, deuxPoints } from './i18n.js';
+import { t } from './i18n.js';
 
 export function el(tag, attrs, children) {
   const node = document.createElement(tag);
@@ -138,31 +138,6 @@ export function grid(pairs, columns = '1fr auto') {
     dl.appendChild(el('dd', { class: tone || null, text: String(value) }));
   }
   return dl;
-}
-
-/** Arbre JSON repliable : garantit qu aucun champ ne peut rester invisible. */
-export function jsonTree(value, key = null, depth = 0) {
-  const type = value === null ? 'null' : Array.isArray(value) ? 'array' : typeof value;
-
-  if (type !== 'object' && type !== 'array') {
-    return el('div', { class: 'row' }, [
-      key == null ? null : el('span', { class: 'k', text: deuxPoints(key) }),
-      el('span', { class: 'v', text: type === 'string' ? value : String(value) }),
-      el('span', { class: 't', text: type === 'string' ? '' : '(' + type + ')' })
-    ]);
-  }
-
-  const entries = type === 'array'
-    ? value.map((v, i) => [String(i), v])
-    : Object.entries(value);
-  const label = (key == null ? t('enregistrement') : key) +
-    (type === 'array' ? ' [' + entries.length + ']' : ' {' + entries.length + '}');
-
-  const box = el('details', { open: depth < 1 });
-  box.appendChild(el('summary', { text: label }));
-  if (!entries.length) box.appendChild(el('div', { class: 'row' }, el('span', { class: 't', text: t('vide') })));
-  for (const [k, v] of entries) box.appendChild(jsonTree(v, k, depth + 1));
-  return box;
 }
 
 /** Petit balisage : **gras** uniquement, sans jamais passer par innerHTML.

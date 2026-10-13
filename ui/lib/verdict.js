@@ -16,6 +16,7 @@ import { lireAppelRpc, lireReponseJsonRpc, lireSoap } from './rpc-http.js';
 import { lireProbleme } from './probleme-http.js';
 import { lireLimitesDebit } from './limites-debit.js';
 import { lireCycleDeVie } from './cycle-vie.js';
+import { lireProxyStatus } from './proxy-status.js';
 import { dureeLisible } from './temps.js';
 
 /* Les phrases, traduites a l affichage : exportees pour que le controle de
@@ -44,7 +45,8 @@ export const VERDICTS = {
   attendre: 'Le serveur a demande d attendre {attente} avant de reessayer',
   depreciee: 'Adresse depreciee par son auteur : elle fonctionne encore (RFC 9745)',
   finPrevue: 'Fin de service annoncee pour le {jour} (Sunset, RFC 8594)',
-  finDepassee: 'Fin de service depassee depuis le {jour} : l adresse peut cesser de repondre a tout moment'
+  finDepassee: 'Fin de service depassee depuis le {jour} : l adresse peut cesser de repondre a tout moment',
+  intermediaire: 'Reponse produite par l intermediaire {nom} : {erreur} (Proxy-Status, RFC 9209)'
 };
 
 const entete = (liste, nom) => {
@@ -143,6 +145,10 @@ export function signauxDe(rec, maintenant = Date.now()) {
   const jour = ms => new Date(ms).toISOString().slice(0, 10);
   if (cycle && cycle.deprecation) ligne('depreciee');
   if (cycle && cycle.fin && cycle.fin.ms != null) ligne(cycle.fin.passee ? 'finDepassee' : 'finPrevue', { jour: jour(cycle.fin.ms) });
+  /* Un intermediaire dit avoir produit la reponse lui-meme : le statut est
+     le sien, pas celui de l origine. */
+  const proxys = lireProxyStatus(rec.responseHeaders, { statut: rec.statusCode });
+  if (proxys && proxys.produitePar) ligne('intermediaire', proxys.produitePar);
   return lignes;
 }
 

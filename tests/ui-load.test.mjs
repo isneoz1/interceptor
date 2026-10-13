@@ -435,10 +435,15 @@ for (const [table, quoi] of [[VERDICTS, 'verdict'], [SENS_SITE, 'Sec-Fetch-Site'
   const { FAITS_ALTSVC } = await import('../ui/lib/alt-svc.js');
   const { FAITS_CACHE_STATUS, RAISONS_FWD } = await import('../ui/lib/cache-status.js');
   const { FAITS_PRIORITE } = await import('../ui/lib/priorite-http.js');
+  const { FAITS_PROXY_STATUS } = await import('../ui/lib/proxy-status.js');
+  const { ERREURS_PROXY: REF_PROXY_X, PARAMETRES_PROXY } = await import('../ui/lib/ref-proxy-status.js');
   for (const [table, quoi] of [[FAITS_DATE, 'fait de date HTTP'], [FAITS_CYCLE, 'fait Deprecation / Sunset'],
     [FAITS_DEBIT, 'fait de limite de debit'], [UNITES_DEBIT, 'unite de quota'], [FAITS_LIENS, 'fait Link'],
     [FAITS_ALTSVC, 'fait Alt-Svc'], [FAITS_CACHE_STATUS, 'fait Cache-Status'], [RAISONS_FWD, 'raison fwd'],
-    [FAITS_PRIORITE, 'fait Priority']]) {
+    [FAITS_PRIORITE, 'fait Priority'], [FAITS_PROXY_STATUS, 'fait Proxy-Status'],
+    [Object.fromEntries(PARAMETRES_PROXY.map(p => [p.cle, p.sens])), 'parametre Proxy-Status'],
+    [Object.fromEntries(REF_PROXY_X.flatMap(e => e.extras.map(x => [e.nom + x.cle, x.sens]))), 'parametre propre a une erreur de mandataire'],
+    [Object.fromEntries(REF_PROXY_X.filter(e => e.statutRegle).map(e => [e.nom, e.statutRegle])), 'regle de statut d une erreur de mandataire']]) {
     for (const texte of Object.values(table)) exigerTraduction(quoi, texte);
   }
 }
@@ -572,6 +577,7 @@ const { SUITES_TLS: REF_TLS, FERMETURES_WS: REF_WS, ERREURS_H2: REF_H2,
 const { ALERTES_TLS: REF_ALERTES, ERREURS_H3: REF_H3, ERREURS_QUIC: REF_QUIC,
         TYPES_DNS: REF_DNS, RCODES_DNS: REF_RCODES } = await import('../ui/lib/ref-protocoles.js');
 const { RELATIONS_LIENS: REF_LIENS } = await import('../ui/lib/ref-liens.js');
+const { ERREURS_PROXY: REF_PROXY } = await import('../ui/lib/ref-proxy-status.js');
 
 const TABLES_DE_REFERENCE = [
   ['codes de statut', REF_STATUTS, ['sens']],
@@ -588,7 +594,8 @@ const TABLES_DE_REFERENCE = [
   ['erreurs QUIC', REF_QUIC, ['sens']],
   ['types DNS', REF_DNS, ['sens']],
   ['codes de reponse DNS', REF_RCODES, ['sens']],
-  ['relations de liens', REF_LIENS, ['sens']]
+  ['relations de liens', REF_LIENS, ['sens']],
+  ['erreurs de mandataire', REF_PROXY, ['sens']]
 ];
 
 let lignesDeReference = 0;
@@ -753,7 +760,8 @@ const ANNONCES = [
   /* Le nombre de tables s ecrivait en toutes lettres (« Fourteen ») et
      n etait verifie par rien : il est desormais en chiffres, et compte. */
   ['tables de reference', /([0-9]+) reference tables/g, new Set(entrees.map(e => e.famille)).size],
-  ['relations de liens', /([0-9]+) link relations/g, REF_LIENS.length]
+  ['relations de liens', /([0-9]+) link relations/g, REF_LIENS.length],
+  ['erreurs de mandataire', /([0-9]+) proxy error types/g, REF_PROXY.length]
 ];
 
 /* Chaque fait que l analyseur peut constater est decrit dans la section 10,
@@ -945,7 +953,7 @@ egal('aucun texte affiche ecrit en dur ni construit par morceaux', enDur.length,
   for (const rel of fichiersJs(path.join(racine, 'ui'))) {
     if (/\/dict-en/.test(rel)) continue;
     const s = fs.readFileSync(path.join(racine, rel), 'utf8');
-    for (const m of s.matchAll(/(?:new Error|\.erreur)\(\s*'((?:[^'\\]|\\.)*)'\s*(\+?)/g)) {
+    for (const m of s.matchAll(/(?:new (?:Syntax|Type|Range)?Error|\berreur)\(\s*'((?:[^'\\]|\\.)*)'\s*(\+?)/g)) {
       const texte = desechapper(m[1]);
       if (!/[a-z]{3}/i.test(texte)) continue;
       if (m[2]) {

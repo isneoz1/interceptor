@@ -10,7 +10,8 @@
 import { el, frag, kv, sec, add, button } from '../lib/dom.js';
 import { t, tp, te } from '../lib/i18n.js';
 import { copy, toast } from '../app.js';
-import { xorTexte, xorHex, xorForceUnOctet, cesarToutes, vigenere } from '../lib/codecs-text.js';
+import { xorTexte, xorHex, xorForceUnOctet, cesar, cesarToutes, vigenere } from '../lib/codecs-text.js';
+import { texteLong } from '../lib/texte-long.js';
 import { texteVersOctets } from '../lib/bytes.js';
 import { reconnaitreEmpreinte } from '../lib/hashes.js';
 import { reconnaitreTexte } from '../lib/ref-mime.js';
@@ -65,7 +66,7 @@ export function panneauCles(entree, etat, redessiner, poser) {
     for (const c of etat.xorCandidats.slice(0, 12)) {
       const carte = el('div', { class: 'find info' }, [
         el('h4', { text: '0x' + c.cle.toString(16).padStart(2, '0') + '   ·   ' + tp('{n} % lisible', { n: c.score }) }),
-        el('pre', { class: 'pre', text: c.texte.slice(0, 500) })
+        texteLong(c.texte, { seuil: 500 })
       ]);
       carte.appendChild(el('div', { class: 'actions' },
         button('Reprendre comme entree', () => poser(c.texte))));
@@ -75,7 +76,13 @@ export function panneauCles(entree, etat, redessiner, poser) {
 
   /* ---------------------------------- Cesar ------------------------------- */
   box.appendChild(sec('Cesar', 'les vingt-cinq decalages'));
-  const decalages = cesarToutes(brut.slice(0, 400));
+  /* L apercu porte sur le debut du texte ; un clic copie le decalage du
+     texte ENTIER — il ne copiait que ses quatre cents premiers caracteres. */
+  const APERCU_CESAR = 400;
+  const decalages = cesarToutes(brut.slice(0, APERCU_CESAR));
+  if (brut.length > APERCU_CESAR) {
+    box.appendChild(el('p', { class: 'note', text: tp('Apercu des {n} premiers caracteres ; un clic copie le texte entier decale.', { n: APERCU_CESAR }) }));
+  }
   if (!brut.trim()) {
     box.appendChild(el('p', { class: 'note', text: t('Texte de travail vide.') }));
   } else {
@@ -84,7 +91,7 @@ export function panneauCles(entree, etat, redessiner, poser) {
         el('span', { text: '+' + d.decalage }),
         el('b', { text: d.texte })
       ]);
-      ligne.addEventListener('click', () => copy(d.texte, 'Ligne copiee'));
+      ligne.addEventListener('click', () => copy(brut.length > APERCU_CESAR ? cesar(brut, d.decalage) : d.texte, 'Ligne copiee'));
       box.appendChild(ligne);
     }
   }

@@ -7,9 +7,10 @@
 import { el, frag, kv, sec, add, button } from '../lib/dom.js';
 import { t, tp, te } from '../lib/i18n.js';
 import { listeProgressive } from '../lib/liste-progressive.js';
+import { lireJsonExact, cheminsJson, ecrireValeurJson } from '../lib/json-exact.js';
 import { copy, toast } from '../app.js';
 import {
-  MOTIFS, luhn, chercherJson, cheminsJson,
+  MOTIFS, luhn, chercherJson,
   selecteursDisponibles, selecteurCss, selecteurXpath
 } from '../lib/motifs.js';
 
@@ -40,9 +41,11 @@ export function panneauChercher(entree, etat, redessiner, poser) {
       if (!trouves.length) {
         box.appendChild(el('p', { class: 'note', text: t('Rien de cette forme dans le texte de travail.') }));
       }
-      for (const trouve of trouves.slice(0, 300)) {
-        add(box, kv('valeur', trouve, { copy: true }));
-      }
+      /* Toutes les trouvailles, par lots : le compte annonce est celui qu on
+         voit. */
+      const hoteTrouves = el('div');
+      box.appendChild(hoteTrouves);
+      listeProgressive(hoteTrouves, trouves, trouve => kv('valeur', trouve, { copy: true }) || el('div'));
       if (trouves.length) {
         box.appendChild(el('div', { class: 'actions' }, [
           button('Copier la liste', () => copy(trouves.join('\n'), 'Liste copiee')),
@@ -84,8 +87,10 @@ export function panneauChercher(entree, etat, redessiner, poser) {
   const barreJson = el('div', { class: 'actions' }, [champChemin]);
   barreJson.appendChild(button('Tous les chemins', () => {
     try {
-      const chemins = cheminsJson(brut);
-      poser(chemins.map(c => c.chemin + ' = ' + c.valeur).join('\n'));
+      /* Tous, sans limite (il en posait cinq cents), et chaque valeur telle
+         qu ecrite. */
+      const chemins = cheminsJson(lireJsonExact(brut), '$');
+      poser(chemins.join('\n'));
       toast(tp('{n} chemins poses dans le texte de travail', { n: chemins.length }));
     } catch (e) { toast(te(e), false); }
   }));
@@ -104,7 +109,7 @@ export function panneauChercher(entree, etat, redessiner, poser) {
       box.appendChild(hote);
       listeProgressive(hote, trouves, trouve => {
         const valeur = typeof trouve.valeur === 'object'
-          ? JSON.stringify(trouve.valeur) : String(trouve.valeur);
+          ? ecrireValeurJson(trouve.valeur, '') : String(trouve.valeur);
         return kv(trouve.chemin, valeur, { copy: true });
       });
     } catch (e) {

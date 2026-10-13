@@ -8,6 +8,7 @@
  *   Liens annonces       Link (RFC 8288), avec le registre IANA des relations
  *   Services alternatifs Alt-Svc (RFC 7838)
  *   Caches traverses     Cache-Status (RFC 9211), CDN-Cache-Control (RFC 9213)
+ *   Intermediaires       Proxy-Status (RFC 9209, RFC 9532)
  *   Priorite             Priority (RFC 9218)
  *
  * Chaque bloc n apparait que si l en-tete est la. Les lectures vivent dans
@@ -27,6 +28,7 @@ import { relationLien } from '../lib/ref-liens.js';
 import { lireAltSvc, ALPN_CONNUS } from '../lib/alt-svc.js';
 import { lireCacheStatus, lireCdnCacheControl } from '../lib/cache-status.js';
 import { lirePriorite } from '../lib/priorite-http.js';
+import { lireProxyStatus } from '../lib/proxy-status.js';
 
 /** « 2023-06-30 23:59:59 UTC · il y a 3 j 4 h » */
 export function quand(ms, maintenant = Date.now()) {
@@ -47,6 +49,7 @@ function phrase(f) {
   if (typeof v.raison === 'string') v.raison = t(v.raison);
   if (typeof v.lecture === 'string') v.lecture = t(v.lecture);
   if (typeof v.type === 'string') v.type = t(v.type);
+  if (typeof v.sens === 'string') v.sens = t(v.sens);
   return tp(f.texte, v);
 }
 
@@ -210,6 +213,25 @@ function blocCaches(rec) {
   return box;
 }
 
+/* ------------------------- Intermediaires traverses ----------------------- */
+function blocProxys(rec) {
+  const box = frag();
+  const lu = lireProxyStatus(rec.responseHeaders, { statut: rec.statusCode });
+  if (!lu) return box;
+  box.appendChild(sec('Intermediaires traverses', 'Proxy-Status · RFC 9209'));
+  notes(box, lu.faits);
+  if (lu.intermediaires.length > 1) {
+    box.appendChild(el('p', { class: 'note', text: t('du plus proche de l origine au plus proche de vous (RFC 9209 §2)') }));
+  }
+  if (lu.intermediaires.length) {
+    box.appendChild(el('p', { class: 'note', text: t('Ce que chacun dit de lui-meme : rien ne le verifie (RFC 9209 §4).') }));
+  }
+  const hote = el('div');
+  box.appendChild(hote);
+  parLots(hote, lu.intermediaires, i => kv(i.nom, i.notes.map(phrase).join('  ·  ')) || el('div'));
+  return box;
+}
+
 /* -------------------------------- Priorite -------------------------------- */
 function blocPriorite(rec) {
   const box = frag();
@@ -231,7 +253,7 @@ function blocPriorite(rec) {
 /** Les signaux de la reponse, dans l ordre ou on les cherche. */
 export function signaux(rec) {
   const box = frag();
-  for (const bloc of [blocCycleDeVie, blocDebit, blocLiens, blocAltSvc, blocCaches, blocPriorite]) {
+  for (const bloc of [blocCycleDeVie, blocDebit, blocLiens, blocAltSvc, blocCaches, blocProxys, blocPriorite]) {
     /* Une lecture qui echoue ne doit pas emporter l onglet : elle le dit, a sa place. */
     try { box.appendChild(bloc(rec)); }
     catch (e) { box.appendChild(el('p', { class: 'note ko', text: tp('Lecture impossible : {raison}', { raison: te(e) }) })); }

@@ -19,6 +19,7 @@
  * C est un point qui compte, la deserialisation PHP etant elle-meme une source
  * d execution de code cote serveur.
  */
+import { NombreExact, entierHorsPlageSure } from './json-exact.js';
 
 const ENCODEUR = new TextEncoder();
 const DECODEUR = new TextDecoder('utf-8', { fatal: false });
@@ -212,6 +213,10 @@ export function lirePhpStrict(entree) {
   return valeur;
 }
 
+/* Une propriete propre : une cle « __proto__ » reste une cle. */
+const poser = (objet, cle, valeur) =>
+  Object.defineProperty(objet, cle, { value: valeur, enumerable: true, writable: true, configurable: true });
+
 /** La structure lue, ramenee a des valeurs JavaScript ordinaires. */
 export function versJs(noeud) {
   if (!noeud) return null;
@@ -221,15 +226,18 @@ export function versJs(noeud) {
       const liste = noeud.entrees.every((e, i) => e.cle.type === 'entier' && e.cle.valeur === i);
       if (liste) return noeud.entrees.map(e => versJs(e.valeur));
       const out = {};
-      for (const e of noeud.entrees) out[String(e.cle.valeur)] = versJs(e.valeur);
+      for (const e of noeud.entrees) poser(out, e.cle.type === 'entier' ? e.cle.brut : String(e.cle.valeur), versJs(e.valeur));
       return out;
     }
     case 'objet': {
       const out = {};
-      for (const p of noeud.proprietes) out[p.nom] = versJs(p.valeur);
+      for (const p of noeud.proprietes) poser(out, p.nom, versJs(p.valeur));
       return out;
     }
     case 'enumeration': return noeud.valeur;
+    /* Un entier PHP tient sur 64 bits : hors de la plage sure d un double, il
+       garde ses chiffres. */
+    case 'entier': return entierHorsPlageSure(noeud.brut) ? new NombreExact(noeud.brut) : noeud.valeur;
     default: return noeud.valeur;
   }
 }
@@ -238,6 +246,13 @@ export function versJs(noeud) {
 export function ecrirePhp(valeur) {
   if (valeur === null || valeur === undefined) return 'N;';
   if (typeof valeur === 'boolean') return 'b:' + (valeur ? 1 : 0) + ';';
+  /* Un grand entier ecrit tel quel : un entier PHP s il tient sur 64 bits,
+     sinon un flottant, comme json_decode de PHP le lirait. */
+  if (valeur instanceof NombreExact || typeof valeur === 'bigint') {
+    const brut = String(valeur);
+    const n = BigInt(brut);
+    return (n >= -9223372036854775808n && n <= 9223372036854775807n ? 'i:' : 'd:') + brut + ';';
+  }
   if (typeof valeur === 'number') {
     if (Number.isInteger(valeur)) return 'i:' + valeur + ';';
     if (valeur === Infinity) return 'd:INF;';

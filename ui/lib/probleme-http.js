@@ -15,6 +15,7 @@
  *           devrait reprendre la phrase du statut, eventuellement traduite
  */
 import { STATUTS } from './ref-http.js';
+import { lireJson, NombreExact } from './json-exact.js';
 
 const PHRASES = new Map(STATUTS.map(s => [s.code, s.nom]));
 const MEMBRES = new Set(['type', 'title', 'status', 'detail', 'instance']);
@@ -38,8 +39,9 @@ export function lireProbleme(texte, typeMedia) {
   const type = String(typeMedia || '').toLowerCase().split(';')[0].trim();
   if (type !== 'application/problem+json') return null;
   let v;
-  try { v = JSON.parse(String(texte || '')); } catch { return null; }
-  if (!v || typeof v !== 'object' || Array.isArray(v)) return null;
+  /* Sans perte : un membre d extension de 64 bits s affiche tel qu envoye. */
+  try { v = lireJson(String(texte || '')); } catch { return null; }
+  if (!v || typeof v !== 'object' || Array.isArray(v) || v instanceof NombreExact) return null;
   const ignores = [];
   const chaine = nom => {
     if (!(nom in v)) return null;

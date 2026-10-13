@@ -24,6 +24,7 @@
  * en sautant chaines, blocs de texte et commentaires. Elle ne valide rien
  * contre un schema — elle dit ce que le document demande.
  */
+import { lireJson, NombreExact } from './json-exact.js';
 
 const OPERATIONS = new Set(['query', 'mutation', 'subscription']);
 const NOM = /[_A-Za-z][_0-9A-Za-z]*/y;
@@ -35,7 +36,7 @@ const DOCUMENT_MAX = 512 * 1024;
 const HACHAGE = /^[0-9a-f]{64}$/i;
 const CLES_GRAPHQL = /"(?:query|extensions)"\s*:/;
 
-const estObjet = v => v !== null && typeof v === 'object' && !Array.isArray(v);
+const estObjet = v => v !== null && typeof v === 'object' && !Array.isArray(v) && !(v instanceof NombreExact);
 
 /* Les phrases des faits, traduites a l affichage : exportees pour que le
    controle de traduction les verifie une a une. */
@@ -210,7 +211,8 @@ function jsonDe(texte) {
   if (typeof texte !== 'string') return undefined;
   const s = texte.trim();
   if (!s || (s[0] !== '{' && s[0] !== '[')) return undefined;
-  try { return JSON.parse(s); } catch { return undefined; }
+  /* Sans perte : une variable de 64 bits s affiche telle qu envoyee. */
+  try { return lireJson(s); } catch { return undefined; }
 }
 
 /* `variables` et `extensions` sont des objets en POST JSON, des chaines JSON
@@ -218,7 +220,7 @@ function jsonDe(texte) {
 function parametreJson(valeur, nom, illisibles) {
   if (valeur === undefined || valeur === null || valeur === '') return null;
   if (typeof valeur !== 'string') return valeur;
-  try { return JSON.parse(valeur); } catch { illisibles.push(nom); return null; }
+  try { return lireJson(valeur); } catch { illisibles.push(nom); return null; }
 }
 
 function persisteeDe(extensions) {

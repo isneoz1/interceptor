@@ -2,18 +2,27 @@
  *
  * Selectionnez exactement deux lignes (Ctrl+clic) puis « Comparer ».
  * Les entetes et les corps sont confrontes ligne a ligne : ce qui est identique
- * est grise, ce qui change est marque. Rien n est resume ni tronque en silence.
+ * est grise, ce qui change est marque. Rien n est resume ni tronque : les
+ * longues comparaisons se dessinent par lots, et « Copier » les porte en entier.
+ *
+ * Les corps passent par le moteur de la boite a outils (lib/diff.js, Myers) :
+ * exact quelle que soit la taille. L ancienne version basculait au-dela de
+ * 1200 lignes sur une difference d ensembles, qui perdait toute ligne presente
+ * ailleurs dans l autre corps : un « }, » retire passait inapercu, et deux
+ * corps differents pouvaient etre dits identiques.
  */
 import { $, el, clear, sec, button, kv, add, vide } from '../lib/dom.js';
-import { bytes, ms, clock, middle, pretty } from '../lib/format.js';
+import { bytes, ms, clock, pretty } from '../lib/format.js';
 import { t, tp, deuxPoints } from '../lib/i18n.js';
+import { comparerLignes } from '../lib/diff.js';
+import { listeProgressive } from '../lib/liste-progressive.js';
 import { state, cmd, toast, copy } from '../app.js';
-
-const MAX_DIFF_LINES = 1200;
 
 let left = null;
 let right = null;
 let loading = false;
+/* Les listes rendues par lots du dernier dessin : un nouveau dessin les coupe. */
+let rendus = [];
 
 /** Charge les deux enregistrements complets a partir de la selection. */
 export async function loadSelection() {
@@ -32,61 +41,66 @@ export async function loadSelection() {
 }
 
 /* ----------------------------- Comparaisons ------------------------------ */
-function headerMap(list) {
+/* Chaque occurrence d un en-tete garde sa ligne : Set-Cookie ne se combine
+   pas (RFC 9110 §5.3), et deux valeurs jointes par une virgule se liraient
+   comme une seule. Les valeurs d un meme nom sont confrontees dans l ordre,
+   par le meme moteur que les corps. */
+function occurrences(list) {
   const map = new Map();
   for (const h of list || []) {
     const key = String(h.name || '').toLowerCase();
-    map.set(key, map.has(key) ? map.get(key) + ', ' + h.value : String(h.value ?? ''));
+    if (!map.has(key)) map.set(key, []);
+    map.get(key).push(String(h.value ?? ''));
   }
   return map;
 }
 
-function diffHeaders(a, b) {
-  const A = headerMap(a);
-  const B = headerMap(b);
+/**
+ * @returns { lignes: [{ kind: 'same'|'add'|'del', key, value }], noms, differents }
+ *          `noms` : nombre de noms d en-tete, `differents` : ceux qui changent
+ */
+export function comparerEntetes(a, b) {
+  const A = occurrences(a), B = occurrences(b);
   const keys = [...new Set([...A.keys(), ...B.keys()])].sort();
-  return keys.map(key => {
-    const va = A.get(key);
-    const vb = B.get(key);
-    if (va === undefined) return { key, kind: 'add', a: '', b: vb };
-    if (vb === undefined) return { key, kind: 'del', a: va, b: '' };
-    if (va !== vb) return { key, kind: 'mod', a: va, b: vb };
-    return { key, kind: 'same', a: va, b: vb };
-  });
-}
-
-/** Diff de lignes par plus longue sous-sequence commune. */
-function diffLines(a, b) {
-  const A = String(a || '').split('\n');
-  const B = String(b || '').split('\n');
-  if (A.length > MAX_DIFF_LINES || B.length > MAX_DIFF_LINES) {
-    const setB = new Set(B);
-    const setA = new Set(A);
-    return [
-      ...A.filter(l => !setB.has(l)).map(line => ({ kind: 'del', line })),
-      ...B.filter(l => !setA.has(l)).map(line => ({ kind: 'add', line }))
-    ];
-  }
-
-  const n = A.length, m = B.length;
-  const table = Array.from({ length: n + 1 }, () => new Uint32Array(m + 1));
-  for (let i = n - 1; i >= 0; i--) {
-    for (let j = m - 1; j >= 0; j--) {
-      table[i][j] = A[i] === B[j] ? table[i + 1][j + 1] + 1
-                                  : Math.max(table[i + 1][j], table[i][j + 1]);
+  const lignes = [];
+  let differents = 0;
+  for (const key of keys) {
+    const { operations } = comparerLignes(A.get(key) || [], B.get(key) || []);
+    if (operations.some(o => o.type !== 'egal')) differents++;
+    for (const o of operations) {
+      lignes.push({ kind: o.type === 'egal' ? 'same' : o.type === 'ajout' ? 'add' : 'del', key, value: o.texte });
     }
   }
+  return { lignes, noms: keys.length, differents };
+}
 
-  const out = [];
-  let i = 0, j = 0;
-  while (i < n && j < m) {
-    if (A[i] === B[j]) { out.push({ kind: 'same', line: A[i] }); i++; j++; }
-    else if (table[i + 1][j] >= table[i][j + 1]) { out.push({ kind: 'del', line: A[i] }); i++; }
-    else { out.push({ kind: 'add', line: B[j] }); j++; }
-  }
-  while (i < n) out.push({ kind: 'del', line: A[i++] });
-  while (j < m) out.push({ kind: 'add', line: B[j++] });
-  return out;
+/**
+ * Deux corps, mis en forme de la meme facon (sans perte : lib/json-exact.js),
+ * compares ligne a ligne. Les lignes gardent leur CR : deux corps qui ne
+ * different que par leurs fins de ligne ne sont pas dits identiques.
+ */
+export function comparerCorps(a, b, mime) {
+  const brutA = String(a || ''), brutB = String(b || '');
+  const textA = pretty(brutA, mime), textB = pretty(brutB, mime);
+  const { operations, minimal } = comparerLignes(textA.split('\n'), textB.split('\n'));
+  const lignes = operations.map(o => ({ kind: o.type === 'egal' ? 'same' : o.type === 'ajout' ? 'add' : 'del', line: o.texte }));
+  const changees = lignes.filter(r => r.kind !== 'same').length;
+  return {
+    lignes,
+    changees,
+    minimal,
+    identiques: brutA === brutB,
+    /* Rien ne change une fois mis en forme, et pourtant les octets different :
+       espaces, ou ecriture des memes valeurs. */
+    memeFond: brutA !== brutB && textA === textB,
+    finsDeLigne: textA !== textB && textA.replace(/\r\n/g, '\n') === textB.replace(/\r\n/g, '\n')
+  };
+}
+
+/** Ecart de deux mesures, seulement si les deux sont connues. */
+export function ecart(a, b) {
+  if (a == null || b == null || !Number.isFinite(a) || !Number.isFinite(b)) return null;
+  return a - b;
 }
 
 const SIGN = { add: '+', del: '−', mod: '~', same: ' ' };
@@ -98,8 +112,21 @@ function lineNode(kind, text) {
   ]);
 }
 
+/* Une liste de lignes, par lots : un corps de cent mille lignes ne fige pas. */
+function lignesParLots(box, lignes, fabriquer) {
+  const hote = el('div');
+  box.appendChild(hote);
+  rendus.push(listeProgressive(hote, lignes, fabriquer));
+}
+
+function arreterRendus() {
+  for (const r of rendus) { try { r.arreter(); } catch { /* deja arrete */ } }
+  rendus = [];
+}
+
 /* -------------------------------- Rendu ---------------------------------- */
 export function render() {
+  arreterRendus();
   const pane = clear($('#view-compare'));
   const box = el('div', { class: 'pane' });
   pane.appendChild(box);
@@ -115,7 +142,7 @@ export function render() {
       document.dispatchEvent(new CustomEvent('ic:goto', { detail: { view: 'requests', id: left.id } }))));
     actions.appendChild(button('Ouvrir la droite', () =>
       document.dispatchEvent(new CustomEvent('ic:goto', { detail: { view: 'requests', id: right.id } }))));
-    actions.appendChild(button('Copier la comparaison', () => copy(textDiff(), 'Comparaison copiee')));
+    actions.appendChild(button('Copier la comparaison', () => copy(texteComparaison(left, right), 'Comparaison copiee')));
   }
   box.appendChild(actions);
 
@@ -131,9 +158,11 @@ export function render() {
   const cols = el('div', { class: 'diff' });
   for (const [rec, side] of [[left, 'Gauche'], [right, 'Droite']]) {
     const col = el('div', { class: 'diff-col' });
-    col.appendChild(el('h4', { text: side + ' · #' + rec.id }));
+    col.appendChild(el('h4', { text: t(side) + ' · #' + rec.id }));
     add(col, kv('Methode', rec.method, { hl: true }));
-    add(col, kv('URL', middle(rec.finalUrl || rec.url, 90)));
+    /* L URL entiere : coupee au milieu, deux URL qui ne different que la
+       paraissaient identiques. */
+    add(col, kv('URL', rec.finalUrl || rec.url, { copy: true }));
     add(col, kv('Statut', rec.statusLine || rec.statusCode || rec.error || t('en cours')));
     add(col, kv('Heure', clock(rec.startTime)));
     add(col, kv('Duree', rec.duration != null ? ms(rec.duration) : null));
@@ -147,12 +176,15 @@ export function render() {
   }
   box.appendChild(cols);
 
-  /* --- Ecarts mesures --- */
+  /* --- Ecarts mesures : seulement entre deux mesures connues ; une duree
+         absente d un cote n est pas zero. --- */
   box.appendChild(sec('Ecarts mesures'));
-  const deltaDuration = (left.duration ?? 0) - (right.duration ?? 0);
-  const deltaSize = (left.size || 0) - (right.size || 0);
-  add(box, kv('Difference de duree', (deltaDuration >= 0 ? '+' : '−') + ms(Math.abs(deltaDuration))));
-  add(box, kv('Difference de taille', (deltaSize >= 0 ? '+' : '−') + bytes(Math.abs(deltaSize))));
+  const deltaDuration = ecart(left.duration, right.duration);
+  const deltaSize = ecart(left.size, right.size);
+  add(box, kv('Difference de duree', deltaDuration == null ? t('inconnue d un cote')
+    : (deltaDuration >= 0 ? '+' : '−') + ms(Math.abs(deltaDuration))));
+  add(box, kv('Difference de taille', deltaSize == null ? t('inconnue d un cote')
+    : (deltaSize >= 0 ? '+' : '−') + bytes(Math.abs(deltaSize))));
   add(box, kv('Meme URL', (left.finalUrl || left.url) === (right.finalUrl || right.url) ? t('oui') : t('non'), { hl: true }));
   add(box, kv('Meme statut', left.statusCode === right.statusCode ? t('oui') : t('non'), { hl: true }));
 
@@ -170,59 +202,59 @@ export function render() {
 }
 
 function renderHeaderDiff(box, title, a, b) {
-  const rows = diffHeaders(a, b);
-  const changed = rows.filter(r => r.kind !== 'same');
-  box.appendChild(sec(title, tp('{n} difference(s) sur {total} entetes', { n: changed.length, total: rows.length })));
-  if (!rows.length) {
+  const { lignes, noms, differents } = comparerEntetes(a, b);
+  box.appendChild(sec(title, tp('{n} difference(s) sur {total} entetes', { n: differents, total: noms })));
+  if (!lignes.length) {
     box.appendChild(el('p', { class: 'note', text: t('Aucun entete capture des deux cotes.') }));
     return;
   }
-  for (const row of rows) {
-    if (row.kind === 'same') {
-      box.appendChild(lineNode('same', row.key + ': ' + row.a));
-    } else if (row.kind === 'mod') {
-      box.appendChild(lineNode('del', row.key + ': ' + row.a));
-      box.appendChild(lineNode('add', row.key + ': ' + row.b));
-    } else if (row.kind === 'add') {
-      box.appendChild(lineNode('add', row.key + ': ' + row.b));
-    } else {
-      box.appendChild(lineNode('del', row.key + ': ' + row.a));
-    }
-  }
+  lignesParLots(box, lignes, l => lineNode(l.kind, deuxPoints(l.key, l.value)));
 }
 
 function renderBodyDiff(box, title, a, b, mime) {
   if (!a && !b) return;
-  const textA = pretty(a || '', mime);
-  const textB = pretty(b || '', mime);
-  const rows = diffLines(textA, textB);
-  const changed = rows.filter(r => r.kind !== 'same').length;
-  box.appendChild(sec(title, changed ? tp('{n} ligne(s) differente(s)', { n: changed }) : 'identiques'));
-  if (!changed) {
+  const r = comparerCorps(a, b, mime);
+  box.appendChild(sec(title, r.changees ? tp('{n} ligne(s) differente(s)', { n: r.changees }) : 'identiques'));
+  if (r.identiques) {
     box.appendChild(el('p', { class: 'note ok', text: t('Les deux corps sont rigoureusement identiques.') }));
     return;
   }
-  for (const row of rows.slice(0, 4000)) box.appendChild(lineNode(row.kind, row.line));
-  if (rows.length > 4000) {
-    box.appendChild(el('p', { class: 'note', text: tp('{n} lignes supplementaires non affichees.', { n: rows.length - 4000 }) }));
+  if (r.memeFond) {
+    box.appendChild(el('p', { class: 'note', text: t('Identiques une fois mis en forme, mais pas octet pour octet : seuls les espaces entre les valeurs different.') }));
+    return;
   }
+  if (r.finsDeLigne) {
+    box.appendChild(el('p', { class: 'note', text: t('Les corps ne different que par leurs fins de ligne : CRLF d un cote, LF de l autre.') }));
+  }
+  if (!r.minimal) {
+    box.appendChild(el('p', { class: 'note', text: t('Les deux corps different trop pour chercher la plus courte liste de changements : la comparaison reste exacte, chaque ligne y figure une fois, mais un bloc peut etre montre retire puis rajoute.') }));
+  }
+  lignesParLots(box, r.lignes, row => lineNode(row.kind, row.line));
 }
 
-function textDiff() {
+/** Le texte copie : tout ce qui differe, entetes et corps, sans coupe. */
+export function texteComparaison(gauche, droite) {
   const lines = [t('SWIFT — comparaison'), '',
-    deuxPoints('A', '#' + left.id + ' ' + left.method + ' ' + (left.finalUrl || left.url)),
-    deuxPoints('B', '#' + right.id + ' ' + right.method + ' ' + (right.finalUrl || right.url)), ''];
-  for (const row of diffHeaders(left.responseHeaders, right.responseHeaders)) {
-    if (row.kind === 'same') continue;
-    lines.push((SIGN[row.kind] || '') + ' ' + deuxPoints(row.key, (row.a || '—') + '  ->  ' + (row.b || '—')));
+    deuxPoints('A', '#' + gauche.id + ' ' + gauche.method + ' ' + (gauche.finalUrl || gauche.url)),
+    deuxPoints('B', '#' + droite.id + ' ' + droite.method + ' ' + (droite.finalUrl || droite.url)), ''];
+  for (const [titre, a, b] of [['Entetes envoyees', gauche.requestHeaders, droite.requestHeaders],
+    ['Entetes recues', gauche.responseHeaders, droite.responseHeaders]]) {
+    const changees = comparerEntetes(a, b).lignes.filter(l => l.kind !== 'same');
+    if (!changees.length) continue;
+    lines.push(deuxPoints(t(titre)));
+    for (const l of changees) lines.push(SIGN[l.kind] + ' ' + deuxPoints(l.key, l.value));
+    lines.push('');
   }
-  const body = diffLines(
-    pretty((left.responseBody && left.responseBody.text) || '', left.mime),
-    pretty((right.responseBody && right.responseBody.text) || '', right.mime)
-  ).filter(r => r.kind !== 'same');
-  if (body.length) {
-    lines.push('', t('Corps :'));
-    for (const row of body.slice(0, 500)) lines.push(SIGN[row.kind] + ' ' + row.line);
+  for (const [titre, a, b, mime] of [
+    ['Corps envoye', gauche.requestBody && gauche.requestBody.text, droite.requestBody && droite.requestBody.text,
+      gauche.requestBody && gauche.requestBody.contentType],
+    ['Corps recu', gauche.responseBody && gauche.responseBody.text, droite.responseBody && droite.responseBody.text, gauche.mime]]) {
+    if (!a && !b) continue;
+    const changees = comparerCorps(a, b, mime).lignes.filter(r => r.kind !== 'same');
+    if (!changees.length) continue;
+    lines.push(deuxPoints(t(titre)));
+    for (const row of changees) lines.push(SIGN[row.kind] + ' ' + row.line);
+    lines.push('');
   }
   return lines.join('\n');
 }

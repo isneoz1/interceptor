@@ -267,6 +267,72 @@ verifier('§4 : u="3" mauvais type, ignore', cles(lirePriorite('u="3"', 'requete
 verifier('§4.1 : u=7, taches de fond', cles(lirePriorite('u=7', 'requete').faits).includes('fond'));
 verifier('§5 : dictionnaire illisible', cles(lirePriorite('u=1,,', 'requete').faits).includes('illisible'));
 
+/* ============== 7 ter. Proxy-Status (RFC 9209) et ses alias (RFC 9532) ============ */
+const { lireProxyStatus } = await import('../ui/lib/proxy-status.js');
+const { ERREURS_PROXY, PARAMETRES_PROXY } = await import('../ui/lib/ref-proxy-status.js');
+const { EN_REF_PROXY } = await import('../ui/lib/dict-en-ref-proxy.js');
+{
+  const ps = (v, statut) => lireProxyStatus(h({ 'Proxy-Status': v }), { statut });
+  const cles2 = i => i.notes.map(n => n.cle);
+  /* §2 : l ordre, du plus proche de l origine au plus proche de vous. */
+  const chaine2 = ps('revproxy1.example.net, ExampleCDN');
+  egal('§2 : deux intermediaires, dans l ordre', chaine2.intermediaires.map(i => i.nom).join(' > '), 'revproxy1.example.net > ExampleCDN');
+  /* §2.1.1 : un 504 produit par le CDN lui-meme. */
+  const delai = ps('ExampleCDN; error=connection_timeout', 504);
+  egal('§2.1.1 : connection_timeout, produite par ExampleCDN', JSON.stringify(delai.produitePar), '{"nom":"ExampleCDN","erreur":"connection_timeout"}');
+  verifier('§2.1.1 : 504 est le statut recommande, rien a redire', !cles2(delai.intermediaires[0]).includes('statutRecommande'));
+  const refus = ps('r34.example.net; error=http_request_error, ExampleCDN', 429);
+  egal('§2.1.1 : le 429 vient de r34.example.net, pas du CDN ni de l origine', refus.produitePar.nom, 'r34.example.net');
+  verifier('§2.1.1 : un 429 est bien un 4xx', !cles2(refus.intermediaires[0]).includes('statutNon4xx'));
+  verifier('§2.3.16 : http_request_error sur un 200 est signale', cles2(ps('p; error=http_request_error', 200).intermediaires[0]).includes('statutNon4xx'));
+  verifier('§2.1.1 : un statut autre que celui recommande est dit', ps('p; error=dns_timeout', 502).intermediaires[0].notes.some(n => n.cle === 'statutRecommande' && n.valeurs.attendu === 504));
+  /* §2.1.2 a 2.1.5. */
+  egal('§2.1.2 : next-hop', ps('cdn.example.org; next-hop=backend.example.org:8001').intermediaires[0].notes[0].valeurs.hote, 'backend.example.org:8001');
+  egal('§2.1.3 : next-protocol en jeton', ps('"proxy.example.org"; next-protocol=h2').intermediaires[0].notes[0].valeurs.protocole, 'h2 — HTTP/2 (RFC 9113)');
+  egal('§2.1.3 : next-protocol en suite d octets', ps('p; next-protocol=:aDI=:').intermediaires[0].notes[0].valeurs.protocole, 'h2 — HTTP/2 (RFC 9113)');
+  egal('§2.1.4 : received-status', ps('ExampleCDN; received-status=200').intermediaires[0].notes[0].valeurs.statut, 200);
+  const exemple215 = ps('proxy.example.net; error="http_protocol_error"; details="Malformed response header: space before colon"').intermediaires[0];
+  verifier('§2.1.5 : l exemple ecrit error en chaine — lu, et signale (§2.1.1, erratum 9168)',
+    cles2(exemple215).includes('erreurType') && exemple215.erreur.nom === 'http_protocol_error');
+  verifier('§2.1.5 : details', exemple215.notes.some(n => n.cle === 'details' && n.valeurs.details === 'Malformed response header: space before colon'));
+  verifier('§2.3.8 : une erreur qui peut venir de plus loin ne dit pas « produite par »', cles2(exemple215).includes('peutEtreAmont') && !cles2(exemple215).includes('produite'));
+  /* L exemple de remontee en trailer emploie read_timeout, que le registre ne
+     connait pas (il a connection_read_timeout) : dit tel quel. */
+  egal('§2 : read_timeout, absent du registre', cles2(ps('ThisProxy; error=read_timeout').intermediaires[0]).join(), 'erreurInconnue');
+  egal('§2 : un intermediaire sans parametre', cles2(ps('SomeOtherProxy').intermediaires[0]).join(), 'rien');
+  const alerte = ps('p; error=tls_alert_received; alert-id=42; alert-message=bad_certificate; rcode="X"; zz=1', 502).intermediaires[0];
+  verifier('§2.3.15 : alert-id nomme l alerte TLS', alerte.notes.some(n => n.cle === 'extra' && n.valeurs.valeur === '42 (bad_certificate)'));
+  verifier('§2.1.1 : un parametre d un autre type est ignore, et dit', alerte.notes.some(n => n.cle === 'extraIgnore' && n.valeurs.cle === 'rcode'));
+  verifier('§2.1 : un parametre inconnu est ignore, et dit', alerte.notes.some(n => n.cle === 'inconnu' && n.valeurs.cle === 'zz'));
+  egal('§2 : liste illisible', ps('1, p,,').faits[0].cle, 'illisible');
+  egal('§2 : un membre entier n est pas un nom', ps('42').faits[0].cle, 'identifiant');
+  /* RFC 9532 §2 et §2.1. */
+  const alias = v => ps('proxy.example.net; next-hop="2001:db8::1"; next-hop-aliases="' + v + '"').intermediaires[0].notes[1];
+  egal('RFC 9532 §2 : les alias, dans l ordre', alias('tracker.example.com,service1.example.com').valeurs.noms, 'tracker.example.com, service1.example.com');
+  egal('RFC 9532 §2.1 : une virgule encodee reste dans le nom', alias('comma%2Cname.example.com,service1.example.com').valeurs.noms, 'comma,name.example.com, service1.example.com');
+  egal('RFC 9532 §2.1 : « \\. » reste une seule etiquette', alias('dot%5C.label.example.com,service1.example.com').valeurs.noms, 'dot\\.label.example.com, service1.example.com');
+  egal('RFC 9532 §2.1 : « \\\\ » se decode', alias('backslash%5C%5Cname.example.com,s1.example.com').valeurs.noms, 'backslash\\\\name.example.com, s1.example.com');
+  egal('RFC 9532 §2 : la chaine vide dit « aucun CNAME »', alias('').cle, 'aliasVide');
+
+  /* Les registres IANA, compares a leur instantane du 13 octobre 2026. */
+  const iana = JSON.parse(fs.readFileSync(path.join(ici, 'vecteurs-proxy-status-iana.json'), 'utf8'));
+  egal('registre des types d erreur : les memes noms, dans le meme ordre', ERREURS_PROXY.map(e => e.nom).join(), iana.erreurs.map(e => e.nom).join());
+  let justes = 0;
+  for (const e of ERREURS_PROXY) {
+    const r = iana.erreurs.find(x => x.nom === e.nom);
+    const statutOk = /^\d+$/.test(r.statut) ? e.statut === Number(r.statut) : e.statut === null && !!e.statutRegle;
+    if (statutOk && e.intermediaire === r.intermediaire && e.reference === r.reference
+      && e.extras.map(x => x.cle).join() === r.extras.join()
+      && EN_REF_PROXY[e.sens] === (r.description + (r.notes ? ' ' + r.notes : '')).replace(/'/g, '’')) justes++;
+    else verifier('type d erreur conforme au registre : ' + e.nom, false);
+  }
+  egal('registre : statut recommande, origine de la reponse, parametres et description anglaise, pour chacun des ' + ERREURS_PROXY.length, justes, iana.erreurs.length);
+  egal('registre des parametres : les memes', PARAMETRES_PROXY.map(p => p.cle + ' ' + p.reference).join(), iana.parametres.map(p => p.nom + ' ' + p.reference).join());
+  verifier('registre des parametres : description anglaise mot pour mot',
+    PARAMETRES_PROXY.every(p => EN_REF_PROXY[p.sens] === iana.parametres.find(x => x.nom === p.cle).description.replace(/'/g, '’')));
+  verifier('trente-trois types d erreur, dont incremental_refused (RFC 10036)', ERREURS_PROXY.length === 33 && ERREURS_PROXY.some(e => e.nom === 'incremental_refused' && e.reference === 'RFC 10036'));
+}
+
 /* ================== 7 bis. Des valeurs hostiles, par milliers ============== */
 /* Ces lecteurs recoivent ce qu un serveur quelconque envoie. Aucune valeur ne
    doit les faire lever, ni les ralentir : un generateur deterministe compose
@@ -276,7 +342,7 @@ verifier('§5 : dictionnaire illisible', cles(lirePriorite('u=1,,', 'requete').f
   const hasard = n => { graine = (graine * 1103515245 + 12345) % 2147483648; return graine % n; };
   const MORCEAUX = ['"', ';', ',', '=', ':', '@', '<', '>', '\\', '*', ' ', '\t', 'h3', '1688169599', '-', '?1', '?0',
     'u', 'i', 'r', 't', 'q', 'w', 'ma', 'rel', 'next', 'GMT', 'Sun', 'Nov', '06', '1994', '%', 'é', '\u0000', '(', ')',
-    'hit', 'fwd', 'stale', 'clear', 'title*', "UTF-8'de'", 'limit', 'reset', '9'.repeat(30), '.'];
+    'hit', 'fwd', 'stale', 'clear', 'error', 'next-hop', 'next-hop-aliases', 'received-status', 'dns_error', ':aDI=:', 'title*', "UTF-8'de'", 'limit', 'reset', '9'.repeat(30), '.'];
   const valeur = () => { let s = ''; const n = 1 + hasard(14); for (let k = 0; k < n; k++) s += MORCEAUX[hasard(MORCEAUX.length)]; return s; };
   const lecteurs = [
     ['date HTTP', v => lireDateHttp(v, T0)],
@@ -286,7 +352,8 @@ verifier('§5 : dictionnaire illisible', cles(lirePriorite('u=1,,', 'requete').f
     ['Alt-Svc', v => lireAltSvc(h({ 'Alt-Svc': v }), { age: 10, protocole: 'h2' })],
     ['Cache-Status', v => lireCacheStatus(h({ 'Cache-Status': v }), { statut: 200 })],
     ['CDN-Cache-Control', v => lireCdnCacheControl(h({ 'CDN-Cache-Control': v }))],
-    ['Priority', v => lirePriorite(v, 'requete')]
+    ['Priority', v => lirePriorite(v, 'requete')],
+    ['Proxy-Status', v => lireProxyStatus(h({ 'Proxy-Status': v }), { statut: 502 })]
   ];
   const debut = Date.now();
   for (const [nom, lire] of lecteurs) {
@@ -301,7 +368,7 @@ verifier('§5 : dictionnaire illisible', cles(lirePriorite('u=1,,', 'requete').f
   }
   const longue = '<' + 'a'.repeat(200000) + '>; rel=next, '.repeat(2) + '"'.repeat(50000);
   for (const [nom, lire] of lecteurs) { try { lire(longue); } catch { verifier('valeur geante : ' + nom + ' ne leve pas', false); } }
-  verifier('valeurs hostiles : vingt-quatre mille lectures en moins de dix secondes', Date.now() - debut < 10000, (Date.now() - debut) + ' ms');
+  verifier('valeurs hostiles : vingt-sept mille lectures en moins de dix secondes', Date.now() - debut < 10000, (Date.now() - debut) + ' ms');
 }
 
 /* ============= 8. Le noyau, le verdict, la Synthese et l onglet =========== */
@@ -323,6 +390,14 @@ const { signauxDe } = await import('../ui/lib/verdict.js');
 const { setLang } = await import('../ui/lib/i18n.js');
 setLang('fr');
 const lignes = signauxDe(rec, T0);
+{
+  const passerelle = enregistrementExemple({ id: 9307, url: 'https://exemple.test/', statusCode: 504 });
+  passerelle.responseHeaders = h({ 'Proxy-Status': 'revproxy1.example.net, ExampleCDN; error=connection_timeout' });
+  const l = signauxDe(passerelle, T0).find(x => x.cle === 'intermediaire');
+  verifier('verdict : un 504 produit par le CDN lui-meme le dit', !!l && l.valeurs.nom === 'ExampleCDN' && l.valeurs.erreur === 'connection_timeout');
+  passerelle.responseHeaders = h({ 'Proxy-Status': 'ExampleCDN; received-status=504' });
+  verifier('verdict : un intermediaire qui ne fait que relayer ne dit rien', !signauxDe(passerelle, T0).some(x => x.cle === 'intermediaire'));
+}
 egal('verdict : quand reessayer, puis l avenir annonce', lignes.map(l => l.cle).join(), 'attendre,depreciee,finPrevue');
 egal('verdict : attente lisible', lignes[0].valeurs.attente, '2 min 0 s');
 egal('verdict : jour de fin', lignes[2].valeurs.jour, '2030-06-30');
@@ -342,14 +417,14 @@ complet.responseHeaders = h({
   Deprecation: '@1688169599', 'Retry-After': '30', 'RateLimit-Policy': '"burst";q=100;w=60', RateLimit: '"burst";r=40;t=20',
   Link: '</style.css>; rel=preload; as=style, <https://exemple.test/page?p=2>; rel="next"',
   'Alt-Svc': 'h3=":443"; ma=86400', 'Cache-Status': 'ExampleCache; hit; ttl=376', 'CDN-Cache-Control': 'max-age=600',
-  'Cache-Control': 'max-age=60', Priority: 'u=1'
+  'Cache-Control': 'max-age=60', Priority: 'u=1', 'Proxy-Status': 'ExampleCDN; error=connection_timeout'
 });
 for (const langue of ['fr', 'en']) {
   setLang(langue);
   const conteneur = document.createElement('div');
   conteneur.appendChild(signaux(complet));
   const vu = texte(conteneur);
-  verifier('onglet [' + langue + '] : six blocs', ['RFC 9745', 'Retry-After', 'RFC 8288', 'RFC 7838', 'CDN-Cache-Control', 'RFC 9218'].every(m => vu.includes(m)), vu.slice(0, 160));
+  verifier('onglet [' + langue + '] : sept blocs', ['RFC 9745', 'Retry-After', 'RFC 8288', 'RFC 7838', 'CDN-Cache-Control', 'RFC 9209', 'RFC 9218'].every(m => vu.includes(m)), vu.slice(0, 160));
   verifier('onglet [' + langue + '] : aucune lecture en echec', !/Lecture impossible|Reading failed/.test(vu));
 }
 /* Un delai absurde : sa date sort de ce que JavaScript represente. */

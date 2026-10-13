@@ -1,0 +1,155 @@
+{
+ "source": "generes par msgpack 1.2.3 et cbor2 6.1.5 (Python), le 2026-10-12",
+ "vecteurs": [
+  {
+   "nom": "msgpack entier 18446744073709551615",
+   "format": "msgpack",
+   "hex": "cfffffffffffffffff",
+   "json": "18446744073709551615"
+  },
+  {
+   "nom": "msgpack entier 9223372036854775808",
+   "format": "msgpack",
+   "hex": "cf8000000000000000",
+   "json": "9223372036854775808"
+  },
+  {
+   "nom": "msgpack entier 9007199254740993",
+   "format": "msgpack",
+   "hex": "cf0020000000000001",
+   "json": "9007199254740993"
+  },
+  {
+   "nom": "msgpack entier 9007199254740992",
+   "format": "msgpack",
+   "hex": "cf0020000000000000",
+   "json": "9007199254740992"
+  },
+  {
+   "nom": "msgpack entier 9007199254740991",
+   "format": "msgpack",
+   "hex": "cf001fffffffffffff",
+   "json": "9007199254740991"
+  },
+  {
+   "nom": "msgpack entier -9223372036854775808",
+   "format": "msgpack",
+   "hex": "d38000000000000000",
+   "json": "-9223372036854775808"
+  },
+  {
+   "nom": "msgpack entier -9007199254740993",
+   "format": "msgpack",
+   "hex": "d3ffdfffffffffffff",
+   "json": "-9007199254740993"
+  },
+  {
+   "nom": "msgpack entier -9007199254740992",
+   "format": "msgpack",
+   "hex": "d3ffe0000000000000",
+   "json": "-9007199254740992"
+  },
+  {
+   "nom": "msgpack horodatage 1760227200 s 0 ns (6 octets)",
+   "format": "msgpack",
+   "hex": "d6ff68eaef80",
+   "json": "\"2025-10-12T00:00:00.000000000Z\""
+  },
+  {
+   "nom": "msgpack horodatage 1760227200 s 500000000 ns (10 octets)",
+   "format": "msgpack",
+   "hex": "d7ff7735940068eaef80",
+   "json": "\"2025-10-12T00:00:00.500000000Z\""
+  },
+  {
+   "nom": "msgpack horodatage 17179869183 s 999999999 ns (10 octets)",
+   "format": "msgpack",
+   "hex": "d7ffee6b27ffffffffff",
+   "json": "\"2514-05-30T01:53:03.999999999Z\""
+  },
+  {
+   "nom": "msgpack horodatage 17179869184 s 1 ns (15 octets)",
+   "format": "msgpack",
+   "hex": "c70cff000000010000000400000000",
+   "json": "\"2514-05-30T01:53:04.000000001Z\""
+  },
+  {
+   "nom": "msgpack horodatage -1 s 123456789 ns (15 octets)",
+   "format": "msgpack",
+   "hex": "c70cff075bcd15ffffffffffffffff",
+   "json": "\"1969-12-31T23:59:59.123456789Z\""
+  },
+  {
+   "nom": "msgpack horodatage 253402300799 s 999999999 ns (15 octets)",
+   "format": "msgpack",
+   "hex": "c70cff3b9ac9ff0000003afff4417f",
+   "json": "\"9999-12-31T23:59:59.999999999Z\""
+  },
+  {
+   "nom": "msgpack cle __proto__",
+   "format": "msgpack",
+   "hex": "82a95f5f70726f746f5f5f01a161920102",
+   "json": "{\"__proto__\":1,\"a\":[1,2]}"
+  },
+  {
+   "nom": "cbor entier 18446744073709551615",
+   "format": "cbor",
+   "hex": "1bffffffffffffffff",
+   "json": "18446744073709551615"
+  },
+  {
+   "nom": "cbor entier 9007199254740993",
+   "format": "cbor",
+   "hex": "1b0020000000000001",
+   "json": "9007199254740993"
+  },
+  {
+   "nom": "cbor entier -18446744073709551616",
+   "format": "cbor",
+   "hex": "3bffffffffffffffff",
+   "json": "-18446744073709551616"
+  },
+  {
+   "nom": "cbor entier -9007199254740994",
+   "format": "cbor",
+   "hex": "3b0020000000000001",
+   "json": "-9007199254740994"
+  },
+  {
+   "nom": "cbor entier 4294967296",
+   "format": "cbor",
+   "hex": "1b0000000100000000",
+   "json": "4294967296"
+  },
+  {
+   "nom": "cbor grand entier 18446744073709551616",
+   "format": "cbor",
+   "hex": "c249010000000000000000",
+   "json": "18446744073709551616"
+  },
+  {
+   "nom": "cbor grand entier 1267650600228229401496703205383",
+   "format": "cbor",
+   "hex": "c24d10000000000000000000000007",
+   "json": "1267650600228229401496703205383"
+  },
+  {
+   "nom": "cbor grand entier -18446744073709551617",
+   "format": "cbor",
+   "hex": "c349010000000000000000",
+   "json": "-18446744073709551617"
+  },
+  {
+   "nom": "cbor grand entier -340282366920938463463374607431768211456",
+   "format": "cbor",
+   "hex": "c350ffffffffffffffffffffffffffffffff",
+   "json": "-340282366920938463463374607431768211456"
+  },
+  {
+   "nom": "cbor cle __proto__",
+   "format": "cbor",
+   "hex": "a2695f5f70726f746f5f5fa16178016162f5",
+   "json": "{\"__proto__\":{\"x\":1},\"b\":true}"
+  }
+ ]
+}

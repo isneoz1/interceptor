@@ -40,7 +40,6 @@ export const EN_ERREURS = {
   'a et b doivent etre entiers': 'a and b must be integers',
   'a doit etre premier avec 26 : 1, 3, 5, 7, 9, 11, 15, 17, 19, 21, 23 ou 25':
     'a must be coprime with 26: 1, 3, 5, 7, 9, 11, 15, 17, 19, 21, 23 or 25',
-  'ligne trop longue pour la comparaison': 'line too long for the comparison',
   'deux chiffres au moins sont attendus': 'at least two digits are expected',
   'cle attendue apres « .. »': 'key expected after “..”',
   'DOMParser indisponible dans ce contexte': 'DOMParser unavailable in this context',
@@ -258,6 +257,28 @@ export const EN_ERREURS = {
   'signature ECDSA : entier trop long': 'ECDSA signature: integer too long',
   'aucune signature de connexion': 'no sign-in signature',
 
+  /* ------------------------- JSON lu sans perte --------------------------- */
+  'chaine non terminee': 'unterminated string',
+  'echappement \\u incomplet': 'incomplete \\u escape',
+  'echappement inconnu': 'unknown escape sequence',
+  'caractere de controle non echappe': 'unescaped control character',
+  'chiffre attendu apres le point': 'digit expected after the decimal point',
+  'chiffre attendu dans l exposant': 'digit expected in the exponent',
+  'valeur attendue, fin du texte': 'value expected, end of text',
+  'cle entre guillemets attendue': 'quoted key expected',
+  '« : » attendu': '“:” expected',
+  'texte en trop apres la valeur': 'extra text after the value',
+  'fin du texte avant la fermeture': 'end of text before the closing bracket',
+  '« , » ou fermeture attendue': '“,” or closing bracket expected',
+  'structure circulaire : elle ne s ecrit pas en JSON': 'circular structure: it cannot be written as JSON',
+  'morceau non textuel dans une chaine de texte': 'non-text chunk in a text string',
+  'valeur simple ecrite sur deux octets en dessous de 32 : mal formee (RFC 8949 §3.3)':
+    'simple value written on two bytes below 32: not well-formed (RFC 8949 §3.3)',
+  'longueur indefinie interdite ici : elle ne vaut que pour les types majeurs 2 a 5 (RFC 8949 §3.2.4)':
+    'indefinite length not allowed here: it only applies to major types 2 to 5 (RFC 8949 §3.2.4)',
+  'YAML : plus de mille niveaux d imbrication, chacun ajoute deux espaces de marge':
+    'YAML: more than a thousand nesting levels, each one adds two spaces of margin',
+
   /* ------------------ Rendus dans un resultat, sans etre leves ------------- */
   'transformation asynchrone : employer transformerAsync': 'asynchronous transformation: use transformerAsync',
   'algorithme « none » : ce jeton n est pas signe du tout': '“none” algorithm: this token is not signed at all'
@@ -266,6 +287,7 @@ export const EN_ERREURS = {
 /* Les messages qui portent une valeur. {nom} : recopie ; {@nom} : traduit. */
 export const MODELES_ERREURS = {
   '{@quoi} (position {n} : « {autour} »)': '{@quoi} (position {n}: “{autour}”)',
+  'JSON illisible : {@quoi} (position {n})': 'unreadable JSON: {@quoi} (position {n})',
   '{@quoi} (octet {n} : « {autour} »)': '{@quoi} (byte {n}: “{autour}”)',
   '{@quoi} invalide : « {brut} »': 'invalid {@quoi}: “{brut}”',
   '« {c} » attendu': '“{c}” expected',
@@ -303,7 +325,6 @@ export const MODELES_ERREURS = {
   'cle de {n} octets : AES en attend 16, 24 ou 32': 'key of {n} bytes: AES expects 16, 24 or 32',
   'mode inconnu : {x}': 'unknown mode: {x}',
   'algorithme de signature inconnu : {x}': 'unknown signature algorithm: {x}',
-  'comparaison limitee a {n} lignes par cote': 'comparison limited to {n} lines per side',
   'donnees {type} : longueur annoncee {n}, lue {m}': '{type} data: announced length {n}, read {m}',
   'message DNS de {n} octets : l en-tete en compte 12': 'DNS message of {n} bytes: the header alone takes 12',
   'caractere hors ASCII dans une valeur etendue : {c}': 'non-ASCII character in an extended value: {c}',

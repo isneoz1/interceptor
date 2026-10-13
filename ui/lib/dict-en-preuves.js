@@ -21,7 +21,6 @@ export const EN_PREUVES = {
   'Copier la base': 'Copy the base',
   'Copier le base64': 'Copy the base64',
   'Base64 copie': 'Base64 copied',
-  '(tronque a l affichage)': '(truncated for display)',
   'Base copiee': 'Base copied',
   'Cle publique (PEM, JWK ou certificat), ou secret partage pour hmac-sha256': 'Public key (PEM, JWK or certificate), or shared secret for hmac-sha256',
   'Forme du secret partage': 'Shared secret format',

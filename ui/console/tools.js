@@ -13,6 +13,7 @@ import { redessinerEnPlace } from '../lib/redessin.js';
 import { t, tp, te } from '../lib/i18n.js';
 import { toast, copy } from '../app.js';
 import { TRANSFORMATIONS, GROUPES, transformer, transformerAsync } from '../lib/catalogue.js';
+import { texteLong } from '../lib/texte-long.js';
 import { panneauJwt, panneauEmpreintes, panneauMesures, panneauHex, panneauAnalyse, panneauRegex }
   from './tools-panels.js';
 import { panneauHorodatage, panneauNombres } from './tools-temps.js';
@@ -277,7 +278,7 @@ function panneauTransformer() {
       for (const r of sortie.multiple) {
         const carte = el('div', { class: 'find info' }, [
           el('h4', { text: r.libelle }),
-          el('pre', { class: 'pre', text: r.valeur.length > 4000 ? r.valeur.slice(0, 4000) + '…' : r.valeur })
+          texteLong(r.valeur, { seuil: 4000 })
         ]);
         const acts = el('div', { class: 'actions' });
         acts.appendChild(button('Copier', () => copy(r.valeur, 'Resultat copie')));

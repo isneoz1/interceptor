@@ -174,6 +174,12 @@ $required = @(
   'ui/lib/priorite-http.js',
   'ui/lib/dict-en-signaux.js',
   'ui/lib/dict-en-ref-liens.js',
+  'ui/lib/json-exact.js',
+  'ui/lib/arbre-json.js',
+  'ui/lib/texte-long.js',
+  'ui/lib/proxy-status.js',
+  'ui/lib/ref-proxy-status.js',
+  'ui/lib/dict-en-ref-proxy.js',
   'ui/console/statusbar.js',
   'ui/console/header.js',
   'ui/console/replay.js',
@@ -279,7 +285,9 @@ if ($node) {
     @{ titre = 'Protocoles et formats d API'; fichier = 'tests/protocoles.test.mjs';
        echec = 'Une lecture d API (GraphQL, JSON-RPC, SOAP, RFC 9457), un rapport ou une description OpenAPI est faux' },
     @{ titre = 'Signaux HTTP';                fichier = 'tests/signaux.test.mjs';
-       echec = 'Une date, une depreciation, un quota, un lien, un cache ou une priorite est mal lu' }
+       echec = 'Une date, une depreciation, un quota, un lien, un cache ou une priorite est mal lu' },
+    @{ titre = 'Comparaisons et donnees exactes'; fichier = 'tests/comparaison.test.mjs';
+       echec = 'Une comparaison, un nombre JSON, un decodage CBOR ou MessagePack, ou un affichage coupe est faux' }
   )
 
   $totalAssertions = 0

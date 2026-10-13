@@ -154,8 +154,22 @@ export const EN_PANNEAUX2 = {
   'A droite': 'On the right',
   'Ligne a ligne': 'Line by line',
   'lignes': 'lines',
-  'Affichage limite a 600 lignes ; le format unifie ci-dessous les porte toutes.':
-    'Display limited to 600 lines; the unified format below carries them all.',
+  'Les deux textes different trop pour chercher la plus courte liste de changements : la comparaison reste exacte, chaque ligne y figure une fois, mais un bloc peut etre montre retire puis rajoute.':
+    'The two texts differ too much to search for the shortest list of changes: the comparison stays exact and every line appears once, but a block may be shown removed and then added back.',
+  'Les deux corps different trop pour chercher la plus courte liste de changements : la comparaison reste exacte, chaque ligne y figure une fois, mais un bloc peut etre montre retire puis rajoute.':
+    'The two bodies differ too much to search for the shortest list of changes: the comparison stays exact and every line appears once, but a block may be shown removed and then added back.',
+  'Textes identiques : aucun correctif a produire': 'Identical texts: no patch to produce',
+  'Identiques une fois mis en forme, mais pas octet pour octet : seuls les espaces entre les valeurs different.':
+    'Identical once formatted, but not byte for byte: only the whitespace between the values differs.',
+  'Les corps ne different que par leurs fins de ligne : CRLF d un cote, LF de l autre.':
+    'The bodies differ only in their line endings: CRLF on one side, LF on the other.',
+  'inconnue d un cote': 'unknown on one side',
+  'Gauche': 'Left',
+  '{n} premiers sur {total}': 'first {n} of {total}',
+  'Tout afficher ({n} de plus)': 'Show all ({n} more)',
+  'Droite': 'Right',
+  '{vus} caracteres affiches sur {total}.': '{vus} characters shown out of {total}.',
+  'Apercu des {n} premiers caracteres ; un clic copie le texte entier decale.': 'Preview of the first {n} characters; a click copies the whole shifted text.',
   'Mot a mot': 'Word by word',
   'sur une seule ligne, la difference se voit mieux':
     'on a single line the difference shows better',

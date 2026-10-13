@@ -8,6 +8,7 @@ import { el, frag, kv, sec, add, button } from '../lib/dom.js';
 import { t, tp, te } from '../lib/i18n.js';
 import { copy, toast } from '../app.js';
 import { comparerTextes, comparerMots, diffUnifie, premiereDifference } from '../lib/diff.js';
+import { listeProgressive } from '../lib/liste-progressive.js';
 
 export function panneauComparer(entree, etat, redessiner, poser) {
   const box = frag();
@@ -53,6 +54,10 @@ export function panneauComparer(entree, etat, redessiner, poser) {
   add(box, kv('Lignes seulement a gauche', resultat.retraits, { always: true }));
   add(box, kv('Lignes seulement a droite', resultat.ajouts, { always: true }));
 
+  if (!resultat.minimal) {
+    box.appendChild(el('p', { class: 'note', text:
+      t('Les deux textes different trop pour chercher la plus courte liste de changements : la comparaison reste exacte, chaque ligne y figure une fois, mais un bloc peut etre montre retire puis rajoute.') }));
+  }
   if (resultat.identiques) {
     box.appendChild(el('p', { class: 'note', text: t('Les deux textes sont identiques, ligne pour ligne.') }));
     const finesse = premiereDifference(entree, etat.autreTexte || '');
@@ -74,20 +79,16 @@ export function panneauComparer(entree, etat, redessiner, poser) {
 
   /* ------------------------------ Ligne a ligne ---------------------------- */
   box.appendChild(sec('Ligne a ligne', resultat.operations.length + ' ' + t('lignes')));
-  const affichees = resultat.operations.slice(0, 600);
-  for (const op of affichees) {
+  /* Toutes les lignes, par lots : rien n est coupe, rien ne fige. */
+  const hote = el('div');
+  box.appendChild(hote);
+  listeProgressive(hote, resultat.operations, op => {
     const signe = op.type === 'ajout' ? '+' : op.type === 'retrait' ? '-' : ' ';
-    const classe = op.type === 'ajout' ? 'kv hl' : op.type === 'retrait' ? 'kv' : 'kv';
-    const ligne = el('div', { class: classe }, [
+    return el('div', { class: op.type === 'ajout' ? 'kv hl' : 'kv' }, [
       el('span', { text: signe + ' ' + (op.gauche || op.droite || '') }),
       el('b', { text: op.texte })
     ]);
-    box.appendChild(ligne);
-  }
-  if (resultat.operations.length > affichees.length) {
-    box.appendChild(el('p', { class: 'note', text:
-      t('Affichage limite a 600 lignes ; le format unifie ci-dessous les porte toutes.') }));
-  }
+  });
 
   /* -------------------------------- Mot a mot ------------------------------ */
   const gauche = String(entree || '').split(/\r?\n/);
@@ -106,10 +107,19 @@ export function panneauComparer(entree, etat, redessiner, poser) {
   }
 
   const actions = el('div', { class: 'actions' });
-  actions.appendChild(button('Copier le format unifie', () =>
-    copy(diffUnifie(entree, etat.autreTexte || '', 'texte de travail', 'second texte'), 'Difference copiee')));
-  actions.appendChild(button('Poser le format unifie comme entree', () =>
-    poser(diffUnifie(entree, etat.autreTexte || '', 'texte de travail', 'second texte'))));
+  /* Le correctif au format unifie, que patch et git apply savent appliquer.
+     Deux textes identiques n en donnent aucun, comme diff. */
+  const unifie = () => diffUnifie(entree, etat.autreTexte || '', 'texte-de-travail', 'second-texte');
+  actions.appendChild(button('Copier le format unifie', () => {
+    const correctif = unifie();
+    if (!correctif) return toast('Textes identiques : aucun correctif a produire', false);
+    copy(correctif, 'Difference copiee');
+  }));
+  actions.appendChild(button('Poser le format unifie comme entree', () => {
+    const correctif = unifie();
+    if (!correctif) return toast('Textes identiques : aucun correctif a produire', false);
+    poser(correctif);
+  }));
   box.appendChild(actions);
   return box;
 }

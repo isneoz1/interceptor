@@ -5,8 +5,10 @@
  * rendu par `allRows`, et l onglet « Brut » montre l objet complet. Rien ne
  * peut donc rester invisible, meme apres l ajout d une nouvelle donnee.
  */
-import { el, frag, kv, sec, jsonTree, add } from '../lib/dom.js';
-import { bytes, ms, clock, iso, pretty, typeLabel } from '../lib/format.js';
+import { el, frag, kv, sec, add } from '../lib/dom.js';
+import { jsonTree } from '../lib/arbre-json.js';
+import { bytes, ms, clock, iso, pretty, typeLabel, entierLisible } from '../lib/format.js';
+import { texteLong } from '../lib/texte-long.js';
 import { state, copy, cmd, toast } from '../app.js';
 import { poser } from './tools.js';
 import { t, tp, te } from '../lib/i18n.js';
@@ -571,8 +573,7 @@ function bodyViewer(body, title, mimeHint, controles = {}) {
       if (borne) {
         avis.textContent = tp(
           '{vus} caracteres affiches sur {total}. Le corps entier est conserve : « Copier » et « Boite a outils » travaillent dessus.',
-          { vus: LIMITE_AFFICHAGE.toLocaleString('fr-FR'),
-            total: complet.length.toLocaleString('fr-FR') });
+          { vus: entierLisible(LIMITE_AFFICHAGE), total: entierLisible(complet.length) });
       }
     };
     montrerTout.addEventListener('click', () => { tout = true; paint(); });
@@ -597,8 +598,7 @@ function bodyViewer(body, title, mimeHint, controles = {}) {
   }
   if (body.base64) {
     box.appendChild(sec('Base64', bytes(body.base64.length)));
-    const pre = el('pre', { class: 'pre', text: body.base64.slice(0, 20000) + (body.base64.length > 20000 ? '\n… ' + t('(tronque a l affichage)') : '') });
-    box.appendChild(pre);
+    box.appendChild(texteLong(body.base64, { seuil: 20000 }));
     box.appendChild(el('div', { class: 'actions' },
       el('button', { class: 'btn sm', type: 'button', on: { click: () => copy(body.base64, 'Base64 copie') } }, t('Copier le base64'))));
   }
@@ -685,7 +685,7 @@ function partiesMultipart(texte, contentType) {
     add(carte, kv('Encodage de transfert', partie.encodage || null));
     add(carte, kv('Taille', bytes(partie.taille), { always: true }));
     if (partie.contenu) {
-      carte.appendChild(el('pre', { class: 'pre', text: partie.contenu.slice(0, 4000) }));
+      carte.appendChild(texteLong(partie.contenu, { seuil: 4000 }));
       carte.appendChild(el('div', { class: 'actions' }, [
         el('button', { class: 'btn sm', type: 'button',
           on: { click: () => copy(partie.contenu, 'Partie copiee') } }, t('Copier')),

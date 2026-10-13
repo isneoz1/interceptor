@@ -13,7 +13,14 @@
  * Signatures de format : PNG (89 50 4E 47 0D 0A 1A 0A), JPEG (FF D8 FF),
  * GIF (« GIF87a », « GIF89a »), WebP (« RIFF » .... « WEBP »), AVIF (boite
  * « ftyp » de marque avif ou avis), ICO (00 00 01 00), BMP (« BM »).
+ *
+ *   Un JSON valide peut encore se lire de deux facons. Un entier qu un double
+ *   ne represente pas (au-dela de 2^53) est arrondi par JSON.parse : un client
+ *   JavaScript ne voit pas l identifiant envoye. Une cle ecrite deux fois
+ *   dans un meme objet n a de sens que pour qui la lit (RFC 8259 §4) :
+ *   JSON.parse garde la derniere, d autres lecteurs la premiere.
  */
+import { lireJsonExact, nombresPerdus, clesEnDouble } from './json-exact.js';
 
 /* Les phrases des faits, traduites a l affichage : exportees pour que le
    controle de traduction les verifie une a une. */
@@ -25,7 +32,11 @@ export const FAITS_CORPS = {
   natureHtml: 'une page HTML',
   natureXml: 'du XML',
   natureVide: 'un corps vide',
-  natureTexte: 'du texte'
+  natureTexte: 'du texte',
+  entiersPerdus: '{n} entier(s) qu un double ne represente pas : un client JavaScript les lit arrondis (JSON.parse) ; ils sont affiches ici tels que recus',
+  entierPerdu: '{chemin} vaut {brut} ; JSON.parse le lit {lu}',
+  clesDoubles: '{n} cle(s) ecrite(s) deux fois dans un meme objet : la plupart des lecteurs, JSON.parse compris, ne gardent que la derniere valeur, d autres la premiere (RFC 8259 §4)',
+  cleDouble: '« {cle} » dans {chemin}'
 };
 
 /* Une compression ne vaut d etre mesuree qu au-dela de quelques centaines
@@ -93,6 +104,22 @@ export function controlerType(corps, typeAnnonce) {
     if (vu && vu !== attendu) return fait('imageAutre', { type, format: vu.toUpperCase() });
   }
   return null;
+}
+
+/**
+ * Ce qu un texte JSON dit de plus que sa valeur : les entiers qu un client
+ * JavaScript arrondira, et les cles ecrites deux fois. Null si le corps n est
+ * pas du JSON lisible, s il est tronque, ou s il n y a rien a dire.
+ */
+export function controlerJson(corps, typeAnnonce) {
+  if (!corps || corps.truncated || typeof corps.text !== 'string' || !corps.text) return null;
+  const type = typeDeBase(typeAnnonce || corps.mime || corps.contentType);
+  if (!estJson(type) && !/^\s*[[{]/.test(corps.text.slice(0, 200))) return null;
+  let arbre;
+  try { arbre = lireJsonExact(corps.text); } catch { return null; }
+  const perdus = nombresPerdus(arbre);
+  const doubles = clesEnDouble(arbre);
+  return perdus.length || doubles.length ? { perdus, doubles } : null;
 }
 
 const enteteDe = (liste, nom) => {

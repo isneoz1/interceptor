@@ -14,6 +14,7 @@ import { t, te } from '../lib/i18n.js';
 import { copy, toast } from '../app.js';
 import { obfusquer, STYLES } from '../lib/obfuscation.js';
 import { deobfusquer } from '../lib/obfuscation-lire.js';
+import { texteLong } from '../lib/texte-long.js';
 
 /**
  * @param entree     texte de travail courant
@@ -130,8 +131,7 @@ function afficherResultat(box, etat, reprendre, { titre, videAide }) {
   if (!sortie.ok) { box.appendChild(el('p', { class: 'note warn', text: t('Echec : ') + te(sortie.erreur) })); return; }
 
   box.appendChild(sec(titre, sortie.valeur.length + ' ' + t('caracteres')));
-  const apercu = sortie.valeur.length > 20000 ? sortie.valeur.slice(0, 20000) + '\n…' : sortie.valeur;
-  box.appendChild(el('pre', { class: 'pre', text: apercu }));
+  box.appendChild(texteLong(sortie.valeur, { seuil: 20000 }));
 
   const acts = el('div', { class: 'actions' });
   acts.appendChild(button('Copier le resultat', () => copy(sortie.valeur, 'Resultat copie')));

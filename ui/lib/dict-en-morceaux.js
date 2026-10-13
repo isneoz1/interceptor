@@ -17,7 +17,6 @@ export const EN_MORCEAUX = {
     '{n} more alerts: narrow the filter or export the full report.',
   '{n} difference(s) sur {total} entetes': '{n} difference(s) across {total} headers',
   '{n} ligne(s) differente(s)': '{n} differing line(s)',
-  '{n} lignes supplementaires non affichees.': '{n} more lines not shown.',
   'Journal ecrit — {fichier}': 'Log written — {fichier}',
   '{n} lignes copiees': '{n} lines copied',
   '{n} / {total} ligne(s)': '{n} / {total} line(s)',

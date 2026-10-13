@@ -1,6 +1,13 @@
 /* Formatage d'affichage — SWIFT (by NeoZ) */
 
-import { t, tp } from './i18n.js';
+import { t, tp, lang } from './i18n.js';
+import { jsonExactJoli } from './json-exact.js';
+
+/** Un entier avec les separateurs de milliers de la langue de l interface :
+ *  « 200 000 » en francais, « 200,000 » en anglais. */
+export function entierLisible(n) {
+  return Number(n).toLocaleString(lang() === 'en' ? 'en-US' : 'fr-FR');
+}
 
 export function bytes(n) {
   if (n == null || Number.isNaN(n)) return '—';
@@ -78,7 +85,9 @@ export function pretty(text, mime) {
   const texte = String(text ?? '');
   const m = String(mime || '');
   if (/json/i.test(m) || /^\s*[[{]/.test(texte.slice(0, 200))) {
-    try { return JSON.stringify(JSON.parse(texte), null, 2); } catch { return texte; }
+    /* Sans perte : JSON.parse arrondit les entiers au-dela de 2^53, et la
+       vue mise en forme montrait alors un autre identifiant que celui recu. */
+    try { return jsonExactJoli(texte); } catch { return texte; }
   }
   return texte;
 }

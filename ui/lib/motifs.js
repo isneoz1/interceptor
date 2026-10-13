@@ -6,6 +6,7 @@
  * Les motifs sont donnes tels qu ils sont : ils reconnaissent une forme, ils
  * ne valident rien. Une adresse peut avoir la bonne forme sans exister.
  */
+import { lireJson, NombreExact } from './json-exact.js';
 
 /* ----------------------------- Motifs courants ---------------------------- */
 const M = [
@@ -69,7 +70,8 @@ export function luhn(valeur) {
  * `$.a.b`, `$.a[0]`, `$.a[*]`, et `..cle` pour chercher une cle a tout niveau.
  */
 export function chercherJson(valeur, chemin) {
-  const objet = typeof valeur === 'string' ? JSON.parse(valeur) : valeur;
+  /* Sans perte : une valeur trouvee s affiche telle qu ecrite. */
+  const objet = typeof valeur === 'string' ? lireJson(valeur) : valeur;
   const brut = String(chemin || '').trim();
   if (!brut || brut === '$') return [{ chemin: '$', valeur: objet }];
 
@@ -86,7 +88,7 @@ export function chercherJson(valeur, chemin) {
   for (const etape of etapes) {
     const suivant = [];
     for (const { chemin: c, valeur: v } of courant) {
-      if (v == null) continue;
+      if (v == null || typeof v !== 'object' || v instanceof NombreExact) continue;
       if (etape.startsWith('.')) {
         const cle = etape.slice(1);
         if (Object.prototype.hasOwnProperty.call(v, cle)) suivant.push({ chemin: c + '.' + cle, valeur: v[cle] });
@@ -106,7 +108,7 @@ export function chercherJson(valeur, chemin) {
 }
 
 function descendre(valeur, cle, chemin, sorties = []) {
-  if (valeur == null || typeof valeur !== 'object') return sorties;
+  if (valeur == null || typeof valeur !== 'object' || valeur instanceof NombreExact) return sorties;
   const entrees = Array.isArray(valeur)
     ? valeur.map((v, i) => [String(i), v, chemin + '[' + i + ']'])
     : Object.entries(valeur).map(([k, v]) => [k, v, chemin + '.' + k]);
@@ -114,26 +116,6 @@ function descendre(valeur, cle, chemin, sorties = []) {
     if (k === cle) sorties.push({ chemin: c, valeur: v });
     descendre(v, cle, c, sorties);
   }
-  return sorties;
-}
-
-/** Tous les chemins d un document : la carte complete d une reponse JSON. */
-export function cheminsJson(valeur, limite = 500) {
-  const objet = typeof valeur === 'string' ? JSON.parse(valeur) : valeur;
-  const sorties = [];
-  const marcher = (v, chemin) => {
-    if (sorties.length >= limite) return;
-    if (v !== null && typeof v === 'object') {
-      const entrees = Array.isArray(v)
-        ? v.map((x, i) => [chemin + '[' + i + ']', x])
-        : Object.entries(v).map(([k, x]) => [chemin + '.' + k, x]);
-      if (!entrees.length) sorties.push({ chemin, type: Array.isArray(v) ? 'tableau vide' : 'objet vide', valeur: '' });
-      for (const [c, x] of entrees) marcher(x, c);
-    } else {
-      sorties.push({ chemin, type: v === null ? 'null' : typeof v, valeur: String(v) });
-    }
-  };
-  marcher(objet, '$');
   return sorties;
 }
 
