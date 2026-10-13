@@ -332,7 +332,7 @@ function ecrireRelations(box, question) {
 function ecrireProxys(box, question) {
   const q = String(question || '').trim().toLowerCase();
   const trouves = ERREURS_PROXY.filter(e => !q || e.nom.includes(q) || t(e.sens).toLowerCase().includes(q)
-    || String(e.statut).includes(q));
+    || (e.statut != null && String(e.statut).includes(q)));
   box.appendChild(sec('Types d erreur des mandataires (registre IANA)', trouves.length + ' / ' + ERREURS_PROXY.length));
   if (!trouves.length) {
     box.appendChild(el('p', { class: 'note', text: t('Aucune entree ne correspond.') }));

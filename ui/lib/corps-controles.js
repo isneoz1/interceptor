@@ -20,7 +20,7 @@
  *   dans un meme objet n a de sens que pour qui la lit (RFC 8259 §4) :
  *   JSON.parse garde la derniere, d autres lecteurs la premiere.
  */
-import { lireJsonExact, nombresPerdus, clesEnDouble } from './json-exact.js';
+import { constatsJson } from './json-exact.js';
 
 /* Les phrases des faits, traduites a l affichage : exportees pour que le
    controle de traduction les verifie une a une. */
@@ -115,10 +115,11 @@ export function controlerJson(corps, typeAnnonce) {
   if (!corps || corps.truncated || typeof corps.text !== 'string' || !corps.text) return null;
   const type = typeDeBase(typeAnnonce || corps.mime || corps.contentType);
   if (!estJson(type) && !/^\s*[[{]/.test(corps.text.slice(0, 200))) return null;
-  let arbre;
-  try { arbre = lireJsonExact(corps.text); } catch { return null; }
-  const perdus = nombresPerdus(arbre);
-  const doubles = clesEnDouble(arbre);
+  /* Un seul passage, sans arbre : la memoire suit la profondeur du texte,
+     pas sa taille. */
+  let constats;
+  try { constats = constatsJson(corps.text); } catch { return null; }
+  const { perdus, doubles } = constats;
   return perdus.length || doubles.length ? { perdus, doubles } : null;
 }
 

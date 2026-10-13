@@ -29,7 +29,7 @@ import { md5Octets } from './hashes.js';
 
 /* https://www.iana.org/assignments/http-digest-hash-alg — les noms sont
    normalises en minuscules par la RFC 9530. */
-const ALGORITHMES = {
+const ALGORITHMES = Object.assign(Object.create(null), {
   'sha-256': { natif: 'SHA-256', sens: 'SHA-256, recommande' },
   'sha-512': { natif: 'SHA-512', sens: 'SHA-512, recommande' },
   'sha': { natif: 'SHA-1', sens: 'SHA-1, deconseille : collisions demontrees' },
@@ -38,15 +38,15 @@ const ALGORITHMES = {
   'unixcksum': { natif: null, sens: 'cksum Unix, sans valeur cryptographique' },
   'crc32c': { natif: null, sens: 'CRC32C, detecte une corruption, pas une alteration' },
   'adler': { natif: null, sens: 'Adler-32, detecte une corruption, pas une alteration' }
-};
+});
 
 /** Les en-tetes qui portent une empreinte de corps, et ce sur quoi elle porte. */
-export const ENTETES_INTEGRITE = {
+export const ENTETES_INTEGRITE = Object.assign(Object.create(null), {
   'content-digest': { forme: 'structure', porte: 'les octets transmis' },
   'repr-digest': { forme: 'structure', porte: 'la representation, avant encodage de transfert' },
   'digest': { forme: 'ancienne', porte: 'la representation (RFC 3230, forme heritee)' },
   'content-md5': { forme: 'md5', porte: 'les octets transmis (RFC 1864, obsolete)' }
-};
+});
 
 /**
  * Lit une valeur d en-tete d integrite, quelle que soit sa syntaxe.

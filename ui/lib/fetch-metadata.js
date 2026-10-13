@@ -15,20 +15,20 @@
  * Une valeur que la table ne connait pas est montree telle quelle.
  */
 
-export const SENS_SITE = {
+export const SENS_SITE = Object.assign(Object.create(null), {
   'same-origin': 'de la meme origine (meme schema, meme hote, meme port)',
   'same-site': 'du meme site, mais d une autre origine (un autre sous-domaine)',
   'cross-site': 'd un autre site',
   'none': 'sans page a l origine : saisie dans la barre d adresse, favori, lien ouvert de l exterieur'
-};
-export const SENS_MODE = {
+});
+export const SENS_MODE = Object.assign(Object.create(null), {
   'cors': 'requete CORS : venue d une autre origine, sa reponse ne se lit que si le serveur l autorise',
   'navigate': 'navigation : chargement d un document',
   'no-cors': 'requete sans CORS : venue d une autre origine, sa reponse reste opaque pour la page',
   'same-origin': 'reservee a la meme origine : refusee si elle en visait une autre',
   'websocket': 'ouverture d un WebSocket'
-};
-export const SENS_DEST = {
+});
+export const SENS_DEST = Object.assign(Object.create(null), {
   'empty': 'une destination vide : fetch(), XMLHttpRequest et les autres appels sans destination propre',
   'document': 'la page principale', 'iframe': 'un cadre (iframe)', 'frame': 'un cadre (frame)',
   'image': 'une image', 'script': 'un script', 'style': 'une feuille de style', 'font': 'une police',
@@ -37,7 +37,7 @@ export const SENS_DEST = {
   'track': 'des sous-titres', 'object': 'un element object', 'embed': 'un element embed',
   'report': 'un rapport du navigateur', 'xslt': 'une feuille XSLT',
   'audioworklet': 'un AudioWorklet', 'paintworklet': 'un PaintWorklet'
-};
+});
 
 const valeur = (entetes, nom) => {
   const h = (entetes || []).find(x => x && String(x.name || '').toLowerCase() === nom);

@@ -107,12 +107,12 @@ export function cleAttendue(algorithme) {
  */
 
 /* Membres requis par type de cle, dans l ordre lexicographique impose. */
-const MEMBRES_REQUIS = {
+const MEMBRES_REQUIS = Object.assign(Object.create(null), {
   EC: ['crv', 'kty', 'x', 'y'],
   RSA: ['e', 'kty', 'n'],
   oct: ['k', 'kty'],
   OKP: ['crv', 'kty', 'x']
-};
+});
 
 /** La forme canonique d une JWK, telle que la RFC 7638 la definit. */
 export function jwkCanonique(cle) {

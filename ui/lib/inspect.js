@@ -11,13 +11,13 @@ import { texteVersOctets, base64UrlDecoder } from './codecs.js';
 import { lireJson } from './json-exact.js';
 
 /* --------------------------------- JWT ------------------------------------ */
-const CLAIMS = {
+const CLAIMS = Object.assign(Object.create(null), {
   iss: 'Emetteur', sub: 'Sujet', aud: 'Destinataire', exp: 'Expire le',
   nbf: 'Valide a partir de', iat: 'Emis le', jti: 'Identifiant du jeton',
   scope: 'Portee', scp: 'Portee', azp: 'Partie autorisee', typ: 'Type',
   alg: 'Algorithme', kid: 'Identifiant de cle', name: 'Nom', email: 'Adresse e-mail',
   roles: 'Roles', groups: 'Groupes', client_id: 'Client', session_state: 'Session'
-};
+});
 
 /** Libelle francais d une revendication JWT connue, sinon la cle brute. */
 export function libelleClaim(cle) { return CLAIMS[cle] || cle; }

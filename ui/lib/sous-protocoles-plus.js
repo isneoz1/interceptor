@@ -113,10 +113,10 @@ function resumerGraphql(l) {
 /* ------------------------------ JSON-RPC 2.0 ------------------------------ */
 /* https://www.jsonrpc.org/specification — le membre « jsonrpc » valant
    exactement « 2.0 » est OBLIGATOIRE : c est lui qui fait la preuve. */
-const ERREURS_JSONRPC = {
+const ERREURS_JSONRPC = Object.assign(Object.create(null), {
   '-32700': 'Parse error', '-32600': 'Invalid Request', '-32601': 'Method not found',
   '-32602': 'Invalid params', '-32603': 'Internal error'
-};
+});
 
 export function sensErreurJsonRpc(code) {
   if (ERREURS_JSONRPC[String(code)]) return ERREURS_JSONRPC[String(code)];

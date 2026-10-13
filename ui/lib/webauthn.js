@@ -21,11 +21,11 @@ import { octetsVersHex, octetsVersBase64 } from './bytes.js';
 import { sujetCrypto, importerClePublique } from './cles-publiques.js';
 
 /* Registre IANA des algorithmes COSE (valeurs de signature). */
-export const ALGORITHMES_COSE = {
+export const ALGORITHMES_COSE = Object.assign(Object.create(null), {
   '-7': 'ES256', '-8': 'EdDSA', '-9': 'ESP256', '-19': 'Ed25519', '-35': 'ES384', '-36': 'ES512',
   '-37': 'PS256', '-38': 'PS384', '-39': 'PS512', '-47': 'ES256K', '-51': 'ESP384', '-52': 'ESP512',
   '-53': 'Ed448', '-257': 'RS256', '-258': 'RS384', '-259': 'RS512', '-65535': 'RS1'
-};
+});
 
 /* Drapeaux de authenticatorData (6.1). Les bits 1 et 5 sont reserves. */
 export const DRAPEAUX = [

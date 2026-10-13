@@ -330,8 +330,8 @@ function lireCbor(lec, profondeur = 0) {
     const suivant = lec.o[lec.i];
     if ((etiquette === 2 || etiquette === 3) && suivant !== undefined && (suivant >> 5) === 2 && (suivant & 0x1f) !== 31) {
       lec.octet();
-      let n = 0n;
-      for (const b of lec.tranche(longueurCbor(lec, suivant & 0x1f))) n = (n << 8n) | BigInt(b);
+      const octets = lec.tranche(longueurCbor(lec, suivant & 0x1f));
+      const n = octets.length ? BigInt('0x' + octetsVersHex(octets, '')) : 0n;
       return entierDe(etiquette === 2 ? n : -1n - n);
     }
     /* Etiquette 24 (RFC 8949 §3.4.5.1) : la chaine d octets porte un autre
@@ -339,7 +339,15 @@ function lireCbor(lec, profondeur = 0) {
     if (etiquette === 24 && suivant !== undefined && (suivant >> 5) === 2 && (suivant & 0x1f) !== 31) {
       lec.octet();
       const dedans = lec.tranche(longueurCbor(lec, suivant & 0x1f));
-      try { return { tag: 24, content: decoderCbor(dedans) }; } catch { return { tag: 24, content: enDiagnostic(dedans) }; }
+      try {
+        const interieur = new Lecteur(dedans);
+        const contenu = lireCbor(interieur, profondeur + 1);
+        if (interieur.reste > 0) throw new Error(interieur.reste + ' octets en trop apres le document');
+        return { tag: 24, content: contenu };
+      } catch (e) {
+        if (/imbrication CBOR trop profonde/.test(e.message)) throw e;
+        return { tag: 24, content: enDiagnostic(dedans) };
+      }
     }
     const valeur = lireCbor(lec, profondeur + 1);
     if (etiquette === 0) return valeur;                       // date en texte

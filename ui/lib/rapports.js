@@ -49,7 +49,7 @@ export const FAITS_RAPPORTS = {
 };
 
 /* Les types d erreur reseau predefinis par NEL, avec leur phase et leur sens. */
-export const TYPES_NEL = {
+export const TYPES_NEL = Object.assign(Object.create(null), {
   'ok': ['application', 'requete reussie'],
   'dns.unreachable': ['dns', 'le serveur DNS est injoignable'],
   'dns.name_not_resolved': ['dns', 'le serveur DNS a repondu mais ne resout pas l adresse'],
@@ -80,11 +80,11 @@ export const TYPES_NEL = {
   'http.failed': ['application', 'echec du protocole HTTP pour une autre raison'],
   'abandoned': ['application', 'chargement abandonne par l utilisateur avant la fin'],
   'unknown': ['application', 'type d erreur inconnu']
-};
+});
 
 /* Les champs de chaque type connu, dans l ordre ou on les lit, avec leur
    libelle. Un champ absent du rapport n est pas affiche. */
-export const CHAMPS_RAPPORTS = {
+export const CHAMPS_RAPPORTS = Object.assign(Object.create(null), {
   'csp-violation': [
     ['effectiveDirective', 'Directive enfreinte'], ['blockedURL', 'Adresse bloquee'],
     ['disposition', 'Disposition'], ['documentURL', 'Document'], ['sourceFile', 'Fichier source'],
@@ -109,18 +109,18 @@ export const CHAMPS_RAPPORTS = {
     ['lineNumber', 'Ligne'], ['columnNumber', 'Colonne'], ['allowAttribute', 'Attribut allow'],
     ['srcAttribute', 'Attribut src']
   ]
-};
+});
 
 /* La forme depreciee de la CSP, ramenee aux noms de la Reporting API. */
-const CSP_ANCIENNE = {
+const CSP_ANCIENNE = Object.assign(Object.create(null), {
   'document-uri': 'documentURL', 'referrer': 'referrer', 'blocked-uri': 'blockedURL',
   'effective-directive': 'effectiveDirective', 'violated-directive': 'violatedDirective',
   'original-policy': 'originalPolicy', 'disposition': 'disposition', 'status-code': 'statusCode',
   'script-sample': 'sample', 'source-file': 'sourceFile', 'line-number': 'lineNumber',
   'column-number': 'columnNumber'
-};
+});
 
-export const NOMS_TYPES = {
+export const NOMS_TYPES = Object.assign(Object.create(null), {
   'csp-violation': 'Violation de la CSP',
   'network-error': 'Erreur reseau (NEL)',
   'deprecation': 'API depreciee',
@@ -130,7 +130,7 @@ export const NOMS_TYPES = {
   'coep': 'Violation de COEP',
   'coop': 'Violation de COOP',
   'document-policy-violation': 'Violation de Document-Policy'
-};
+});
 
 const texteDe = v => (v === null || v === undefined ? null
   : typeof v === 'object' ? JSON.stringify(v) : String(v));
@@ -198,7 +198,7 @@ export function lireRapports(texte, typeMedia = '') {
   /* La forme depreciee de report-uri. */
   if (estObjet(valeur) && estObjet(valeur['csp-report'])) {
     const brut = valeur['csp-report'];
-    const corps = {};
+    const corps = Object.create(null);
     for (const [cle, v] of Object.entries(brut)) corps[CSP_ANCIENNE[cle] || cle] = v;
     const faits = faitsDe('csp-violation', corps, null);
     faits.unshift({ cle: 'cspDeprecie', texte: FAITS_RAPPORTS.cspDeprecie, valeurs: {} });

@@ -25,7 +25,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import url from 'node:url';
-import { installerTout, installerPage, egal, verifier, leve, bilan } from './harnais.mjs';
+import { installerTout, installerPage, enregistrementExemple, egal, verifier, leve, bilan } from './harnais.mjs';
 
 installerTout();
 const ici = path.dirname(url.fileURLToPath(import.meta.url));
@@ -627,6 +627,160 @@ function canonique(noeud) {
     });
   }
   egal('aucune vue ne coupe un contenu en silence', imprevues.join('\n'), '');
+}
+
+/* ============ 10. Les noms du prototype, venus de l exterieur ============ */
+/* Une table ecrite en objet ordinaire herite d Object.prototype : y chercher
+   « constructor » ou « toString », qu un serveur peut ecrire dans un en-tete,
+   un jeton ou un corps, rendait une fonction — affichee « function Object()
+   { [native code] } ». Chaque onglet du detail et plusieurs outils, rendus avec
+   ces noms partout, dans les deux langues : rien d herite ne doit paraitre. */
+{
+  const parts = await import('../ui/console/detail-parts.js');
+  const more = await import('../ui/console/detail-more.js');
+  const { panneauEntetes } = await import('../ui/console/tools-entetes.js');
+  const { panneauJwt } = await import('../ui/console/tools-panels.js');
+  const { panneauOtp } = await import('../ui/console/tools-otp.js');
+  const { parseQuery, matchTerms } = await import('../ui/lib/filters.js');
+  const { morseDecoder } = await import('../ui/lib/codecs-text.js').catch(() => ({}));
+  const NOMS = ['constructor', '__proto__', 'toString', 'valueOf', 'hasOwnProperty', '__defineGetter__'];
+  const b64 = o => Buffer.from(JSON.stringify(o)).toString('base64url');
+  const revendications = Object.fromEntries(NOMS.map((n, i) => [n, i]));
+  const jeton = b64({ alg: 'HS256', typ: 'JWT', constructor: 1 }) + '.' + b64(revendications) + '.c2ln';
+  const h = o => Object.entries(o).map(([name, value]) => ({ name, value }));
+  const rec = enregistrementExemple({ id: 9401, url: 'https://exemple.test/constructor?constructor=1&__proto__=2', statusCode: 502 });
+  rec.requestHeaders = [
+    { name: 'Authorization', value: 'Bearer ' + jeton },
+    { name: 'Sec-Fetch-Site', value: 'constructor' }, { name: 'Sec-Fetch-Mode', value: 'toString' }, { name: 'Sec-Fetch-Dest', value: '__proto__' },
+    { name: 'constructor', value: 'toString' }, { name: '__proto__', value: 'x' }, { name: 'Priority', value: 'u=constructor' }
+  ];
+  rec.responseHeaders = h({
+    'Cache-Control': 'constructor, toString=1, __proto__', 'CDN-Cache-Control': 'constructor',
+    'Content-Digest': 'constructor=:YQ==:, toString=:YQ==:', 'Repr-Digest': '__proto__=:YQ==:',
+    'Referrer-Policy': 'constructor, toString', 'RateLimit-Policy': '"q";q=10;qu="constructor"', RateLimit: '"q";r=1',
+    'Alt-Svc': 'constructor=":443"', 'Cache-Status': 'C; fwd=constructor', 'Proxy-Status': 'P; next-protocol=constructor; error=toString',
+    'Clear-Site-Data': '"constructor", "__proto__"', 'Signature-Input': 'sig=("constructor" "@toString");alg="constructor"',
+    Signature: 'sig=:YQ==:', Link: '</x>; rel=constructor', constructor: 'toString', toString: '1', 'Content-Type': 'application/json'
+  });
+  rec.mime = 'application/json';
+  rec.requestBody = { text: '{"csp-report":{"constructor":1,"__proto__":{"x":1},"toString":2}}', contentType: 'application/csp-report', size: 60 };
+  rec.responseBody = { text: '{"constructor":1,"__proto__":2,"toString":{"valueOf":3}}', mime: 'application/json', size: 50 };
+  const ONGLETS = [parts.resume, parts.headers, parts.requestBody, parts.responseBody, more.cookies, more.security,
+    more.analysis, more.streams, more.timeline, more.stack, more.raw];
+  const fuites = [];
+  const HERITE = /\[native code\]|function (Object|toString|valueOf|hasOwnProperty|__defineGetter__)\(|\[object Object\]/;
+  for (const langue of ['fr', 'en']) {
+    setLang(langue);
+    try {
+      ONGLETS.forEach((rendre, i) => {
+        const hote = document.createElement('div');
+        try { hote.appendChild(rendre(rec)); } catch (e) { fuites.push('onglet ' + i + ' [' + langue + '] plante : ' + e.message); return; }
+        const vu = texte(hote);
+        if (HERITE.test(vu)) fuites.push('onglet ' + i + ' [' + langue + '] : ' + vu.slice(Math.max(0, vu.search(HERITE) - 60), vu.search(HERITE) + 60));
+      });
+      for (const [nom, rendre] of [
+        ['en-tetes colles', () => panneauEntetes('constructor: toString\n__proto__: x\nCache-Control: constructor, toString=1\nReferrer-Policy: constructor')],
+        ['JWT', () => panneauJwt(jeton, {}, () => {})],
+        ['OTP', () => panneauOtp('otpauth://totp/x?secret=JBSWY3DPEHPK3PXP&algorithm=constructor&digits=6', {}, () => {})]
+      ]) {
+        const hote = document.createElement('div');
+        try { hote.appendChild(rendre()); } catch (e) { fuites.push(nom + ' [' + langue + '] plante : ' + e.message); continue; }
+        const vu = texte(hote);
+        if (HERITE.test(vu)) fuites.push(nom + ' [' + langue + '] : ' + vu.slice(Math.max(0, vu.search(HERITE) - 60), vu.search(HERITE) + 60));
+      }
+    } finally { setLang('fr'); }
+  }
+  egal('aucun membre herite d Object.prototype ne parait, aucun onglet ne plante', fuites.join(' || '), '');
+  const ordinaire = { method: 'GET', statusCode: 200, url: 'https://exemple.test/', type: 'xmlhttprequest', state: 'complete' };
+  egal('recherche « state:constructor » : ne correspond a rien', matchTerms(ordinaire, parseQuery('state:constructor')), false);
+  verifier('recherche « constructor:x » : lue comme un champ inconnu, sans planter', (() => { try { matchTerms(ordinaire, parseQuery('constructor:x')); return true; } catch { return false; } })());
+  if (morseDecoder) verifier('Morse : « constructor » n est pas un code', (() => { try { return !String(morseDecoder('constructor')).includes('function'); } catch { return true; } })());
+  const { t, te } = await import('../ui/lib/i18n.js');
+  setLang('en');
+  try {
+    egal('traduction : « constructor » se rend tel quel', t('constructor'), 'constructor');
+    egal('traduction : « toString » se rend tel quel', te(new Error('toString')), 'toString');
+  } finally { setLang('fr'); }
+}
+
+/* ============ 11. Les constats de la revue, un par un ============ */
+{
+  /* Une reponse JSON-RPC sans id : « — », pas « null » (un id null existe). */
+  const { rpcReponse } = await import('../ui/console/rpc-detail.js');
+  const rec = enregistrementExemple({ id: 9402, url: 'https://exemple.test/rpc', statusCode: 200 });
+  rec.requestBody = { text: '{"jsonrpc":"2.0","method":"m","id":1}', contentType: 'application/json' };
+  rec.requestHeaders = [{ name: 'Content-Type', value: 'application/json' }];
+  rec.responseBody = { text: '{"jsonrpc":"2.0","result":3}', mime: 'application/json' };
+  rec.mime = 'application/json';
+  const hote = document.createElement('div');
+  hote.appendChild(rpcReponse(rec));
+  const vu = texte(hote);
+  verifier('JSON-RPC : une reponse sans id ne s affiche pas « id null »', !vu.includes('id null') && vu.includes('—'), vu.slice(0, 200));
+
+  /* Un grand entier CBOR de deux cents kilo-octets : lineaire. */
+  const octets = new Uint8Array(200000).fill(0xab);
+  const tete = [0xc2, 0x5a, 0x00, 0x03, 0x0d, 0x40];          // etiquette 2, chaine de 200 000 octets
+  const doc = new Uint8Array(tete.length + octets.length);
+  doc.set(tete); doc.set(octets, tete.length);
+  const debut = Date.now();
+  const grand = decoderCbor(doc);
+  const duree = Date.now() - debut;
+  verifier('CBOR : un grand entier de 200 Ko se decode en moins d une seconde (huit avant)', duree < 1000, duree + ' ms');
+  verifier('CBOR : et il est juste', String(grand) === BigInt('0x' + 'ab'.repeat(200000)).toString());
+
+  /* L etiquette 24 garde la profondeur : une chaine de six mille niveaux est
+     refusee proprement, comme toute imbrication de plus de trente-deux. */
+  let doc24 = new Uint8Array([0x01]);
+  for (let k = 0; k < 6000; k++) {
+    const n = doc24.length;
+    const tete24 = n < 24 ? [0xd8, 0x18, 0x40 + n] : n < 256 ? [0xd8, 0x18, 0x58, n] : n < 65536 ? [0xd8, 0x18, 0x59, n >> 8, n & 255]
+      : [0xd8, 0x18, 0x5a, (n >>> 24) & 255, (n >>> 16) & 255, (n >>> 8) & 255, n & 255];
+    const suivant = new Uint8Array(tete24.length + n);
+    suivant.set(tete24); suivant.set(doc24, tete24.length);
+    doc24 = suivant;
+  }
+  let message24 = '';
+  try { decoderCbor(doc24); } catch (e) { message24 = e.message; }
+  verifier('CBOR : six mille etiquettes 24 imbriquees, refusees par la garde de profondeur', /imbrication CBOR trop profonde/.test(message24), message24);
+
+  /* La reference : « nul » ne trouve pas les erreurs sans statut fixe. */
+  const { panneauReference } = await import('../ui/console/tools-reference.js');
+  const ref = document.createElement('div');
+  ref.appendChild(panneauReference('nul', { familleRef: 'proxy', questionRef: 'nul' }, () => {}));
+  verifier('reference : « nul » ne trouve pas http_request_error par son statut absent', !texte(ref).includes('http_request_error'));
+
+  egal('un tableau a trous s ecrit comme avec JSON.stringify', J.ecrireValeurJson([1, , 3], ''), JSON.stringify([1, , 3]));
+
+  /* Des textes sans ligne unique, au-dela du budget : la plage se coupe en
+     tranches, et le pourcentage se dit « au moins ». Il disait 0 %. */
+  const a = Array.from({ length: 50000 }, () => 'v' + Math.floor(hasard() * 5));
+  const b = a.map(x => (hasard() < 0.3 ? 'v' + Math.floor(hasard() * 5) : x));
+  const r = comparerTextes(a.join('\n'), b.join('\n'));
+  const gauche = r.operations.filter(o => o.type !== 'ajout').map(o => o.texte), droite = r.operations.filter(o => o.type !== 'retrait').map(o => o.texte);
+  verifier('cinquante mille lignes de cinq valeurs : exact, et plus de la moitie des lignes retrouvees en commun',
+    gauche.join() === a.join() && droite.join() === b.join() && r.similitude > 50, r.similitude + ' %');
+  const { panneauComparer } = await import('../ui/console/tools-diff.js');
+  const panneau = document.createElement('div');
+  panneau.appendChild(panneauComparer(a.join('\n'), { autreTexte: b.join('\n') }, () => {}, () => {}));
+  verifier('boite a outils : une liste non garantie la plus courte dit « au moins »', texte(panneau).includes('au moins'));
+
+  /* La mise en forme et les constats d un corps passent par un balayage sans
+     arbre : memes resultats que l arbre, sur des textes tires au hasard. */
+  let memes = 0;
+  for (let k = 0; k < 3000; k++) {
+    const t = '{"a":[' + Array.from({ length: Math.floor(hasard() * 6) }, () => choisir(['1', '9007199254740993', '{"b":1,"b":2}', '"x"', '[]', '{}'])).join(',') + '],"a":1}';
+    const arbre = J.lireJsonExact(t);
+    const c = J.constatsJson(t);
+    if (J.jsonExactJoli(t) === J.ecrireJsonExact(arbre, '  ')
+      && JSON.stringify(c.perdus) === JSON.stringify(J.nombresPerdus(arbre))
+      && JSON.stringify(c.doubles.map(d => d.chemin + d.cle).sort()) === JSON.stringify(J.clesEnDouble(arbre).map(d => d.chemin + d.cle).sort())) memes++;
+  }
+  egal('balayage sans arbre : memes mises en forme et memes constats que l arbre', memes, 3000);
+  const gros = '[' + '1,'.repeat(1500000) + '1]';
+  const avant = process.memoryUsage().heapUsed;
+  const constats = J.constatsJson(gros);
+  verifier('constats d un corps de trois megaoctets : aucune memoire en proportion de sa taille',
+    constats.perdus.length === 0 && process.memoryUsage().heapUsed - avant < 50e6, Math.round((process.memoryUsage().heapUsed - avant) / 1e6) + ' Mo');
 }
 
 bilan('Comparaisons et donnees exactes');

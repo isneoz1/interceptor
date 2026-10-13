@@ -49,7 +49,7 @@ export const FAITS_DEBIT = {
 };
 
 const UNITES = { 'requests': 'requete(s)', 'content-bytes': 'octet(s) de contenu', 'concurrent-requests': 'requete(s) simultanee(s)' };
-export const UNITES_DEBIT = UNITES;
+export const UNITES_DEBIT = Object.assign(Object.create(null), UNITES);
 
 function valeurs(entetes, nom) {
   return (entetes || []).filter(h => h && String(h.name || '').toLowerCase() === nom).map(h => String(h.value ?? ''));

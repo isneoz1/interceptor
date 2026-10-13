@@ -49,7 +49,9 @@ export function panneauComparer(entree, etat, redessiner, poser) {
     return box;
   }
 
-  box.appendChild(sec('Resultat', resultat.similitude + ' % ' + t('de lignes communes')));
+  box.appendChild(sec('Resultat', resultat.minimal
+    ? resultat.similitude + ' % ' + t('de lignes communes')
+    : tp('au moins {n} % de lignes communes', { n: resultat.similitude })));
   add(box, kv('Lignes identiques', resultat.egales, { always: true }));
   add(box, kv('Lignes seulement a gauche', resultat.retraits, { always: true }));
   add(box, kv('Lignes seulement a droite', resultat.ajouts, { always: true }));

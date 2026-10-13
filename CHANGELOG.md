@@ -72,6 +72,23 @@ named, with the reason.
   the Protocol Buffers tree were written in French in the English interface and in the
   exported JSON.
 - A JWT whose `exp` lies beyond the date range made the whole token unreadable.
+- **A name sent by a server or a page could show a JavaScript function.** A header, a
+  `Cache-Control` directive, a digest algorithm, a JWT claim, a `Referrer-Policy` token, a
+  RateLimit unit, an ALPN identifier, a CSP report field, a SOAP fault element or an XML
+  entity called `constructor` or `toString` was displayed as `function Object() { [native
+  code] }`, one called `__proto__` as `[object Object]`, and the pasted-headers tool crashed on
+  it; in the search, `state:constructor` matched every request. The 33 lookup tables that
+  receive such names, and the translation helper, no longer see inherited members.
+- A JSON-RPC response without an `id` was shown with "id null"; it now says the id is absent.
+- A CBOR bignum was decoded byte by byte, in quadratic time (eight seconds for 200 KB); and
+  a document embedded with tag 24 escaped the nesting limit.
+- Formatting a large JSON body, and the checks run on every JSON body, built a tree with one
+  object per value — hundreds of megabytes for five megabytes of small numbers. They now
+  read the text in one pass: memory follows its depth, and a 60 MB body can be formatted.
+- Comparing huge texts made of a few repeated lines, beyond the search budget, reported 0 %
+  in common where two thirds were shared; the comparison now works slice by slice, and an
+  overall figure that is not proven minimal says "at least".
+- Searching the reference for "nul" matched the proxy errors that have no fixed status.
 - **Nothing on screen is cut without saying so any more**: a multipart part showed its first
   4,000 characters, a body's base64 its first 20,000, a decoding result 4,000, a generated
   code 20,000, a character-set trial 2,000, an XOR candidate 500, all without a way to see the
@@ -85,8 +102,9 @@ named, with the reason.
 
 ### Tests
 
-- `tests/comparaison.test.mjs` (new suite, 140 checks): the Comparison view rendered with two
-  requests in both languages; the comparison engine against the
+- `tests/comparaison.test.mjs` (new suite, 156 checks): every detail tab and several tools
+  rendered with `constructor`, `__proto__` and `toString` everywhere, in both languages; the
+  Comparison view rendered with two requests in both languages; the comparison engine against the
   longest common subsequence on two thousand random cases, 200,000 lines; the unified diff
   against GNU diffutils 3.12 and re-applied on a thousand cases (and on six hundred with GNU
   `patch` 2.7.6, run locally); lossless JSON against `JSON.parse` on twenty thousand texts
@@ -99,7 +117,7 @@ named, with the reason.
 - `tests/ui-load.test.mjs`: the translation check now covers `SyntaxError`, `TypeError` and
   local `erreur(…)` helpers, which it did not see; the README's number of proxy error types.
 
-2751 assertions across twelve suites, plus six browser audits.
+2767 assertions across twelve suites, plus six browser audits.
 
 ## [5.4.0] — 2026-10-12
 

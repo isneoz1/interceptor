@@ -9,6 +9,10 @@ import { EN } from './dict-en.js';
 import { MODELES_ERREURS } from './dict-en-erreurs.js';
 
 let current = 'fr';
+/* Une entree propre du dictionnaire : EN['constructor'] rendait la fonction
+   heritee d Object.prototype, et un en-tete ou une revendication de ce nom
+   s affichait « function Object() { [native code] } ». */
+const propre = cle => Object.prototype.hasOwnProperty.call(EN, cle);
 /* Appelee avec chaque texte que le dictionnaire n a pas. Seuls les tests la
    posent : c est ainsi qu ils voient un libelle arrive par une variable —
    `t(label)` — que la lecture du source ne peut pas voir. */
@@ -21,7 +25,7 @@ export function surManque(fn) { temoinManque = typeof fn === 'function' ? fn : n
 /** Traduit une chaine. Sans entree, la chaine francaise est rendue telle quelle. */
 export function t(text) {
   if (current !== 'en') return text;
-  if (EN[text] !== undefined) return EN[text];
+  if (propre(text)) return EN[text];
   if (temoinManque) temoinManque(text);
   return text;
 }
@@ -75,7 +79,7 @@ function compiler() {
 export function te(erreur, profondeur = 0) {
   const message = String((erreur && erreur.message) || erreur || '');
   if (current !== 'en' || !message) return message;
-  if (EN[message] !== undefined) return EN[message];
+  if (propre(message)) return EN[message];
   /* Un message demesure (une valeur collee de plusieurs Ko) n est pas
      soumis aux modeles : leur lecture resterait lineaire, mais inutilement. */
   if (profondeur > 3 || message.length > 4000) return message;

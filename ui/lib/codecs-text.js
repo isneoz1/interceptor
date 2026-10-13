@@ -107,7 +107,7 @@ export function xorForceUnOctet(octets) {
 }
 
 /* ---------------------------------- Morse --------------------------------- */
-const MORSE = {
+const MORSE = Object.assign(Object.create(null), {
   a: '.-', b: '-...', c: '-.-.', d: '-..', e: '.', f: '..-.', g: '--.', h: '....',
   i: '..', j: '.---', k: '-.-', l: '.-..', m: '--', n: '-.', o: '---', p: '.--.',
   q: '--.-', r: '.-.', s: '...', t: '-', u: '..-', v: '...-', w: '.--', x: '-..-',
@@ -118,8 +118,8 @@ const MORSE = {
   '/': '-..-.', '(': '-.--.', ')': '-.--.-', '&': '.-...', ':': '---...',
   ';': '-.-.-.', '=': '-...-', '+': '.-.-.', '-': '-....-', '_': '..--.-',
   '"': '.-..-.', '$': '...-..-', '@': '.--.-.'
-};
-const MORSE_INVERSE = Object.fromEntries(Object.entries(MORSE).map(([k, v]) => [v, k]));
+});
+const MORSE_INVERSE = Object.assign(Object.create(null), Object.fromEntries(Object.entries(MORSE).map(([k, v]) => [v, k])));
 
 export function morseEncoder(texte) {
   const mots = String(texte).trim().toLowerCase().split(/\s+/).filter(Boolean);

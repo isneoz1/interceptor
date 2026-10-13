@@ -106,7 +106,7 @@ export async function totpVoisins(secretOctets, options = {}, marge = 1) {
 }
 
 /* ------------------------------ Liens otpauth ----------------------------- */
-const ALGO_URI = { SHA1: 'SHA-1', SHA256: 'SHA-256', SHA512: 'SHA-512' };
+const ALGO_URI = Object.assign(Object.create(null), { SHA1: 'SHA-1', SHA256: 'SHA-256', SHA512: 'SHA-512' });
 const URI_ALGO = { 'SHA-1': 'SHA1', 'SHA-256': 'SHA256', 'SHA-512': 'SHA512' };
 
 /** Lit un lien otpauth://totp/Emetteur:compte?secret=...&issuer=... */

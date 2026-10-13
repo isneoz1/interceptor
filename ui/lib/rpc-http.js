@@ -99,7 +99,7 @@ export function lireReponseJsonRpc(texte) {
 }
 
 /* Un identifiant compare et ecrit tel qu il a ete envoye ; absent n est pas null. */
-const texteId = v => (v === undefined ? '—' : ecrireValeurJson(v, ''));
+export const texteId = v => (v === undefined ? '—' : ecrireValeurJson(v, ''));
 const memeId = (a, b) => (a === undefined) === (b === undefined) && texteId(a) === texteId(b);
 
 /** Les faits d un echange JSON-RPC. */
@@ -143,8 +143,8 @@ export function faitsJsonRpc(appel, reponse, { statut = null } = {}) {
 
 /* --------------------------------- SOAP ----------------------------------- */
 /* Les elements de la faute, par version, et ce qu on en garde. */
-const FAUTE_11 = { faultcode: 'code', faultstring: 'message', faultactor: 'acteur', detail: 'detail' };
-const FAUTE_12 = { Reason: 'message', Node: 'noeud', Role: 'role', Detail: 'detail' };
+const FAUTE_11 = Object.assign(Object.create(null), { faultcode: 'code', faultstring: 'message', faultactor: 'acteur', detail: 'detail' });
+const FAUTE_12 = Object.assign(Object.create(null), { Reason: 'message', Node: 'noeud', Role: 'role', Detail: 'detail' });
 
 /**
  * L enveloppe SOAP d un corps XML, ou null : la version, l operation (premier

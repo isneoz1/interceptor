@@ -18,7 +18,7 @@
  */
 import { lireListe, lireDictionnaire, decrireArticle } from './champs-structures.js';
 
-export const RAISONS_FWD = {
+export const RAISONS_FWD = Object.assign(Object.create(null), {
   'bypass': 'le cache est configure pour ne pas traiter cette requete',
   'method': 'la methode de la requete impose de la transmettre',
   'uri-miss': 'aucune reponse en cache pour cette adresse',
@@ -27,7 +27,7 @@ export const RAISONS_FWD = {
   'request': 'une reponse fraiche existait, mais la requete en interdisait l emploi',
   'stale': 'une reponse existait, mais perimee',
   'partial': 'une reponse partielle existait, sans toutes les plages demandees'
-};
+});
 
 export const FAITS_CACHE_STATUS = {
   servie: 'servie par ce cache',

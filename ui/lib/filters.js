@@ -19,7 +19,7 @@
 import { texteGraphql } from './graphql-http.js';
 import { texteRpc } from './rpc-http.js';
 
-export const FIELDS = {
+export const FIELDS = Object.assign(Object.create(null), {
   method:    { kind: 'text', get: r => r.method,               help: 'verbe HTTP' },
   status:    { kind: 'num',  get: r => r.statusCode,           help: 'code de statut, accepte 2xx a 5xx' },
   type:      { kind: 'text', get: r => r.type,                 help: 'type de ressource' },
@@ -71,20 +71,20 @@ export const FIELDS = {
   'larger-than':         { kind: 'num',  get: r => r.size,             help: 'taille en octets strictement superieure au nombre donne', implicite: '>' },
   is:                    { kind: 'etat', get: r => r,                  help: 'running : en cours ; cached ou from-cache : servi par le cache' },
   regexp:                { kind: 'regexp', get: r => r.url,            help: 'expression reguliere sur l URL' }
-};
+});
 
 /* Les noms que Firefox donne a des criteres deja presents ci-dessus. */
-export const ALIAS_FIREFOX = {
+export const ALIAS_FIREFOX = Object.assign(Object.create(null), {
   'status-code': 'status', domain: 'host', 'remote-ip': 'ip', 'mime-type': 'mime',
   protocol: 'proto', transferred: 'wire'
-};
+});
 
 /* is: — les etats que Firefox sait nommer. */
-const ETATS = {
+const ETATS = Object.assign(Object.create(null), {
   running: r => r.state === 'pending',
   cached: r => !!r.fromCache,
   'from-cache': r => !!r.fromCache
-};
+});
 
 const TRUE_WORDS = new Set(['', 'oui', 'true', '1', 'vrai', 'yes']);
 const CMP = /^(>=|<=|>|<|=)\s*(-?\d+(?:\.\d+)?)$/;

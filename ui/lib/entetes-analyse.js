@@ -59,7 +59,7 @@ function setCookie(valeur) {
 }
 
 /* ------------------------------ Cache-Control ----------------------------- */
-const CACHE = {
+const CACHE = Object.assign(Object.create(null), {
   'no-store': 'rien n est conserve, nulle part',
   'no-cache': 'conserve, mais revalide a chaque fois',
   'must-revalidate': 'une reponse perimee ne peut plus servir',
@@ -69,7 +69,7 @@ const CACHE = {
   'immutable': 'ne changera pas : aucune revalidation avant expiration',
   'no-transform': 'aucun intermediaire ne doit modifier le contenu',
   'only-if-cached': 'le client ne veut que du cache'
-};
+});
 
 function cacheControl(valeur) {
   const parties = [];
@@ -283,7 +283,7 @@ function autorisation(valeur) {
 }
 
 /* -------------------------------- Registre -------------------------------- */
-const ANALYSEURS = {
+const ANALYSEURS = Object.assign(Object.create(null), {
   'set-cookie': setCookie,
   'cookie': v => ({
     parties: String(v).split(';').map(p => {
@@ -359,7 +359,7 @@ const ANALYSEURS = {
   }),
   'content-range': v => ({ parties: [partie('Portion', String(v).trim())], risques: [] }),
   'range': v => ({ parties: [partie('Demande', String(v).trim())], risques: [] })
-};
+});
 
 /** Entetes que ce module sait decouper, au-dela de leur simple description. */
 export const ENTETES_ANALYSABLES = Object.keys(ANALYSEURS).sort();

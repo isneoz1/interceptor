@@ -141,6 +141,7 @@ export const EN_PANNEAUX2 = {
   'Les deux textes sont vides.': 'Both texts are empty.',
   'Comparaison impossible : ': 'Comparison impossible: ',
   'de lignes communes': 'of lines in common',
+  'au moins {n} % de lignes communes': 'at least {n} % of lines in common',
   'Lignes identiques': 'Identical lines',
   'Lignes seulement a gauche': 'Lines only on the left',
   'Lignes seulement a droite': 'Lines only on the right',

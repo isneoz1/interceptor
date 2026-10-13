@@ -8,7 +8,7 @@
  * caractere n est lu qu une fois.
  */
 
-const ENTITES = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'" };
+const ENTITES = Object.assign(Object.create(null), { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'" });
 /* Un point de code hors d Unicode reste ecrit tel quel : il ne rend pas tout
    le message illisible. En une passe, pour que « &amp;#65; » redonne « &#65; ». */
 const point = (brut, code) => (code >= 0 && code <= 0x10ffff ? String.fromCodePoint(code) : brut);

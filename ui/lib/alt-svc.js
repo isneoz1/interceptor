@@ -29,11 +29,11 @@ export const FAITS_ALTSVC = {
 };
 
 /* Les identifiants ALPN enregistres que l on rencontre ici. */
-export const ALPN_CONNUS = {
+export const ALPN_CONNUS = Object.assign(Object.create(null), {
   'h3': 'HTTP/3 (RFC 9114)',
   'h2': 'HTTP/2 (RFC 9113)',
   'http/1.1': 'HTTP/1.1 (RFC 9112)'
-};
+});
 
 const UNE_JOURNEE = 86400;
 

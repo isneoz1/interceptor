@@ -21,14 +21,14 @@ import { texteVersOctets, base64VersOctets, hexVersOctets } from './bytes.js';
 import { sujetCrypto, importerClePublique } from './cles-publiques.js';
 
 /* Registre IANA « HTTP Signature Algorithms » (RFC 9421, 6.2.2). */
-export const ALGORITHMES_SIGNATURE = {
+export const ALGORITHMES_SIGNATURE = Object.assign(Object.create(null), {
   'rsa-pss-sha512': { cle: { name: 'RSA-PSS', hash: 'SHA-512' }, verif: { name: 'RSA-PSS', saltLength: 64 }, genre: 'RSA' },
   'rsa-v1_5-sha256': { cle: { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' }, verif: { name: 'RSASSA-PKCS1-v1_5' }, genre: 'RSA' },
   'hmac-sha256': { cle: { name: 'HMAC', hash: 'SHA-256' }, verif: { name: 'HMAC' }, genre: 'secret' },
   'ecdsa-p256-sha256': { cle: { name: 'ECDSA', namedCurve: 'P-256' }, verif: { name: 'ECDSA', hash: 'SHA-256' }, genre: 'EC' },
   'ecdsa-p384-sha384': { cle: { name: 'ECDSA', namedCurve: 'P-384' }, verif: { name: 'ECDSA', hash: 'SHA-384' }, genre: 'EC' },
   'ed25519': { cle: { name: 'Ed25519' }, verif: { name: 'Ed25519' }, genre: 'OKP' }
-};
+});
 
 /* Les phrases, traduites a l affichage ; exportees pour le controle de traduction. */
 export const FAITS_SIGNATURE = {

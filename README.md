@@ -15,7 +15,7 @@ Created by **NeoZ** · <sub>formerly INTERCEPTOR, renamed in 5.0</sub>
 ![Manifest V2](https://img.shields.io/badge/Manifest-V2-444?style=flat)
 [![MIT licence](https://img.shields.io/badge/Licence-MIT-00DDFF?style=flat)](LICENSE)
 ![No dependencies](https://img.shields.io/badge/Dependencies-none-2ea043?style=flat)
-![2751 assertions](https://img.shields.io/badge/Assertions-2751-2ea043?style=flat)
+![2767 assertions](https://img.shields.io/badge/Assertions-2767-2ea043?style=flat)
 ![English and French](https://img.shields.io/badge/UI-EN%20%2F%20FR-444?style=flat)
 
 [**Try it in 60 seconds**](#try-it-in-60-seconds) · [**Download**](https://github.com/isneoz1/interceptor/releases/latest) · [**Why not the built-in panel?**](#firefox-already-has-a-network-panel-why-this) · [**Screenshots**](#2-screenshots) · [**How it works**](#4-how-it-works-the-capture-layers) · [**Changelog**](CHANGELOG.md)
@@ -187,7 +187,7 @@ specific points:
 happens inside your Firefox, on your machine.
 
 **By the numbers**: 238 JavaScript modules, ~48,700 lines, zero external dependencies,
-2751 automated assertions, English and French interface.
+2767 automated assertions, English and French interface.
 
 ---
 
@@ -949,7 +949,7 @@ ui/                        The interface — one page for all four surfaces
 ├── console/               One view per file, plus the detail panel
 └── lib/                   Codecs, digests, network, reference tables, i18n
 
-tests/                     2751 assertions, no browser required
+tests/                     2767 assertions, no browser required
 tools/sockets.mjs          Real WebSockets against a real server: page, worker, WebRTC
 tools/transparence.mjs     What a page can tell about the probes — it should be nothing
 tools/minutage.mjs         Network timing phases in a real browser: only real measurements
@@ -984,6 +984,9 @@ build.ps1                  Verification and .xpi packaging
   many lines it has. A test fails on any new silent cut.
 - **Numbers keep their digits.** JSON is read without converting its numbers, so an
   identifier beyond 2^53 is never shown rounded.
+- **A name from outside is only a name.** Every table looked up with a value a server, a page
+  or a search provides has no prototype: a header or a claim called `constructor` is shown
+  as such, never as the JavaScript function of that name. A test renders every tab with them.
 - **Comments explain *why*,** not *what*.
 
 ---
@@ -1023,7 +1026,7 @@ French at the flip of a setting.
 npm test
 ```
 
-2751 assertions, with no browser and no dependencies. The kernel and interface modules are
+2767 assertions, with no browser and no dependencies. The kernel and interface modules are
 written for Firefox; `tests/harnais.mjs` supplies the minimum WebExtension API and DOM they
 need to import and run under Node. **The logic under test is exactly the logic that runs in
 the browser, with no rewriting.**
@@ -1041,7 +1044,7 @@ the browser, with no rewriting.**
 | `decodeurs.test.mjs` | 209 | What 4.6 reads, against independent references: every example of **RFC 9421** (Appendix B and section 2) — signature bases **identical byte for byte**, RSA-PSS, ECDSA, HMAC and Ed25519 signatures verified with the published keys, a tampered base refused — and every case where a base cannot be rebuilt; the strict **RFC 9651** serialisation; **WebAuthn** registrations and sign-ins made by Yubico's `fido2` in ES256, EdDSA and RS256, signatures verified and a tampered one refused; **DNS** messages made by `dnspython` and the RFC 8484 example, with hostile inputs (pointer loops, oversized names, truncation) |
 | `protocoles.test.mjs` | 267 | What 5.0 to 5.3 read, against independent references: **GraphQL** documents — the operations, the one that runs and introspection — compared with `graphql-core`, the Python port of the reference implementation, on 27 documents chosen for their traps; the Apollo persisted-query hash against the example Apollo publishes; the four transport forms, batches and the facts about responses; **browser reports** with the field names of the W3C and WICG specifications and the 30 NEL error types; report collection and the endpoints the browser ignores; **JSON Schema** inference and the **OpenAPI 3.1** export — whose output is also checked with `openapi-spec-validator` and `jsonschema` by `tools/verifier-openapi.mjs`; **JSON-RPC 2.0** against every exchange of its specification (§7) copied as is; **SOAP 1.1 and 1.2** against the examples of the SOAP 1.1 Note and the SOAP 1.2 Primer; the **RFC 9457** example; **`security.txt`** against the RFC 9116 example; and the **measured compression**, whose gzip is decompressed back to the identical text by `node:zlib`; the **verdict** in every case and its order of precedence, **Fetch Metadata**, **Clear-Site-Data** and **source maps** against their specifications |
 | `signaux.test.mjs` | 185 | What 5.4 and 5.5 read in response headers, against the texts that define them: the three HTTP date forms, and IMF-fixdate checked on five hundred instants against ECMA-262's `toUTCString`; every example of **RFC 9745** (`Deprecation`), **RFC 8594** (`Sunset`), **RFC 9110** (`Retry-After`), **RFC 8288** (`Link`), **RFC 7838** (`Alt-Svc`), **RFC 9211** (`Cache-Status`), **RFC 9213** (`CDN-Cache-Control`) and **RFC 9218** (`Priority`), **RFC 9209** (`Proxy-Status`) and **RFC 9532** (`next-hop-aliases`), and of drafts -11, -07 and -05 of the IETF **RateLimit** draft; the 134 link relations, and the 33 proxy error types with their recommended status and parameters, against snapshots of the IANA registries; the kernel tags, the summary, the verdict lines and the Headers tab in both languages; and **hostile input** — every reader takes 3,000 generated values and a 200 KB one without throwing, and 5,000 links or 10,000 exhausted quotas draw their tab in under a second |
-| `comparaison.test.mjs` | 140 | What 5.5 repaired, against independent references: the comparison engine gives **the shortest list of changes** on two thousand random cases (checked against the longest common subsequence computed by dynamic programming) and handles 200,000 lines; the unified diff is **byte-identical to GNU diffutils 3.12** on eleven cases, finds the same 20,000 hunks as GNU on 200,000 lines, and re-applies to the second text on a thousand more (and on six hundred with GNU `patch`, run locally); the Comparison view — rendered with two requests in both languages — with repeated headers, CRLF and unknown measures; **lossless JSON against `JSON.parse`** on twenty thousand texts, and `JSON.stringify` on three thousand values; the toolbox transformations and the protocol readers with integers beyond 2^53, duplicate keys and `__proto__`; **CBOR and MessagePack** against vectors generated by the Python `cbor2` and `msgpack` libraries, the 81 examples of **RFC 8949 Appendix A** and its 94 ill-formed sequences (Appendix F.1); the lazy JSON tree and long texts; and a guard that fails on any new silent cut in a view |
+| `comparaison.test.mjs` | 156 | What 5.5 repaired, against independent references: the comparison engine gives **the shortest list of changes** on two thousand random cases (checked against the longest common subsequence computed by dynamic programming) and handles 200,000 lines; the unified diff is **byte-identical to GNU diffutils 3.12** on eleven cases, finds the same 20,000 hunks as GNU on 200,000 lines, and re-applies to the second text on a thousand more (and on six hundred with GNU `patch`, run locally); the Comparison view — rendered with two requests in both languages — with repeated headers, CRLF and unknown measures; **lossless JSON against `JSON.parse`** on twenty thousand texts, and `JSON.stringify` on three thousand values; the toolbox transformations and the protocol readers with integers beyond 2^53, duplicate keys and `__proto__`; **CBOR and MessagePack** against vectors generated by the Python `cbor2` and `msgpack` libraries, the 81 examples of **RFC 8949 Appendix A** and its 94 ill-formed sequences (Appendix F.1); the lazy JSON tree and long texts; the eleven detail tabs and several tools rendered, in both languages, for a request whose headers, token and bodies are full of names like `constructor`, `__proto__` and `toString` — nothing inherited from JavaScript may show; and a guard that fails on any new silent cut in a view |
 
 Expected values come from published sources: RFC vectors (4226, 6238, 6455, 4231, 7541, 9113,
 3986, 7578, 9111, 8187, 2231, 2047, 6266, 7638, 8941, 9421, 9651, 8484, 9745, 8594, 9110, 8288,
@@ -1148,7 +1151,7 @@ the file. It contains internal errors and the command log — not your traffic.
 Before opening a pull request:
 
 ```bash
-npm test              # all 2751 assertions must pass
+npm test              # all 2767 assertions must pass
 .\build.ps1 -Verify   # the build must be green
 ```
 

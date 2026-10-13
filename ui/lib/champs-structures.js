@@ -297,7 +297,7 @@ export function lireArticleSeul(entree) {
 /* --------------------- En-tetes connus et leur forme ---------------------- */
 /* Forme attendue par en-tete, d apres la specification qui le definit. Un
    en-tete absent de cette table est essaye dans les trois formes. */
-export const FORMES_CONNUES = {
+export const FORMES_CONNUES = Object.assign(Object.create(null), {
   'accept-ch': 'liste',
   'cache-status': 'liste',
   'client-hints': 'liste',
@@ -311,7 +311,7 @@ export const FORMES_CONNUES = {
   'proxy-status': 'liste',
   'accept-signature': 'dictionnaire',
   'cdn-cache-control': 'dictionnaire'
-};
+});
 
 /**
  * Lit une valeur d en-tete. Quand la forme n est pas connue, on essaie les

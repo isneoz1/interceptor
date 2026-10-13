@@ -12,14 +12,14 @@
  *              « a priori authentifiee » (https)
  */
 
-export const TYPES_CSD = {
+export const TYPES_CSD = Object.assign(Object.create(null), {
   'cache': 'le cache du site, pages prechargees comprises',
   'cookies': 'les cookies et les identifiants HTTP de tout le domaine enregistre',
   'storage': 'le stockage du site : localStorage, sessionStorage, IndexedDB, et ses Service Workers',
   'executionContexts': 'les pages ouvertes du site, rechargees',
   'clientHints': 'les Client Hints memorises pour le site (Accept-CH)',
   '*': 'tout ce qui precede'
-};
+});
 
 /* Les phrases des faits, traduites a l affichage. */
 export const FAITS_CSD = {

@@ -190,8 +190,21 @@ function scriptEdition(a, b, budget = BUDGET) {
     compte.minimal = false;
     const ancres = ancresUniques(a, x0, x1, b, y0, y1);
     if (!ancres.length) {
-      for (let x = x0; x < x1; x++) ops.push([RETRAIT, x, -1]);
-      for (let y = y0; y < y1; y++) ops.push([AJOUT, -1, y]);
+      /* Aucune ligne unique — des textes faits de quelques lignes repetees.
+         Une petite plage se rend telle quelle ; une grande se coupe en
+         tranches de part et d autre, comparees chacune avec son propre
+         budget. Tout retirer puis tout ajouter disait « 0 % en commun »
+         la ou deux textes en partageaient les deux tiers. */
+      if ((x1 - x0) + (y1 - y0) <= PETITE_PLAGE) {
+        for (let x = x0; x < x1; x++) ops.push([RETRAIT, x, -1]);
+        for (let y = y0; y < y1; y++) ops.push([AJOUT, -1, y]);
+        continue;
+      }
+      const k = Math.ceil(Math.max(x1 - x0, y1 - y0) / (PETITE_PLAGE / 2));
+      for (let t = k - 1; t >= 0; t--) {
+        pile.push([x0 + Math.floor(t * (x1 - x0) / k), x0 + Math.floor((t + 1) * (x1 - x0) / k),
+          y0 + Math.floor(t * (y1 - y0) / k), y0 + Math.floor((t + 1) * (y1 - y0) / k)]);
+      }
       continue;
     }
     const taches = [];

@@ -18,7 +18,7 @@
 const DOCUMENTS = new Set(['main_frame', 'sub_frame']);
 
 /* Les politiques de referent reconnues (Referrer Policy, W3C). */
-const REFERENTS = {
+const REFERENTS = Object.assign(Object.create(null), {
   'no-referrer': 'aucun referent n est envoye',
   'no-referrer-when-downgrade': 'URL complete, sauf vers http depuis https',
   'same-origin': 'URL complete vers la meme origine, rien ailleurs',
@@ -27,7 +27,7 @@ const REFERENTS = {
   'origin-when-cross-origin': 'URL complete vers la meme origine, l origine ailleurs',
   'strict-origin-when-cross-origin': 'URL complete vers la meme origine, l origine ailleurs, rien vers http depuis https',
   'unsafe-url': 'URL complete partout, y compris vers http'
-};
+});
 
 /* Ce que le serveur peut dire de lui-meme. */
 const ANNONCES = ['server', 'x-powered-by', 'x-aspnet-version', 'x-aspnetmvc-version', 'x-generator'];
