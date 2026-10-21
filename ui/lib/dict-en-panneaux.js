@@ -105,15 +105,8 @@ export const EN_PANNEAUX = {
 
   /* -------------------------- Signature d un jeton ------------------------ */
   'Cle a fournir': 'Key to provide',
-  'la cle partagee du serveur, telle quelle': 'the shared key of the server, as it is',
-  'la cle publique RSA, en PEM, en JWK ou par son certificat': 'the RSA public key, as PEM or JWK, or its certificate',
-  'la cle publique de la courbe, en PEM, en JWK ou par son certificat': 'the public key of the curve, as PEM or JWK, or its certificate',
   'aucune : ce jeton n est pas signe': 'none: this token is not signed',
   'algorithme non verifiable par une extension': 'algorithm an extension cannot verify',
-  'Cet algorithme ne se verifie pas dans un navigateur : les douze familles HS, RS, PS et ES le peuvent, les autres non.':
-    'This algorithm cannot be verified in a browser: the twelve HS, RS, PS and ES families can, the others cannot.',
-  'secret partage, cle publique PEM (-----BEGIN PUBLIC KEY-----) ou JWK':
-    'shared secret, PEM public key (-----BEGIN PUBLIC KEY-----) or JWK',
   'Verdict': 'Verdict',
   'signature valide': 'valid signature',
   'signature invalide': 'invalid signature',

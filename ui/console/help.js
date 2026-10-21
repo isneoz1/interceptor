@@ -74,12 +74,12 @@ export const SECTIONS = [
   {
     h: 'La boite a outils',
     p: [
-      'Un seul texte de travail, vingt et un onglets qui le regardent. On colle une valeur une fois — depuis le presse-papiers, depuis le menu contextuel d une ligne, ou depuis un onglet du detail — et chaque outil travaille dessus. Tout se calcule dans la page : aucune de ces fonctions n emet la moindre requete.'
+      'Un seul texte de travail, vingt-quatre onglets qui le regardent. On colle une valeur une fois — depuis le presse-papiers, depuis le menu contextuel d une ligne, ou depuis un onglet du detail — et chaque outil travaille dessus. Tout se calcule dans la page : aucune de ces fonctions n emet la moindre requete.'
     ],
     table: [
       ['Transformer', '138 transformations classees en dix-huit familles : base64 et base64 URL, base32, base58, base45, Ascii85, URL, entites HTML, hexadecimal, binaire, octal, echappements Unicode, punycode, JSON, YAML, CSV, XML, SAML, messages DNS, WebAuthn, gzip et deflate, casse, lignes, echappements de chaine, Protocol Buffers, MessagePack, CBOR, ASN.1. « Tout essayer » applique chaque decodage — sauf DNS et WebAuthn, qui liraient n importe quels octets — et ne garde que les resultats lisibles.'],
       ['Cles et essais', 'XOR avec cle repetee, recherche des 255 cles d un octet, les vingt-cinq decalages de Cesar, Vigenere. Ces chiffres ne protegent rien : ils relisent une valeur volontairement obscurcie.'],
-      ['JWT', 'Entete, charge utile, validite, temps restant. La signature se verifie vraiment, sur les douze algorithmes courants : HS256 a HS512 avec la cle partagee, RS, PS et ES avec la cle publique collee en PEM ou en JWK. Sans cle, l ecran le dit, plutot que de laisser croire qu un jeton decode est un jeton valide.'],
+      ['JWT', 'Entete, charge utile, validite, temps restant. La signature se verifie vraiment : HS256 a HS512 avec la cle partagee (texte ou JWK « oct »), RS, PS, ES et EdDSA (Ed25519) avec la cle publique collee en PEM ou en JWK, ou tout le jeu de cles (JWKS) de l emetteur, dont la cle designee par le jeton est choisie. L algorithme se lit a la lettre : « hs256 » n est pas HS256. Sans cle, l ecran le dit, plutot que de laisser croire qu un jeton decode est un jeton valide.'],
       ['Chiffrement', 'AES-GCM, AES-CBC et AES-CTR dans les deux sens, avec vecteur d initialisation et donnees authentifiees ; derivation PBKDF2 et HKDF ; verification d une signature detachee RSA, RSA-PSS, ECDSA ou HMAC. Tout passe par le moteur du navigateur, rien ne sort de la machine.'],
       ['Empreintes', 'MD5, SHA-1, SHA-256, SHA-384, SHA-512, CRC-32, Adler-32, FNV-1a, djb2, somme des octets, et HMAC avec cle.'],
       ['Binaire', 'Protocol Buffers, MessagePack et CBOR lus octet par octet, sans schema ; ASN.1, DER et resume d un certificat X.509 (sujet, emetteur, validite, noms couverts, usages) ; trente-sept jeux de caracteres et reparation du mojibake.'],
@@ -134,7 +134,8 @@ export const SECTIONS = [
       ['Cartes de source', 'L adresse de la carte qui relie un script minifie a son code d origine (tag:source-map).'],
       ['Signaux du serveur', 'Ce que les en-tetes annoncent : la depreciation et la date de fin d une adresse (RFC 9745, RFC 8594, tag:deprecie), le quota restant et quand reessayer (RateLimit, Retry-After, tag:quota), les liens a suivre ou a precharger (Link, avec le registre IANA), les services alternatifs comme HTTP/3 (Alt-Svc), les caches traverses (Cache-Status, CDN-Cache-Control), les intermediaires traverses et celui qui a produit une erreur 502 ou 504 (Proxy-Status, avec le registre IANA des types d erreur) et la priorite demandee (Priority).'],
       ['Signatures et cles d acces', 'Signatures de messages HTTP (RFC 9421) reconstruites et verifiees, inscriptions et connexions WebAuthn, DNS par HTTPS.'],
-      ['Securite', 'OAuth 2.0 et OpenID Connect, SAML, empreintes de contenu, protections de la reponse, CSP deduite des chargements reels.']
+      ['Securite', 'OAuth 2.0 et OpenID Connect, SAML, empreintes de contenu, protections de la reponse, CSP deduite des chargements reels.'],
+      ['Jetons et cles', 'Chaque jeton JWT de la requete (entete, cookie, adresse, corps), date par rapport a la capture, et sa signature verifiee avec la cle que son emetteur publie, quand la capture contient son jeu de cles. Un jeu de cles recu (RFC 7517) est lu cle par cle — une cle privee publiee est signalee — et un document de decouverte OAuth ou OpenID Connect est controle : son emetteur doit etre celui que designe son adresse.']
     ]
   },
   {

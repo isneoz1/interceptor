@@ -295,6 +295,9 @@ export const EN_ERREURS = {
 
 /* Les messages qui portent une valeur. {nom} : recopie ; {@nom} : traduit. */
 export const MODELES_ERREURS = {
+  'algorithme « {alg} » inconnu : la casse compte, et ce n est pas « {proche} » (RFC 7515 §4.1.1)': 'unknown algorithm “{alg}”: case matters, and it is not “{proche}” (RFC 7515 §4.1.1)',
+  'ce navigateur ne sait pas verifier {courbe} (Web Crypto)': 'this browser cannot verify {courbe} (Web Crypto)',
+  'la cle est sur la courbe {crv}, le jeton annonce {alg} (RFC 9864)': 'the key is on the curve {crv}, the token announces {alg} (RFC 9864)',
   '{@quoi} (position {n} : « {autour} »)': '{@quoi} (position {n}: “{autour}”)',
   'JSON illisible : {@quoi} (position {n})': 'unreadable JSON: {@quoi} (position {n})',
   'pointeur JSON « {p} » : il commence par « / » (RFC 6901 §3)': 'JSON pointer “{p}”: it starts with “/” (RFC 6901 §3)',

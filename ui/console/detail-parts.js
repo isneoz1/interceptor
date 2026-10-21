@@ -30,6 +30,7 @@ import { graphqlRequete, graphqlReponse } from './graphql-detail.js';
 import { rpcRequete, rpcReponse } from './rpc-detail.js';
 import { problemeReponse } from './probleme-detail.js';
 import { patchRequete } from './patch-detail.js';
+import * as jose from './jose-detail.js';
 import { securityTxtReponse } from './security-txt-detail.js';
 import { controlesCorps } from './corps-detail.js';
 import { blocVerdict, blocProvenance, blocEffacement, blocSourceMap } from './lectures-detail.js';
@@ -230,6 +231,8 @@ export function headers(rec) {
      reels permettraient : des faits, jamais des alertes. */
   box.appendChild(securite.protections(rec));
   box.appendChild(securite.cspObservee(rec));
+  /* Les jetons JWT de la requete, verifies avec les cles de leur emetteur. */
+  box.appendChild(jose.jetonsJwt(rec));
   box.appendChild(collecteRapports(rec));
   box.appendChild(blocEffacement(rec));
   /* Avenir de l adresse, debit, liens, services alternatifs, caches, priorite. */
@@ -722,6 +725,8 @@ export function responseBody(rec) {
   const box = frag();
   box.appendChild(securite.oauthReponse(rec));
   box.appendChild(securite.sri(rec));
+  box.appendChild(jose.jwksReponse(rec));
+  box.appendChild(jose.decouverteReponse(rec));
   box.appendChild(preuves.webauthnOptions(rec));
   box.appendChild(preuves.dnsReponse(rec));
   box.appendChild(graphqlReponse(rec));

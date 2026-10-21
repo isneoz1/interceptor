@@ -267,11 +267,11 @@ export const LESSONS = [
     title: 'La boite a outils',
     goal: 'Decoder, verifier et fabriquer une valeur, sans rien envoyer',
     body: [
-      { p: 'Un seul **texte de travail**, vingt et un onglets qui le regardent. On colle une valeur une fois — depuis le presse-papiers, depuis le menu contextuel d une ligne, ou depuis le bouton « Boite a outils » d un corps de reponse — et chaque outil travaille dessus.' },
+      { p: 'Un seul **texte de travail**, vingt-quatre onglets qui le regardent. On colle une valeur une fois — depuis le presse-papiers, depuis le menu contextuel d une ligne, ou depuis le bouton « Boite a outils » d un corps de reponse — et chaque outil travaille dessus.' },
       { p: 'Tout se calcule dans la page. Aucun de ces outils n emet la moindre requete : ni au chargement, ni au clic.' },
       { ul: [
         '**Transformer** : 138 transformations. « Tout essayer » applique chaque decodage (sauf DNS et WebAuthn) et ne garde que les resultats lisibles — c est la bonne premiere action sur une valeur inconnue.',
-        '**JWT** : entete, charge utile, expiration, et la signature reellement verifiee si vous fournissez la cle (douze algorithmes, cle partagee ou cle publique).',
+        '**JWT** : entete, charge utile, expiration, et la signature reellement verifiee si vous fournissez la cle — cle partagee, cle publique ou jeu de cles de l emetteur. Dans le detail d une requete, l onglet En-tetes la verifie seul quand la capture contient les cles de l emetteur.',
         '**Chiffrement** et **Empreintes** : AES, PBKDF2, HKDF, MD5, SHA, CRC-32, HMAC.',
         '**Binaire** : Protocol Buffers, MessagePack, CBOR, certificats X.509, jeux de caracteres.',
         '**Entetes**, **URL**, **Adresse IP** : ce que la valeur dit vraiment, et ce qui lui manque.',

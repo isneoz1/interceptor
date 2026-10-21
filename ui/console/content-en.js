@@ -72,12 +72,12 @@ export const HELP_SECTIONS = [
   {
     h: 'The toolbox',
     p: [
-      'One working text, twenty-one tabs looking at it. You paste a value once — from the clipboard, from a row context menu, or from a detail tab — and every tool works on it. Everything is computed in the page: none of these functions sends a single request.'
+      'One working text, twenty-four tabs looking at it. You paste a value once — from the clipboard, from a row context menu, or from a detail tab — and every tool works on it. Everything is computed in the page: none of these functions sends a single request.'
     ],
     table: [
       ['Transform', '138 transformations in eighteen families: base64 and base64 URL, base32, base58, base45, Ascii85, URL, HTML entities, hexadecimal, binary, octal, Unicode escapes, punycode, JSON, YAML, CSV, XML, SAML, DNS messages, WebAuthn, gzip and deflate, letter case, lines, string escaping, Protocol Buffers, MessagePack, CBOR, ASN.1. "Try everything" applies every decoding — except DNS and WebAuthn, which would read any bytes — and keeps only the readable results.'],
       ['Keys and trials', 'XOR with a repeated key, a sweep of the 255 single-byte keys, all twenty-five Caesar shifts, Vigenere. These ciphers protect nothing: they read back a deliberately obscured value.'],
-      ['JWT', 'Header, payload, validity, time left. The signature is really verified across the twelve common algorithms: HS256 to HS512 with the shared key, RS, PS and ES with the public key pasted as PEM or JWK. With no key the screen says so, rather than letting a decoded token pass for a valid one.'],
+      ['JWT', 'Header, payload, validity, time left. The signature is really verified: HS256 to HS512 with the shared key (text or an “oct” JWK), RS, PS, ES and EdDSA (Ed25519) with the public key pasted as PEM or JWK, or the issuer\'s whole key set (JWKS), from which the key the token designates is chosen. The algorithm is read to the letter: “hs256” is not HS256. With no key the screen says so, rather than letting a decoded token pass for a valid one.'],
       ['Encryption', 'AES-GCM, AES-CBC and AES-CTR both ways, with initialisation vector and authenticated data; PBKDF2 and HKDF derivation; verification of a detached RSA, RSA-PSS, ECDSA or HMAC signature. Everything goes through the browser engine, nothing leaves the machine.'],
       ['Hashes', 'MD5, SHA-1, SHA-256, SHA-384, SHA-512, CRC-32, Adler-32, FNV-1a, djb2, byte sum, and HMAC with a key.'],
       ['Binary', 'Protocol Buffers, MessagePack and CBOR read byte by byte, without a schema; ASN.1, DER and a summary of an X.509 certificate (subject, issuer, validity, names covered, usages); thirty-seven character sets and mojibake repair.'],
@@ -132,7 +132,8 @@ export const HELP_SECTIONS = [
       ['Source maps', 'The address of the map that links a minified script to its original code (tag:source-map).'],
       ['Server signals', 'What the headers announce: an address’s deprecation and end date (RFC 9745, RFC 8594, tag:deprecie), the quota left and when to retry (RateLimit, Retry-After, tag:quota), the links to follow or preload (Link, with the IANA registry), alternative services such as HTTP/3 (Alt-Svc), the caches crossed (Cache-Status, CDN-Cache-Control), the intermediaries crossed and the one that produced a 502 or 504 (Proxy-Status, with the IANA registry of error types) and the priority asked for (Priority).'],
       ['Signatures and passkeys', 'HTTP message signatures (RFC 9421) rebuilt and verified, WebAuthn registrations and sign-ins, DNS over HTTPS.'],
-      ['Security', 'OAuth 2.0 and OpenID Connect, SAML, content digests, response protections, a CSP derived from what actually loaded.']
+      ['Security', 'OAuth 2.0 and OpenID Connect, SAML, content digests, response protections, a CSP derived from what actually loaded.'],
+      ['Tokens and keys', 'Every JWT the request carries (header, cookie, address, body), dated against the capture, and its signature verified with the key its issuer publishes, when the capture holds that key set. A key set received (RFC 7517) is read key by key — a published private key is flagged — and an OAuth or OpenID Connect discovery document is checked: its issuer must be the one its address designates.']
     ]
   },
   {
@@ -351,11 +352,11 @@ export const LESSONS = {
     title: 'The toolbox',
     goal: 'Decode, verify and build a value, without sending anything',
     body: [
-      { p: 'One **working text**, twenty-one tabs looking at it. You paste a value once — from the clipboard, from a row context menu, or from the "Toolbox" button on a response body — and every tool works on it.' },
+      { p: 'One **working text**, twenty-four tabs looking at it. You paste a value once — from the clipboard, from a row context menu, or from the "Toolbox" button on a response body — and every tool works on it.' },
       { p: 'Everything is computed in the page. None of these tools sends a single request: not on load, not on click.' },
       { ul: [
         '**Transform**: 138 transformations. "Try everything" applies each decoding (except DNS and WebAuthn) and keeps only the readable results — the right first move on an unknown value.',
-        '**JWT**: header, payload, expiry, and the signature really verified when you provide the key (twelve algorithms, shared key or public key).',
+        '**JWT**: header, payload, expiry, and the signature really verified when you provide the key — a shared key, a public key or the issuer\'s key set. In a request\'s detail, the Headers tab verifies it on its own when the capture holds the issuer\'s keys.',
         '**Encryption** and **Hashes**: AES, PBKDF2, HKDF, MD5, SHA, CRC-32, HMAC.',
         '**Binary**: Protocol Buffers, MessagePack, CBOR, X.509 certificates, character sets.',
         '**Headers**, **URL**, **IP address**: what the value really says, and what it lacks.',

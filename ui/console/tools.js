@@ -31,7 +31,7 @@ import { panneauChercher } from './tools-chercher.js';
 import { panneauCode } from './tools-code.js';
 import { panneauOtp } from './tools-otp.js';
 
-/* Les outils, ranges par intention plutot qu en une seule rangee de vingt-trois
+/* Les outils, ranges par intention plutot qu en une seule rangee de vingt-quatre
    boutons. On cherche « ce que je veux faire », pas le nom de l outil : les
    familles portent donc des verbes, et chacune tient sur une ligne. */
 /* Exporte pour la palette de commandes, qui construit son registre a partir

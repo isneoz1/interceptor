@@ -20,7 +20,8 @@ import { ALGORITHMES, empreinteHex, hmacHex, crc32, adler32, fnv1a32, djb2, somm
   from '../lib/hashes.js';
 import { EMPREINTES_SUP, empreinteSup, CRC_VARIANTES, crc, murmur3, xxhash32 }
   from '../lib/empreintes-tout.js';
-import { verifierJwt, cleAttendue, ALGORITHMES_JWT } from '../lib/jwt.js';
+import { verifierJwt, cleAttendue, ALGORITHMES_JWT, enteteJwt } from '../lib/jwt.js';
+import { lireJwks, verifierAvecJeu, nomCle } from '../lib/jwks.js';
 import { frequences, caracteresCaches } from '../lib/codecs-text.js';
 import { dureeLisible } from '../lib/temps.js';
 import { lirePhp, versJs, ressemblePhp } from '../lib/php-serialise.js';
@@ -85,7 +86,8 @@ export function panneauJwt(entree, etat, redessiner) {
  */
 function panneauSignatureJwt(entree, jwt, etat, redessiner) {
   const box = frag();
-  const algo = String(jwt.algorithme || '').toUpperCase();
+  /* « alg » se lit a la lettre : la casse compte (RFC 7515 §4.1.1). */
+  const algo = String(jwt.algorithme || '');
   const connu = ALGORITHMES_JWT.includes(algo);
 
   box.appendChild(sec('Verifier la signature', connu ? algo : algo || 'algorithme absent'));
@@ -95,13 +97,13 @@ function panneauSignatureJwt(entree, jwt, etat, redessiner) {
     box.appendChild(el('p', { class: 'note', text:
       t('La signature n est pas verifiee : SWIFT ne detient pas la cle du serveur. Un JWT decode n est pas un JWT valide.') }));
     box.appendChild(el('p', { class: 'note', text:
-      t('Cet algorithme ne se verifie pas dans un navigateur : les douze familles HS, RS, PS et ES le peuvent, les autres non.') }));
+      t('Cet algorithme ne se verifie pas ici : HS, RS, PS, ES et EdDSA (Ed25519, Ed448) le peuvent, a la lettre pres — la casse compte (RFC 7515 §4.1.1).') }));
     return box;
   }
 
   const champ = el('textarea', {
     class: 'field', spellcheck: 'false', rows: '3',
-    placeholder: t('secret partage, cle publique PEM (-----BEGIN PUBLIC KEY-----) ou JWK'),
+    placeholder: t('secret partage, cle publique PEM (-----BEGIN PUBLIC KEY-----), JWK, ou le jeu de cles (JWKS) de l emetteur'),
     dataset: { champ: 'jwt-cle' }
   });
   champ.value = etat.cleJwt || '';
@@ -112,7 +114,7 @@ function panneauSignatureJwt(entree, jwt, etat, redessiner) {
   actions.appendChild(button('Verifier', async () => {
     etat.cleJwt = champ.value;
     if (!etat.cleJwt) return toast('Cle vide', false);
-    try { etat.jwtVerdict = await verifierJwt(entree, etat.cleJwt); }
+    try { etat.jwtVerdict = await verifierCle(entree, etat.cleJwt); }
     catch (e) { etat.jwtVerdict = { valide: false, erreur: te(e) }; }
     redessiner();
   }));
@@ -126,8 +128,13 @@ function panneauSignatureJwt(entree, jwt, etat, redessiner) {
       add(box, kv('Verdict', t('signature valide'), { hl: true }));
       add(box, kv('Methode employee', t(v.methode)));
       add(box, kv('Courbe', v.courbe));
+      add(box, kv('Cle du jeu', v.cleDuJeu ? nomCle(v.cleDuJeu) : null));
       box.appendChild(el('p', { class: 'note', text:
         t('Signature valide : cette cle est bien celle qui a signe le jeton.') }));
+    } else if (v.aucuneCandidate) {
+      box.appendChild(el('p', { class: 'note warn', text: v.kid !== null
+        ? tp('Aucune cle de ce jeu ne porte le kid « {kid} » que le jeton designe.', { kid: v.kid })
+        : tp('Aucune cle de ce jeu ne convient a l algorithme {alg}.', { alg: algo }) }));
     } else {
       add(box, kv('Verdict', t('signature invalide'), { hl: true }));
       box.appendChild(el('p', { class: 'note warn', text:
@@ -138,6 +145,18 @@ function panneauSignatureJwt(entree, jwt, etat, redessiner) {
       t('Tant qu aucune cle n est fournie, la signature n est pas verifiee.') }));
   }
   return box;
+}
+
+/* Une cle collee, ou tout un jeu de cles (JWKS) : la cle que le jeton designe
+   (kid), ou celles qui conviennent a son algorithme, sont essayees. */
+async function verifierCle(jeton, cle) {
+  const jeu = lireJwks(String(cle).trim());
+  if (!jeu) return verifierJwt(jeton, cle);
+  const entete = enteteJwt(jeton);
+  const v = await verifierAvecJeu(jeton, jeu, entete);
+  if (v.valide) return { valide: true, algorithme: entete.alg, methode: 'cle d un jeu de cles (JWKS)', cleDuJeu: v.cle };
+  if (!v.essais.length) return { valide: false, aucuneCandidate: true, kid: typeof entete.kid === 'string' ? entete.kid : null };
+  return { valide: false, algorithme: entete.alg };
 }
 
 function formaterValeur(v) {

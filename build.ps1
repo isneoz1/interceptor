@@ -185,6 +185,11 @@ $required = @(
   'ui/console/patch-detail.js',
   'ui/console/tools-patch.js',
   'ui/lib/appui.js',
+  'ui/lib/jwks.js',
+  'ui/lib/decouverte.js',
+  'ui/lib/dict-en-jose.js',
+  'ui/console/jose-detail.js',
+  'background/core/jose-liens.js',
   'ui/console/statusbar.js',
   'ui/console/header.js',
   'ui/console/replay.js',
@@ -299,7 +304,9 @@ if ($node) {
     @{ titre = 'JSON Patch, Merge Patch et Pointer'; fichier = 'tests/patch.test.mjs';
        echec = 'Un JSON Patch, un Merge Patch ou un JSON Pointer est mal applique, mal produit ou mal lu' },
     @{ titre = 'Clics et saisie a travers les redessins'; fichier = 'tests/saisie.test.mjs';
-       echec = 'Un clic se perd pendant un redessin, ou un champ d une vue vivante n a pas de nom stable' }
+       echec = 'Un clic se perd pendant un redessin, ou un champ d une vue vivante n a pas de nom stable' },
+    @{ titre = 'JWT, jeux de cles et decouverte'; fichier = 'tests/jose.test.mjs';
+       echec = 'Un JWT, un jeu de cles JWK ou un document de decouverte est mal verifie ou mal lu' }
   )
 
   $totalAssertions = 0

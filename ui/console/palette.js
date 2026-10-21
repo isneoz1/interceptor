@@ -1,6 +1,6 @@
 /* Palette de commandes — SWIFT (by NeoZ)
  *
- * Ctrl+K, on tape ce qu on veut faire, Entree. Dix-sept vues, vingt-trois
+ * Ctrl+K, on tape ce qu on veut faire, Entree. Dix-sept vues, vingt-quatre
  * outils et les actions de l en-tete deviennent atteignables sans savoir ou
  * elles se trouvent.
  *

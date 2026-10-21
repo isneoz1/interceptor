@@ -19,6 +19,7 @@ import { clearSecurityCache } from '../capture/security.js';
 import { clearDnsCache } from '../capture/dnsinfo.js';
 import { oublierNonces } from '../core/analyzer-faits.js';
 import { liensWebAuthn } from '../core/webauthn-liens.js';
+import { clesJose } from '../core/jose-liens.js';
 import { ingestBatch, contextLog, clearPageState } from '../ingest/page.js';
 import { invalidateRuleCache } from '../rules/engine.js';
 import { configurerIntercepteur, relacherTout } from '../rules/intercept.js';
@@ -90,6 +91,10 @@ const COMMANDS = {
   /* Une ceremonie WebAuthn : l inscription de la meme cle et la reponse qui a
      emis le defi, cherchees dans les corps que seul le noyau garde. */
   webauthnLiens: ({ id }) => liensWebAuthn(id),
+
+  /* Les cles d un emetteur de jetons : son document de decouverte et les jeux
+     de cles captures, dont seul le noyau garde les corps. */
+  clesJose: ({ iss }) => clesJose({ iss }),
 
   clear: () => {
     // Remise a zero complete : donnees, index de correlation, journaux et caches.
