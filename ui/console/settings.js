@@ -3,7 +3,8 @@
  * Chaque option affichee ici existe dans le noyau et a un effet reel.
  * Les modifications sont appliquees immediatement et conservees.
  */
-import { $, el, clear, sec, button } from '../lib/dom.js';
+import { $, el, clear, sec, button, boutonConfirme } from '../lib/dom.js';
+import { redessinerEnPlace } from '../lib/redessin.js';
 import { RESOURCE_TYPES } from '../lib/format.js';
 import { COLUMNS, COLUMN_ORDER, DEFAULT_COLUMNS } from '../lib/columns.js';
 import { state, cmd, toast, saveConfig, B, copy } from '../app.js';
@@ -11,12 +12,21 @@ import { t, tp, dictionarySize, te, deuxPoints } from '../lib/i18n.js';
 import { GROUPS, PROFILES } from './settings-groups.js';
 
 let importText = '';
+/* Le compte rendu du dernier import : le rendu qui suit l import le
+   recreait vide, et « N reglages appliques » ne se voyait jamais. */
+let importStatut = null;
 
 /* Une seule demande de configuration a la fois : sans ce verrou, chaque
    rendu en lancait une de plus. */
 let demandeConfig = false;
 
-export function render() {
+/* Chaque reglage enregistre est diffuse en retour, et la vue se redessine :
+   redessinerEnPlace garde le champ ou l on tape, ce qui y est tape, la
+   position du lecteur, et le clic en cours. Chaque champ porte un nom
+   stable (dataset.champ). */
+export function render() { redessinerEnPlace($('#view-settings'), dessiner); }
+
+function dessiner() {
   const pane = clear($('#view-settings'));
   const box = el('div', { class: 'pane narrow' });
   pane.appendChild(box);
@@ -80,13 +90,14 @@ function buildField([key, label, type, extra, hint]) {
   const ctl = el('div', { class: 'ctl' });
   row.appendChild(ctl);
 
+  const champ = 'reglage-' + key;
   if (type === 'bool') {
-    const input = el('input', { type: 'checkbox' });
+    const input = el('input', { type: 'checkbox', dataset: { champ } });
     input.checked = !!value;
     input.addEventListener('change', () => onToggle(key, input));
     ctl.appendChild(input);
   } else if (type === 'number') {
-    const input = el('input', { type: 'number', min: '0', value: String(value ?? 0) });
+    const input = el('input', { type: 'number', min: '0', value: String(value ?? 0), dataset: { champ } });
     input.addEventListener('change', () => {
       const v = Math.max(0, Number(input.value) || 0);
       input.value = String(v);
@@ -94,7 +105,7 @@ function buildField([key, label, type, extra, hint]) {
     });
     ctl.appendChild(input);
   } else if (type === 'text') {
-    const input = el('input', { type: 'text', class: 'field', value: String(value ?? '') });
+    const input = el('input', { type: 'text', class: 'field', value: String(value ?? ''), dataset: { champ } });
     input.addEventListener('change', () => {
       const v = input.value.trim();
       // Un filtre invalide serait un reglage qui ment : on refuse tout de suite.
@@ -106,12 +117,12 @@ function buildField([key, label, type, extra, hint]) {
     });
     ctl.appendChild(input);
   } else if (type === 'select') {
-    const select = el('select');
+    const select = el('select', { dataset: { champ } });
     for (const [v, text2] of extra) select.appendChild(el('option', { value: v, text: t(text2), selected: v === value }));
     select.addEventListener('change', () => saveConfig({ [key]: select.value }));
     ctl.appendChild(select);
   } else if (type === 'list') {
-    const area = el('textarea', { class: 'field', spellcheck: 'false', rows: '4' });
+    const area = el('textarea', { class: 'field', spellcheck: 'false', rows: '4', dataset: { champ } });
     area.value = (value || []).join('\n');
     area.addEventListener('change', () => {
       const list = area.value.split('\n').map(s => s.trim()).filter(Boolean);
@@ -127,7 +138,7 @@ function buildField([key, label, type, extra, hint]) {
     const grid = el('div', { class: 'checks' });
     const current = new Set(value || []);
     for (const ressource of RESOURCE_TYPES) {
-      const input = el('input', { type: 'checkbox' });
+      const input = el('input', { type: 'checkbox', dataset: { champ: champ + '-' + ressource } });
       input.checked = current.has(ressource);
       input.addEventListener('change', () => {
         if (input.checked) current.add(ressource); else current.delete(ressource);
@@ -167,7 +178,7 @@ function colonnesSection() {
   const grid = el('div', { class: 'checks' });
   const current = new Set(state.config.columns || DEFAULT_COLUMNS);
   for (const key of COLUMN_ORDER) {
-    const input = el('input', { type: 'checkbox' });
+    const input = el('input', { type: 'checkbox', dataset: { champ: 'colonne-' + key } });
     input.checked = current.has(key);
     input.addEventListener('change', () => {
       if (input.checked) current.add(key); else current.delete(key);
@@ -229,40 +240,33 @@ function maintenanceSection() {
   }));
   box.appendChild(actions);
 
-  const area = el('textarea', { class: 'field', spellcheck: 'false', rows: '5', placeholder: t('Coller ici un fichier de reglages JSON…') });
+  const area = el('textarea', { class: 'field', spellcheck: 'false', rows: '5', placeholder: t('Coller ici un fichier de reglages JSON…'),
+    dataset: { champ: 'reglages-import' } });
   area.value = importText;
   area.addEventListener('input', () => { importText = area.value; });
   box.appendChild(area);
 
-  const status = el('p', { class: 'note' });
   box.appendChild(el('div', { class: 'actions' }, button('Importer', async () => {
     let parsed;
     try { parsed = JSON.parse(area.value || '{}'); }
     catch (e) {
-      status.className = 'note ko';
-      status.textContent = tp('JSON invalide : {raison}', { raison: te(e) });
+      importStatut = { ton: 'ko', texte: tp('JSON invalide : {raison}', { raison: te(e) }) };
+      render();
       return;
     }
     const res = await cmd('importConfig', { values: parsed });
-    if (res.error) { status.className = 'note ko'; status.textContent = res.error; return; }
+    if (res.error) { importStatut = { ton: 'ko', texte: res.error }; render(); return; }
     state.config = res.config;
-    status.className = 'note ok';
-    status.textContent = res.ignored.length
+    importStatut = { ton: 'ok', texte: res.ignored.length
       ? tp('{n} reglage(s) appliques, {i} inconnus ignores.', { n: res.applied, i: res.ignored.length })
-      : tp('{n} reglage(s) appliques.', { n: res.applied });
+      : tp('{n} reglage(s) appliques.', { n: res.applied }) };
     toast('Reglages importes');
     render();
   }, { class: 'accent' })));
-  box.appendChild(status);
+  if (importStatut) box.appendChild(el('p', { class: 'note ' + importStatut.ton, text: importStatut.texte }));
 
   box.appendChild(sec('Remise a zero'));
-  let armed = false;
-  const reset = button('Restaurer les reglages par defaut', async () => {
-    if (!armed) {
-      armed = true; reset.textContent = 'Confirmer la remise a zero ?'; reset.classList.add('armed');
-      setTimeout(() => { armed = false; reset.textContent = 'Restaurer les reglages par defaut'; reset.classList.remove('armed'); }, 4000);
-      return;
-    }
+  const reset = boutonConfirme('reglages-remise-a-zero', 'Restaurer les reglages par defaut', 'Confirmer la remise a zero ?', async () => {
     const res = await cmd('resetConfig', {});
     if (res.error) return toast(res.error, false);
     state.config = res.config;

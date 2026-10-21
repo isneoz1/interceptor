@@ -12,7 +12,7 @@ export function el(tag, attrs, children) {
       if (v == null || v === false) continue;
       if (k === 'class') node.className = v;
       else if (k === 'text') node.textContent = String(v);
-      else if (k === 'dataset') for (const [dk, dv] of Object.entries(v)) node.dataset[dk] = String(dv);
+      else if (k === 'dataset') for (const [dk, dv] of Object.entries(v)) { if (dv != null) node.dataset[dk] = String(dv); }
       else if (k === 'style') node.setAttribute('style', v);
       else if (k === 'on') for (const [ev, fn] of Object.entries(v)) node.addEventListener(ev, fn);
       else if (k in node && typeof node[k] === 'boolean') node[k] = !!v;
@@ -47,19 +47,60 @@ export function clear(node) {
  * ne gardaient ainsi que la premiere lettre, ou perdaient le focus apres une
  * pause. Un champ marque `dataset: { champ: 'nom-unique' }` retrouve ici, apres
  * le rendu, le focus et la position du curseur qu il avait avant.
+ *
+ * Il retrouve aussi ce qui y etait tape sans etre encore valide : un champ qui
+ * s enregistre en perdant le focus (« change ») etait recree avec la valeur
+ * enregistree, et ce qu on venait d y taper disparaissait — chaque seconde
+ * dans la vue Interception, a chaque reglage enregistre dans les Reglages.
  */
+let saisie = null;
+if (typeof document !== 'undefined' && typeof document.addEventListener === 'function') {
+  document.addEventListener('input', ev => { saisie = ev.target; }, true);
+  document.addEventListener('change', ev => { if (ev.target === saisie) saisie = null; }, true);
+}
+
+/* Le champ de ce nom, quel que soit le nom : sans selecteur a echapper. */
+function champNomme(nom) {
+  for (const n of document.querySelectorAll('[data-champ]')) if (n.dataset.champ === nom) return n;
+  return null;
+}
+
+/* Ce qui etait tape sans etre valide passe dans le champ qui remplace
+   l ancien. Le navigateur n a pas vu taper dans celui-ci : a la perte du
+   focus, il ne previendrait pas toujours. On previent alors soi-meme, une
+   fois, si rien ne l a fait — et seulement pour un champ encore affiche. */
+function reprendreSaisie(nouveau, tape) {
+  const rendu = nouveau.value;
+  nouveau.value = tape;
+  saisie = nouveau;
+  let valide = false;
+  const surChange = () => { valide = true; };
+  nouveau.addEventListener('change', surChange, { once: true });
+  nouveau.addEventListener('blur', () => {
+    nouveau.removeEventListener('change', surChange);
+    if (!valide && nouveau.isConnected && nouveau.value !== rendu) {
+      nouveau.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+  }, { once: true });
+}
+
 export function garderSaisie(rendre) {
   const actif = typeof document !== 'undefined' ? document.activeElement : null;
   const nom = actif && actif.dataset ? actif.dataset.champ : null;
   let debut = null;
   let fin = null;
+  /* Un nombre a moitie tape (« 1e », « - ») se lit comme une valeur vide : le
+     reprendre viderait le champ. Il garde alors la valeur redessinee. */
+  const illisible = !!(actif && actif.validity && actif.validity.badInput);
+  const tape = nom && actif === saisie && !illisible && typeof actif.value === 'string' ? actif.value : null;
   if (nom) {
     try { debut = actif.selectionStart; fin = actif.selectionEnd; } catch { /* champ sans curseur */ }
   }
   const resultat = rendre();
   if (nom && actif.isConnected === false) {
-    const nouveau = document.querySelector('[data-champ="' + nom + '"]');
+    const nouveau = champNomme(nom);
     if (nouveau) {
+      if (tape != null && nouveau.value !== tape) reprendreSaisie(nouveau, tape);
       nouveau.focus();
       try { if (debut != null) nouveau.setSelectionRange(debut, fin); } catch { /* idem */ }
     }
@@ -81,6 +122,40 @@ export function button(label, onClick, opts = {}) {
     type: 'button'
   }, t(label));
   if (onClick) node.addEventListener('click', onClick);
+  return node;
+}
+
+/* Un bouton a deux temps : le premier clic arme, le second agit s il vient
+   dans les quatre secondes. L etat arme vit hors du bouton : une vue qui se
+   redessine entre les deux clics — les statistiques, chaque seconde — le
+   remplacait par un bouton desarme, et le second clic ne faisait que rearmer.
+   Les deux libelles passent par la traduction, a chaque etat. */
+const ARME_MS = 4000;
+const armes = new Map();   // cle -> minuteur
+
+function marquerArme(cle, libelle, arme) {
+  for (const b of document.querySelectorAll('[data-confirme]')) {
+    if (b.dataset.confirme !== cle) continue;
+    b.textContent = t(libelle);
+    if (arme) b.classList.add('armed'); else b.classList.remove('armed');
+  }
+}
+
+export function boutonConfirme(cle, libelle, confirmation, agir, opts = {}) {
+  const arme = armes.has(cle);
+  const node = button(arme ? confirmation : libelle, () => {
+    if (!armes.has(cle)) {
+      armes.set(cle, setTimeout(() => { armes.delete(cle); marquerArme(cle, libelle, false); }, ARME_MS));
+      marquerArme(cle, confirmation, true);
+      return;
+    }
+    clearTimeout(armes.get(cle));
+    armes.delete(cle);
+    marquerArme(cle, libelle, false);
+    agir();
+  }, opts);
+  node.dataset.confirme = cle;
+  if (arme) node.classList.add('armed');
   return node;
 }
 

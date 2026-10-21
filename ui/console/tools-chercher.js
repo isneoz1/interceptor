@@ -59,7 +59,7 @@ export function panneauChercher(entree, etat, redessiner, poser) {
   box.appendChild(sec('Cle de Luhn', 'carte bancaire, IMEI, numero de securite sociale canadien'));
   const champLuhn = el('input', {
     type: 'text', class: 'field', spellcheck: 'false',
-    placeholder: t('numero a verifier'), value: etat.numeroLuhn || ''
+    placeholder: t('numero a verifier'), value: etat.numeroLuhn || '', dataset: { champ: 'chercher-luhn' }
   });
   champLuhn.addEventListener('change', () => { etat.numeroLuhn = champLuhn.value; redessiner(); });
   box.appendChild(el('div', { class: 'actions' }, [champLuhn]));
@@ -81,7 +81,7 @@ export function panneauChercher(entree, etat, redessiner, poser) {
   box.appendChild(sec('Chemin dans le JSON', '$.a.b[0], $.a[*], $..cle'));
   const champChemin = el('input', {
     type: 'text', class: 'field', spellcheck: 'false',
-    placeholder: '$.data[0].id', value: etat.cheminJson || ''
+    placeholder: '$.data[0].id', value: etat.cheminJson || '', dataset: { champ: 'chercher-chemin-json' }
   });
   champChemin.addEventListener('change', () => { etat.cheminJson = champChemin.value; redessiner(); });
   const barreJson = el('div', { class: 'actions' }, [champChemin]);
@@ -127,7 +127,7 @@ export function panneauChercher(entree, etat, redessiner, poser) {
 
   const champSelecteur = el('input', {
     type: 'text', class: 'field', spellcheck: 'false',
-    placeholder: 'a[href], //a/@href', value: etat.selecteur || ''
+    placeholder: 'a[href], //a/@href', value: etat.selecteur || '', dataset: { champ: 'chercher-selecteur' }
   });
   champSelecteur.addEventListener('change', () => { etat.selecteur = champSelecteur.value; redessiner(); });
   const barre = el('div', { class: 'actions' }, [champSelecteur]);

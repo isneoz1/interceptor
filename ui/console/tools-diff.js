@@ -15,7 +15,7 @@ export function panneauComparer(entree, etat, redessiner, poser) {
   box.appendChild(sec('Comparer', 'le texte de travail, face a un autre'));
 
   const zone = el('textarea', {
-    class: 'field', spellcheck: 'false', rows: '6',
+    class: 'field', spellcheck: 'false', rows: '6', dataset: { champ: 'comparer-autre' },
     placeholder: t('collez ici le second texte : la reponse d hier, l autre environnement, la valeur attendue')
   });
   zone.value = etat.autreTexte || '';

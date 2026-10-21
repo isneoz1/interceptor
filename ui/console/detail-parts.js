@@ -29,6 +29,7 @@ import * as preuves from './preuves-detail.js';
 import { graphqlRequete, graphqlReponse } from './graphql-detail.js';
 import { rpcRequete, rpcReponse } from './rpc-detail.js';
 import { problemeReponse } from './probleme-detail.js';
+import { patchRequete } from './patch-detail.js';
 import { securityTxtReponse } from './security-txt-detail.js';
 import { controlesCorps } from './corps-detail.js';
 import { blocVerdict, blocProvenance, blocEffacement, blocSourceMap } from './lectures-detail.js';
@@ -713,6 +714,7 @@ export function requestBody(rec) {
   box.appendChild(graphqlRequete(rec));
   box.appendChild(rapportsRequete(rec));
   box.appendChild(rpcRequete(rec));
+  box.appendChild(patchRequete(rec));
   box.appendChild(bodyViewer(rec.requestBody, 'Corps envoye', rec.requestBody && rec.requestBody.contentType));
   return box;
 }

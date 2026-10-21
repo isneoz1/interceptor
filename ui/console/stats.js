@@ -1,7 +1,7 @@
 /* Vue « Diagnostic » — SWIFT (by NeoZ)
  * Chiffres lus en direct dans le noyau : rien n est simule, rien n est estime.
  */
-import { $, el, clear, sec, grid, button, vide } from '../lib/dom.js';
+import { $, el, clear, sec, grid, button, boutonConfirme, vide } from '../lib/dom.js';
 import { t, tp } from '../lib/i18n.js';
 import { bytes, uptime, ms } from '../lib/format.js';
 import { state, cmd, toast } from '../app.js';
@@ -189,15 +189,8 @@ export function render() {
           : tp('{n} enregistrement(s) sur disque.', { n: res.count }) };
     render();
   }));
-  let armed = false;
-  const purge = button('Purger le stockage', async () => {
-    if (!armed) {
-      armed = true;
-      purge.textContent = t('Confirmer la purge ?');
-      purge.classList.add('armed');
-      setTimeout(() => { armed = false; purge.textContent = t('Purger le stockage'); purge.classList.remove('armed'); }, 4000);
-      return;
-    }
+  /* La vue se redessine chaque seconde : l etat arme vit hors du bouton. */
+  const purge = boutonConfirme('stats-purge', 'Purger le stockage', 'Confirmer la purge ?', async () => {
     const res = await cmd('purgeStorage', {});
     storageStatus = (res.error || res.ok === false)
       ? { tone: 'ko', text: res.error || t('Purge impossible') }

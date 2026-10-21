@@ -175,7 +175,7 @@ export function panneauAdresse(entree, etat, redessiner, poser) {
   box.appendChild(sec('Appartenance', 'cette adresse est-elle dans ce prefixe ?'));
   const champ = el('input', {
     type: 'text', class: 'field', spellcheck: 'false',
-    placeholder: '10.0.0.0/8', value: etat.prefixeTest || ''
+    placeholder: '10.0.0.0/8', value: etat.prefixeTest || '', dataset: { champ: 'adresse-prefixe-test' }
   });
   champ.addEventListener('change', () => { etat.prefixeTest = champ.value; redessiner(); });
   box.appendChild(el('div', { class: 'actions' }, [champ]));
@@ -210,7 +210,7 @@ function ecrirePrefixes(box, brut, etat, redessiner, poser) {
   box.appendChild(sec('Decouper', 'en sous-reseaux de taille egale'));
   const taille = el('input', {
     type: 'number', class: 'field', min: '0', max: '32', style: 'max-width:110px',
-    value: String(etat.sousPrefixe || 26)
+    value: String(etat.sousPrefixe || 26), dataset: { champ: 'adresse-sous-prefixe' }
   });
   taille.addEventListener('change', () => { etat.sousPrefixe = Number(taille.value); redessiner(); });
   const barre = el('div', { class: 'actions' }, [el('span', { class: 'note', text: '/' }), taille]);
@@ -235,7 +235,8 @@ function ecrirePrefixes(box, brut, etat, redessiner, poser) {
   box.appendChild(sec('Resumer', 'le plus petit prefixe qui couvre une liste'));
   const zone = el('textarea', {
     class: 'field', spellcheck: 'false', rows: '3',
-    placeholder: t('un prefixe ou une adresse par ligne : 10.0.1.0/24, 10.0.2.5...')
+    placeholder: t('un prefixe ou une adresse par ligne : 10.0.1.0/24, 10.0.2.5...'),
+    dataset: { champ: 'adresse-liste' }
   });
   zone.value = etat.listePrefixes || '';
   zone.addEventListener('change', () => { etat.listePrefixes = zone.value; redessiner(); });
@@ -259,11 +260,11 @@ function ecrirePrefixes(box, brut, etat, redessiner, poser) {
   box.appendChild(sec('Plage vers prefixes', 'la liste minimale qui couvre exactement une plage'));
   const debut = el('input', {
     type: 'text', class: 'field', spellcheck: 'false',
-    placeholder: '192.0.2.5', value: etat.plageDebut || '', style: 'max-width:180px'
+    placeholder: '192.0.2.5', value: etat.plageDebut || '', style: 'max-width:180px', dataset: { champ: 'adresse-plage-debut' }
   });
   const fin = el('input', {
     type: 'text', class: 'field', spellcheck: 'false',
-    placeholder: '192.0.2.20', value: etat.plageFin || '', style: 'max-width:180px'
+    placeholder: '192.0.2.20', value: etat.plageFin || '', style: 'max-width:180px', dataset: { champ: 'adresse-plage-fin' }
   });
   debut.addEventListener('change', () => { etat.plageDebut = debut.value; redessiner(); });
   fin.addEventListener('change', () => { etat.plageFin = fin.value; redessiner(); });

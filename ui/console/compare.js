@@ -10,12 +10,19 @@
  * 1200 lignes sur une difference d ensembles, qui perdait toute ligne presente
  * ailleurs dans l autre corps : un « }, » retire passait inapercu, et deux
  * corps differents pouvaient etre dits identiques.
+ *
+ * Deux corps JSON se comparent aussi par leur structure : le JSON Patch
+ * (RFC 6902) qui mene de l un a l autre, sans tenir compte de la mise en forme
+ * ni de l ordre des membres (lib/json-patch.js).
  */
 import { $, el, clear, sec, button, kv, add, vide } from '../lib/dom.js';
 import { bytes, ms, clock, pretty } from '../lib/format.js';
 import { t, tp, deuxPoints } from '../lib/i18n.js';
 import { comparerLignes } from '../lib/diff.js';
 import { listeProgressive } from '../lib/liste-progressive.js';
+import { lireJsonExact, ecrireJsonExact } from '../lib/json-exact.js';
+import { produirePatch, patchEnArbre } from '../lib/json-patch.js';
+import { SENS_OPERATIONS } from './patch-detail.js';
 import { state, cmd, toast, copy } from '../app.js';
 
 let left = null;
@@ -96,6 +103,19 @@ export function comparerCorps(a, b, mime) {
     finsDeLigne: textA !== textB && textA.replace(/\r\n/g, '\n') === textB.replace(/\r\n/g, '\n')
   };
 }
+
+/** Le JSON Patch qui mene d un corps a l autre, ou null s ils ne sont pas
+ *  tous deux du JSON. */
+export function patchEntreCorps(a, b) {
+  let x, y;
+  try { x = lireJsonExact(String(a || '')); y = lireJsonExact(String(b || '')); }
+  catch { return null; }
+  return produirePatch(x, y);
+}
+
+/* Au-dela, la difference de structure se calcule a la demande : elle relit
+   les deux corps en entier. */
+const STRUCTURE_IMMEDIATE = 1000000;
 
 /** Ecart de deux mesures, seulement si les deux sont connues. */
 export function ecart(a, b) {
@@ -229,7 +249,29 @@ function renderBodyDiff(box, title, a, b, mime) {
   if (!r.minimal) {
     box.appendChild(el('p', { class: 'note', text: t('Les deux corps different trop pour chercher la plus courte liste de changements : la comparaison reste exacte, chaque ligne y figure une fois, mais un bloc peut etre montre retire puis rajoute.') }));
   }
+  blocStructure(box, a, b);
   lignesParLots(box, r.lignes, row => lineNode(row.kind, row.line));
+}
+
+/* La difference de structure de deux corps JSON, operation par operation. */
+function blocStructure(box, a, b) {
+  const zone = el('div');
+  box.appendChild(zone);
+  const dessiner = () => {
+    const ops = patchEntreCorps(a, b);
+    if (!ops) return;
+    zone.appendChild(el('h4', { text: tp('Difference de structure : {n} operation(s) JSON Patch (RFC 6902)', { n: ops.length }) }));
+    zone.appendChild(el('p', { class: 'note', text: t('Sans tenir compte de la mise en forme ni de l ordre des membres.') }));
+    const texte = ecrireJsonExact(patchEnArbre(ops), '  ');
+    zone.appendChild(el('div', { class: 'actions' }, button('Copier le JSON Patch', () => copy(texte, 'JSON Patch copie'))));
+    const hote = el('div');
+    zone.appendChild(hote);
+    rendus.push(listeProgressive(hote, ops, o => el('p', { class: 'note', text: '•  ' + tp(SENS_OPERATIONS[o.op],
+      { chemin: o.path === '' ? '""' : o.path, de: o.from || '', valeur: o.value ? ecrireJsonExact(o.value, '') : '' }) })));
+  };
+  if (String(a || '').length + String(b || '').length <= STRUCTURE_IMMEDIATE) { dessiner(); return; }
+  const bouton = button('Calculer la difference de structure (JSON Patch)', () => { bouton.remove(); dessiner(); });
+  zone.appendChild(el('div', { class: 'actions' }, bouton));
 }
 
 /** Le texte copie : tout ce qui differe, entetes et corps, sans coupe. */

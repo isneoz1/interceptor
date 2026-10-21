@@ -47,7 +47,7 @@ export function panneauGenerateurs(poser, etat, redessiner) {
   box.appendChild(sec('Mot de passe', 'tirage sans biais'));
   const longueur = el('input', {
     type: 'number', class: 'field', min: '4', max: '256',
-    value: String(etat.longueurMdp || 24), style: 'max-width:110px'
+    value: String(etat.longueurMdp || 24), style: 'max-width:110px', dataset: { champ: 'generer-longueur' }
   });
   longueur.addEventListener('change', () => {
     etat.longueurMdp = Math.max(4, Math.min(256, Number(longueur.value) || 24));

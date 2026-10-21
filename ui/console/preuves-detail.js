@@ -60,7 +60,7 @@ function formulaireSignature(box, s, cle) {
   }
   /* La forme du secret ne sert qu a HMAC : on ne la propose que la ou elle sert. */
   if (!s.parametres.alg || s.parametres.alg === 'hmac-sha256') {
-    const forme = el('select', { class: 'field', title: t('Forme du secret partage') });
+    const forme = el('select', { class: 'field', title: t('Forme du secret partage'), dataset: { champ: 'sig-forme-' + cle } });
     for (const [v, libelle] of [['base64', 'secret en base64'], ['hex', 'secret en hexadecimal'], ['texte', 'secret en texte']]) {
       forme.appendChild(el('option', { value: v, text: t(libelle), selected: v === etat.forme }));
     }
@@ -151,7 +151,7 @@ function formulaireConnexion(zone, lu, cle) {
   champ.value = etat.texte;
   champ.addEventListener('input', () => { etat.texte = champ.value; });
   zone.appendChild(champ);
-  const choix = el('select', { class: 'field' });
+  const choix = el('select', { class: 'field', dataset: { champ: 'wa-alg-' + cle } });
   for (const nom of ['ES256', 'EdDSA', 'Ed25519', 'RS256', 'PS256', 'ES384', 'ES512']) {
     choix.appendChild(el('option', { value: nom, text: nom, selected: nom === etat.alg }));
   }

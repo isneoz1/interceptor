@@ -26,6 +26,7 @@ import { panneauChiffrement } from './tools-crypto.js';
 import { panneauBinaire } from './tools-binaire.js';
 import { panneauEntetes } from './tools-entetes.js';
 import { panneauComparer } from './tools-diff.js';
+import { panneauPatch } from './tools-patch.js';
 import { panneauChercher } from './tools-chercher.js';
 import { panneauCode } from './tools-code.js';
 import { panneauOtp } from './tools-otp.js';
@@ -65,7 +66,8 @@ export const FAMILLES = [
   ['Chercher et comparer', [
     ['chercher', 'Chercher'],
     ['regex', 'Expression reguliere'],
-    ['comparer', 'Comparer']
+    ['comparer', 'Comparer'],
+    ['patch', 'JSON Patch']
   ]],
   ['Produire', [
     ['generer', 'Generer'],
@@ -170,7 +172,7 @@ function dessiner() {
 
   /* ---------------------------- Texte de travail ------------------------- */
   const zone = el('textarea', {
-    class: 'field', spellcheck: 'false', rows: '7',
+    class: 'field', spellcheck: 'false', rows: '7', dataset: { champ: 'outils-entree' },
     placeholder: t('Collez ici une valeur : jeton, corps de requete, entetes, chaine encodee…')
   });
   zone.value = entree;
@@ -231,6 +233,7 @@ function dessiner() {
   else if (onglet === 'chercher') box.appendChild(panneauChercher(entree, etat, redessiner, reprendre));
   else if (onglet === 'regex') box.appendChild(panneauRegex(entree, etat, redessiner));
   else if (onglet === 'comparer') box.appendChild(panneauComparer(entree, etat, redessiner, reprendre));
+  else if (onglet === 'patch') box.appendChild(panneauPatch(entree, etat, redessiner, reprendre));
   else if (onglet === 'url') box.appendChild(panneauUrl(entree));
   else if (onglet === 'adresse') box.appendChild(panneauAdresse(entree, etat, redessiner, reprendre));
   else if (onglet === 'reference') box.appendChild(panneauReference(entree, etat, redessiner));
@@ -245,7 +248,7 @@ function panneauTransformer() {
     tp('{t} disponibles, reparties en {f} groupes',
       { t: TRANSFORMATIONS.length, f: GROUPES.length })));
 
-  const select = el('select');
+  const select = el('select', { dataset: { champ: 'outils-transformation' } });
   let groupeCourant = null;
   let hote = select;
   for (const tr of TRANSFORMATIONS) {

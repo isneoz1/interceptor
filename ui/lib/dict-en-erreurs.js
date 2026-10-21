@@ -279,6 +279,15 @@ export const EN_ERREURS = {
   'YAML : plus de mille niveaux d imbrication, chacun ajoute deux espaces de marge':
     'YAML: more than a thousand nesting levels, each one adds two spaces of margin',
 
+  /* ------------------ JSON Patch, Merge Patch et Pointer ------------------ */
+  'pointeur JSON : une chaine est attendue': 'JSON pointer: a string is expected',
+  'retirer la racine n est pas defini (RFC 6902 §4.2, erratum 4787)': 'removing the root is not defined (RFC 6902 §4.2, erratum 4787)',
+  'un JSON Patch est un tableau d operations (RFC 6902 §3)': 'a JSON Patch is an array of operations (RFC 6902 §3)',
+  'une operation est un objet (RFC 6902 §4)': 'an operation is an object (RFC 6902 §4)',
+  'objet aux cles en double : la fusion n est pas definie (RFC 7396 §2)': 'object with duplicate keys: the merge is not defined (RFC 7396 §2)',
+  'plus de mille niveaux d imbrication': 'more than a thousand nesting levels',
+  'toute operation': 'any operation',
+
   /* ------------------ Rendus dans un resultat, sans etre leves ------------- */
   'transformation asynchrone : employer transformerAsync': 'asynchronous transformation: use transformerAsync',
   'algorithme « none » : ce jeton n est pas signe du tout': '“none” algorithm: this token is not signed at all'
@@ -288,6 +297,23 @@ export const EN_ERREURS = {
 export const MODELES_ERREURS = {
   '{@quoi} (position {n} : « {autour} »)': '{@quoi} (position {n}: “{autour}”)',
   'JSON illisible : {@quoi} (position {n})': 'unreadable JSON: {@quoi} (position {n})',
+  'pointeur JSON « {p} » : il commence par « / » (RFC 6901 §3)': 'JSON pointer “{p}”: it starts with “/” (RFC 6901 §3)',
+  'pointeur JSON « {p} » : « ~ » doit etre suivi de 0 ou 1 (RFC 6901 §3)': 'JSON pointer “{p}”: “~” must be followed by 0 or 1 (RFC 6901 §3)',
+  'cle « {cle} » absente de {chemin}': 'key “{cle}” missing from {chemin}',
+  'cle « {cle} » ecrite deux fois dans {chemin} : la reference est indefinie (RFC 6901 §4)': 'key “{cle}” written twice in {chemin}: the reference is undefined (RFC 6901 §4)',
+  'index « {index} » invalide dans {chemin} : un entier sans zero de tete est attendu (RFC 6901 §4)': 'invalid index “{index}” in {chemin}: an integer without a leading zero is expected (RFC 6901 §4)',
+  'index {index} hors du tableau {chemin}, qui compte {n} elements': 'index {index} outside the array {chemin}, which has {n} elements',
+  '« - » dans {chemin} designe la place apres le dernier element : rien ne s y trouve (RFC 6901 §4)': '“-” in {chemin} designates the place after the last element: nothing is there (RFC 6901 §4)',
+  '{chemin} n est ni un objet ni un tableau : on ne peut pas y descendre': '{chemin} is neither an object nor an array: it cannot be descended into',
+  'deplacer {de} dans {chemin}, l un de ses enfants, est interdit (RFC 6902 §4.4)': 'moving {de} into {chemin}, one of its children, is forbidden (RFC 6902 §4.4)',
+  'la valeur en {chemin} n est pas celle attendue (RFC 6902 §4.6)': 'the value at {chemin} is not the expected one (RFC 6902 §4.6)',
+  'un objet aux cles en double n a pas d egalite definie : la comparaison de {chemin} echoue': 'an object with duplicate keys has no defined equality: the comparison of {chemin} fails',
+  'membre « {nom} » absent : il est exige pour {@op} (RFC 6902 §4)': 'member “{nom}” missing: it is required for {@op} (RFC 6902 §4)',
+  'membre « {nom} » ecrit deux fois : une operation en a exactement un (RFC 6902 §4)': 'member “{nom}” written twice: an operation has exactly one (RFC 6902 §4)',
+  'membre « {nom} » ecrit deux fois : chaque lecteur JSON peut en retenir un autre (RFC 8259 §4)': 'member “{nom}” written twice: each JSON reader may keep a different one (RFC 8259 §4)',
+  'membre « {nom} » : une chaine est attendue': 'member “{nom}”: a string is expected',
+  'operation « {op} » inconnue : add, remove, replace, move, copy ou test (RFC 6902 §4)': 'unknown operation “{op}”: add, remove, replace, move, copy or test (RFC 6902 §4)',
+  'null en {chemin} : un merge patch ne sait pas poser null, qui y veut dire « retirer » (RFC 7396 §1)': 'null at {chemin}: a merge patch cannot set null, which means “remove” there (RFC 7396 §1)',
   '{@quoi} (octet {n} : « {autour} »)': '{@quoi} (byte {n}: “{autour}”)',
   '{@quoi} invalide : « {brut} »': 'invalid {@quoi}: “{brut}”',
   '« {c} » attendu': '“{c}” expected',

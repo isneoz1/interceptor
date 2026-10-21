@@ -43,16 +43,16 @@ export function panneauOtp(entree, etat, redessiner) {
   /* --------------------------- Secret et options ------------------------- */
   const secret = el('input', {
     type: 'text', class: 'field bloc', spellcheck: 'false',
-    placeholder: t('secret (base32, ex. JBSWY3DPEHPK3PXP)'),
+    placeholder: t('secret (base32, ex. JBSWY3DPEHPK3PXP)'), dataset: { champ: 'otp-secret' },
     value: etat.otpSecret != null ? etat.otpSecret : (brut && !/^otpauth/i.test(brut) ? brut : '')
   });
   secret.addEventListener('change', () => { etat.otpSecret = secret.value; });
   box.appendChild(secret);
 
-  const forme = choix(['base32', 'hex', 'texte'], etat.otpForme, v => { etat.otpForme = v; });
-  const algo = choix(ALGOS_OTP, etat.otpAlgo, v => { etat.otpAlgo = v; });
-  const chiffres = choix(['6', '7', '8'], String(etat.otpChiffres), v => { etat.otpChiffres = Number(v); });
-  const pas = choix(['30', '60'], String(etat.otpPas), v => { etat.otpPas = Number(v); });
+  const forme = choix('otp-forme', ['base32', 'hex', 'texte'], etat.otpForme, v => { etat.otpForme = v; });
+  const algo = choix('otp-algo', ALGOS_OTP, etat.otpAlgo, v => { etat.otpAlgo = v; });
+  const chiffres = choix('otp-chiffres', ['6', '7', '8'], String(etat.otpChiffres), v => { etat.otpChiffres = Number(v); });
+  const pas = choix('otp-pas', ['30', '60'], String(etat.otpPas), v => { etat.otpPas = Number(v); });
 
   box.appendChild(ligne([['Format du secret', forme], ['Algorithme', algo],
     ['Chiffres', chiffres], ['Pas (s)', pas]]));
@@ -79,7 +79,8 @@ export function panneauOtp(entree, etat, redessiner) {
 
   /* HOTP a compteur explicite, pour les jetons a evenement. */
   const compteur = el('input', {
-    type: 'number', class: 'field', value: String(etat.otpCompteur || 0), min: '0', style: 'max-width:12rem'
+    type: 'number', class: 'field', value: String(etat.otpCompteur || 0), min: '0', style: 'max-width:12rem',
+    dataset: { champ: 'otp-compteur' }
   });
   compteur.addEventListener('change', () => { etat.otpCompteur = Number(compteur.value); });
   const hbar = el('div', { class: 'actions' }, [compteur]);
@@ -141,8 +142,8 @@ export function panneauOtp(entree, etat, redessiner) {
 }
 
 /* ------------------------------ Fabriques UI ------------------------------ */
-function choix(valeurs, actif, onChange) {
-  const s = el('select');
+function choix(nom, valeurs, actif, onChange) {
+  const s = el('select', { dataset: { champ: nom } });
   for (const v of valeurs) s.appendChild(el('option', { value: v, text: v, selected: v === actif }));
   s.addEventListener('change', () => onChange(s.value));
   return s;

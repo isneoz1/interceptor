@@ -7,6 +7,7 @@
  * d options : la mise en page s adapte a la largeur disponible.
  * ============================================================ */
 import { $, el, clear } from './lib/dom.js';
+import { differerSiAppui } from './lib/appui.js';
 import { t } from './lib/i18n.js';
 import { icone, poserIcones } from './lib/icones.js';
 import {
@@ -131,7 +132,13 @@ export function setView(name) {
   renderView();
 }
 
-function renderView() {
+/* Un redessin demande pendant un appui de souris attend le clic qui le
+   termine : sinon l element vise etait remplace et le clic perdu — une
+   ligne du tableau cliquee pendant le trafic ne s ouvrait pas, un bouton
+   des statistiques ne repondait qu une fois sur deux (lib/appui.js). */
+function renderView() { differerSiAppui('vue', redessinerVue); }
+
+function redessinerVue() {
   const view = VIEWS[state.view];
   if (!view) return;
   // Les vues se redessinent entierement a chaque changement : on conserve la
@@ -336,7 +343,12 @@ function bindKeyboard() {
     onIntercept: () => { intercept.charger(); refreshBadges(); },
     onClear: () => { detail.close(); renderView(); },
     onRemoved: () => renderView(),
-    onConfig: () => { applyStaticLabels(); buildSidebar(); applyCaptureButton(); requests.applyConfig(); if (state.view === 'settings' || state.view === 'rules') renderView(); },
+    /* La barre laterale se reconstruit : pas pendant un clic sur l un de ses
+       boutons. La vue Interception montre aussi des reglages. */
+    onConfig: () => differerSiAppui('config', () => {
+      applyStaticLabels(); buildSidebar(); applyCaptureButton(); requests.applyConfig();
+      if (state.view === 'settings' || state.view === 'rules' || state.view === 'intercept') renderView();
+    }),
     onDisconnect: () => toast('Lien avec le noyau interrompu — rechargez la page', false)
   });
 

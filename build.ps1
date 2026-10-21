@@ -180,6 +180,11 @@ $required = @(
   'ui/lib/proxy-status.js',
   'ui/lib/ref-proxy-status.js',
   'ui/lib/dict-en-ref-proxy.js',
+  'ui/lib/json-patch.js',
+  'ui/lib/dict-en-patch.js',
+  'ui/console/patch-detail.js',
+  'ui/console/tools-patch.js',
+  'ui/lib/appui.js',
   'ui/console/statusbar.js',
   'ui/console/header.js',
   'ui/console/replay.js',
@@ -250,8 +255,11 @@ if ($badSurface) {
   exit 1
 }
 
-$jsCount  = (Get-ChildItem -Recurse -Filter *.js  | Where-Object { $_.FullName -notlike '*\dist\*' }).Count
-$allFiles = Get-ChildItem -Recurse -File | Where-Object { $_.FullName -notlike '*\dist\*' }
+# Les dossiers de travail d outils (.claude : un worktree y recopie tout le
+# projet) ne font pas partie du projet.
+$horsProjet = { $_.FullName -notlike '*\dist\*' -and $_.FullName -notlike '*\.claude\*' }
+$jsCount  = (Get-ChildItem -Recurse -Filter *.js | Where-Object $horsProjet).Count
+$allFiles = Get-ChildItem -Recurse -File | Where-Object $horsProjet
 Write-Host "  $($required.Count) fichiers requis presents"
 Write-Host "  $jsCount modules JavaScript"
 Write-Host "  $($allFiles.Count) fichiers au total"
@@ -287,7 +295,11 @@ if ($node) {
     @{ titre = 'Signaux HTTP';                fichier = 'tests/signaux.test.mjs';
        echec = 'Une date, une depreciation, un quota, un lien, un cache ou une priorite est mal lu' },
     @{ titre = 'Comparaisons et donnees exactes'; fichier = 'tests/comparaison.test.mjs';
-       echec = 'Une comparaison, un nombre JSON, un decodage CBOR ou MessagePack, ou un affichage coupe est faux' }
+       echec = 'Une comparaison, un nombre JSON, un decodage CBOR ou MessagePack, ou un affichage coupe est faux' },
+    @{ titre = 'JSON Patch, Merge Patch et Pointer'; fichier = 'tests/patch.test.mjs';
+       echec = 'Un JSON Patch, un Merge Patch ou un JSON Pointer est mal applique, mal produit ou mal lu' },
+    @{ titre = 'Clics et saisie a travers les redessins'; fichier = 'tests/saisie.test.mjs';
+       echec = 'Un clic se perd pendant un redessin, ou un champ d une vue vivante n a pas de nom stable' }
   )
 
   $totalAssertions = 0

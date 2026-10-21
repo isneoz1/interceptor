@@ -3,7 +3,8 @@
  * Editeur visuel : chaque regle se construit avec des champs et des boutons.
  * Le mode JSON reste disponible pour les cas avances et les copier-coller.
  */
-import { $, el, clear, sec, button, vide } from '../lib/dom.js';
+import { $, el, clear, sec, button, boutonConfirme, vide } from '../lib/dom.js';
+import { redessinerEnPlace } from '../lib/redessin.js';
 import { t, tp, te } from '../lib/i18n.js';
 import { RESOURCE_TYPES } from '../lib/format.js';
 import { state, toast, saveConfig, copy } from '../app.js';
@@ -94,7 +95,13 @@ function commit(list, message) {
   if (state.config) state.config.rules = list;
 }
 
-export function render() {
+/* Chaque regle enregistree redessine la vue, et la configuration diffusee en
+   retour aussi : redessinerEnPlace garde le champ ou l on tape, ce qui y est
+   tape, la position du lecteur, et le clic en cours. Chaque champ porte un
+   nom stable (dataset.champ), lie a sa regle. */
+export function render() { redessinerEnPlace($('#view-rules'), dessiner); }
+
+function dessiner() {
   const pane = clear($('#view-rules'));
   const box = el('div', { class: 'pane narrow' });
   pane.appendChild(box);
@@ -116,7 +123,7 @@ export function render() {
     ]),
     el('div', { class: 'ctl' })
   ]);
-  const masterInput = el('input', { type: 'checkbox' });
+  const masterInput = el('input', { type: 'checkbox', dataset: { champ: 'regles-moteur' } });
   masterInput.checked = !!config.rulesEnabled;
   masterInput.addEventListener('change', async () => {
     await saveConfig({ rulesEnabled: masterInput.checked });
@@ -145,15 +152,8 @@ export function render() {
   const actions2 = el('div', { class: 'actions' });
   actions2.appendChild(button(jsonMode ? 'Editeur visuel' : 'Mode JSON', () => { jsonMode = !jsonMode; render(); }));
   actions2.appendChild(button('Copier les regles', () => copy(JSON.stringify(list, null, 2), 'Regles copiees')));
-  let armed = false;
-  const wipe = button('Tout supprimer', () => {
-    if (!armed) {
-      armed = true; wipe.textContent = 'Confirmer ?'; wipe.classList.add('armed');
-      setTimeout(() => { armed = false; wipe.textContent = 'Tout supprimer'; wipe.classList.remove('armed'); }, 4000);
-      return;
-    }
-    commit([], 'Toutes les regles supprimees');
-  }, { class: 'danger' });
+  const wipe = boutonConfirme('regles-tout-supprimer', 'Tout supprimer', 'Confirmer ?',
+    () => commit([], 'Toutes les regles supprimees'), { class: 'danger' });
   actions2.appendChild(wipe);
   box.appendChild(actions2);
 
@@ -170,6 +170,9 @@ export function render() {
 /* ------------------------------- Une regle -------------------------------- */
 function ruleCard(rule, index, list) {
   const card = el('div', { class: 'rule' + (rule.enabled ? ' on' : ' off') });
+  /* L index et l identifiant : deux regles au meme identifiant (un JSON
+     colle) gardent chacune leurs champs. */
+  const nom = suffixe => 'regle-' + index + '-' + (rule.id || '') + '-' + suffixe;
   const update = (patch, message) => {
     const next = list.map((r, i) => (i === index ? { ...r, ...patch } : r));
     commit(next, message);
@@ -178,12 +181,13 @@ function ruleCard(rule, index, list) {
 
   /* En-tete : activation, nom, deplacement, suppression */
   const head = el('div', { class: 'rule-head' });
-  const enabled = el('input', { type: 'checkbox', title: t('Activer cette regle') });
+  const enabled = el('input', { type: 'checkbox', title: t('Activer cette regle'), dataset: { champ: nom('active') } });
   enabled.checked = !!rule.enabled;
   enabled.addEventListener('change', () => update({ enabled: enabled.checked }));
   head.appendChild(enabled);
 
-  const name = el('input', { type: 'text', class: 'field name', value: rule.name || '', placeholder: t('Nom de la regle') });
+  const name = el('input', { type: 'text', class: 'field name', value: rule.name || '', placeholder: t('Nom de la regle'),
+    dataset: { champ: nom('nom') } });
   name.addEventListener('change', () => update({ name: name.value }));
   head.appendChild(name);
 
@@ -213,14 +217,14 @@ function ruleCard(rule, index, list) {
   /* Conditions */
   const match = rule.match || {};
   const grid = el('div', { class: 'rule-grid' });
-  grid.appendChild(labelled('Hote contient', textInput(match.host, v => updateMatch({ host: v || undefined }), 'exemple.com')));
-  grid.appendChild(labelled('URL (expression reguliere)', textInput(match.urlRegex, v => updateMatch({ urlRegex: v || undefined }), '^https://api\\.')));
-  grid.appendChild(labelled('Methode', selectInput(METHODS.map(m => [m, m || 'toutes']), match.method || '', v => updateMatch({ method: v || undefined }))));
-  grid.appendChild(labelled('Type de ressource', selectInput([['', 'tous']].concat(RESOURCE_TYPES.map(t => [t, t])), match.type || '', v => updateMatch({ type: v || undefined }))));
-  grid.appendChild(labelled('Action', selectInput(ACTIONS, rule.action || 'block', v => update({ action: v }))));
+  grid.appendChild(labelled('Hote contient', textInput(match.host, v => updateMatch({ host: v || undefined }), 'exemple.com', nom('hote'))));
+  grid.appendChild(labelled('URL (expression reguliere)', textInput(match.urlRegex, v => updateMatch({ urlRegex: v || undefined }), '^https://api\\.', nom('url'))));
+  grid.appendChild(labelled('Methode', selectInput(METHODS.map(m => [m, m || 'toutes']), match.method || '', v => updateMatch({ method: v || undefined }), nom('methode'))));
+  grid.appendChild(labelled('Type de ressource', selectInput([['', 'tous']].concat(RESOURCE_TYPES.map(t => [t, t])), match.type || '', v => updateMatch({ type: v || undefined }), nom('type'))));
+  grid.appendChild(labelled('Action', selectInput(ACTIONS, rule.action || 'block', v => update({ action: v }), nom('action'))));
   if (rule.action === 'redirect') {
     grid.appendChild(labelled('Rediriger vers ($1 = groupe capture)',
-      textInput(rule.redirectUrl, v => update({ redirectUrl: v }), 'https://…')));
+      textInput(rule.redirectUrl, v => update({ redirectUrl: v }), 'https://…', nom('redirection'))));
   }
   card.appendChild(grid);
 
@@ -229,8 +233,8 @@ function ruleCard(rule, index, list) {
     const panel = el('div', { class: 'hops' });
     panel.appendChild(sec('Reponse simulee', 'le corps reel du serveur reste enregistre'));
     panel.appendChild(labelled('Type de contenu',
-      textInput(mock.contentType, v => update({ mock: { ...mock, contentType: v } }), 'application/json; charset=utf-8')));
-    const body = el('textarea', { class: 'field', spellcheck: 'false', rows: '5' });
+      textInput(mock.contentType, v => update({ mock: { ...mock, contentType: v } }), 'application/json; charset=utf-8', nom('mock-type'))));
+    const body = el('textarea', { class: 'field', spellcheck: 'false', rows: '5', dataset: { champ: nom('mock-corps') } });
     body.value = mock.body || '';
     body.addEventListener('change', () => update({ mock: { ...mock, body: body.value } }));
     panel.appendChild(el('label', {}, [t('Corps servi a la page'), body]));
@@ -243,7 +247,7 @@ function ruleCard(rule, index, list) {
     const panel = el('div', { class: 'hops' });
     panel.appendChild(sec('Latence injectee', 'plafonnee a 30 000 ms'));
     const champ = el('input', { type: 'number', class: 'field', min: '0', max: '30000',
-      value: String(rule.delayMs || 0) });
+      value: String(rule.delayMs || 0), dataset: { champ: nom('delai') } });
     champ.addEventListener('change', () => {
       const ms = Math.max(0, Math.min(30000, Number(champ.value) || 0));
       champ.value = String(ms);
@@ -260,19 +264,19 @@ function ruleCard(rule, index, list) {
     const panel = el('div', { class: 'hops' });
     panel.appendChild(sec('Chercher-remplacer', 'le corps reel du serveur reste enregistre'));
     panel.appendChild(labelled('Chercher (expression reguliere)',
-      textInput(repl.find, v => update({ replace: { ...repl, find: v } }), 'ancien-texte')));
+      textInput(repl.find, v => update({ replace: { ...repl, find: v } }), 'ancien-texte', nom('cherche'))));
     panel.appendChild(labelled('Remplacer par ($1 = groupe capture)',
-      textInput(repl.replace, v => update({ replace: { ...repl, replace: v } }), 'nouveau-texte')));
+      textInput(repl.replace, v => update({ replace: { ...repl, replace: v } }), 'nouveau-texte', nom('remplace'))));
     panel.appendChild(labelled('Options',
-      textInput(repl.flags || 'g', v => update({ replace: { ...repl, flags: v || 'g' } }), 'g, gi, gm…')));
+      textInput(repl.flags || 'g', v => update({ replace: { ...repl, flags: v || 'g' } }), 'g, gi, gm…', nom('options'))));
     panel.appendChild(el('p', { class: 'note', text:
       t('Ne s applique qu aux reponses textuelles non compressees. Dans les autres cas le flux passe intact et la raison est inscrite sur la ligne.') }));
     card.appendChild(panel);
   }
 
   if (rule.action === 'modifyHeaders') {
-    card.appendChild(headerOps('Entetes de requete', rule.requestHeaders || [], ops => update({ requestHeaders: ops })));
-    card.appendChild(headerOps('Entetes de reponse', rule.responseHeaders || [], ops => update({ responseHeaders: ops })));
+    card.appendChild(headerOps('Entetes de requete', rule.requestHeaders || [], ops => update({ requestHeaders: ops }), nom('entetes-requete')));
+    card.appendChild(headerOps('Entetes de reponse', rule.responseHeaders || [], ops => update({ responseHeaders: ops }), nom('entetes-reponse')));
   }
 
   card.appendChild(el('p', { class: alerteDe(rule) ? 'note warn' : 'note', text: describe(rule) }));
@@ -338,14 +342,15 @@ function describe(rule) {
 
 function labelled(text, control) { return el('label', {}, [t(text), control]); }
 
-function textInput(value, onChange, placeholder) {
-  const input = el('input', { type: 'text', class: 'field', value: value || '', placeholder: placeholder || '' });
+function textInput(value, onChange, placeholder, champ) {
+  const input = el('input', { type: 'text', class: 'field', value: value || '', placeholder: placeholder || '',
+    dataset: { champ } });
   input.addEventListener('change', () => onChange(input.value.trim()));
   return input;
 }
 
-function selectInput(options, value, onChange) {
-  const select = el('select', { class: 'field' });
+function selectInput(options, value, onChange, champ) {
+  const select = el('select', { class: 'field', dataset: { champ } });
   for (const [v, label] of options) {
     select.appendChild(el('option', { value: v, text: t(label), selected: v === value }));
   }
@@ -353,16 +358,16 @@ function selectInput(options, value, onChange) {
   return select;
 }
 
-function headerOps(title, ops, onChange) {
+function headerOps(title, ops, onChange, champ) {
   const box = el('div', { class: 'hops' });
   box.appendChild(sec(title, tp('{n} operation(s)', { n: ops.length })));
   ops.forEach((op, i) => {
     const row = el('div', { class: 'hop' });
     row.appendChild(selectInput([['set', 'Definir'], ['remove', 'Retirer']], op.op || 'set',
-      v => onChange(ops.map((o, j) => (j === i ? { ...o, op: v } : o)))));
-    row.appendChild(textInput(op.name, v => onChange(ops.map((o, j) => (j === i ? { ...o, name: v } : o))), 'Nom'));
+      v => onChange(ops.map((o, j) => (j === i ? { ...o, op: v } : o))), champ + '-' + i + '-op'));
+    row.appendChild(textInput(op.name, v => onChange(ops.map((o, j) => (j === i ? { ...o, name: v } : o))), 'Nom', champ + '-' + i + '-nom'));
     if ((op.op || 'set') === 'set') {
-      row.appendChild(textInput(op.value, v => onChange(ops.map((o, j) => (j === i ? { ...o, value: v } : o))), 'Valeur'));
+      row.appendChild(textInput(op.value, v => onChange(ops.map((o, j) => (j === i ? { ...o, value: v } : o))), 'Valeur', champ + '-' + i + '-valeur'));
     }
     row.appendChild(button('✕', () => onChange(ops.filter((_, j) => j !== i)), { class: 'sm danger' }));
     box.appendChild(row);
@@ -375,7 +380,7 @@ function headerOps(title, ops, onChange) {
 function jsonEditor(list) {
   const box = el('div');
   box.appendChild(sec('Regles au format JSON', 'tableau'));
-  const area = el('textarea', { class: 'field', spellcheck: 'false', rows: '20' });
+  const area = el('textarea', { class: 'field', spellcheck: 'false', rows: '20', dataset: { champ: 'regles-json' } });
   area.value = JSON.stringify(list, null, 2);
   const status = el('p', { class: 'note', text: tp('{n} regle(s) enregistree(s).', { n: list.length }) });
 
@@ -390,7 +395,7 @@ function jsonEditor(list) {
       return;
     }
     status.className = 'note ok';
-    status.textContent = parsed.length + ' regle(s) enregistree(s).';
+    status.textContent = tp('{n} regle(s) enregistree(s).', { n: parsed.length });
     commit(parsed, 'Regles enregistrees');
   });
 

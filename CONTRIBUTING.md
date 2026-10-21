@@ -41,7 +41,7 @@ Add-on…**, pick `manifest.json`. Reload the add-on from that same page after e
 ## What must pass
 
 ```bash
-npm test              # every assertion, nine suites, no browser needed
+npm test              # every assertion, 14 suites, no browser needed
 .\build.ps1 -Verify   # file inventory, tests, and the figure checks
 ```
 
@@ -90,6 +90,9 @@ This is the most common contribution, and the easiest to get right.
    yourself — if your implementation is wrong, so is your expected value.
 4. Wire it into a view. A module nothing imports is dead code, and a test refuses to build
    when one exists.
+5. A field in a view that redraws itself gets a stable name: `dataset: { champ: '…' }`,
+   unique in its view. That is how it keeps its focus and what was typed in it when the view
+   is rebuilt, and `tests/saisie.test.mjs` refuses a field without one.
 
 ---
 
@@ -110,18 +113,21 @@ above are easy to fix, and a change that solves the wrong problem is not.
 
 Licence: MIT, like the rest. By contributing, you agree your work ships under it.
 
-## Two checks that need a browser
+## Checks that need a browser
 
-`npm test` runs nine suites under Node with no browser. Two kinds of defect only exist once
-a layout engine is involved, so they live as tools:
+`npm test` runs 14 suites under Node with no browser. Some defects only exist once a
+layout engine — or a real mouse — is involved, so they live as tools:
 
 ```bash
 node tools/defilement.mjs      # 20 000 rows scrolled for real: gaps, repeats, jumps
 node tools/affichage.mjs       # every view at 350, 700, 1100 and 1600 px
 node tools/sockets.mjs         # WebSocket in page/worker/shared worker, WebRTC channel
 node tools/transparence.mjs    # what a page can tell about the probes: nothing
+node tools/minutage.mjs        # network timing: only what the browser measured
+node tools/interaction.mjs     # typing, reading and clicking through redraws, Chrome and Firefox
 ```
 
 Run the first two before touching the table, the batch-rendered lists, or anything in
 `console.css`; run `sockets.mjs` and `transparence.mjs` before touching `content/hooks.js` — the second
-one is what keeps the probes invisible to the pages they observe. Each prints a verdict and exits non-zero on a finding.
+one is what keeps the probes invisible to the pages they observe; run `interaction.mjs` before touching
+a view that redraws itself, or a field in one. Each prints a verdict and exits non-zero on a finding.

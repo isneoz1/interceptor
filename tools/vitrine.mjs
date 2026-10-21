@@ -16,10 +16,21 @@ import url from 'url';
 import { rendrePages } from './chrome.mjs';
 import { TRANSFORMATIONS } from '../ui/lib/catalogue.js';
 import { entreesReference } from '../ui/console/tools-reference.js';
+import { installerTout } from '../tests/harnais.mjs';
 
 const RACINE = path.resolve(path.dirname(url.fileURLToPath(import.meta.url)), '..');
 const SORTIE = path.join(RACINE, 'docs', 'images');
 const ECHELLE = 2;
+
+/* Les vues et les outils se comptent dans le code, comme le font les tests
+   du README : « twenty-three tools », ecrit a la main, a survecu a l arrivee
+   du vingt-quatrieme. Charger la boite a outils demande le faux navigateur
+   des tests, comme la scene. */
+installerTout();
+const { FAMILLES } = await import('../ui/console/tools.js');
+const OUTILS = FAMILLES.flatMap(([, outils]) => outils).length;
+const sourceConsole = fs.readFileSync(path.join(RACINE, 'ui', 'console.js'), 'utf8');
+const VUES = (sourceConsole.slice(sourceConsole.indexOf('const VIEWS = {')).match(/^  [a-z]+:\s*\{/gm) || []).length;
 
 /* Chaque vitrine : le fichier produit, la capture source, le cadrage, et ce
    qu on affirme. Le cadrage est exprime en pourcentage de l image source. */
@@ -66,7 +77,7 @@ const VITRINES = [
     titre: 'Ctrl+K, then type',
     /* Le nombre de lignes se compte dans les tables, comme celui des
        transformations plus bas. */
-    phrase: 'Seventeen views, twenty-three tools, every action and the ' + entreesReference().length + ' reference lines, '
+    phrase: VUES + ' views, ' + OUTILS + ' tools, every action and the ' + entreesReference().length + ' reference lines, '
       + 'reachable by name. Ask where a screen is, or what a header means — same box. '
       + 'Commands still come first.',
     cadre: { x: 24, y: 6, largeur: 52, hauteur: 58 }

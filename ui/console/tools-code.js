@@ -60,7 +60,7 @@ export function panneauCode(entree, etat, redessiner, reprendre) {
 
 /* ------------------------------- Brouiller -------------------------------- */
 function rendreBrouiller(box, brut, etat, redessiner, reprendre) {
-  const select = el('select');
+  const select = el('select', { dataset: { champ: 'code-style' } });
   for (const [cle, libelle] of STYLES) {
     select.appendChild(el('option', { value: cle, text: t(libelle), selected: cle === etat.codeStyle }));
   }
@@ -94,7 +94,7 @@ function rendreLisible(box, brut, etat, redessiner, reprendre) {
   actions.appendChild(button('Rendre lisible', lancer));
 
   const opt = el('label', { class: 'inline' }, [
-    el('input', { type: 'checkbox', checked: etat.codeEmbellir ? 'checked' : null }),
+    el('input', { type: 'checkbox', checked: etat.codeEmbellir ? 'checked' : null, dataset: { champ: 'code-embellir' } }),
     el('span', { text: t('Reindenter') })
   ]);
   opt.querySelector('input').addEventListener('change', ev => {

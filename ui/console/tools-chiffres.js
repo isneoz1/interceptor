@@ -25,7 +25,7 @@ export function panneauCles(entree, etat, redessiner, poser) {
   box.appendChild(sec('XOR', 'cle repetee, operation reciproque'));
   const cle = el('input', {
     type: 'text', class: 'field', spellcheck: 'false',
-    placeholder: t('cle en texte, ou en hexadecimal'), value: etat.cleXor || ''
+    placeholder: t('cle en texte, ou en hexadecimal'), value: etat.cleXor || '', dataset: { champ: 'xor-cle' }
   });
   cle.addEventListener('change', () => { etat.cleXor = cle.value; redessiner(); });
   const barre = el('div', { class: 'actions' }, [cle]);
@@ -100,7 +100,7 @@ export function panneauCles(entree, etat, redessiner, poser) {
   box.appendChild(sec('Vigenere', 'cle en lettres'));
   const cleV = el('input', {
     type: 'text', class: 'field', spellcheck: 'false',
-    placeholder: t('cle en lettres'), value: etat.cleVigenere || ''
+    placeholder: t('cle en lettres'), value: etat.cleVigenere || '', dataset: { champ: 'vigenere-cle' }
   });
   cleV.addEventListener('change', () => { etat.cleVigenere = cleV.value; redessiner(); });
   const barreV = el('div', { class: 'actions' }, [cleV]);

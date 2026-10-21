@@ -11,10 +11,21 @@ import { $, el, clear, sec, button, kv, add, vide } from '../lib/dom.js';
 import { clock, middle } from '../lib/format.js';
 import { t, tp, te } from '../lib/i18n.js';
 import { state, cmd, toast, saveConfig } from '../app.js';
+import { redessinerEnPlace } from '../lib/redessin.js';
 
 let file = { pending: [], count: 0, stats: {} };
 let brouillons = new Map();     // id -> { url, entetes } en cours d edition
 let enCours = false;
+/* Ce que montre la vue : la file et les reglages d interception. Relue
+   chaque seconde, la file ne redessine la vue que si l un ou l autre a
+   change. Redessiner chaque seconde retirait le focus du champ ou l on
+   tapait, et remplacait le filtre en cours de frappe par l ancien. */
+let dessinee = '';
+const REGLAGES_VUS = ['interceptEnabled', 'interceptRequests', 'interceptResponses', 'interceptFilter', 'interceptTimeoutMs'];
+function empreinte() {
+  const config = state.config || {};
+  return JSON.stringify([file, REGLAGES_VUS.map(cle => config[cle])]);
+}
 
 /** Relit la file. Appelee sur diffusion `intercept` et a chaque seconde. */
 export async function charger({ silencieux = true } = {}) {
@@ -31,13 +42,19 @@ export async function charger({ silencieux = true } = {}) {
   enCours = false;
   if (res.error) { if (!silencieux) toast(res.error, false); return; }
   file = res;
-  if (state.view === 'intercept') render();
+  if (state.view === 'intercept' && empreinte() !== dessinee) render();
 }
 
 /** Nombre de requetes suspendues : sert a la pastille de la barre laterale. */
 export function attente() { return file.count || 0; }
 
-export function render() {
+/* redessinerEnPlace garde le champ ou l on tape, ce qui y est tape, la
+   position du lecteur, et le clic en cours. Chaque champ porte un nom
+   stable (dataset.champ), lie a sa requete. */
+export function render() { redessinerEnPlace($('#view-intercept'), dessiner); }
+
+function dessiner() {
+  dessinee = empreinte();
   const pane = clear($('#view-intercept'));
   const box = el('div', { class: 'pane' });
   pane.appendChild(box);
@@ -127,7 +144,7 @@ function reglagesRapides(config) {
   const filtre = el('input', {
     type: 'text', class: 'field', spellcheck: 'false',
     placeholder: t('Filtre (expression reguliere) — vide = toutes les requetes'),
-    value: config.interceptFilter || ''
+    value: config.interceptFilter || '', dataset: { champ: 'intercept-filtre' }
   });
   filtre.addEventListener('change', async () => {
     const valeur = filtre.value.trim();
@@ -142,7 +159,8 @@ function reglagesRapides(config) {
 
   const echeance = el('input', {
     type: 'number', class: 'field', min: '1000', max: '300000',
-    value: String(config.interceptTimeoutMs || 30000), style: 'max-width:140px'
+    value: String(config.interceptTimeoutMs || 30000), style: 'max-width:140px',
+    dataset: { champ: 'intercept-echeance' }
   });
   echeance.addEventListener('change', async () => {
     const ms = Math.max(1000, Math.min(300000, Number(echeance.value) || 30000));
@@ -171,12 +189,13 @@ function carte(p) {
   }));
 
   if (requete) {
-    const champUrl = el('input', { type: 'text', class: 'field', spellcheck: 'false', value: brouillon.url });
+    const champUrl = el('input', { type: 'text', class: 'field', spellcheck: 'false', value: brouillon.url,
+      dataset: { champ: 'intercept-url-' + p.id } });
     champUrl.addEventListener('input', () => { brouillon.url = champUrl.value; });
     box.appendChild(el('label', {}, [t('URL'), champUrl]));
   }
 
-  const zone = el('textarea', { class: 'field', spellcheck: 'false', rows: '6' });
+  const zone = el('textarea', { class: 'field', spellcheck: 'false', rows: '6', dataset: { champ: 'intercept-entetes-' + p.id } });
   zone.value = brouillon.entetes;
   zone.addEventListener('input', () => { brouillon.entetes = zone.value; });
   box.appendChild(el('label', {}, [

@@ -14,17 +14,17 @@ import {
 
 const FORMES = [['hex', 'Hexadecimal'], ['base64', 'Base64'], ['texte', 'Texte']];
 
-const champ = (placeholder, valeur, surChangement, style) => {
+const champ = (nom, placeholder, valeur, surChangement, style) => {
   const n = el('input', {
     type: 'text', class: 'field', spellcheck: 'false',
-    placeholder: t(placeholder), value: valeur || '', style: style || null
+    placeholder: t(placeholder), value: valeur || '', style: style || null, dataset: { champ: nom }
   });
   n.addEventListener('change', () => surChangement(n.value));
   return n;
 };
 
-const choix = (options, valeur, surChangement, largeur) => {
-  const n = el('select', largeur ? { style: 'max-width:' + largeur } : null);
+const choix = (nom, options, valeur, surChangement, largeur) => {
+  const n = el('select', { style: largeur ? 'max-width:' + largeur : null, dataset: { champ: nom } });
   for (const [cle, libelle] of options) {
     n.appendChild(el('option', { value: cle, text: t(libelle), selected: valeur === cle }));
   }
@@ -40,9 +40,9 @@ export function panneauChiffrement(entree, etat, redessiner, poser) {
   const mode = etat.modeAes || 'AES-GCM';
 
   const barre = el('div', { class: 'actions' }, [
-    choix(MODES_AES.map(m => [m, m]), mode, v => { etat.modeAes = v; redessiner(); }, '140px'),
-    champ('cle', etat.cleAes, v => { etat.cleAes = v; }),
-    choix(FORMES, etat.formeCleAes || 'hex', v => { etat.formeCleAes = v; redessiner(); }, '130px')
+    choix('aes-mode', MODES_AES.map(m => [m, m]), mode, v => { etat.modeAes = v; redessiner(); }, '140px'),
+    champ('aes-cle', 'cle', etat.cleAes, v => { etat.cleAes = v; }),
+    choix('aes-forme-cle', FORMES, etat.formeCleAes || 'hex', v => { etat.formeCleAes = v; redessiner(); }, '130px')
   ]);
   barre.appendChild(button('Tirer une cle de 32 octets', () => {
     etat.cleAes = cleAesAleatoire(32);
@@ -52,9 +52,9 @@ export function panneauChiffrement(entree, etat, redessiner, poser) {
   box.appendChild(barre);
 
   const barre2 = el('div', { class: 'actions' }, [
-    champ('vecteur d initialisation en hexadecimal, vide pour un tirage',
+    champ('aes-iv', 'vecteur d initialisation en hexadecimal, vide pour un tirage',
       etat.ivAes, v => { etat.ivAes = v; }),
-    champ('donnees authentifiees (AES-GCM seulement)', etat.aadAes, v => { etat.aadAes = v; }, 'max-width:260px')
+    champ('aes-aad', 'donnees authentifiees (AES-GCM seulement)', etat.aadAes, v => { etat.aadAes = v; }, 'max-width:260px')
   ]);
   box.appendChild(barre2);
   add(box, kv('Vecteur attendu', tp('{n} octets, soit {chiffres} chiffres hexadecimaux', { n: tailleIv(mode), chiffres: tailleIv(mode) * 2 })));
@@ -102,12 +102,12 @@ export function panneauChiffrement(entree, etat, redessiner, poser) {
   /* ---------------------------- Derivation de cle ------------------------- */
   box.appendChild(sec('Derivation de cle', 'PBKDF2 et HKDF, tels que les emploient les applications'));
   const barre3 = el('div', { class: 'actions' }, [
-    champ('mot de passe ou cle de depart', etat.mdpKdf, v => { etat.mdpKdf = v; }),
-    champ('sel', etat.selKdf, v => { etat.selKdf = v; }, 'max-width:160px'),
-    champ('iterations', etat.iterations || '100000', v => { etat.iterations = v; }, 'max-width:120px'),
-    choix(HACHAGES_DISPONIBLES.map(h => [h, h]),
+    champ('kdf-secret', 'mot de passe ou cle de depart', etat.mdpKdf, v => { etat.mdpKdf = v; }),
+    champ('kdf-sel', 'sel', etat.selKdf, v => { etat.selKdf = v; }, 'max-width:160px'),
+    champ('kdf-iterations', 'iterations', etat.iterations || '100000', v => { etat.iterations = v; }, 'max-width:120px'),
+    choix('kdf-hachage', HACHAGES_DISPONIBLES.map(h => [h, h]),
       etat.hashKdf || 'SHA-256', v => { etat.hashKdf = v; }, '130px'),
-    choix([['128', '128 bits'], ['256', '256 bits'], ['384', '384 bits'], ['512', '512 bits']],
+    choix('kdf-bits', [['128', '128 bits'], ['256', '256 bits'], ['384', '384 bits'], ['512', '512 bits']],
       etat.bitsKdf || '256', v => { etat.bitsKdf = v; }, '130px')
   ]);
   barre3.appendChild(button('PBKDF2', async () => {
@@ -154,17 +154,18 @@ export function panneauChiffrement(entree, etat, redessiner, poser) {
   /* ------------------------------- Signature ------------------------------ */
   box.appendChild(sec('Verifier une signature detachee', 'webhook, manifeste, paquet'));
   const barre4 = el('div', { class: 'actions' }, [
-    champ('signature en base64', etat.signature, v => { etat.signature = v; }),
-    choix([['RSASSA-PKCS1-v1_5', 'RSA'], ['RSA-PSS', 'RSA-PSS'], ['ECDSA', 'ECDSA'], ['HMAC', 'HMAC']],
+    champ('signature-valeur', 'signature en base64', etat.signature, v => { etat.signature = v; }),
+    choix('signature-algo', [['RSASSA-PKCS1-v1_5', 'RSA'], ['RSA-PSS', 'RSA-PSS'], ['ECDSA', 'ECDSA'], ['HMAC', 'HMAC']],
       etat.algoSignature || 'RSASSA-PKCS1-v1_5', v => { etat.algoSignature = v; redessiner(); }, '150px'),
-    choix(HACHAGES_DISPONIBLES.map(h => [h, h]),
+    choix('signature-hachage', HACHAGES_DISPONIBLES.map(h => [h, h]),
       etat.hashSignature || 'SHA-256', v => { etat.hashSignature = v; }, '130px')
   ]);
   box.appendChild(barre4);
 
   const cleSignature = el('textarea', {
     class: 'field', spellcheck: 'false', rows: '3',
-    placeholder: t('cle publique (PEM, JWK ou certificat), ou secret partage pour HMAC')
+    placeholder: t('cle publique (PEM, JWK ou certificat), ou secret partage pour HMAC'),
+    dataset: { champ: 'signature-cle' }
   });
   cleSignature.value = etat.cleSignature || '';
   cleSignature.addEventListener('change', () => { etat.cleSignature = cleSignature.value; });

@@ -358,7 +358,7 @@ function ecrireCharsets(box, octets, entree, etat, redessiner, poser) {
   }
 
   const jeu = etat.jeuChoisi || 'utf-8';
-  const select = el('select');
+  const select = el('select', { dataset: { champ: 'binaire-jeu' } });
   for (const disponible of jeuxDisponibles()) {
     select.appendChild(el('option', { value: disponible, text: disponible, selected: disponible === jeu }));
   }

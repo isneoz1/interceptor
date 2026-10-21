@@ -307,6 +307,7 @@ for (const [nom, fichier, appeler] of [
   ['entetes', 'tools-entetes.js', (m, e) => m.panneauEntetes(e)],
   ['chercher', 'tools-chercher.js', (m, e, s) => m.panneauChercher(e, s, () => {}, () => {})],
   ['comparer', 'tools-diff.js', (m, e, s) => m.panneauComparer(e, s, () => {}, () => {})],
+  ['patch', 'tools-patch.js', (m, e, s) => m.panneauPatch(e, s, () => {}, () => {})],
   ['url', 'tools-reseau.js', (m, e) => m.panneauUrl(e)],
   ['adresse', 'tools-reseau.js', (m, e, s) => m.panneauAdresse(e, s, () => {}, () => {})],
   ['reference', 'tools-reference.js', (m, e, s) => m.panneauReference(e, s, () => {})],
@@ -316,7 +317,7 @@ for (const [nom, fichier, appeler] of [
   const mod = await import('../ui/console/' + fichier);
   PANNEAUX.push([nom, (entree, etat) => appeler(mod, entree, etat)]);
 }
-egal('les vingt-deux panneaux de la boite a outils sont couverts', PANNEAUX.length, 22);
+egal('les vingt-trois panneaux de la boite a outils sont couverts', PANNEAUX.length, 23);
 
 const etatOutils = () => ({
   empreintes: {}, cleHmac: '', algoHmac: 'SHA-256', hmac: null, cleJwt: '', jwtVerdict: null,
@@ -328,6 +329,9 @@ const etatOutils = () => ({
   signature: '', cleSignature: '', algoSignature: 'RSASSA-PKCS1-v1_5',
   hashSignature: 'SHA-256', verdictSignature: null, familleBinaire: 'auto', arbreDer: false,
   jeuChoisi: 'utf-8', autreTexte: '', motifChoisi: '', numeroLuhn: '', cheminJson: '',
+  /* Le panneau JSON Patch calcule a chaque dessin : chaque entree hostile y
+     passe par l application d un vrai patch. */
+  patchGeste: 'appliquer', patchAutre: '[{"op":"add","path":"/a","value":12345678901234567890}]',
   selecteur: '', typeSelecteur: 'css', sousPrefixe: 26, decoupe: false, listePrefixes: '',
   plageDebut: '', plageFin: '', longueurMdp: 24,
   jeuxMdp: ['minuscules', 'majuscules', 'chiffres', 'symboles'], dernierMdp: null,
@@ -412,7 +416,9 @@ const IDENTIQUES = new Set([
   /* L aide n etait jamais comparee : ses deux versions n avaient pas la meme
      forme. Alignees, elles ne different que par ces noms de formats et ces
      valeurs litterales du critere « state: », qui s ecrivent tels quels. */
-  'HAR 1.2', 'OpenAPI 3.1', 'pending, complete, error, aborted'
+  'HAR 1.2', 'OpenAPI 3.1', 'pending, complete, error, aborted',
+  /* Le nom de la specification (RFC 6902), un outil de la boite. */
+  'JSON Patch'
 ]);
 
 const francaisRestant = [];

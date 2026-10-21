@@ -18,6 +18,11 @@ installerTout();
 
 const racine = path.resolve(path.dirname(url.fileURLToPath(import.meta.url)), '..');
 const relatif = p => path.relative(racine, p).split(path.sep).join('/');
+/* Ce qui n appartient pas au projet : le depot git, les paquets construits,
+   les dependances, et les dossiers de travail d outils comme .claude (un
+   worktree y recopie tout le projet, et faisait compter 481 modules pour
+   243). */
+const HORS_PROJET = new Set(['.git', 'dist', 'node_modules', '.claude']);
 
 function fichiersJs(dossier) {
   const out = [];
@@ -25,8 +30,7 @@ function fichiersJs(dossier) {
     for (const e of fs.readdirSync(d, { withFileTypes: true })) {
       const p = path.join(d, e.name);
       const rel = relatif(p);
-      if (rel.startsWith('dist') || rel.startsWith('.git') || rel.startsWith('node_modules')
-        || rel.startsWith('tests')) continue;
+      if (HORS_PROJET.has(rel.split('/')[0]) || rel.startsWith('tests')) continue;
       if (e.isDirectory()) parcourir(p);
       else if (e.name.endsWith('.js')) out.push(rel);
     }
@@ -723,7 +727,7 @@ function compterJs(depuis) {
   let n = 0;
   const parcourir = dir => {
     for (const nom of fs.readdirSync(dir)) {
-      if (nom === '.git' || nom === 'dist' || nom === 'node_modules') continue;
+      if (HORS_PROJET.has(nom)) continue;
       const p = path.join(dir, nom);
       if (fs.statSync(p).isDirectory()) parcourir(p);
       else if (nom.endsWith('.js')) n++;
@@ -737,6 +741,13 @@ const { GENERATOR_LABELS } = await import('../background/export/codegen.js');
 const { newRecord } = await import('../background/core/store.js');
 const sourceConsole = fs.readFileSync(path.join(racine, 'ui/console.js'), 'utf8');
 const blocVues = sourceConsole.slice(sourceConsole.indexOf('const VIEWS = {'));
+const { FAMILLES } = await import('../ui/console/tools.js');
+/* Le README annoncait « nine test suites » quand il y en avait douze, et 161
+   fichiers requis pour 219 : ils se recomptent dans build.ps1. */
+const sourceBuild = fs.readFileSync(path.join(racine, 'build.ps1'), 'utf8');
+const debutRequis = sourceBuild.indexOf('$required = @(');
+const fichiersRequis = (sourceBuild.slice(debutRequis, sourceBuild.indexOf('\n)', debutRequis)).match(/^  '/gm) || []).length;
+const suitesDuBuild = (sourceBuild.match(/fichier = 'tests\/[a-z-]+\.test\.mjs'/g) || []).length;
 const nombreDeVues = (blocVues.match(/^  [a-z]+:\s*\{/gm) || []).length;
 
 const ANNONCES = [
@@ -746,6 +757,11 @@ const ANNONCES = [
   ['generateurs de code', /([0-9]+) code generators/g, GENERATOR_LABELS.length],
   ['champs d un enregistrement', /([0-9]+) fields/g, Object.keys(newRecord()).length],
   ['vues', /([0-9]+) views/g, nombreDeVues],
+  /* « 23 tools » est reste ecrit apres l arrivee du vingt-quatrieme : rien
+     ne le recomptait. */
+  ['outils de la boite', /([0-9]+) tools/g, FAMILLES.flatMap(([, outils]) => outils).length],
+  ['fichiers requis', /([0-9]+) required files/g, fichiersRequis],
+  ['suites de tests', /([0-9]+) test suites/g, suitesDuBuild],
   /* Les tables de reference : le README annoncait encore 62 statuts et
      9 methodes quand elles en comptaient 63 et 40. */
   ['codes de statut', /([0-9]+) status(?:es| codes)/g, REF_STATUTS.length],
@@ -815,6 +831,41 @@ for (const [quoi, motif, reel] of ANNONCES) {
     annonces !== null && annonces.every(n => n === reel),
     annonces === null ? 'aucun chiffre trouve dans le README'
                       : 'README ' + annonces.join(' et ') + ', reel ' + reel);
+}
+
+/* Chaque suite du dossier tests tourne partout : dans npm test (donc en
+   integration continue) comme dans build.ps1. Une suite ajoutee a l un et
+   oubliee dans l autre ne verifierait rien la ou elle manque. */
+{
+  const paquet = JSON.parse(fs.readFileSync(path.join(racine, 'package.json'), 'utf8'));
+  const suites = fs.readdirSync(path.join(racine, 'tests')).filter(n => n.endsWith('.test.mjs'));
+  const absentes = suites.filter(n => !paquet.scripts.test.includes('node tests/' + n)
+    || !sourceBuild.includes("fichier = 'tests/" + n + "'"));
+  verifier('npm test et build.ps1 lancent chaque suite du dossier tests', !absentes.length && suitesDuBuild === suites.length,
+    absentes.join(', ') || suitesDuBuild + ' dans build.ps1, ' + suites.length + ' sur le disque');
+  const contribuer = fs.readFileSync(path.join(racine, 'CONTRIBUTING.md'), 'utf8');
+  const annoncees = [...contribuer.matchAll(/([0-9]+) suites/g)].map(m => Number(m[1]));
+  verifier('CONTRIBUTING annonce le bon nombre de suites', annoncees.length >= 1 && annoncees.every(n => n === suites.length),
+    'CONTRIBUTING ' + annoncees.join(' et ') + ', reel ' + suites.length);
+}
+
+/* « ~48,700 lines » : un ordre de grandeur, que rien ne recomptait — il
+   avait deja derive de plus de cinq cents lignes. Juste a un pour cent pres. */
+{
+  let lignes = 0;
+  const parcourir = dir => {
+    for (const nom of fs.readdirSync(dir)) {
+      if (HORS_PROJET.has(nom)) continue;
+      const p = path.join(dir, nom);
+      if (fs.statSync(p).isDirectory()) parcourir(p);
+      else if (nom.endsWith('.js')) lignes += fs.readFileSync(p, 'utf8').split('\n').length - 1;
+    }
+  };
+  parcourir(racine);
+  const annonce = /~([0-9,]+) lines/.exec(readme);
+  const chiffre = annonce ? Number(annonce[1].replace(/,/g, '')) : NaN;
+  verifier('le README annonce le nombre de lignes a un pour cent pres',
+    Math.abs(chiffre - lignes) / lignes < 0.01, 'README ' + (annonce ? annonce[1] : 'aucun') + ', reel ' + lignes);
 }
 
 /* Le nombre total d assertions apparait cinq fois dans le README : le badge,

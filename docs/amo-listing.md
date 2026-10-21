@@ -16,7 +16,7 @@ people running Developer Edition, Nightly or ESR *and* willing to flip
       publish. Changing it later means publishing a different add-on and orphaning every
       existing install, so make sure it is what you want *before* the first upload.
 - [ ] **Bump the version.** AMO refuses a version number it has already seen. The repository
-      is at `5.5.0`, which has never been submitted, so it can go up as-is. Only bump again if
+      is at `5.6.0`, which has never been submitted, so it can go up as-is. Only bump again if
       a submission gets rejected and you need to resubmit.
 - [ ] **Build a fresh package**: `npm run build` produces `dist/swift-<version>.xpi`.
 - [x] **Data collection is declared**: `data_collection_permissions` is `{"required": ["none"]}`,
@@ -114,7 +114,7 @@ WHAT YOU CAN DO WITH IT
 • Export to HAR, JSON, CSV, Postman or an OpenAPI 3.1 description of the API calls, or
   generate ready-to-run code in 39 formats
   (curl, fetch, Python, PowerShell, Node, HTTPie and others)
-• 138 local transformations across 23 tools: encodings, digests, JWT, OTP, timestamps,
+• 138 local transformations across 24 tools: encodings, digests, JWT, OTP, timestamps,
   identifiers, structured headers, HPACK, SAML, DNS messages, WebAuthn, and more
 
 A SECURITY ANALYSER THAT DOES NOT GUESS

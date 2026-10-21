@@ -101,7 +101,8 @@ function panneauSignatureJwt(entree, jwt, etat, redessiner) {
 
   const champ = el('textarea', {
     class: 'field', spellcheck: 'false', rows: '3',
-    placeholder: t('secret partage, cle publique PEM (-----BEGIN PUBLIC KEY-----) ou JWK')
+    placeholder: t('secret partage, cle publique PEM (-----BEGIN PUBLIC KEY-----) ou JWK'),
+    dataset: { champ: 'jwt-cle' }
   });
   champ.value = etat.cleJwt || '';
   champ.addEventListener('change', () => { etat.cleJwt = champ.value; etat.jwtVerdict = null; redessiner(); });
@@ -210,7 +211,7 @@ export function panneauEmpreintes(entree, redessiner, etat) {
 
   /* --- Variantes CRC nommees : on choisit, on lit la valeur et son usage --- */
   box.appendChild(sec('Variantes CRC', tp('{n} normalisees', { n: CRC_VARIANTES.length })));
-  const crcChoix = el('select');
+  const crcChoix = el('select', { dataset: { champ: 'crc-variante' } });
   for (const v of CRC_VARIANTES) {
     crcChoix.appendChild(el('option', { value: v.nom, text: v.nom, selected: v.nom === (etat.crcVariante || 'CRC-32/ISO-HDLC') }));
   }
@@ -230,10 +231,10 @@ export function panneauEmpreintes(entree, redessiner, etat) {
   box.appendChild(sec('HMAC', 'signature a cle partagee'));
   const cle = el('input', {
     type: 'text', class: 'field', spellcheck: 'false',
-    placeholder: t('cle de signature'), value: etat.cleHmac || ''
+    placeholder: t('cle de signature'), value: etat.cleHmac || '', dataset: { champ: 'hmac-cle' }
   });
   cle.addEventListener('change', () => { etat.cleHmac = cle.value; });
-  const choix = el('select');
+  const choix = el('select', { dataset: { champ: 'hmac-algo' } });
   for (const algo of ['SHA-256', 'SHA-384', 'SHA-512', 'SHA-1']) {
     choix.appendChild(el('option', { value: algo, text: algo, selected: etat.algoHmac === algo }));
   }
@@ -406,15 +407,15 @@ export function panneauRegex(entree, etat, redessiner) {
 
   const champ = el('input', {
     type: 'text', class: 'field', spellcheck: 'false',
-    placeholder: '([a-z]+)=([0-9]+)', value: etat.motif
+    placeholder: '([a-z]+)=([0-9]+)', value: etat.motif, dataset: { champ: 'regex-motif' }
   });
   const options = el('input', {
     type: 'text', class: 'field', spellcheck: 'false',
-    placeholder: 'gi', value: etat.options, style: 'max-width:90px'
+    placeholder: 'gi', value: etat.options, style: 'max-width:90px', dataset: { champ: 'regex-options' }
   });
   const remplacement = el('input', {
     type: 'text', class: 'field', spellcheck: 'false',
-    placeholder: t('remplacement, $1 pour un groupe'), value: etat.remplacement || ''
+    placeholder: t('remplacement, $1 pour un groupe'), value: etat.remplacement || '', dataset: { champ: 'regex-remplacement' }
   });
   champ.addEventListener('change', () => { etat.motif = champ.value; redessiner(); });
   options.addEventListener('change', () => { etat.options = options.value; redessiner(); });

@@ -120,7 +120,7 @@ export function panneauNombres(entree, etat, redessiner) {
   const box = frag();
   box.appendChild(sec('Nombres', 'toutes les bases, sans perte de chiffre'));
 
-  const choix = el('select');
+  const choix = el('select', { dataset: { champ: 'temps-base' } });
   for (const [libelle, base] of BASES) {
     choix.appendChild(el('option', { value: String(base), text: t(libelle), selected: etat.base === base }));
   }

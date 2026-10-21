@@ -4,6 +4,92 @@ All notable changes to this project are documented here.
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning follows
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.6.0] — 2026-10-20
+
+SWIFT now reads, applies and produces JSON patches. And no click is lost any more: typing in
+a field and then clicking, or clicking while a view redraws itself, used to need a second
+click — and what was typed could vanish under a redraw.
+
+### Added
+
+- **JSON Patch, JSON Merge Patch and JSON Pointer** (RFC 6902, RFC 7396, RFC 6901), read
+  without converting a number, so an integer beyond 2^53 keeps its digits.
+  - **Request tab**: a body sent as `application/json-patch+json` or
+    `application/merge-patch+json` is read operation by operation, in plain words. What makes
+    the patch invalid is named — `op` or `path` written twice (RFC 6902 §4), an unknown
+    operation, a missing member, a malformed JSON Pointer, a move into one of its own children
+    — and so is a `value` or `from` written twice, which RFC 6902 does not forbid but each
+    JSON reader may read its own way (RFC 8259 §4): ambiguous, not invalid. A success status
+    (200, 201, 203, 204, 205) answered to an invalid patch is pointed out, since RFC 6902 §5
+    says it cannot succeed; a 202, which only says the request was accepted, is not.
+  - **Toolbox**: a new tool, the twenty-fourth — **JSON Patch**. It applies a JSON Patch to
+    the working text, in order and entirely or not at all, naming the operation that failed;
+    applies a merge patch; or produces either one from a second document. Removing the whole
+    document is refused: RFC 6902 never defines it (erratum 4787, held for a future revision).
+    A merge patch that would have to set a `null` says it cannot — in RFC 7396, `null`
+    means "remove".
+  - **Comparison view**: two JSON bodies are also compared by **structure** — the JSON Patch
+    that leads from one to the other, whatever the formatting and the order of members,
+    listed in plain words and ready to copy; computed on request beyond a million characters.
+- `tools/firefox.mjs`: headless Firefox driven over WebDriver BiDi, with no dependency. The
+  interaction audit now runs its gestures in Firefox as well as in Chrome.
+
+### Fixed
+
+- **A click could be lost.** A field is saved when it loses the focus — that is, at the
+  press on the next button — and its view redrew itself at once, between the press and the
+  release: the button under the mouse was replaced, and the click went nowhere. In the
+  toolbox, typing then clicking the next field or button needed a second click. A table row
+  clicked while live traffic redrew the table did not open; a button of the Statistics view,
+  redrawn every second, could miss a click; so could the sidebar, rebuilt after each saved
+  setting. A redraw asked for during a press now waits until the click has landed, and one
+  made by the click itself replaces it.
+- **What was typed could be lost.** The Interception view redrew itself every second, even
+  when nothing had changed: the field being typed in lost the focus, and its filter went back
+  to the saved value. The Settings and Rules views redraw after every saved setting, taking
+  the focus away from the field just clicked. Every field of a view that redraws itself now
+  carries a stable name: it keeps its focus, its cursor and what was typed but not yet saved,
+  which is saved when the field is left. Firefox, unlike Chrome, does not save a field removed
+  from the page, so this was lost in Firefox only. The Interception view now redraws only when
+  its queue or its settings change.
+- **The storage purge could almost never be confirmed**: the Statistics view redraws every
+  second and rebuilt the button disarmed, so the confirming click only armed it again. The
+  two-step buttons of the Rules (*Delete everything*) and Settings (*Restore default settings*)
+  views now keep their state across redraws too.
+- In the English interface, those two buttons showed their confirmation in French
+  (*Confirmer ?*) and came back in French, and the rules JSON editor said
+  *N regle(s) enregistree(s).*
+- Settings: the result of importing a settings file (*N setting(s) applied*) was erased by
+  the redraw that followed it.
+- The README stated 161 required files and nine test suites where 5.5.0 had 214 and twelve,
+  and ~48,700 lines where it had 49,257; once JSON Patch arrived, it would have said 23
+  tools. CONTRIBUTING listed four browser audits out of six. These figures are now counted
+  by the tests.
+
+### Tests
+
+- `tests/patch.test.mjs` (new suite, 76 checks): all 112 cases of the community
+  `json-patch-tests` suite (Apache-2.0, RFC 6902 Appendix A included), its 4 disabled cases
+  too — read losslessly, an `op` written twice is seen; the 15 cases of RFC 7396 Appendix A
+  and its §3 example, written byte for byte; the RFC 6901 examples of §5 and §6, its syntax,
+  the `~01` decoding order and the key written twice that makes a reference undefined; 3,000
+  produced patches applied back to the second document; 3,000 generated patches that give the
+  same result, or fail at the same operation, applied at once or operation by operation;
+  large inputs under 1.5 s; the equality of RFC 6902 §4.6; 3,000 hostile inputs; the Request tab, the toolbox panel and the Comparison view in both
+  languages.
+- `tests/saisie.test.mjs` (new suite, 400 checks): the deferred redraw, with real events on
+  an `EventTarget`, and a redraw asked for during a redraw of the same view run after it;
+  every field of every view that redraws itself named, uniquely and in no other view, under
+  seven inputs per toolbox panel; the Interception view redrawn only on change.
+- `tests/ui-load.test.mjs`: the README's numbers of tools, required files, test suites and
+  lines of code; every suite of `tests/` run by both `npm test` and the build; the suite
+  count in CONTRIBUTING.
+- `tools/interaction.mjs`: clicks with a real mouse — press, then release — after typing and
+  during redraws, in Chrome and in Firefox, where gestures that headless Firefox cannot
+  measure (it fires no `blur` or `change` without an active window) are reported as such.
+
+3254 assertions across fourteen suites, plus six browser audits.
+
 ## [5.5.0] — 2026-10-13
 
 SWIFT now shows numbers as they were sent, compares texts of any size exactly, and no longer
@@ -1581,6 +1667,14 @@ First public release.
 - Documentation screenshots are generated by `tools/captures.mjs`, which renders the real
   console against the real kernel rather than producing mockups.
 
+[5.6.0]: https://github.com/isneoz1/interceptor/releases/tag/v5.6.0
+[5.5.0]: https://github.com/isneoz1/interceptor/releases/tag/v5.5.0
+[5.4.0]: https://github.com/isneoz1/interceptor/releases/tag/v5.4.0
+[5.3.0]: https://github.com/isneoz1/interceptor/releases/tag/v5.3.0
+[5.2.0]: https://github.com/isneoz1/interceptor/releases/tag/v5.2.0
+[5.1.0]: https://github.com/isneoz1/interceptor/releases/tag/v5.1.0
+[5.0.0]: https://github.com/isneoz1/interceptor/releases/tag/v5.0.0
+[4.6.0]: https://github.com/isneoz1/interceptor/releases/tag/v4.6.0
 [4.5.0]: https://github.com/isneoz1/interceptor/releases/tag/v4.5.0
 [4.4.0]: https://github.com/isneoz1/interceptor/releases/tag/v4.4.0
 [4.3.0]: https://github.com/isneoz1/interceptor/releases/tag/v4.3.0
