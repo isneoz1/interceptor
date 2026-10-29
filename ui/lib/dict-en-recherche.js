@@ -1,4 +1,4 @@
-/* Dictionnaire anglais — criteres de recherche — SWIFT (by NeoZ)
+/* Dictionnaire anglais — criteres de recherche — SWIFT (by D4RK)
  *
  * La table FIELDS de ui/lib/filters.js decrit chaque critere de recherche.
  * La vue « Aide » en fait un tableau « Critere / Signification », et ces

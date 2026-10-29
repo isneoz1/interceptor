@@ -1,4 +1,4 @@
-/* SWIFT (by NeoZ) — utilitaires partages (cree par NeoZ) */
+/* SWIFT (by D4RK) — utilitaires partages (cree par D4RK) */
 
 export const B = typeof browser !== 'undefined' ? browser : chrome;
 

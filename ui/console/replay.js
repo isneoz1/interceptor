@@ -1,4 +1,4 @@
-/* Onglet « Rejouer » — SWIFT (by NeoZ)
+/* Onglet « Rejouer » — SWIFT (by D4RK)
  *
  * Seule fonction de l extension qui emet volontairement une requete. Elle est
  * desactivee par defaut, s active ici en un clic, et n envoie jamais rien sans

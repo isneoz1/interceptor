@@ -1,4 +1,4 @@
-/* Audit du defilement — SWIFT (by NeoZ)
+/* Audit du defilement — SWIFT (by D4RK)
  *
  *   node tools/defilement.mjs              20 000 lignes
  *   node tools/defilement.mjs --lignes=5000

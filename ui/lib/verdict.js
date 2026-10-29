@@ -1,4 +1,4 @@
-/* Le verdict d une requete en une phrase — SWIFT (by NeoZ)
+/* Le verdict d une requete en une phrase — SWIFT (by D4RK)
  *
  * Le haut de l onglet Resume dit en une phrase ce qui s est passe, et quel
  * onglet en donne le detail. Rien n y est nouveau ni devine : chaque verdict

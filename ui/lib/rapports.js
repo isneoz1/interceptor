@@ -1,4 +1,4 @@
-/* Rapports du navigateur — SWIFT (by NeoZ)
+/* Rapports du navigateur — SWIFT (by D4RK)
  *
  * Un navigateur signale lui-meme ce qui ne va pas : une ressource bloquee par
  * la CSP, une erreur reseau, une API en voie de disparition. Il l envoie dans

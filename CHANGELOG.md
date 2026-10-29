@@ -4,6 +4,96 @@ All notable changes to this project are documented here.
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning follows
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.8.0] — 2026-10-29
+
+One public key, every form; SWIFT in the language of whoever uses it; and the author credit is
+now D4RK.
+
+### Added
+
+- **Public key** — a new toolbox tool, the twenty-fifth. Paste a public key in any form —
+  PEM (SubjectPublicKeyInfo or PKCS #1), a certificate, a JWK or a whole key set, an OpenSSH
+  line or a whole `authorized_keys` file (options and comments included), base64 DER — and
+  get all the others back: PEM, PKCS #1, JWK, OpenSSH line. With them, the **`pin-sha256`
+  pin** (RFC 7469 §2.4), the **OpenSSH fingerprints** in SHA256 and MD5, the **JWK thumbprint**
+  (RFC 7638), the **key identifier** a certificate carries (RFC 5280 §4.2.1.2, method 1) and the
+  certificate's SHA-256 fingerprint. Keys pasted together are compared: the same key in two
+  forms is recognised. RSA, ECDSA P-256 / P-384 / P-521, Ed25519 and Ed448 (which has no
+  OpenSSH form, and says so). A private key is refused.
+- **Security tab**: each certificate gets a button that shows every form of its key, and the
+  public key fingerprint Firefox reports is labelled as what it is, the `pin-sha256` pin.
+- **The language of whoever uses SWIFT.** A new install follows Firefox's language: French in
+  a French Firefox, English everywhere else — it used to start in French for everyone. A
+  language already chosen is kept. Settings → Interface → Language now offers « Firefox's »
+  first, then French and English.
+
+### Changed
+
+- The author credit is now **D4RK**: the console and popup headers, the toolbar button's
+  title, the help, the manifest and package author, the author of exported files and the
+  comment of exported HAR files, the README and every source file header. The add-on ID
+  stays `swift@neoz`: it is permanent, and a new ID would make Firefox treat SWIFT as a
+  different add-on.
+- **Everything SWIFT writes follows the interface language**: the right-click menu (renamed as
+  soon as the language changes), the critical alert notification, the rule « Block <host> »
+  made from the right-click menu, and every exported file — findings report, CSV, HAR and
+  sanitised HAR, Postman collection, generated code and Markdown sheets. Dates follow the
+  regional format of Firefox. The `_swift` field of a HAR keeps each record exactly as
+  stored, so a re-import restores it unchanged.
+- **A CSV that opens with a double click**, wherever you are: its separator is a semicolon
+  where the regional format writes decimals with a comma, a comma where it uses a point. A
+  cell that contains the separator is quoted.
+- **Keyboard shortcuts** are described in Firefox's language in « Manage Extension
+  Shortcuts » (`_locales`); they were in French for everyone.
+- **The demonstration is now a three-minute tour in eleven chapters** (`docs/demo.mp4`,
+  `docs/demo.gif`): the table and its search, every tab of the detail panel, the findings, the
+  palette, every view, ten toolbox tools fed with real values, rules and interception, compare
+  and export, the settings, both languages and both themes, the four windows, the tutorial and
+  the help — each shot captioned with what it shows. The scene it films now feeds the cookie,
+  navigation and context logs through the real capture layers, and gives its WebSocket and SSE
+  streams the exact shape the kernel records (a ping frame the page cannot see is gone).
+
+### Fixed
+
+- **A CSV cell could run as a formula.** A text starting with `=`, `+`, `-` or `@` — a
+  `Content-Type` is chosen by the server — was written as is, and a spreadsheet would run it
+  when the file was opened (OWASP, « CSV Injection »). It is now kept as text, behind an
+  apostrophe; numbers are untouched.
+- An exported HAR announced SWIFT **version 1.0.0**, written by hand, whatever version was
+  installed: the version is now read from the manifest.
+- **French left on English screens**, found by rendering every tool, view and tab in both
+  languages: the navigation log (« onglet 3 / cadre 0 », « ERREUR ») and the notes of the
+  navigation and context logs; the stream title; the timestamp readings and their local time
+  (now written in the interface language, not the system's); the generator's buttons and its
+  sixteen edge cases; the twenty search patterns and their notes; the hash identification
+  notes and a UUID's age (« il y a 839 jours »); JWT claim names; the character names in
+  Measurements; the Compare context; port descriptions in the URL tool; the titles of « Try
+  everything »; a session cookie and the proxy hops in the Headers tool. Each text was either
+  shown without being translated, or assembled before translation, which no dictionary entry
+  can match.
+
+### Tests
+
+- `tests/cles.test.mjs` (new suite, 221 checks): seven keys made by OpenSSL 3.5, each read in
+  every form it has and giving back all the others byte for byte — the PEM and `pin-sha256`
+  of OpenSSL, the JWK of Node, the OpenSSH line and fingerprints of OpenSSH 10.3, the
+  certificate fingerprint and key identifier of OpenSSL (`tests/vecteurs-cles.json`).
+- `tests/ui-load.test.mjs`: the number of toolbox tabs written in words in the help and the
+  tutorial, in both languages, must match the toolbox.
+- `tests/langue.test.mjs` (new suite, 122 checks): the language a new install picks from
+  Firefox's, every exported file without a word of French in English and unchanged in
+  French, the CSV separator for ten regions and no formula in a CSV cell, the right-click menu, the notification and the
+  shortcuts in both languages, and a HAR exported in English that keeps its truncated bodies
+  once re-imported. Checked as well in a real Firefox, add-on installed, in French and in
+  English. The twenty-four toolbox tools are rendered in both languages with thirty-one real
+  pastes, and a guard reads the whole source: no text is assembled before being translated.
+- `tests/rendu.test.mjs`: the three logs are compared in both languages, and a view or a
+  tab whose two renderings differ in shape now fails instead of being skipped in silence.
+  The toolbox panel list is shared with the language suite (`tests/panneaux-outils.mjs`).
+- `tests/core.test.mjs`: the HAR announces the version of the manifest.
+
+3714 assertions across seventeen suites, plus six browser audits.
+
 ## [5.7.0] — 2026-10-21
 
 SWIFT now verifies the JWTs a request carries on its own, with the key their issuer
@@ -1722,6 +1812,7 @@ First public release.
 - Documentation screenshots are generated by `tools/captures.mjs`, which renders the real
   console against the real kernel rather than producing mockups.
 
+[5.8.0]: https://github.com/isneoz1/interceptor/releases/tag/v5.8.0
 [5.7.0]: https://github.com/isneoz1/interceptor/releases/tag/v5.7.0
 [5.6.0]: https://github.com/isneoz1/interceptor/releases/tag/v5.6.0
 [5.5.0]: https://github.com/isneoz1/interceptor/releases/tag/v5.5.0

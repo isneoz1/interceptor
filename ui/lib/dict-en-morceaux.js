@@ -1,4 +1,4 @@
-/* Dictionnaire anglais — phrases longtemps ecrites par morceaux — SWIFT (by NeoZ)
+/* Dictionnaire anglais — phrases longtemps ecrites par morceaux — SWIFT (by D4RK)
  *
  * Complete dict-en.js (`...EN_MORCEAUX`). Ces textes s affichaient en francais
  * dans l interface anglaise : une phrase construite par concatenation

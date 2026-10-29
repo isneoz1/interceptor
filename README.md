@@ -7,7 +7,7 @@
 **A complete network supervision station for Firefox.**
 Every request the browser makes — captured without duplicates, explained in plain language, and modifiable on demand.
 
-Created by **NeoZ** · <sub>formerly INTERCEPTOR, renamed in 5.0</sub>
+Created by **D4RK** · <sub>formerly INTERCEPTOR, renamed in 5.0</sub>
 
 [![Latest release](https://img.shields.io/github/v/release/isneoz1/interceptor?style=flat&label=Release&color=5155E8)](https://github.com/isneoz1/interceptor/releases/latest)
 [![Tests](https://github.com/isneoz1/interceptor/actions/workflows/tests.yml/badge.svg)](https://github.com/isneoz1/interceptor/actions/workflows/tests.yml)
@@ -15,15 +15,15 @@ Created by **NeoZ** · <sub>formerly INTERCEPTOR, renamed in 5.0</sub>
 ![Manifest V2](https://img.shields.io/badge/Manifest-V2-444?style=flat)
 [![MIT licence](https://img.shields.io/badge/Licence-MIT-00DDFF?style=flat)](LICENSE)
 ![No dependencies](https://img.shields.io/badge/Dependencies-none-2ea043?style=flat)
-![3347 assertions](https://img.shields.io/badge/Assertions-3347-2ea043?style=flat)
+![3714 assertions](https://img.shields.io/badge/Assertions-3714-2ea043?style=flat)
 ![English and French](https://img.shields.io/badge/UI-EN%20%2F%20FR-444?style=flat)
 
 [**Try it in 60 seconds**](#try-it-in-60-seconds) · [**Download**](https://github.com/isneoz1/interceptor/releases/latest) · [**Why not the built-in panel?**](#firefox-already-has-a-network-panel-why-this) · [**Screenshots**](#2-screenshots) · [**How it works**](#4-how-it-works-the-capture-layers) · [**Changelog**](CHANGELOG.md)
 
-<img src="docs/demo.gif" alt="SWIFT in use: the request table, the command palette, the security findings, the detail panel and a status code explained from the palette" width="100%">
+<img src="docs/demo.gif" alt="A three-minute tour of SWIFT in eleven chapters: the request table and its search, every tab of the detail panel, the security findings, the command palette, every view, the toolbox, rules and interception, compare and export, settings, both languages and both themes, the tutorial and the help" width="100%">
 
-<sub>33 seconds, no narration needed. <a href="docs/demo.mp4">Full-resolution video</a> · every frame is
-the running tool, driven the way you would drive it.</sub>
+<sub>The whole tour in three minutes, eleven chapters, no narration needed. <a href="docs/demo.mp4">Full-resolution video</a> ·
+every frame is the running tool, driven the way you would drive it.</sub>
 
 </div>
 
@@ -36,6 +36,19 @@ the running tool, driven the way you would drive it.</sub>
 > that refuses to report anything it cannot prove.
 
 > [!NOTE]
+> **New in 5.8** — one public key, every form: paste a PEM, a certificate, a JWK or a key set,
+> an OpenSSH line or a whole `authorized_keys` file, and get the others back — PEM, PKCS #1,
+> JWK, OpenSSH — with the `pin-sha256` pin, the OpenSSH SHA256 and MD5 fingerprints, the JWK
+> thumbprint and the certificate key identifier. Keys pasted together are compared, so the
+> same key in two forms is recognised. Every form is checked against OpenSSL, OpenSSH and Node.
+>
+> SWIFT also starts **in your language**: a new install follows Firefox's — French in a French
+> Firefox, English everywhere else — and everything SWIFT writes follows it too: the right-click
+> menu, the shortcut descriptions, the alert notification, and every exported file. A CSV opens
+> with a double click wherever you are: a semicolon where the decimal mark is a comma, a comma
+> where it is a point. And no French is left on an English screen: every view, every tab of the
+> detail panel and every toolbox tool is rendered in both languages by the tests, and compared.
+>
 > **New in 5.7** — every JWT a request carries is read in the Headers tab and its signature
 > **verified on its own** with the key its issuer publishes, when the capture holds the
 > issuer's key set: the discovery document links the issuer to its keys, and the token's
@@ -85,7 +98,7 @@ the running tool, driven the way you would drive it.</sub>
 
 <img src="docs/images/vitrine-securite.png" alt="Every finished request is audited on its own, and nothing is reported that cannot be proven" width="100%">
 
-<img src="docs/images/vitrine-outils.png" alt="138 transformations across 24 tools, all computed locally" width="100%">
+<img src="docs/images/vitrine-outils.png" alt="138 transformations across 25 tools, all computed locally" width="100%">
 
 <div align="center">
 <sub><b>Every image on this page is a screenshot of the running tool</b>, not a mockup. They are
@@ -156,7 +169,7 @@ stopped being enough.
 8. [The detail panel: twelve tabs](#8-the-detail-panel-twelve-tabs)
 9. [Search: full syntax](#9-search-full-syntax)
 10. [The security analyser](#10-the-security-analyser)
-11. [The toolbox: 24 tools in 6 families](#11-the-toolbox-24-tools-in-6-families)
+11. [The toolbox: 25 tools in 6 families](#11-the-toolbox-25-tools-in-6-families)
 12. [Acting on traffic: rules and interception](#12-acting-on-traffic-rules-and-interception)
 13. [Replaying a request](#13-replaying-a-request)
 14. [Import and export](#14-import-and-export)
@@ -202,8 +215,8 @@ specific points:
 **What it is not**: not a proxy, not a vulnerability scanner, not an attack tool. Everything
 happens inside your Firefox, on your machine.
 
-**By the numbers**: 248 JavaScript modules, ~51,000 lines, zero external dependencies,
-3347 automated assertions, English and French interface.
+**By the numbers**: 254 JavaScript modules, ~51,700 lines, zero external dependencies,
+3714 automated assertions, English and French interface — Firefox's language from the first launch.
 
 ---
 
@@ -299,7 +312,7 @@ What exists on the visited sites, host by host, reconstructed from observed traf
 
 ### The toolbox
 
-138 transformations across 24 tools, grouped into six families by intent: decode, hash, measure, inspect — everything is
+138 transformations across 25 tools, grouped into six families by intent: decode, hash, measure, inspect — everything is
 computed locally, nothing leaves the machine.
 
 ![Toolbox](docs/images/console-outils.png)
@@ -508,7 +521,7 @@ advanced views and keeps only the essentials.
 
 | View | What it shows |
 |---|---|
-| **Toolbox** | See [section 11](#11-the-toolbox-24-tools-in-6-families). |
+| **Toolbox** | See [section 11](#11-the-toolbox-25-tools-in-6-families). |
 
 ### Acting on traffic
 
@@ -546,7 +559,7 @@ previous or next request **in displayed order**, filters included.
 | **Request** | The body sent: nature, source, declared type, encoding, compression. Automatic JSON formatting, form fields broken out, and **`multipart/form-data` bodies decoded part by part** (field name, filename, type, content). An **OAuth 2.0 / OpenID Connect** authorization or token request is read — flow, PKCE, `state`, `nonce`, redirect URI — and checked against RFC 6749, RFC 7636 and RFC 9700, without ever reproducing a secret. A **SAML** message is decoded in both bindings: issuer, subject, audience, validity at capture time, and **which element is signed** — the response, the assertion, or nothing. A **passkey registration or sign-in (WebAuthn)** is opened: the signed origin and challenge, the domain fingerprint (`rpIdHash`, recomputed to name the domain), the presence and verification flags, whether the key is synced, the signature counter, the authenticator model (AAGUID) and its public key. A sign-in signature is **verified automatically** with the public key of the registration when that registration was captured. A **DNS over HTTPS** query (`?dns=` or `application/dns-message`) is decoded. A **GraphQL** request is read in all four forms — URL parameters, JSON body, batch, file-upload multipart form: the operation that runs (chosen the way GraphQL's GetOperation chooses it), the variables, and an Apollo **persisted query whose SHA-256 is recomputed** against the text sent with it. A **browser report** (`application/reports+json`, `application/csp-report`) is opened report by report: CSP violation, network error with the meaning of its NEL type, deprecation, intervention, Permissions-Policy. **JSON-RPC 2.0** calls (method, id or notification, parameters, a batch call by call) and **SOAP 1.1 / 1.2** envelopes (operation and its namespace, `SOAPAction` or the `action` parameter, header blocks) are read too. A **JSON Patch** (`application/json-patch+json`, RFC 6902) or **JSON Merge Patch** (`application/merge-patch+json`, RFC 7396) is read operation by operation, in plain words and without losing a digit. What makes the patch invalid is named — `op` or `path` written twice, a malformed JSON Pointer, a move into one of its own children — and so is a member written twice that each JSON reader may read its own way; a `200` or `204` answered to an invalid patch is pointed out, since RFC 6902 says such a patch cannot succeed. |
 | **Response** | The body received, with the same treatment, plus image preview and hex rendering for binary. An OAuth token response is summarised. For a script or stylesheet, the **Subresource Integrity hashes** (SHA-256, -384, -512) and a ready `integrity` tag — computed at capture time on the exact bytes the page received, and refused only when the body was truncated. **WebAuthn options** sent by a server are read (challenge length, accepted algorithms, user verification, resident key, attestation). A **DNS over HTTPS** answer is decoded record by record — A, AAAA, CNAME, MX, TXT, SOA, SRV, CAA, HTTPS / SVCB, DS, DNSKEY, RRSIG — with the EDNS options. A **GraphQL** response is judged: complete result, partial result, execution error or request error (GraphQL §7.1), each error with its path and code, an HTTP 200 that hides errors, the status rules of `application/graphql-response+json`, and the schema an introspection query handed out. **JSON-RPC** results and errors with the meaning of each standard code, a request left without a response, a notification that got one; the **SOAP fault** (code, subcode, reason, detail) and the SOAP 1.1 rule that a fault is served with HTTP 500. An **RFC 9457 problem** (`application/problem+json`): type, title, detail, extension members, and a `status` member that contradicts the status served. **Body checks**: content that contradicts its declared type, and for text served without compression, the gzip size **measured** on the bytes received. A **JWK key set** (RFC 7517) is read key by key — type, curve or modulus size, algorithm, use, RFC 7638 thumbprint — and what is wrong with it is said: a **private key published** in a public set, an RSA key under the 2048 bits RS256 and PS256 require (RFC 7518 §3.3, §3.5), a `kid` that no longer tells two keys apart (RFC 7517 §4.5). An **OAuth or OpenID Connect discovery document** (RFC 8414, OpenID Connect Discovery 1.0) is checked: its `issuer` must be the one its address designates — both placements of `.well-known` for an issuer with a path (RFC 8414 §3 and §5), a final `/` allowed — or it must not be used (RFC 8414 §3.3, Discovery §4.3); https where required, required members, RS256 among the ID token algorithms, PKCE and `S256` (RFC 8414 §2, RFC 7636 §4.2); and a button opens the captured key set. A **`security.txt`** file is checked against RFC 9116. A script or stylesheet that announces a **source map** (ECMA-426: `SourceMap` header or `sourceMappingURL` comment) shows its address. **JSON is shown as sent**: an integer beyond 2^53 keeps its digits, and the tab lists, with their JSONPath, the integers a JavaScript client will read rounded and the keys written twice in the same object (RFC 8259 §4). |
 | **Cookies** | Cookies set and changed by this request, with all attributes detailed. |
-| **Security** | TLS version, cipher suite, key exchange, forward secrecy, ECH, HSTS — and **every certificate of the chain read in full from its DER bytes**, like Firefox's certificate viewer: the names it covers (DNS, IP, email, URI), key algorithm and size, key usages, whether it is a certificate authority, the validation level it declares (DV, OV, IV or EV), where to check revocation (OCSP, CRL), the issuer's certificate, key identifiers, and the embedded Certificate Transparency proofs with their log and timestamp. One click copies the PEM or opens it in the toolbox. |
+| **Security** | TLS version, cipher suite, key exchange, forward secrecy, ECH, HSTS — and **every certificate of the chain read in full from its DER bytes**, like Firefox's certificate viewer: the names it covers (DNS, IP, email, URI), key algorithm and size, key usages, whether it is a certificate authority, the validation level it declares (DV, OV, IV or EV), where to check revocation (OCSP, CRL), the issuer's certificate, key identifiers, and the embedded Certificate Transparency proofs with their log and timestamp. One click copies the PEM, opens it in the toolbox, or shows **every form of its key** in the Public key tool. Firefox's own public key fingerprint is shown as what it is: the **`pin-sha256` pin** (RFC 7469). |
 | **Alerts** | The analyser's findings for this request, each with its evidence. |
 | **Streams** | The WebSocket frames, SSE messages, WebRTC data-channel messages or WebTransport datagrams of this connection. **A session that is still receiving grows as you watch it** — frames are appended, never redrawn, and only while you are at the bottom of the panel, so reading further up is never interrupted. **A binary frame keeps its bytes**: the format is named when protobuf, MessagePack or CBOR recognises it, the opening bytes are shown in hex, and a click sends the frame to the toolbox. |
 | **Timeline** | The network phases the browser actually measured — blocked, DNS, TCP connection, TLS, waiting for the first byte, receiving — as disjoint bars, so their sum is right. **Nothing is filled in**: the browser does not expose when sending ends, so no "sending" figure is invented; and when it hides the detail of a resource from another origin (no `Timing-Allow-Origin`), the tab says so instead of showing 0 ms and 0 bytes. Then every step, timestamped, from first observation to last. |
@@ -684,15 +697,16 @@ own secret and tracker patterns in the settings.
 
 ---
 
-## 11. The toolbox: 24 tools in 6 families
+## 11. The toolbox: 25 tools in 6 families
 
-138 transformations, 24 tools grouped into six families by what you are trying to do — decode and convert, encryption and digests, network and HTTP, read and measure, search and compare, produce — **all computed locally**. A row's context menu, and the
+138 transformations, 25 tools grouped into six families by what you are trying to do — decode and convert, encryption and digests, network and HTTP, read and measure, search and compare, produce — **all computed locally**. A row's context menu, and the
 "Toolbox" buttons in the detail panel, send a value straight into it.
 
 | Family | Contents |
 |---|---|
 | **Transform** | The full catalogue of 138 transformations, grouped: bases, text, web, casing, Unicode normalisation, lines… — and **JSON to JSON Schema 2020-12**, from one document or several examples in JSON Lines: a property is required only when present in every example, a format is claimed only when every value matches it, and no value is copied into the schema. The JSON transformations — format, compact, sort keys, one path per line, JSON Lines, YAML, CSV, form, headers, cookies — keep every number and string as written, every duplicate key and every `__proto__` key; two `Set-Cookie` lines stay two values |
 | **Keys and trials** | XOR (including single-byte key search), Vigenère, Caesar across all 26 shifts |
+| **Public key** | One public key pasted in any form — PEM (SubjectPublicKeyInfo or PKCS #1), a certificate, a JWK or a whole key set, an OpenSSH line or a whole `authorized_keys` file, base64 DER — and all the others: PEM, PKCS #1, JWK, OpenSSH line, with the **`pin-sha256` pin** (RFC 7469), the **OpenSSH SHA256 and MD5 fingerprints**, the **JWK thumbprint** (RFC 7638), the **key identifier** a certificate carries (RFC 5280 §4.2.1.2) and the certificate's SHA-256 fingerprint. Several keys pasted together are compared: the same key in two forms is recognised. RSA, ECDSA P-256 / P-384 / P-521, Ed25519 and Ed448; a private key is refused |
 | **Encryption** | AES-GCM / CBC / CTR, PBKDF2 derivation, RSA and ECDSA signing and verification |
 | **JWT** | Header and payload decoding, labels for standard claims, signature verification — HS with the shared key (text or an `oct` JWK), RS, PS, ES and **EdDSA / Ed25519** with a public key in PEM or JWK, or the issuer's **whole key set (JWKS)**, from which the key the token designates is chosen — `alg` read to the letter (RFC 7515 §4.1.1), **JWK thumbprint (RFC 7638)** |
 | **Digests** | MD5, SHA-1, SHA-2, SHA-3, Keccak, SHAKE, BLAKE2b/2s, RIPEMD-160, SM3, MD4, NTLM, CRC (20 standard variants), Adler-32, FNV-1a, MurmurHash3, xxHash32, **xxHash64**, **SipHash-2-4**, HMAC |
@@ -778,13 +792,17 @@ reproducing an error, comparing two variants with the **Comparison** view.
 | **HAR 1.2** | `.har` | The standard interchange format: readable by Firefox, Chrome, Charles, Fiddler, Wireshark… |
 | **HAR 1.2, secrets masked** | `.har` | The same file, made shareable. `Authorization`, `Cookie`, `Set-Cookie` and the other secret-bearing headers lose their value; so do query parameters whose name announces a secret, and anything the analyser's own patterns recognise, wherever it sits — including inside a response body. The file says how many values it masked, so a sanitised export is never mistaken for traffic that had nothing to hide. The faithful export stays next to it: you need that one to replay. |
 | **Full JSON** | `.json` | Every record in full, with the statistics |
-| **CSV** | `.csv` | For a spreadsheet |
+| **CSV** | `.csv` | For a spreadsheet, opened with a double click: the separator is a **semicolon** where your regional format writes decimals with a comma (France, Germany, Spain, Brazil…) and a **comma** where it uses a point (United States, United Kingdom, Japan, India…); a cell that contains it is quoted, and a text starting with `=`, `+`, `-` or `@` — a `Content-Type` chosen by a server, say — is kept as text so a spreadsheet never runs it as a formula |
 | **Postman collection** | `.postman_collection.json` | Replaying in Postman |
 | **OpenAPI 3.1** | `.openapi.json` | The API calls described for Swagger UI, Redoc, Postman or a client generator: operations, path parameters (only segments shaped like identifiers), request and response schemas, statuses, Bearer and Basic authentication. One origin per document — the toast says which, and how many calls to other origins were left out. It holds what crossed the network and nothing else: query parameters are never marked required, and no captured value is copied into it. |
 | **Findings report** | `.md` | The security summary in Markdown |
 | **URL list** | `.txt` | One URL per line |
 | **Settings** | `.json` | Configuration backup |
 | **Diagnostics** | `.json` | The internal log, for a bug report |
+
+Every file is written in the interface language — column names, comments, the report, the
+collection — with dates in your regional format. Only the `_swift` field of a HAR, SWIFT's own
+extension, keeps each record exactly as stored, so that a re-import restores it unchanged.
 
 ### Generating call code
 
@@ -835,7 +853,7 @@ A profile changes only the settings listed here; everything else keeps your valu
 
 ### The ten settings groups
 
-- **Interface** (17) — language, simple mode, theme (dark, light or the system's), higher
+- **Interface** (17) — language (Firefox's by default, or French, or English), simple mode, theme (dark, light or the system's), higher
   contrast, text size and adaptation to the window, clearing a tab on each navigation,
   table density, time format, following the stream by default, default scope, wrapping and
   JSON formatting of bodies, what the icon opens and where the detached window goes, the
@@ -967,7 +985,7 @@ ui/                        The interface — one page for all four surfaces
 ├── console/               One view per file, plus the detail panel
 └── lib/                   Codecs, digests, network, reference tables, i18n
 
-tests/                     3347 assertions, no browser required
+tests/                     3714 assertions, no browser required
 tools/sockets.mjs          Real WebSockets against a real server: page, worker, WebRTC
 tools/transparence.mjs     What a page can tell about the probes — it should be nothing
 tools/minutage.mjs         Network timing phases in a real browser: only real measurements
@@ -1038,8 +1056,9 @@ displayed text written straight into the page, a sentence built by concatenation
 error message without a translation or a template.
 
 So the source stays French. Everything a reader or user meets — this README, the repository
-description, the releases — is in English, and the extension itself runs in English or
-French at the flip of a setting.
+description, the releases — is in English, and the extension itself starts in Firefox's
+language — French in a French Firefox, English everywhere else — then switches at the flip of
+a setting, right-click menu and exported files included.
 
 ---
 
@@ -1049,19 +1068,19 @@ French at the flip of a setting.
 npm test
 ```
 
-3347 assertions, with no browser and no dependencies. The kernel and interface modules are
+3714 assertions, with no browser and no dependencies. The kernel and interface modules are
 written for Firefox; `tests/harnais.mjs` supplies the minimum WebExtension API and DOM they
 need to import and run under Node. **The logic under test is exactly the logic that runs in
 the browser, with no rewriting.**
 
 | Suite | Assertions | What it covers |
 |---|---|---|
-| `core.test.mjs` | 240 | URL normalisation, correlation signatures, the store, the rule engine (both ways: what matches **and** what must not), the security analyser rule by rule, HAR export, curl import, all 39 code generators, and the settings applied to what the page probes send — a body the settings refuse is not kept |
+| `core.test.mjs` | 241 | URL normalisation, correlation signatures, the store, the rule engine (both ways: what matches **and** what must not), the security analyser rule by rule, HAR export, curl import, all 39 code generators, and the settings applied to what the page probes send — a body the settings refuse is not kept |
 | `avance.test.mjs` | 469 | WebSocket and HTTP/2 frames, CSP, RFC 9111 freshness, multipart, canonical URLs and homographs, protocol tables, binary structures, rare digests, generators |
-| `ui-load.test.mjs` | 593 | Actual loading of the 201 interface modules, complete module graph (no dead import, no file outside the graph), consistency with the HTML pages and the manifest, **full translation coverage** — every displayed string must have a dictionary entry, including labels that reach the translator through a table (`allRows` labels, search help, CSP directive meanings), **no text written straight into the page or built by concatenation**, which no dictionary entry can match, and **every text of the HTML pages** — labels, tooltips, screen-reader names, placeholders — translated and set again by the script — and **measured contrast**: every colour pair in both themes is checked against the WCAG 2.1 thresholds. It also holds the documentation to the code: **both help pages and both tutorials must have the same sections, item for item**, every setting must be read by the code, the profiles must do what they say, and the README must name every settings group, profile, search criterion, analyser fact and kernel file, and state the right number of reference tables, link relations, proxy error types, tools, required files, test suites and lines of code; and every suite in `tests/` must run in both `npm test` and the build |
+| `ui-load.test.mjs` | 593 | Actual loading of the 206 interface modules, complete module graph (no dead import, no file outside the graph), consistency with the HTML pages and the manifest, **full translation coverage** — every displayed string must have a dictionary entry, including labels that reach the translator through a table (`allRows` labels, search help, CSP directive meanings), **no text written straight into the page or built by concatenation**, which no dictionary entry can match, and **every text of the HTML pages** — labels, tooltips, screen-reader names, placeholders — translated and set again by the script — and **measured contrast**: every colour pair in both themes is checked against the WCAG 2.1 thresholds. It also holds the documentation to the code: **both help pages and both tutorials must have the same sections, item for item**, every setting must be read by the code, the profiles must do what they say, and the README must name every settings group, profile, search criterion, analyser fact and kernel file, and state the right number of reference tables, link relations, proxy error types, tools, required files, test suites and lines of code; and every suite in `tests/` must run in both `npm test` and the build |
 | `detail-coverage.test.mjs` | 130 | Each of a record's 60 fields is displayed, each tab has a render function, each searchable field exists |
 | `outils.test.mjs` | 108 | The toolbox, against published vectors |
-| `rendu.test.mjs` | 114 | The interface **actually rendered**: sixteen views against three captures, the eleven detail tabs, the twenty-three toolbox panels against thirty-two hostile inputs, and 264 deliberately malformed HAR files — then a fragment-by-fragment comparison of both languages, so nothing can stay in French on an English screen. It also counts the commands each view sends the kernel: **a view that re-renders itself in a loop is caught in a second instead of freezing the tab**. Finally the translator itself reports every text it could not translate while everything is rendered in English: a French sentence that arrives through a variable can no longer hide. Then the table's **Follow** mode: a request opened from elsewhere is brought into view, reading suspends Follow and closing resumes it, the setting applies when it changes and only then; and what the screen shows — no bold markers left raw, punctuation that follows the language |
+| `rendu.test.mjs` | 116 | The interface **actually rendered**: nineteen views — the three logs among them — against three captures, the eleven detail tabs, the twenty-four toolbox panels against thirty-two hostile inputs, and 264 deliberately malformed HAR files — then a fragment-by-fragment comparison of both languages, so nothing can stay in French on an English screen — every view and every tab is compared, none is skipped. It also counts the commands each view sends the kernel: **a view that re-renders itself in a loop is caught in a second instead of freezing the tab**. Finally the translator itself reports every text it could not translate while everything is rendered in English: a French sentence that arrives through a variable can no longer hide. Then the table's **Follow** mode: a request opened from elsewhere is brought into view, reading suspends Follow and closing resumes it, the setting applies when it changes and only then; and what the screen shows — no bold markers left raw, punctuation that follows the language |
 | `lectures.test.mjs` | 166 | What 4.4 reads, checked against its sources: the HAR timing rules (TLS inside `connect`, counted once), every WebSocket subprotocol **and every text that must receive no label**, MQTT packet by packet, the certificate reader **cross-checked against the OpenSSL X.509 parser built into Node**, and the Firefox search criteria |
 | `securite.test.mjs` | 141 | The security tools against independent references — gzip and DEFLATE made by `node:zlib`, digests by `node:crypto`: the analyser's facts and the reused-nonce alert, digests judged only on what the captured bytes can prove, hostile SAML input and DEFLATE bombs, every response protection, the derived CSP, OAuth 2.0 against RFC 9700, and SAML in both bindings, down to **which element is signed** |
 | `decodeurs.test.mjs` | 209 | What 4.6 reads, against independent references: every example of **RFC 9421** (Appendix B and section 2) — signature bases **identical byte for byte**, RSA-PSS, ECDSA, HMAC and Ed25519 signatures verified with the published keys, a tampered base refused — and every case where a base cannot be rebuilt; the strict **RFC 9651** serialisation; **WebAuthn** registrations and sign-ins made by Yubico's `fido2` in ES256, EdDSA and RS256, signatures verified and a tampered one refused; **DNS** messages made by `dnspython` and the RFC 8484 example, with hostile inputs (pointer loops, oversized names, truncation) |
@@ -1070,11 +1089,13 @@ the browser, with no rewriting.**
 | `comparaison.test.mjs` | 156 | What 5.5 repaired, against independent references: the comparison engine gives **the shortest list of changes** on two thousand random cases (checked against the longest common subsequence computed by dynamic programming) and handles 200,000 lines; the unified diff is **byte-identical to GNU diffutils 3.12** on eleven cases, finds the same 20,000 hunks as GNU on 200,000 lines, and re-applies to the second text on a thousand more (and on six hundred with GNU `patch`, run locally); the Comparison view — rendered with two requests in both languages — with repeated headers, CRLF and unknown measures; **lossless JSON against `JSON.parse`** on twenty thousand texts, and `JSON.stringify` on three thousand values; the toolbox transformations and the protocol readers with integers beyond 2^53, duplicate keys and `__proto__`; **CBOR and MessagePack** against vectors generated by the Python `cbor2` and `msgpack` libraries, the 81 examples of **RFC 8949 Appendix A** and its 94 ill-formed sequences (Appendix F.1); the lazy JSON tree and long texts; the eleven detail tabs and several tools rendered, in both languages, for a request whose headers, token and bodies are full of names like `constructor`, `__proto__` and `toString` — nothing inherited from JavaScript may show; and a guard that fails on any new silent cut in a view |
 | `patch.test.mjs` | 76 | What 5.6 reads, against its references: all 112 cases of the community **json-patch-tests** suite (RFC 6902, Appendix A included), its 4 disabled cases too — read losslessly, an `op` written twice is seen; the 15 cases of **RFC 7396** Appendix A and its §3 example, written byte for byte, member order included; the **RFC 6901** examples of §5 and §6, its syntax, the `~01` decoding order and the key written twice that makes a reference undefined; 3,000 produced patches applied back to the second document; 3,000 generated patches that give the same result, or fail at the same operation, applied at once or operation by operation; large inputs — 10,000 operations on 100,000 elements, a merge of 100,000 members — under 1.5 s; the equality of RFC 6902 §4.6, numbers included; 3,000 hostile inputs; and the Request tab, the toolbox panel and the Comparison view in both languages |
 | `jose.test.mjs` | 88 | What 5.7 reads, against vectors extracted from the texts and verified at extraction: **RFC 7515 Appendix A** — HS256 with its `oct` JWK, RS256, ES256, ES512 — and **RFC 8037 A.4** (EdDSA) verified, and refused once altered; the unsecured example (A.5); **RFC 9864** `Ed25519`, and a key of another curve refused; `hs256`, `None` and `Rs256` refused (RFC 7515 §4.1.1); the **RFC 7517 Appendix A** sets, public and private, the private keys flagged; a symmetric key, a 1024-bit RSA key and a duplicate `kid`; the choice of a key by `kid`, type, `use`, `key_ops` and `alg`; the **RFC 8037 A.3** thumbprint; the examples of **RFC 8414 §3.2** and **OpenID Connect Discovery §4.2**, an issuer read at the wrong address, both placements for an issuer with a path, https, required members, PKCE; then the kernel finding the issuer's keys in the capture, a key of another issuer that proves nothing against a token, and the Headers tab, the Response tab and the toolbox in both languages |
-| `saisie.test.mjs` | 400 | **No click lost, nothing typed lost**: the redraw deferred while a pointer is pressed, checked with real events — the last request per view, once, after the click; superseded by the click's own redraw; a missed release noticed at the next move; an error in one view neither blocking the others nor swallowed; a redraw asked for during a redraw of the same view run after it, not inside it. Then every field of every view that redraws itself — the toolbox and its panels under seven inputs, the Rules with every action and header operation, the Settings, the Interception queue — must carry a stable name, unique in its view and shared with no other view; and the Interception view must redraw only when its queue or its settings change |
+| `cles.test.mjs` | 221 | What 5.8 reads, against tools that read the **same keys**: seven keys — Ed25519, Ed448, RSA 2048 and 3072, ECDSA P-256, P-384 and P-521 — each read in every form it has (PEM, PKCS #1, JWK, OpenSSH line, certificate, base64 DER), and each form giving back all the others byte for byte: the PEM and the `pin-sha256` pin of **OpenSSL 3.5**, the JWK of **Node**, the OpenSSH line and its SHA256 and MD5 fingerprints from **OpenSSH 10.3** (`ssh-keygen`), the certificate fingerprint and key identifier of OpenSSL; a whole `authorized_keys` file with options, mixed pastes, refused private keys and lying lines; the toolbox panel in both languages |
+| `langue.test.mjs` | 122 | The language of whoever uses SWIFT: a new install follows **Firefox's language** (French for `fr`, `fr-CA`, `fr_BE`; English for `de`, `en-US`, `ja`, `es-ES`, and for `frr` or `fy-NL`, which are not French), a saved choice is never replaced; every exported file — findings report, CSV, HAR and sanitised HAR, Postman collection, generated code, Markdown sheet — **without a word of French** in English and unchanged in French; the CSV separator for ten regions, and no formula slipped into a CSV cell; the right-click menu, the alert notification and the four keyboard shortcuts (manifest and `_locales`) in both languages; a HAR exported in English, re-imported, keeps its truncated bodies; the twenty-four toolbox tools rendered in French and in English with thirty-one real pastes — a JWT, a certificate, a URL, a cURL command, a block of headers… — and no French word, no sentence left identical; the navigation and context logs, the timestamp readings, the generator and the stream titles in English; and a guard over the whole source: no text is assembled before being translated |
+| `saisie.test.mjs` | 415 | **No click lost, nothing typed lost**: the redraw deferred while a pointer is pressed, checked with real events — the last request per view, once, after the click; superseded by the click's own redraw; a missed release noticed at the next move; an error in one view neither blocking the others nor swallowed; a redraw asked for during a redraw of the same view run after it, not inside it. Then every field of every view that redraws itself — the toolbox and its panels under seven inputs, the Rules with every action and header operation, the Settings, the Interception queue — must carry a stable name, unique in its view and shared with no other view; and the Interception view must redraw only when its queue or its settings change |
 
 Expected values come from published sources: RFC vectors (4226, 6238, 6455, 4231, 7541, 9113,
 3986, 7578, 9111, 8187, 2231, 2047, 6266, 7638, 8941, 9421, 9651, 8484, 9745, 8594, 9110, 8288,
-7838, 9211, 9213, 9218, 9209, 9532, 8949, 6902, 7396, 6901, 7515, 7517, 8037, 8414, and ZeroMQ RFC 32), OpenID Connect Discovery 1.0, the community `json-patch-tests` suite, the IANA registries of link relations and proxy error
+7838, 9211, 9213, 9218, 9209, 9532, 8949, 6902, 7396, 6901, 7515, 7517, 8037, 8414, and ZeroMQ RFC 32), OpenID Connect Discovery 1.0, the community `json-patch-tests` suite, OpenSSL 3.5, OpenSSH 10.3 and Node for public keys read in every form, the IANA registries of link relations and proxy error
 types, ECMA-262 for HTTP dates, GNU diffutils for the unified diff, `cbor2` and `msgpack` for CBOR and MessagePack,
 independent libraries (Yubico `fido2` for WebAuthn, `dnspython` for DNS, `graphql-core` for
 GraphQL, `openapi-spec-validator` and `jsonschema` for the OpenAPI export, `node:crypto` and
@@ -1091,8 +1112,8 @@ for UUIDs.
 .\build.ps1            # verify, test, then write dist/swift-<version>.xpi
 ```
 
-The script checks that the 224 required files are present and that every surface declared in
-the manifest exists on disk, then runs the 15 test suites. **If a test fails, the build
+The script checks that the 230 required files are present and that every surface declared in
+the manifest exists on disk, then runs the 17 test suites. **If a test fails, the build
 stops.**
 
 Works with Windows PowerShell 5.1 as well as PowerShell 7.
@@ -1105,7 +1126,7 @@ node tools/captures.mjs
 
 ### Audits that need a real browser
 
-The 15 test suites run under Node with no browser, which is what lets them run everywhere.
+The 17 test suites run under Node with no browser, which is what lets them run everywhere.
 Two things cannot be checked that way, because they only exist once a layout engine is
 involved — so they live as tools, and each prints a verdict and an exit code:
 
@@ -1187,7 +1208,7 @@ the file. It contains internal errors and the command log — not your traffic.
 Before opening a pull request:
 
 ```bash
-npm test              # all 3347 assertions must pass
+npm test              # all 3714 assertions must pass
 .\build.ps1 -Verify   # the build must be green
 ```
 
@@ -1209,7 +1230,7 @@ tests, how to add a decoder, and why a string assembled at runtime can never be 
 
 <div align="center">
 
-**SWIFT** · created by NeoZ
+**SWIFT** · created by D4RK
 
 *See everything. Invent nothing.*
 

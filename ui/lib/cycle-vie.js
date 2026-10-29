@@ -1,4 +1,4 @@
-/* Depreciation et fin de service d une API — SWIFT (by NeoZ)
+/* Depreciation et fin de service d une API — SWIFT (by D4RK)
  *
  * Deux en-tetes par lesquels un serveur annonce l avenir d une adresse :
  *

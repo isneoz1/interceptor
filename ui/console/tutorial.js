@@ -1,4 +1,4 @@
-/* Vue « Tutoriel » — SWIFT (by NeoZ)
+/* Vue « Tutoriel » — SWIFT (by D4RK)
  *
  * Douze lecons guidees. Chaque lecon propose des boutons qui font reellement
  * l action decrite, et des verifications qui lisent l etat reel de la capture :

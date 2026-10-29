@@ -1,4 +1,4 @@
-/* Champs structures HTTP (RFC 9651) — SWIFT (by NeoZ)
+/* Champs structures HTTP (RFC 9651) — SWIFT (by D4RK)
  *
  * La syntaxe commune des en-tetes HTTP recents : `Accept-CH`, `Priority`,
  * `Cache-Status`, `Signature-Input`, `Client-Hints`… Au lieu que chaque

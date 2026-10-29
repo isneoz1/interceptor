@@ -1,5 +1,5 @@
 /* Pont de communication content script <-> coeur <-> interface
- * SWIFT (by NeoZ)
+ * SWIFT (by D4RK)
  *
  * Durcissement :
  *   - toute commande d'interface exige un expediteur interne a l'extension ;

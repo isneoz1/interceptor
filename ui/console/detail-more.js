@@ -1,5 +1,5 @@
 /* Onglets « Cookies », « Securite », « Alertes », « Flux », « Chronologie »,
- * « Pile JS » et « Brut » du panneau de detail — SWIFT (by NeoZ)
+ * « Pile JS » et « Brut » du panneau de detail — SWIFT (by D4RK)
  *
  * Suite de detail-parts.js : meme principe, tout champ present est affiche.
  */
@@ -229,7 +229,9 @@ export function security(rec) {
       subject: 'Sujet', issuer: 'Emetteur', serialNumber: 'Numero de serie',
       fingerprintSha1: 'Empreinte SHA-1', fingerprintSha256: 'Empreinte SHA-256',
       validityStart: 'Valide depuis', validityEnd: 'Valide jusqu au',
-      subjectPublicKeyInfoDigest: 'Empreinte de cle publique', isBuiltInRoot: 'Racine integree'
+      /* La meme valeur que l epingle pin-sha256 (RFC 7469 §2.4) : SHA-256 du
+         SubjectPublicKeyInfo, en base64. */
+      subjectPublicKeyInfoDigest: 'Empreinte de cle publique (pin-sha256)', isBuiltInRoot: 'Racine integree'
     }, ['der']));
     if (c.der) certificatComplet(box, c.der);
   });
@@ -249,7 +251,8 @@ function certificatComplet(box, der) {
   const pem = enPem(der);
   box.appendChild(el('div', { class: 'actions' }, [
     button('Copier en PEM', () => copy(pem, t('Certificat copie en PEM'))),
-    button('Ouvrir dans la boite a outils', () => poser(pem, { vers: 'binaire', famille: 'der' }))
+    button('Ouvrir dans la boite a outils', () => poser(pem, { vers: 'binaire', famille: 'der' })),
+    button('Toutes les formes de la cle', () => poser(pem, { vers: 'cle' }))
   ]));
   try {
     blocCertificat(box, resumerCertificat(base64VersOctets(der)));

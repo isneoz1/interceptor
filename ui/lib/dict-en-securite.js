@@ -1,4 +1,4 @@
-/* Dictionnaire anglais — outils de securite de la 4.5 — SWIFT (by NeoZ)
+/* Dictionnaire anglais — outils de securite de la 4.5 — SWIFT (by D4RK)
  *
  * Complete dict-en.js (`...EN_SECURITE`) : faits constates par l analyseur,
  * protections de la reponse, politique CSP observee, OAuth, SAML, SRI. Et les

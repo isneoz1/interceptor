@@ -1,9 +1,11 @@
-/* Export au format Postman Collection v2.1 — SWIFT (by NeoZ)
+/* Export au format Postman Collection v2.1 — SWIFT (by D4RK)
  *
  * Chaque requete capturee devient un element de collection, groupe par hote.
  * La reponse reellement observee est jointe : la collection est un dossier de
- * preuves, pas seulement un jeu d appels a rejouer.
+ * preuves, pas seulement un jeu d appels a rejouer. Les textes suivent la
+ * langue de l interface, les dates le format de la region.
  */
+import { t, tp, deuxPoints } from '../../ui/lib/i18n.js';
 
 const SKIP_HEADERS = new Set(['content-length', 'connection', 'transfer-encoding']);
 
@@ -53,7 +55,7 @@ function bodyOf(rec) {
 function responseOf(rec) {
   if (rec.statusCode == null) return [];
   return [{
-    name: 'Reponse observee le ' + new Date(rec.startTime || Date.now()).toLocaleString('fr-FR'),
+    name: tp('Reponse observee le {date}', { date: new Date(rec.startTime || Date.now()).toLocaleString() }),
     originalRequest: {
       method: rec.method,
       header: headersOf(rec.requestHeaders),
@@ -77,7 +79,7 @@ export function buildPostman(records, meta = {}) {
   const folders = new Map();
 
   for (const rec of records) {
-    const host = rec.host || 'sans-hote';
+    const host = rec.host || t('sans-hote');
     if (!folders.has(host)) folders.set(host, []);
     folders.get(host).push({
       name: rec.method + ' ' + (rec.path || '/'),
@@ -87,12 +89,12 @@ export function buildPostman(records, meta = {}) {
         url: urlObject(rec.finalUrl || rec.url),
         body: bodyOf(rec),
         description: [
-          'Capture par SWIFT (by NeoZ).',
-          'Identifiant interne : ' + rec.id,
-          rec.ip ? 'Serveur : ' + rec.ip : null,
-          rec.security ? 'TLS : ' + (rec.security.protocolVersion || 'inconnu') : null,
+          t('Capture par SWIFT (by D4RK).'),
+          deuxPoints(t('Identifiant interne'), rec.id),
+          rec.ip ? deuxPoints(t('Serveur'), rec.ip) : null,
+          rec.security ? deuxPoints('TLS', rec.security.protocolVersion || t('inconnu')) : null,
           rec.analysis && rec.analysis.findings.length
-            ? 'Alertes : ' + rec.analysis.findings.map(f => f.severity + ' ' + f.title).join(' | ')
+            ? deuxPoints(t('Alertes'), rec.analysis.findings.map(f => f.severity + ' ' + t(f.title)).join(' | '))
             : null
         ].filter(Boolean).join('\n')
       },
@@ -102,9 +104,9 @@ export function buildPostman(records, meta = {}) {
 
   return {
     info: {
-      name: 'SWIFT — ' + new Date(meta.startedAt || Date.now()).toLocaleString('fr-FR'),
-      description: records.length + ' requetes capturees par SWIFT (by NeoZ). ' +
-                   'Les reponses jointes sont celles reellement observees.',
+      name: 'SWIFT — ' + new Date(meta.startedAt || Date.now()).toLocaleString(),
+      description: tp('Requetes capturees par SWIFT (by D4RK) : {n}. Les reponses jointes sont celles reellement observees.',
+        { n: records.length }),
       schema: 'https://schema.getpostman.com/json/collection/v2.1.0/collection.json'
     },
     item: [...folders.entries()].map(([host, items]) => ({ name: host, item: items }))

@@ -1,4 +1,4 @@
-/* Vue « Diagnostic » — SWIFT (by NeoZ)
+/* Vue « Diagnostic » — SWIFT (by D4RK)
  * Chiffres lus en direct dans le noyau : rien n est simule, rien n est estime.
  */
 import { $, el, clear, sec, grid, button, boutonConfirme, vide } from '../lib/dom.js';

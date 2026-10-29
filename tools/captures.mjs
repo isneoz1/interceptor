@@ -1,4 +1,4 @@
-/* Captures d ecran de la documentation — SWIFT (by NeoZ)
+/* Captures d ecran de la documentation — SWIFT (by D4RK)
  *
  *   node tools/captures.mjs                     les images
  *   node tools/captures.mjs --texte --lang=fr   le texte rendu, pour le

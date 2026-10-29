@@ -1,4 +1,4 @@
-/* Hauteur de ligne du tableau — SWIFT (by NeoZ)
+/* Hauteur de ligne du tableau — SWIFT (by D4RK)
  *
  * Le defilement virtuel a besoin de la hauteur EXACTE d une ligne pour que les
  * cales (paddings) collent au contenu reel. On la mesure sur une vraie ligne

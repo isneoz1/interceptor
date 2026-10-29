@@ -1,4 +1,4 @@
-/* Couche proxy (proxy.onRequest / proxy.onError) — SWIFT (by NeoZ)
+/* Couche proxy (proxy.onRequest / proxy.onError) — SWIFT (by D4RK)
  *
  * Point d'observation le PLUS precoce de Firefox : declenche avant meme
  * onBeforeRequest, et donne la decision de proxy appliquee a chaque requete.

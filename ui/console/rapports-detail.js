@@ -1,4 +1,4 @@
-/* Rapports du navigateur dans le panneau de detail — SWIFT (by NeoZ)
+/* Rapports du navigateur dans le panneau de detail — SWIFT (by D4RK)
  *
  *   Requete   les rapports que porte un POST du navigateur : violation de la
  *             CSP, erreur reseau (NEL), API depreciee, intervention… chacun

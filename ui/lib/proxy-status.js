@@ -1,4 +1,4 @@
-/* Les intermediaires traverses — SWIFT (by NeoZ)
+/* Les intermediaires traverses — SWIFT (by D4RK)
  *
  * Proxy-Status (RFC 9209) : chaque intermediaire qui traite une reponse peut
  * ajouter un membre a la liste. Le premier est le plus proche de l origine, le

@@ -1,4 +1,4 @@
-/* Empreintes et sommes de controle — SWIFT (by NeoZ)
+/* Empreintes et sommes de controle — SWIFT (by D4RK)
  *
  * SHA-1, SHA-256, SHA-384 et SHA-512 viennent du moteur du navigateur
  * (crypto.subtle). MD5, CRC-32, Adler-32, FNV-1a et djb2 sont ecrits ici :
@@ -185,8 +185,11 @@ export function reconnaitreEmpreinte(texte) {
   if (forme) {
     return {
       candidats: forme.noms,
-      note: 'Longueur de ' + brut.length + ' caracteres hexadecimaux : plusieurs algorithmes la partagent, '
-        + 'la liste est une piste, pas une reponse.'
+      /* Un gabarit et sa valeur : l interface le traduit avant d y poser
+         la longueur. */
+      note: 'Longueur de {n} caracteres hexadecimaux : plusieurs algorithmes la partagent, '
+        + 'la liste est une piste, pas une reponse.',
+      valeurs: { n: brut.length }
     };
   }
   if (/^[A-Za-z0-9+/]+={0,2}$/.test(brut) && brut.length % 4 === 0) {

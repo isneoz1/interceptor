@@ -1,4 +1,4 @@
-"""Verification independante de l export OpenAPI de SWIFT (by NeoZ).
+"""Verification independante de l export OpenAPI de SWIFT (by D4RK).
 
 Lit ce que produit tools/verifier-openapi.mjs et le soumet a
 openapi-spec-validator et a jsonschema (Draft 2020-12, formats controles).

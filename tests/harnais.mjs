@@ -1,4 +1,4 @@
-/* Harnais de test — SWIFT (cree par NeoZ)
+/* Harnais de test — SWIFT (cree par D4RK)
  *
  * Les modules du noyau et de l interface sont ecrits pour un navigateur : ils
  * lisent `browser`, `document`, `window`. Ce fichier fournit le strict
@@ -104,6 +104,9 @@ function stockage() {
 
 export function installerNavigateur() {
   const api = {
+    /* La langue de Firefox, fixee : sans elle, le reglage « auto » suivrait
+       celle de la machine (fr-FR ici, en-US sur l integration continue). */
+    i18n: { getUILanguage: () => 'en-US' },
     runtime: {
       id: 'swift@test',
       getURL: chemin => 'moz-extension://test/' + String(chemin).replace(/^\//, ''),
@@ -136,7 +139,8 @@ export function installerNavigateur() {
       onDOMContentLoaded: evenement(),
       onHistoryStateUpdated: evenement(),
       onReferenceFragmentUpdated: evenement(),
-      onErrorOccurred: evenement()
+      onErrorOccurred: evenement(),
+      onCreatedNavigationTarget: evenement()
     },
     cookies: { getAll: async () => [], onChanged: evenement() },
     tabs: {

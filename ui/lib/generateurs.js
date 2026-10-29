@@ -1,4 +1,4 @@
-/* Generateurs de valeurs — SWIFT (by NeoZ)
+/* Generateurs de valeurs — SWIFT (by D4RK)
  *
  * Identifiants, secrets de test et adresses. Tout vient de crypto.getRandomValues :
  * aucun tirage n emploie Math.random, qui ne convient pas a une valeur qui

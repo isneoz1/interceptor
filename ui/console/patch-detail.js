@@ -1,4 +1,4 @@
-/* JSON Patch et JSON Merge Patch, onglet Requete — SWIFT (by NeoZ)
+/* JSON Patch et JSON Merge Patch, onglet Requete — SWIFT (by D4RK)
  *
  * Une requete PATCH qui envoie application/json-patch+json (RFC 6902) ou
  * application/merge-patch+json (RFC 7396) dit, operation par operation, ce

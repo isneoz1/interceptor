@@ -1,4 +1,4 @@
-/* Catalogue des empreintes locales — SWIFT (by NeoZ)
+/* Catalogue des empreintes locales — SWIFT (by D4RK)
  *
  * Rassemble les empreintes calculees sans le navigateur : SHA-3 et SHAKE,
  * Keccak d origine, RIPEMD-160, SM3, MD4, NTLM, BLAKE2, xxHash64. Chacune est verifiee

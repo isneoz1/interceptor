@@ -1,4 +1,4 @@
-/* Controles d un corps — SWIFT (by NeoZ)
+/* Controles d un corps — SWIFT (by D4RK)
  *
  *   Le type annonce correspond-il au contenu ? Un « JSON » qui commence par
  *   <!DOCTYPE html> est une page d erreur que le client ne saura pas lire ;

@@ -1,4 +1,4 @@
-/* Empreintes du corps recu, calculees sur les VRAIS octets — SWIFT (by NeoZ)
+/* Empreintes du corps recu, calculees sur les VRAIS octets — SWIFT (by D4RK)
  *
  * Deux empreintes ne portent pas sur les memes octets :
  *

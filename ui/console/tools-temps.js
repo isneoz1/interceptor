@@ -1,17 +1,21 @@
-/* Panneaux « Horodatage » et « Nombres » — SWIFT (by NeoZ)
+/* Panneaux « Horodatage » et « Nombres » — SWIFT (by D4RK)
  *
  * Un nombre trouve dans un jeton ou un journal se lit de plusieurs facons :
  * on affiche toutes les lectures plausibles et toutes les ecritures d un meme
  * instant, plutot que d en choisir une a la place de l utilisateur.
  */
 import { el, frag, kv, sec, add, button } from '../lib/dom.js';
-import { t, tp, te } from '../lib/i18n.js';
+import { t, tp, te, lang } from '../lib/i18n.js';
 import { copy, toast } from '../app.js';
 import { lireHorodatage, formatsDe, maintenant, lireDuree, dureeLisible, ecart, lireDateDos }
   from '../lib/temps.js';
 import { convertirNombre } from '../lib/codecs-bases.js';
 
 /* ------------------------------ Horodatages ------------------------------- */
+/* L heure locale dans la langue de l interface : Date.toString() parle celle
+   du systeme, et nommait le fuseau en francais dans une interface anglaise. */
+const heureLocale = ms => new Date(ms).toLocaleString(lang(), { dateStyle: 'full', timeStyle: 'full' });
+
 export function panneauHorodatage(entree) {
   const box = frag();
   const now = maintenant();
@@ -44,19 +48,19 @@ export function panneauHorodatage(entree) {
   let lectures = null;
   try { lectures = lireHorodatage(premier); }
   catch (e) {
-    box.appendChild(sec('Lectures de « ' + premier + ' »', 0));
+    box.appendChild(sec(tp('Lectures de « {valeur} »', { valeur: premier }), 0));
     box.appendChild(el('p', { class: 'note', text: t('Non convertible : ') + te(e) }));
   }
 
   if (lectures) {
-    box.appendChild(sec('Lectures de « ' + premier + ' »', lectures.length));
+    box.appendChild(sec(tp('Lectures de « {valeur} »', { valeur: premier }), lectures.length));
     box.appendChild(el('p', { class: 'note', text:
       t('Chaque origine possible est montree. Seules celles qui tombent entre 1970 et 2200 sont retenues.') }));
     for (const l of lectures) {
       const carte = el('div', { class: 'find info' }, [
         el('h4', { text: t(l.nom) }),
         el('div', { class: 'kv' }, [el('span', { text: 'ISO' }), el('b', { text: l.iso })]),
-        el('div', { class: 'kv' }, [el('span', { text: t('Heure locale') }), el('b', { text: l.local })])
+        el('div', { class: 'kv' }, [el('span', { text: t('Heure locale') }), el('b', { text: heureLocale(l.ms) })])
       ]);
       const acts = el('div', { class: 'actions' });
       acts.appendChild(button('Toutes les ecritures', () => {

@@ -1,4 +1,4 @@
-/* Dictionnaire anglais — vue « Etat du systeme » — SWIFT (by NeoZ)
+/* Dictionnaire anglais — vue « Etat du systeme » — SWIFT (by D4RK)
  *
  * Cette vue lit ses chiffres dans le noyau et les pose dans des tables :
  * grid([['Libelle', valeur]]). Le texte vit donc dans une donnee, pas dans

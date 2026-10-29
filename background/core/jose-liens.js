@@ -1,4 +1,4 @@
-/* Les cles d un emetteur de jetons, dans la capture — SWIFT (by NeoZ)
+/* Les cles d un emetteur de jetons, dans la capture — SWIFT (by D4RK)
  *
  * Un jeton signe se verifie avec la cle publique de son emetteur. Cet
  * emetteur la publie dans un jeu de cles (JWKS), a l adresse que donne son

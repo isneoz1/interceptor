@@ -1,4 +1,4 @@
-/* Dictionnaire anglais — rapports du navigateur (5.0) — SWIFT (by NeoZ)
+/* Dictionnaire anglais — rapports du navigateur (5.0) — SWIFT (by D4RK)
  *
  * Complete dict-en.js (`...EN_RAPPORTS`) : les rapports que le navigateur
  * envoie (CSP, NEL, API depreciee, intervention, Permissions-Policy) et les

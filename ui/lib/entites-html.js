@@ -1,4 +1,4 @@
-/* Entites HTML nommees — SWIFT (by NeoZ)
+/* Entites HTML nommees — SWIFT (by D4RK)
  *
  * La table des noms que l on rencontre reellement dans une page : latin-1
  * complet, ponctuation, monnaies, mathematiques, fleches, grec. Les entites

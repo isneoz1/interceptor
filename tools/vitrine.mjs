@@ -1,4 +1,4 @@
-/* Vitrines pour le depot — SWIFT (by NeoZ)
+/* Vitrines pour le depot — SWIFT (by D4RK)
  *
  *   node tools/vitrine.mjs
  *

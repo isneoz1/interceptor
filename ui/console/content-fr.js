@@ -1,4 +1,4 @@
-/* Contenu francais du tutoriel — SWIFT (by NeoZ)
+/* Contenu francais du tutoriel — SWIFT (by D4RK)
  *
  * Douze lecons. Chaque lecon peut proposer des boutons qui font reellement
  * l action decrite, et des verifications qui lisent l etat reel de la capture.
@@ -227,7 +227,7 @@ export const LESSONS = [
         '**Observation discrete** : metadonnees seules, aucun contenu conserve.'
       ] },
       { p: 'Chaque couche de capture s active independamment, et la vue Diagnostic montre pour chacune le reglage ET la disponibilite reelle de l API dans votre Firefox.' },
-      { p: 'La **langue** (francais ou anglais), le **mode simple**, le theme, la densite, la taille du texte, le contraste, le format de l heure, le comportement du clic sur l icone et le compteur du badge se reglent aussi la.' },
+      { p: 'La **langue** (celle de Firefox, francais ou anglais), le **mode simple**, le theme, la densite, la taille du texte, le contraste, le format de l heure, le comportement du clic sur l icone et le compteur du badge se reglent aussi la.' },
       { p: 'Le **mode simple** ne garde que Requetes, Securite, Synthese, Boite a outils, Reglages, Tutoriel et Aide : de quoi travailler sans jamais se perdre. Les vues avancees reviennent en le desactivant.' }
     ],
     actions: [
@@ -267,7 +267,7 @@ export const LESSONS = [
     title: 'La boite a outils',
     goal: 'Decoder, verifier et fabriquer une valeur, sans rien envoyer',
     body: [
-      { p: 'Un seul **texte de travail**, vingt-quatre onglets qui le regardent. On colle une valeur une fois — depuis le presse-papiers, depuis le menu contextuel d une ligne, ou depuis le bouton « Boite a outils » d un corps de reponse — et chaque outil travaille dessus.' },
+      { p: 'Un seul **texte de travail**, vingt-cinq onglets qui le regardent. On colle une valeur une fois — depuis le presse-papiers, depuis le menu contextuel d une ligne, ou depuis le bouton « Boite a outils » d un corps de reponse — et chaque outil travaille dessus.' },
       { p: 'Tout se calcule dans la page. Aucun de ces outils n emet la moindre requete : ni au chargement, ni au clic.' },
       { ul: [
         '**Transformer** : 138 transformations. « Tout essayer » applique chaque decodage (sauf DNS et WebAuthn) et ne garde que les resultats lisibles — c est la bonne premiere action sur une valeur inconnue.',

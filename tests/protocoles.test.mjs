@@ -1,4 +1,4 @@
-/* GraphQL, rapports du navigateur, OpenAPI — SWIFT (by NeoZ)
+/* GraphQL, rapports du navigateur, OpenAPI — SWIFT (by D4RK)
  *
  *   node tests/protocoles.test.mjs
  *

@@ -1,5 +1,5 @@
 /* Dictionnaire anglais — descriptions des entetes HTTP
- * SWIFT (by NeoZ)
+ * SWIFT (by D4RK)
  *
  * Traduction des descriptions de ref-entetes.js. La cle reste le texte francais.
  */

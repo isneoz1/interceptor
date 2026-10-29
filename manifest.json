@@ -3,8 +3,8 @@
   "default_locale": "en",
   "name": "__MSG_extensionName__",
   "short_name": "SWIFT",
-  "version": "5.7.0",
-  "author": "NeoZ",
+  "version": "5.8.0",
+  "author": "D4RK",
   "homepage_url": "https://github.com/isneoz1/interceptor",
   "description": "__MSG_extensionDescription__",
   "browser_specific_settings": {
@@ -56,7 +56,7 @@
     "content/hooks.js"
   ],
   "browser_action": {
-    "default_title": "SWIFT — by NeoZ",
+    "default_title": "SWIFT — by D4RK",
     "default_popup": "ui/popup.html",
     "default_icon": {
       "16": "icons/icon.svg",
@@ -83,25 +83,25 @@
       "suggested_key": {
         "default": "Ctrl+Shift+Y"
       },
-      "description": "Ouvrir la fenetre SWIFT"
+      "description": "__MSG_commandePopup__"
     },
     "_execute_sidebar_action": {
       "suggested_key": {
         "default": "Alt+Shift+S"
       },
-      "description": "Ouvrir SWIFT dans le panneau lateral"
+      "description": "__MSG_commandePanneau__"
     },
     "open-console": {
       "suggested_key": {
         "default": "Alt+Shift+I"
       },
-      "description": "Ouvrir la console complete dans un onglet"
+      "description": "__MSG_commandeConsole__"
     },
     "toggle-capture": {
       "suggested_key": {
         "default": "Ctrl+Shift+U"
       },
-      "description": "Basculer capture / pause"
+      "description": "__MSG_commandeCapture__"
     }
   },
   "icons": {

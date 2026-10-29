@@ -1,4 +1,4 @@
-/* Vue « Securite » — toutes les alertes de la capture — SWIFT (by NeoZ) */
+/* Vue « Securite » — toutes les alertes de la capture — SWIFT (by D4RK) */
 import { $, el, clear, sec, button, vide } from '../lib/dom.js';
 import { redessinerEnPlace } from '../lib/redessin.js';
 import { clock, middle, preuveLisible } from '../lib/format.js';

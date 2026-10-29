@@ -1,4 +1,4 @@
-/* OAuth 2.0 et OpenID Connect — SWIFT (by NeoZ)
+/* OAuth 2.0 et OpenID Connect — SWIFT (by D4RK)
  *
  * Une connexion « avec Google », « avec GitHub », un SSO d entreprise : ce
  * sont des echanges OAuth 2.0, souvent OpenID Connect. On les reconnait a

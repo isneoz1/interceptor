@@ -1,4 +1,4 @@
-/* Un long texte dans un bloc <pre> — SWIFT (by NeoZ)
+/* Un long texte dans un bloc <pre> — SWIFT (by D4RK)
  *
  * Poser cinq megaoctets de texte dans la page d un coup se sent : le panneau
  * fige le temps de la mise en page. On en montre donc le debut, avec le compte

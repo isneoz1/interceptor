@@ -1,4 +1,4 @@
-/* Motifs, chemins et selecteurs — SWIFT (by NeoZ)
+/* Motifs, chemins et selecteurs — SWIFT (by D4RK)
  *
  * Trois facons d aller chercher une valeur dans un texte : une expression
  * reguliere toute prete, un chemin dans du JSON, un selecteur dans du HTML.

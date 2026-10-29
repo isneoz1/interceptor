@@ -1,4 +1,4 @@
-/* Rendu reel de l interface — SWIFT (cree par NeoZ)
+/* Rendu reel de l interface — SWIFT (cree par D4RK)
  *
  * Les autres suites lisent le source de l interface ; celle-ci l execute. Elle
  * construit les vues, les onglets du detail et les panneaux de la boite a
@@ -23,6 +23,7 @@ import url from 'node:url';
 import {
   installerTout, installerPage, enregistrementExemple, egal, proche, verifier, bilan
 } from './harnais.mjs';
+import { chargerPanneaux, etatOutils } from './panneaux-outils.mjs';
 
 installerTout();
 const racine = path.resolve(path.dirname(url.fileURLToPath(import.meta.url)), '..');
@@ -109,6 +110,12 @@ for (const nom of ['requests', 'alerts', 'streams', 'journal', 'stats', 'rules',
 }
 const statusbar = await import('../ui/console/statusbar.js');
 VUES.push(['statusbar', statusbar.renderFoot]);
+/* Les trois journaux sont une seule vue, rendue selon son genre : appelee
+   sans genre, elle ne dessinait rien, et ses textes n etaient jamais lus. */
+{
+  const journal = await import('../ui/console/journal.js');
+  for (const genre of ['cookies', 'navigation', 'context']) VUES.push(['journal:' + genre, () => journal.render(genre)]);
+}
 
 verifier('toutes les vues de la console sont couvertes', VUES.length >= 16,
   VUES.length + ' vues');
@@ -288,57 +295,8 @@ verifier('le controle a bien importe des fichiers deformes', importsFaits >= 200
   importsFaits + ' imports');
 
 /* ================= 4. Les panneaux de la boite a outils =================== */
-const PANNEAUX = [];
-for (const [nom, fichier, appeler] of [
-  ['cles', 'tools-chiffres.js', (m, e, s) => m.panneauCles(e, s, () => {}, () => {})],
-  ['identifier', 'tools-chiffres.js', (m, e) => m.panneauIdentifier(e)],
-  ['chiffrement', 'tools-crypto.js', (m, e, s) => m.panneauChiffrement(e, s, () => {}, () => {})],
-  ['jwt', 'tools-panels.js', (m, e, s) => m.panneauJwt(e, s, () => {})],
-  ['empreintes', 'tools-panels.js', (m, e, s) => m.panneauEmpreintes(e, () => {}, s)],
-  ['mesures', 'tools-panels.js', (m, e) => m.panneauMesures(e)],
-  ['hex', 'tools-panels.js', (m, e) => m.panneauHex(e)],
-  ['analyse', 'tools-panels.js', (m, e) => m.panneauAnalyse(e)],
-  ['regex', 'tools-panels.js', (m, e, s) => m.panneauRegex(e, s, () => {})],
-  ['binaire', 'tools-binaire.js', (m, e, s) => m.panneauBinaire(e, s, () => {}, () => {})],
-  ['code', 'tools-code.js', (m, e, s) => m.panneauCode(e, s, () => {}, () => {})],
-  ['otp', 'tools-otp.js', (m, e, s) => m.panneauOtp(e, s, () => {})],
-  ['temps', 'tools-temps.js', (m, e) => m.panneauHorodatage(e)],
-  ['nombres', 'tools-temps.js', (m, e, s) => m.panneauNombres(e, s, () => {})],
-  ['entetes', 'tools-entetes.js', (m, e) => m.panneauEntetes(e)],
-  ['chercher', 'tools-chercher.js', (m, e, s) => m.panneauChercher(e, s, () => {}, () => {})],
-  ['comparer', 'tools-diff.js', (m, e, s) => m.panneauComparer(e, s, () => {}, () => {})],
-  ['patch', 'tools-patch.js', (m, e, s) => m.panneauPatch(e, s, () => {}, () => {})],
-  ['url', 'tools-reseau.js', (m, e) => m.panneauUrl(e)],
-  ['adresse', 'tools-reseau.js', (m, e, s) => m.panneauAdresse(e, s, () => {}, () => {})],
-  ['reference', 'tools-reference.js', (m, e, s) => m.panneauReference(e, s, () => {})],
-  ['generer', 'tools-generer.js', (m, e, s) => m.panneauGenerateurs(() => {}, s, () => {})],
-  ['importer', 'tools-import.js', (m, e, s) => m.panneauImport(e, s, () => {})]
-]) {
-  const mod = await import('../ui/console/' + fichier);
-  PANNEAUX.push([nom, (entree, etat) => appeler(mod, entree, etat)]);
-}
-egal('les vingt-trois panneaux de la boite a outils sont couverts', PANNEAUX.length, 23);
-
-const etatOutils = () => ({
-  empreintes: {}, cleHmac: '', algoHmac: 'SHA-256', hmac: null, cleJwt: '', jwtVerdict: null,
-  motif: '', options: 'gi', remplacement: '', cleXor: '', xorHex: false, xorCandidats: null,
-  cleVigenere: '', base: 10, prefixeTest: '', familleRef: 'tout', questionRef: undefined,
-  modeAes: 'AES-GCM', cleAes: '', formeCleAes: 'hex', ivAes: '', aadAes: '',
-  sortieAes: null, erreurAes: null, mdpKdf: '', selKdf: '', iterations: '100000',
-  hashKdf: 'SHA-256', bitsKdf: '256', sortieKdf: null, erreurKdf: null,
-  signature: '', cleSignature: '', algoSignature: 'RSASSA-PKCS1-v1_5',
-  hashSignature: 'SHA-256', verdictSignature: null, familleBinaire: 'auto', arbreDer: false,
-  jeuChoisi: 'utf-8', autreTexte: '', motifChoisi: '', numeroLuhn: '', cheminJson: '',
-  /* Le panneau JSON Patch calcule a chaque dessin : chaque entree hostile y
-     passe par l application d un vrai patch. */
-  patchGeste: 'appliquer', patchAutre: '[{"op":"add","path":"/a","value":12345678901234567890}]',
-  selecteur: '', typeSelecteur: 'css', sousPrefixe: 26, decoupe: false, listePrefixes: '',
-  plageDebut: '', plageFin: '', longueurMdp: 24,
-  jeuxMdp: ['minuscules', 'majuscules', 'chiffres', 'symboles'], dernierMdp: null,
-  importBrut: false, codeSens: 'lisible', codeStyle: 'securise', codeEmbellir: true,
-  codeSortie: null, otpForme: 'base32', otpAlgo: 'SHA-1', otpChiffres: 6, otpPas: 30,
-  otpSecret: null, otpResultat: null, otpVoisins: null, otpCompteur: 0
-});
+const PANNEAUX = await chargerPanneaux();
+egal('les vingt-quatre panneaux de la boite a outils sont couverts', PANNEAUX.length, 24);
 
 /* Ce qu un operateur colle vraiment : un collage rate, un jeton tronque, un
    corps vide, et quelques valeurs qu aucun humain ne tape. */
@@ -422,12 +380,13 @@ const IDENTIQUES = new Set([
 ]);
 
 const francaisRestant = [];
+const vuesIgnorees = [];
 let vuesComparees = 0;
 for (const [nom, rendre] of VUES) {
   const records = captureVariee(12);
   const fr = rendreVue(nom, rendre, 'fr', records);
   const en = rendreVue(nom, rendre, 'en', records);
-  if (fr === null || en === null || fr.length !== en.length) continue;
+  if (fr === null || en === null || fr.length !== en.length) { vuesIgnorees.push(nom); continue; }
   vuesComparees++;
   for (let i = 0; i < fr.length; i++) {
     const texte = fr[i];
@@ -444,8 +403,10 @@ for (const reste of uniques.slice(0, 15)) {
   verifier('le fragment est bien traduit en anglais', false, reste);
 }
 egal('aucun fragment ne reste en francais dans l interface anglaise', uniques.length, 0);
-verifier('la comparaison a bien porte sur les vues',
-  vuesComparees >= 12, vuesComparees + ' vues comparees');
+/* Une vue dont les deux rendus n ont pas la meme forme etait sautee sans
+   bruit : chacune doit desormais etre comparee. */
+egal('chaque vue est comparee dans les deux langues', vuesComparees, VUES.length);
+verifier('aucune vue sautee', vuesIgnorees.length === 0, vuesIgnorees.join(', '));
 
 /* ============ 6. La liste par lots ne doit jamais se bloquer ============= */
 /* Un IntersectionObserver ne rappelle que si l etat CHANGE. Quand un lot ne
@@ -862,6 +823,7 @@ function textesOnglet(rendre, rec, langue) {
 const vide = newRecord({ id: 990, url: 'https://exemple.test/', scheme: 'https' });
 const clair = newRecord({ id: 991, url: 'http://exemple.test/', scheme: 'http' });
 const ongletsFrancais = [];
+const ongletsIgnores = [];
 for (const rec of [vide, clair, ...enregistrementsRiches(), ...CAS_DETAIL.map(([, r]) => r)]) {
   for (const [nom, rendre] of ONGLETS) {
     /* L onglet « Brut » montre l enregistrement TEL QU IL EST en memoire : les
@@ -869,7 +831,7 @@ for (const rec of [vide, clair, ...enregistrementsRiches(), ...CAS_DETAIL.map(([
     if (nom === 'Brut') continue;
     const fr = textesOnglet(rendre, rec, 'fr');
     const en = textesOnglet(rendre, rec, 'en');
-    if (!fr || !en || fr.length !== en.length) continue;
+    if (!fr || !en || fr.length !== en.length) { ongletsIgnores.push(nom + ' #' + rec.id); continue; }
     for (let i = 0; i < fr.length; i++) {
       const texte = fr[i];
       if (texte !== en[i]) continue;
@@ -883,6 +845,7 @@ for (const rec of [vide, clair, ...enregistrementsRiches(), ...CAS_DETAIL.map(([
   }
 }
 setLang('fr');
+verifier('aucun onglet du detail saute par la comparaison des langues', ongletsIgnores.length === 0, ongletsIgnores.slice(0, 8).join(', '));
 const ongletsUniques = [...new Set(ongletsFrancais)];
 for (const reste of ongletsUniques.slice(0, 20)) verifier('le texte de l onglet est traduit', false, reste);
 egal('aucun onglet du detail ne garde de francais en anglais', ongletsUniques.length, 0);

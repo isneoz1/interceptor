@@ -1,4 +1,4 @@
-/* Empreintes que le navigateur ne fournit pas — SWIFT (by NeoZ)
+/* Empreintes que le navigateur ne fournit pas — SWIFT (by D4RK)
  *
  * RIPEMD-160 (adresses Bitcoin, PGP), SM3 (norme chinoise) et MD4 (ancetre de
  * MD5, encore croise dans NTLM et de vieux protocoles).

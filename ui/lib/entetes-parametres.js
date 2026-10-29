@@ -1,5 +1,5 @@
 /* Parametres d en-tete HTTP : valeurs etendues et mots codes
- * SWIFT (by NeoZ)
+ * SWIFT (by D4RK)
  *
  * Un `Content-Disposition` reel ne dit pas « filename=rapport.pdf ». Il dit
  * souvent `filename*=UTF-8''%e2%82%ac%20rates`, parfois decoupe en plusieurs

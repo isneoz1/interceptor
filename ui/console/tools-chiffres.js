@@ -1,4 +1,4 @@
-/* Panneau « Cles et signatures » — SWIFT (by NeoZ)
+/* Panneau « Cles et signatures » — SWIFT (by D4RK)
  *
  * Les operations qui demandent une cle ou un essai systematique : XOR,
  * Cesar, Vigenere. Plus la reconnaissance d une empreinte et la lecture des
@@ -131,8 +131,8 @@ export function panneauIdentifier(entree) {
 
   const empreinte = reconnaitreEmpreinte(brut);
   box.appendChild(sec('Empreinte', tp('{n} candidat(s)', { n: empreinte.candidats.length })));
-  for (const c of empreinte.candidats) add(box, kv('Candidat', c, { hl: true }));
-  box.appendChild(el('p', { class: 'note', text: t(empreinte.note) }));
+  for (const c of empreinte.candidats) add(box, kv('Candidat', t(c), { hl: true }));
+  box.appendChild(el('p', { class: 'note', text: tp(empreinte.note, empreinte.valeurs) }));
 
   const signatures = reconnaitreTexte(brut);
   box.appendChild(sec('Signature de contenu', signatures.length));

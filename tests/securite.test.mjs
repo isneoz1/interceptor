@@ -1,4 +1,4 @@
-/* Outils de securite — SWIFT (by NeoZ)
+/* Outils de securite — SWIFT (by D4RK)
  *
  *   node tests/securite.test.mjs
  *

@@ -1,4 +1,4 @@
-/* English content for the Help and Tutorial views — SWIFT (by NeoZ)
+/* English content for the Help and Tutorial views — SWIFT (by D4RK)
  *
  * The French text lives in the views themselves; this file mirrors it in
  * English so the language switch changes everything, not just the labels.
@@ -21,7 +21,7 @@ export const HELP_SECTIONS = [
   },
   {
     h: 'Language and comfort',
-    p: ['The FR / EN button in the header switches the whole interface, the help and the tutorial between French and English. Settings -> Interface also offers simple mode, the light or dark theme, high contrast, text size and table density.'],
+    p: ['On first launch, SWIFT speaks Firefox\'s language: French if Firefox is in French, English otherwise. The FR / EN button in the header then switches the whole interface, the help, the tutorial, the right-click menu and exported files between French and English. Settings -> Interface also offers simple mode, the light or dark theme, high contrast, text size and table density.'],
     ul: []
   },
   {
@@ -72,11 +72,12 @@ export const HELP_SECTIONS = [
   {
     h: 'The toolbox',
     p: [
-      'One working text, twenty-four tabs looking at it. You paste a value once — from the clipboard, from a row context menu, or from a detail tab — and every tool works on it. Everything is computed in the page: none of these functions sends a single request.'
+      'One working text, twenty-five tabs looking at it. You paste a value once — from the clipboard, from a row context menu, or from a detail tab — and every tool works on it. Everything is computed in the page: none of these functions sends a single request.'
     ],
     table: [
       ['Transform', '138 transformations in eighteen families: base64 and base64 URL, base32, base58, base45, Ascii85, URL, HTML entities, hexadecimal, binary, octal, Unicode escapes, punycode, JSON, YAML, CSV, XML, SAML, DNS messages, WebAuthn, gzip and deflate, letter case, lines, string escaping, Protocol Buffers, MessagePack, CBOR, ASN.1. "Try everything" applies every decoding — except DNS and WebAuthn, which would read any bytes — and keeps only the readable results.'],
       ['Keys and trials', 'XOR with a repeated key, a sweep of the 255 single-byte keys, all twenty-five Caesar shifts, Vigenere. These ciphers protect nothing: they read back a deliberately obscured value.'],
+      ['Public key', 'A public key pasted in any form — PEM, certificate, JWK or key set, an OpenSSH line or a whole authorized_keys file, base64 DER — and all the others: PEM, PKCS #1, JWK, OpenSSH line, with its pin-sha256 pin (RFC 7469), its OpenSSH fingerprints (SHA256 and MD5), its JWK thumbprint (RFC 7638) and its key identifier (RFC 5280). Several keys pasted together are compared: the same key in two forms is recognised.'],
       ['JWT', 'Header, payload, validity, time left. The signature is really verified: HS256 to HS512 with the shared key (text or an “oct” JWK), RS, PS, ES and EdDSA (Ed25519) with the public key pasted as PEM or JWK, or the issuer\'s whole key set (JWKS), from which the key the token designates is chosen. The algorithm is read to the letter: “hs256” is not HS256. With no key the screen says so, rather than letting a decoded token pass for a valid one.'],
       ['Encryption', 'AES-GCM, AES-CBC and AES-CTR both ways, with initialisation vector and authenticated data; PBKDF2 and HKDF derivation; verification of a detached RSA, RSA-PSS, ECDSA or HMAC signature. Everything goes through the browser engine, nothing leaves the machine.'],
       ['Hashes', 'MD5, SHA-1, SHA-256, SHA-384, SHA-512, CRC-32, Adler-32, FNV-1a, djb2, byte sum, and HMAC with a key.'],
@@ -331,7 +332,7 @@ export const LESSONS = {
         '**Quiet observation**: metadata only, no content kept.'
       ] },
       { p: 'Each capture layer can be switched independently, and the Diagnostics view shows for each one the setting AND whether the API really exists in your Firefox.' },
-      { p: 'The **language** (French or English), **simple mode**, theme, density, text size, contrast, time format, icon click behaviour and badge counter are set there too.' },
+      { p: 'The **language** (Firefox\'s, French or English), **simple mode**, theme, density, text size, contrast, time format, icon click behaviour and badge counter are set there too.' },
       { p: '**Simple mode** keeps only Requests, Security, Summary, Toolbox, Settings, Tutorial and Help: enough to work without ever getting lost. The advanced views come back when you turn it off.' }
     ]
   },
@@ -352,7 +353,7 @@ export const LESSONS = {
     title: 'The toolbox',
     goal: 'Decode, verify and build a value, without sending anything',
     body: [
-      { p: 'One **working text**, twenty-four tabs looking at it. You paste a value once — from the clipboard, from a row context menu, or from the "Toolbox" button on a response body — and every tool works on it.' },
+      { p: 'One **working text**, twenty-five tabs looking at it. You paste a value once — from the clipboard, from a row context menu, or from the "Toolbox" button on a response body — and every tool works on it.' },
       { p: 'Everything is computed in the page. None of these tools sends a single request: not on load, not on click.' },
       { ul: [
         '**Transform**: 138 transformations. "Try everything" applies each decoding (except DNS and WebAuthn) and keeps only the readable results — the right first move on an unknown value.',

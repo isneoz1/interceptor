@@ -1,4 +1,4 @@
-/* Schema JSON deduit d exemples — SWIFT (by NeoZ)
+/* Schema JSON deduit d exemples — SWIFT (by D4RK)
  *
  * A partir de valeurs JSON reellement observees, le schema JSON (version
  * 2020-12, celle qu emploie OpenAPI 3.1) qui les accepte toutes :

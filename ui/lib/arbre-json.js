@@ -1,4 +1,4 @@
-/* Arbre JSON repliable — SWIFT (by NeoZ)
+/* Arbre JSON repliable — SWIFT (by D4RK)
  *
  * Garantit qu aucun champ ne peut rester invisible : chaque cle, chaque
  * element, a sa ligne.

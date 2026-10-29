@@ -1,4 +1,4 @@
-/* Audit d interaction — SWIFT (by NeoZ)
+/* Audit d interaction — SWIFT (by D4RK)
  *
  *   node tools/interaction.mjs
  *

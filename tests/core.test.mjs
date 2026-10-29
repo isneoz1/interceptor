@@ -1,4 +1,4 @@
-/* Tests du noyau — SWIFT (cree par NeoZ)
+/* Tests du noyau — SWIFT (cree par D4RK)
  *
  * Le noyau tourne dans le processus d arriere-plan de Firefox. Ici il tourne
  * sous Node, avec le harnais qui imite l API WebExtension : la logique testee
@@ -284,6 +284,9 @@ verifier('horodatage au format ISO', /^\d{4}-\d{2}-\d{2}T/.test(entree.startedDa
 verifier('adresse IP du serveur reportee', entree.serverIPAddress === '203.0.113.42');
 verifier('minutage present', entree.timings && typeof entree.timings.wait === 'number');
 egal('HAR vide reste valide', buildHar([]).log.entries.length, 0);
+/* Le HAR annoncait « 1.0.0 », ecrit a la main, quelle que soit la version. */
+egal('HAR : la version de SWIFT est celle du manifeste', buildHar([]).log.creator.version,
+  globalThis.browser.runtime.getManifest().version);
 
 /* Le nom a change : les HAR des versions qui s appelaient INTERCEPTOR portent
    l extension `_interceptor`. Ils doivent se relire aussi fidelement. */

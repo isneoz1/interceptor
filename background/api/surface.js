@@ -1,4 +1,4 @@
-/* Emplacement de la console — SWIFT (by NeoZ)
+/* Emplacement de la console — SWIFT (by D4RK)
  *
  * Le meme principe que l ancrage des outils de developpement de Firefox :
  * la console s ouvre la ou vous voulez, et elle y reste.

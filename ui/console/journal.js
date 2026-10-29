@@ -1,4 +1,4 @@
-/* Vues « Cookies », « Navigation » et « Contexte » — SWIFT (by NeoZ)
+/* Vues « Cookies », « Navigation » et « Contexte » — SWIFT (by D4RK)
  *
  * Trois journaux tenus par le noyau, affiches ici en entier : chaque entree
  * est visible, avec son heure exacte et son detail complet.
@@ -51,7 +51,7 @@ function dessiner(kind) {
 
   const entries = cache[kind];
   box.appendChild(sec(meta.title, entries ? tp('{n} entree(s)', { n: entries.length }) : ''));
-  box.appendChild(el('p', { class: 'note', text: meta.note }));
+  box.appendChild(el('p', { class: 'note', text: t(meta.note) }));
 
   const actions = el('div', { class: 'actions' });
   actions.appendChild(button('Actualiser', () => load(kind)));
@@ -122,7 +122,8 @@ function label(kind, e) {
   return e.kind || '—';
 }
 
-function describe(kind, e) {
+/** Le detail d une entree, dans la langue de l interface. */
+export function describe(kind, e) {
   if (kind === 'cookies') {
     const flags = [e.secure ? 'Secure' : null, e.httpOnly ? 'HttpOnly' : null,
                    e.sameSite ? 'SameSite=' + e.sameSite : t('SameSite absent'),
@@ -132,12 +133,12 @@ function describe(kind, e) {
            (e.value ? '  =  ' + middle(e.value, 80) : '');
   }
   if (kind === 'navigation') {
-    return 'onglet ' + e.tabId + ' / cadre ' + e.frameId + '  ' + middle(e.url || '', 110) +
+    return tp('onglet {onglet} / cadre {cadre}', { onglet: e.tabId, cadre: e.frameId }) + '  ' + middle(e.url || '', 110) +
            (e.transitionType ? '  (' + e.transitionType + ')' : '') +
            (e.transitionQualifiers && e.transitionQualifiers.length ? ' [' + e.transitionQualifiers.join(',') + ']' : '') +
-           (e.error ? '  ERREUR ' + e.error : '');
+           (e.error ? '  ' + t('ERREUR') + ' ' + e.error : '');
   }
   return middle(e.url || '', 100) +
          (e.detail ? '   ' + middle(JSON.stringify(e.detail), 160) : '') +
-         (e.frameUrl && e.frameUrl !== e.url ? '   cadre ' + middle(e.frameUrl, 60) : '');
+         (e.frameUrl && e.frameUrl !== e.url ? '   ' + t('cadre') + ' ' + middle(e.frameUrl, 60) : '');
 }

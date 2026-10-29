@@ -1,4 +1,4 @@
-/* Signaux HTTP, en anglais — SWIFT (by NeoZ)
+/* Signaux HTTP, en anglais — SWIFT (by D4RK)
  *
  * Avenir de l adresse (Deprecation, Sunset), limites de debit (Retry-After,
  * RateLimit), liens (Link), services alternatifs (Alt-Svc), caches traverses

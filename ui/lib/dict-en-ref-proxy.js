@@ -1,4 +1,4 @@
-/* Dictionnaire anglais — erreurs de mandataire — SWIFT (by NeoZ)
+/* Dictionnaire anglais — erreurs de mandataire — SWIFT (by D4RK)
  *
  * Genere depuis le registre IANA « HTTP Proxy-Status » : la description
  * anglaise de chaque type d erreur et de chaque parametre, mot pour mot (les

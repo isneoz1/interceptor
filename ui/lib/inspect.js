@@ -1,4 +1,4 @@
-/* Inspection de valeurs — SWIFT (by NeoZ)
+/* Inspection de valeurs — SWIFT (by D4RK)
  *
  * JWT, entropie, vidage hexadecimal, analyse de chaines de requete, de cookies
  * et d entetes. Fonctions pures : la boite a outils les affiche, les tests les

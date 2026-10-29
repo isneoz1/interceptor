@@ -1,4 +1,4 @@
-/* Priorite d une reponse (Priority) — SWIFT (by NeoZ)
+/* Priorite d une reponse (Priority) — SWIFT (by D4RK)
  *
  * RFC 9218 : le client dit dans quel ordre il voudrait recevoir les reponses,
  * et le serveur peut donner son propre avis. Un dictionnaire de champ

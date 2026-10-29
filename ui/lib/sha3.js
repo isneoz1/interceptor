@@ -1,4 +1,4 @@
-/* SHA-3 et Keccak — SWIFT (by NeoZ)
+/* SHA-3 et Keccak — SWIFT (by D4RK)
  *
  * Le navigateur ne propose que SHA-1 et SHA-2 : SHA-3 s ecrit donc ici, tel
  * que le FIPS 202 le definit. Les quatre longueurs normalisees sont fournies,

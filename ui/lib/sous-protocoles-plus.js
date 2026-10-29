@@ -1,4 +1,4 @@
-/* Sous-protocoles WebSocket, suite — SWIFT (by NeoZ)
+/* Sous-protocoles WebSocket, suite — SWIFT (by D4RK)
  *
  * Complete sous-protocoles.js (Engine.IO / socket.io, STOMP, SignalR) avec les
  * autres familles repandues, chacune lue selon sa specification publiee :

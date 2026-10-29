@@ -1,4 +1,4 @@
-/* Jetons JWT, jeux de cles et documents de decouverte — SWIFT (by NeoZ)
+/* Jetons JWT, jeux de cles et documents de decouverte — SWIFT (by D4RK)
  *
  * Onglet En-tetes : chaque jeton JWT que porte la requete — entete
  * Authorization, cookie, adresse, corps — lu, date par rapport au moment de

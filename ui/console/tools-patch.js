@@ -1,4 +1,4 @@
-/* Panneau « JSON Patch » — SWIFT (by NeoZ)
+/* Panneau « JSON Patch » — SWIFT (by D4RK)
  *
  * Le texte de travail est un document JSON ; a cote, un second texte : un
  * patch a lui appliquer, ou le document vise. Quatre gestes :

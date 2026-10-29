@@ -1,5 +1,5 @@
 /* ============================================================
- * SWIFT — console complete  (cree par NeoZ)
+ * SWIFT — console complete  (cree par D4RK)
  *
  * Coquille de l application : en-tete, navigation laterale, routage des
  * vues, pied de page temps reel et raccourcis clavier.

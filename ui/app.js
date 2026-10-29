@@ -1,11 +1,11 @@
-/* Etat partage et services communs — SWIFT (by NeoZ)
+/* Etat partage et services communs — SWIFT (by D4RK)
  *
  * Utilise a l identique par la console plein ecran, le panneau lateral et la
  * popup : une seule logique d acces au noyau, une seule mise en forme.
  */
 import { $, el, clear } from './lib/dom.js';
 import { matchTerms } from './lib/filters.js';
-import { setLang, t } from './lib/i18n.js';
+import { setLang, lang, t } from './lib/i18n.js';
 
 export const B = typeof browser !== 'undefined' ? browser : chrome;
 
@@ -128,7 +128,7 @@ let mediaWatcher = null;
 export function applyTheme(config) {
   if (!config) return;
   setLang(config.lang);
-  document.documentElement.lang = config.lang === 'en' ? 'en' : 'fr';
+  document.documentElement.lang = lang();
   const root = document.documentElement;
   const resolve = () => {
     if (config.theme === 'auto') {

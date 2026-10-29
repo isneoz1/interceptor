@@ -1,4 +1,4 @@
-/* Dates HTTP — SWIFT (by NeoZ)
+/* Dates HTTP — SWIFT (by D4RK)
  *
  * RFC 9110 section 5.6.7 : trois formes qu un destinataire DOIT accepter, et
  * une seule qu un emetteur a le droit d ecrire.

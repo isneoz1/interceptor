@@ -1,4 +1,4 @@
-/* Cartes de source (ECMA-426) — SWIFT (by NeoZ)
+/* Cartes de source (ECMA-426) — SWIFT (by D4RK)
  *
  * Un script ou une feuille de style minifies peuvent annoncer une carte de
  * source : le fichier qui les relie a leur code d origine, lisible. Ce module

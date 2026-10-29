@@ -1,4 +1,4 @@
-/* Problemes HTTP (RFC 9457) — SWIFT (by NeoZ)
+/* Problemes HTTP (RFC 9457) — SWIFT (by D4RK)
  *
  * Une API qui echoue peut decrire l erreur dans une forme normalisee,
  * application/problem+json : type, title, status, detail, instance, et des

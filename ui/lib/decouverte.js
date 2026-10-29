@@ -1,4 +1,4 @@
-/* Documents de decouverte OAuth et OpenID Connect — SWIFT (by NeoZ)
+/* Documents de decouverte OAuth et OpenID Connect — SWIFT (by D4RK)
  *
  * RFC 8414 et OpenID Connect Discovery 1.0 : un serveur d autorisation
  * publie, a une adresse « .well-known » derivee de son identifiant

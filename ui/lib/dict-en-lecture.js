@@ -1,4 +1,4 @@
-/* Dictionnaire anglais — lectures de la 4.4 — SWIFT (by NeoZ)
+/* Dictionnaire anglais — lectures de la 4.4 — SWIFT (by D4RK)
  *
  * Complete dict-en.js (`...EN_LECTURE`) : minutage vu par la page,
  * sous-protocoles WebSocket, certificat lu en entier, criteres de recherche du
@@ -96,7 +96,6 @@ export const EN_LECTURE = {
   'Empreinte SHA-1': 'SHA-1 fingerprint',
   'Empreinte SHA-256': 'SHA-256 fingerprint',
   'Valide depuis': 'Valid since',
-  'Empreinte de cle publique': 'Public key fingerprint',
   'Racine integree': 'Built-in root',
 
   /* --------------------------- Sonde de page ------------------------------ */

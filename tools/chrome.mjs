@@ -1,5 +1,5 @@
 /* Chromium sans interface, pilote par le protocole DevTools
- * SWIFT (by NeoZ)
+ * SWIFT (by D4RK)
  *
  * Quatre outils avaient besoin de la meme chose — trouver un Chrome, le
  * lancer sans fenetre, lui parler par CDP — et chacun en portait sa copie.

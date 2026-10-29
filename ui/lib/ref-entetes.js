@@ -1,4 +1,4 @@
-/* Table de reference des entetes HTTP — SWIFT (by NeoZ)
+/* Table de reference des entetes HTTP — SWIFT (by D4RK)
  *
  * Chaque entete courant, son sens de circulation et ce qu il fait reellement.
  * Sert la boite a outils et l explication d une requete capturee.

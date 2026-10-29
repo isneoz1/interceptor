@@ -1,4 +1,4 @@
-/* Commandes de fichiers — SWIFT (by NeoZ)
+/* Commandes de fichiers — SWIFT (by D4RK)
  *
  * Exports (HAR, JSON, CSV, Markdown, Postman, OpenAPI, URL, reglages, et un script
  * dans chacun des langages du generateur de code), import
@@ -41,7 +41,7 @@ export const FILE_COMMANDS = {
     if (format === 'debug') {
       const instantane = journal.instantane({ limite: 0 });
       const content = JSON.stringify({
-        tool: 'SWIFT', author: 'NeoZ', exportedAt: new Date().toISOString(),
+        tool: 'SWIFT', author: 'D4RK', exportedAt: new Date().toISOString(),
         journal: instantane
       }, null, 2);
       const res = await saveFile('diagnostic', 'json', content, 'application/json');
@@ -74,7 +74,7 @@ export const FILE_COMMANDS = {
       }
       case 'json':
         content = JSON.stringify({
-          tool: 'SWIFT', author: 'NeoZ', exportedAt: new Date().toISOString(),
+          tool: 'SWIFT', author: 'D4RK', exportedAt: new Date().toISOString(),
           stats: collectStats(), records: records.map(detail)
         }, null, 2);
         extension = 'json'; mime = 'application/json';

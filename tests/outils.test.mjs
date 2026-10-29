@@ -1,4 +1,4 @@
-/* Tests de la boite a outils — SWIFT (cree par NeoZ)
+/* Tests de la boite a outils — SWIFT (cree par D4RK)
  *
  * Chaque valeur attendue vient d une source publiee : vecteurs de RFC,
  * valeurs de controle normalisees, ou resultat verifiable a la main. Aucun

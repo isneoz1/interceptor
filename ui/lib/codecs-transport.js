@@ -1,4 +1,4 @@
-/* Encodages de transport binaire — SWIFT (by NeoZ)
+/* Encodages de transport binaire — SWIFT (by D4RK)
  *
  * Deux facons anciennes et toujours vivantes de faire passer des octets par un
  * canal qui n accepte que du texte imprimable :

@@ -1,4 +1,4 @@
-/* WebAuthn : ce qu une ceremonie doit a d autres lignes — SWIFT (by NeoZ)
+/* WebAuthn : ce qu une ceremonie doit a d autres lignes — SWIFT (by D4RK)
  *
  * Une connexion par cle d acces se verifie avec la cle publique vue a
  * l INSCRIPTION de la meme cle, et son defi a ete emis par une REPONSE du

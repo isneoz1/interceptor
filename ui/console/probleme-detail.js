@@ -1,4 +1,4 @@
-/* Probleme HTTP (RFC 9457) dans le panneau de detail — SWIFT (by NeoZ)
+/* Probleme HTTP (RFC 9457) dans le panneau de detail — SWIFT (by D4RK)
  *
  * Une reponse application/problem+json, lue membre par membre, et confrontee
  * au statut HTTP reellement servi. Rien ne s affiche pour une autre reponse.

@@ -1,4 +1,4 @@
-/* Dictionnaire anglais — preflight CORS — SWIFT (by NeoZ)
+/* Dictionnaire anglais — preflight CORS — SWIFT (by D4RK)
  *
  * Les noms d entete ne se traduisent pas : « Access-Control-Allow-Origin »
  * est ce que porte le fil, et le chercher dans une documentation ou une

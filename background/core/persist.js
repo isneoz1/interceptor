@@ -1,4 +1,4 @@
-/* Persistance IndexedDB — SWIFT (by NeoZ)
+/* Persistance IndexedDB — SWIFT (by D4RK)
  *
  * Optionnelle (reglage `persist`). Ecrit les enregistrements termines par lots
  * pour ne jamais bloquer la capture, et les recharge au demarrage du navigateur.

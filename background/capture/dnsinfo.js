@@ -1,4 +1,4 @@
-/* Resolution DNS (nom canonique + adresses) — SWIFT (by NeoZ)
+/* Resolution DNS (nom canonique + adresses) — SWIFT (by D4RK)
  * Cache par hote : une seule resolution, quel que soit le volume de requetes.
  */
 import { B } from '../lib/util.js';

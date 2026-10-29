@@ -1,4 +1,4 @@
-/* Dictionnaire anglais — lectures d API (5.1) — SWIFT (by NeoZ)
+/* Dictionnaire anglais — lectures d API (5.1) — SWIFT (by D4RK)
  *
  * Complete dict-en.js (`...EN_API`) : JSON-RPC 2.0 et SOAP sur HTTP, les
  * problemes HTTP (RFC 9457), et les controles d un corps (type annonce,

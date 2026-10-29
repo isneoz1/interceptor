@@ -1,4 +1,4 @@
-/* Jeux de cles JWK (RFC 7517) — SWIFT (by NeoZ)
+/* Jeux de cles JWK (RFC 7517) — SWIFT (by D4RK)
  *
  * Un emetteur publie ses cles publiques dans un jeu de cles (JWKS), a
  * l adresse que donne son document de decouverte (« jwks_uri »). Un jeton

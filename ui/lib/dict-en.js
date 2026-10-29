@@ -1,4 +1,4 @@
-/* Dictionnaire anglais — SWIFT (by NeoZ)
+/* Dictionnaire anglais — SWIFT (by D4RK)
  *
  * La cle est le texte francais tel qu il apparait dans le code. Une entree
  * absente laisse le texte francais s afficher : jamais de vide ni de cle brute.
@@ -29,6 +29,9 @@ import { EN_SIGNAUX } from './dict-en-signaux.js';
 import { EN_REF_PROXY } from './dict-en-ref-proxy.js';
 import { EN_PATCH } from './dict-en-patch.js';
 import { EN_JOSE } from './dict-en-jose.js';
+import { EN_CLES } from './dict-en-cles.js';
+import { EN_EXPORTS } from './dict-en-exports.js';
+import { EN_BIBLIOTHEQUES } from './dict-en-bibliotheques.js';
 
 export const EN = {
   /* ------------------------------ Navigation ----------------------------- */
@@ -374,6 +377,8 @@ export const EN = {
   'Requetes les plus signalees': 'Most flagged requests',
   'Flux ouverts et fermes': 'Open and closed streams',
   'Journal des cookies': 'Cookie log',
+  'onglet {onglet} / cadre {cadre}': 'tab {onglet} / frame {cadre}',
+  'ERREUR': 'ERROR',
   'Journal de navigation': 'Navigation log',
   'Journal de contexte': 'Context log',
   'Extension': 'Extension',
@@ -447,5 +452,8 @@ export const EN = {
   ...EN_SIGNAUX,
   ...EN_REF_PROXY,
   ...EN_PATCH,
-  ...EN_JOSE
+  ...EN_JOSE,
+  ...EN_CLES,
+  ...EN_EXPORTS,
+  ...EN_BIBLIOTHEQUES
 };

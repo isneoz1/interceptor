@@ -1,4 +1,4 @@
-/* Vue « Journal interne » — SWIFT (by NeoZ)
+/* Vue « Journal interne » — SWIFT (by D4RK)
  *
  * Cette vue n observe pas le trafic : elle observe l extension. Elle repond a
  * « qu est-ce qui a echoue chez SWIFT, et qu a-t-il fait ? ».

@@ -1,4 +1,4 @@
-/* Dictionnaire anglais — analyses, trames et bandeau — SWIFT (by NeoZ)
+/* Dictionnaire anglais — analyses, trames et bandeau — SWIFT (by D4RK)
  *
  * Ce fichier couvre trois endroits qui parlaient encore francais en anglais :
  *   - le bandeau du bas et ses compteurs ;

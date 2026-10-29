@@ -1,4 +1,4 @@
-/* Import d une cle publique collee — SWIFT (by NeoZ)
+/* Import d une cle publique collee — SWIFT (by D4RK)
  *
  * Une seule porte d entree pour toutes les verifications (JWT, signature
  * detachee, signatures de messages HTTP) : une cle se colle comme on la

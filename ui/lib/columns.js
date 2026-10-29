@@ -1,4 +1,4 @@
-/* Colonnes du tableau de requetes — SWIFT (by NeoZ)
+/* Colonnes du tableau de requetes — SWIFT (by D4RK)
  *
  * Chaque colonne sait s afficher et se trier. La liste affichee est libre :
  * elle se choisit dans le menu « Colonnes » et se conserve dans les reglages.

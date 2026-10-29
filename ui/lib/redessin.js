@@ -1,4 +1,4 @@
-/* Redessiner une vue sans deranger celui qui la lit — SWIFT (by NeoZ)
+/* Redessiner une vue sans deranger celui qui la lit — SWIFT (by D4RK)
  *
  * Plusieurs vues se redessinent d elles-memes : a chaque changement du trafic
  * (le « Flux direct », la vue Securite), a chaque lecture d une session suivie,

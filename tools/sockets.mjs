@@ -1,4 +1,4 @@
-/* Audit des sockets — SWIFT (by NeoZ)
+/* Audit des sockets — SWIFT (by D4RK)
  *
  *   node tools/sockets.mjs
  *

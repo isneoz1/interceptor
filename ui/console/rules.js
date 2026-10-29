@@ -1,4 +1,4 @@
-/* Vue « Regles » — interception active — SWIFT (by NeoZ)
+/* Vue « Regles » — interception active — SWIFT (by D4RK)
  *
  * Editeur visuel : chaque regle se construit avec des champs et des boutons.
  * Le mode JSON reste disponible pour les cas avances et les copier-coller.

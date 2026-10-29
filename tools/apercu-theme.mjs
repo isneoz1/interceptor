@@ -1,4 +1,4 @@
-/* Apercu d un theme — SWIFT (by NeoZ)
+/* Apercu d un theme — SWIFT (by D4RK)
  *
  *   node tools/apercu-theme.mjs --theme=clair [--vue=requests] [--sortie=dossier]
  *

@@ -1,4 +1,4 @@
-/* Journal de diagnostic interne — SWIFT (by NeoZ)
+/* Journal de diagnostic interne — SWIFT (by D4RK)
  *
  * Ce module observe l extension elle-meme, pas le trafic. Il repond a une
  * question que rien d autre ne couvrait : « que fait SWIFT, et qu est-ce

@@ -1,4 +1,4 @@
-/* Vue « Requetes » — tableau virtualise — SWIFT (by NeoZ)
+/* Vue « Requetes » — tableau virtualise — SWIFT (by D4RK)
  *
  * Le tableau n impose aucune limite d affichage : seules les lignes visibles
  * sont construites, ce qui permet de garder des centaines de milliers

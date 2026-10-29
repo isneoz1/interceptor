@@ -1,4 +1,4 @@
-/* Chiffrement, derivation et signatures — SWIFT (by NeoZ)
+/* Chiffrement, derivation et signatures — SWIFT (by D4RK)
  *
  * Tout passe par crypto.subtle : AES-GCM, AES-CBC, AES-CTR, PBKDF2, HKDF,
  * verification RSA et ECDSA. Aucun algorithme n est reimplemente ici, donc

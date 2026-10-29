@@ -1,5 +1,5 @@
 /* Dictionnaire anglais — catalogue des transformations et onglets d outils
- * SWIFT (by NeoZ)
+ * SWIFT (by D4RK)
  *
  * Suite de dict-en-tools.js, dont il complete la table (`...EN_OUTILS`).
  * Meme regle : la cle est le texte francais tel qu il apparait dans le code.

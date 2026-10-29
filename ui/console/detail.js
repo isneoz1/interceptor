@@ -1,4 +1,4 @@
-/* Panneau de detail — SWIFT (by NeoZ)
+/* Panneau de detail — SWIFT (by D4RK)
  *
  * Douze onglets couvrant la totalite d un enregistrement, dont un onglet
  * « Brut » qui affiche l objet complet : aucune donnee capturee ne peut

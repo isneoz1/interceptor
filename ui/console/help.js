@@ -1,4 +1,4 @@
-/* Vue « Aide » — mode d emploi complet, hors ligne — SWIFT (by NeoZ) */
+/* Vue « Aide » — mode d emploi complet, hors ligne — SWIFT (by D4RK) */
 import { $, el, clear, button, richText } from '../lib/dom.js';
 import { fieldHelp } from '../lib/filters.js';
 import { cmd, toast } from '../app.js';
@@ -23,7 +23,7 @@ export const SECTIONS = [
   },
   {
     h: 'Langue et confort',
-    p: ['Le bouton FR / EN de l en-tete bascule toute l interface, l aide et le tutoriel entre le francais et l anglais. Reglages -> Interface propose aussi le mode simple, le theme clair ou sombre, le contraste renforce, la taille du texte et la densite du tableau.'],
+    p: ['Au premier lancement, SWIFT parle la langue de Firefox : le francais si Firefox est en francais, l anglais sinon. Le bouton FR / EN de l en-tete bascule ensuite toute l interface, l aide, le tutoriel, le clic droit et les fichiers exportes entre le francais et l anglais. Reglages -> Interface propose aussi le mode simple, le theme clair ou sombre, le contraste renforce, la taille du texte et la densite du tableau.'],
     ul: []
   },
   {
@@ -74,11 +74,12 @@ export const SECTIONS = [
   {
     h: 'La boite a outils',
     p: [
-      'Un seul texte de travail, vingt-quatre onglets qui le regardent. On colle une valeur une fois — depuis le presse-papiers, depuis le menu contextuel d une ligne, ou depuis un onglet du detail — et chaque outil travaille dessus. Tout se calcule dans la page : aucune de ces fonctions n emet la moindre requete.'
+      'Un seul texte de travail, vingt-cinq onglets qui le regardent. On colle une valeur une fois — depuis le presse-papiers, depuis le menu contextuel d une ligne, ou depuis un onglet du detail — et chaque outil travaille dessus. Tout se calcule dans la page : aucune de ces fonctions n emet la moindre requete.'
     ],
     table: [
       ['Transformer', '138 transformations classees en dix-huit familles : base64 et base64 URL, base32, base58, base45, Ascii85, URL, entites HTML, hexadecimal, binaire, octal, echappements Unicode, punycode, JSON, YAML, CSV, XML, SAML, messages DNS, WebAuthn, gzip et deflate, casse, lignes, echappements de chaine, Protocol Buffers, MessagePack, CBOR, ASN.1. « Tout essayer » applique chaque decodage — sauf DNS et WebAuthn, qui liraient n importe quels octets — et ne garde que les resultats lisibles.'],
       ['Cles et essais', 'XOR avec cle repetee, recherche des 255 cles d un octet, les vingt-cinq decalages de Cesar, Vigenere. Ces chiffres ne protegent rien : ils relisent une valeur volontairement obscurcie.'],
+      ['Cle publique', 'Une cle publique collee sous n importe quelle forme — PEM, certificat, JWK ou jeu de cles, ligne OpenSSH ou fichier authorized_keys entier, DER en base64 — et toutes les autres : PEM, PKCS #1, JWK, ligne OpenSSH, avec son epingle pin-sha256 (RFC 7469), ses empreintes OpenSSH (SHA256 et MD5), son empreinte JWK (RFC 7638) et son identifiant de cle (RFC 5280). Plusieurs cles collees ensemble sont comparees : la meme cle sous deux formes est reconnue.'],
       ['JWT', 'Entete, charge utile, validite, temps restant. La signature se verifie vraiment : HS256 a HS512 avec la cle partagee (texte ou JWK « oct »), RS, PS, ES et EdDSA (Ed25519) avec la cle publique collee en PEM ou en JWK, ou tout le jeu de cles (JWKS) de l emetteur, dont la cle designee par le jeton est choisie. L algorithme se lit a la lettre : « hs256 » n est pas HS256. Sans cle, l ecran le dit, plutot que de laisser croire qu un jeton decode est un jeton valide.'],
       ['Chiffrement', 'AES-GCM, AES-CBC et AES-CTR dans les deux sens, avec vecteur d initialisation et donnees authentifiees ; derivation PBKDF2 et HKDF ; verification d une signature detachee RSA, RSA-PSS, ECDSA ou HMAC. Tout passe par le moteur du navigateur, rien ne sort de la machine.'],
       ['Empreintes', 'MD5, SHA-1, SHA-256, SHA-384, SHA-512, CRC-32, Adler-32, FNV-1a, djb2, somme des octets, et HMAC avec cle.'],
@@ -229,8 +230,8 @@ export function render() {
 
   box.appendChild(el('h2', { text: lang() === 'en' ? 'SWIFT — user manual' : 'SWIFT — mode d emploi' }));
   box.appendChild(el('p', { text: lang() === 'en'
-    ? 'Network supervision station for Firefox, created by NeoZ. This page holds everything you need to know: it works offline and always matches the installed version.'
-    : 'Poste de supervision reseau pour Firefox, cree par NeoZ. Cette page contient tout ce qu il faut savoir : elle fonctionne hors ligne et suit exactement la version installee.' }));
+    ? 'Network supervision station for Firefox, created by D4RK. This page holds everything you need to know: it works offline and always matches the installed version.'
+    : 'Poste de supervision reseau pour Firefox, cree par D4RK. Cette page contient tout ce qu il faut savoir : elle fonctionne hors ligne et suit exactement la version installee.' }));
 
   const sections = lang() === 'en' ? SECTIONS_EN : SECTIONS;
   for (const section of sections) {

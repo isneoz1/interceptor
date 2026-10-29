@@ -1,4 +1,4 @@
-/* Raccourcis clavier — SWIFT (by NeoZ)
+/* Raccourcis clavier — SWIFT (by D4RK)
  *
  * Une seule liste, lue par la fenetre « ? » et par l aide. Recopiee a la
  * main, elle avait diverge : la fenetre en comptait dix-sept, l aide anglaise

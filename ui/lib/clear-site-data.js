@@ -1,4 +1,4 @@
-/* Effacement demande par un site (Clear-Site-Data) — SWIFT (by NeoZ)
+/* Effacement demande par un site (Clear-Site-Data) — SWIFT (by D4RK)
  *
  * Une reponse peut demander au navigateur d effacer ce qu il garde pour le
  * site : souvent a la deconnexion. Ce module dit ce qui sera efface.

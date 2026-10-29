@@ -1,4 +1,4 @@
-/* Brouillage et lecture de code — SWIFT (by NeoZ)
+/* Brouillage et lecture de code — SWIFT (by D4RK)
  *
  * Deux operations reciproques, toutes deux exactes :
  *   obfusquer   enveloppe un code dans une forme qui s auto-decode a

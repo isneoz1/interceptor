@@ -1,4 +1,4 @@
-/* Audit d affichage — SWIFT (by NeoZ)
+/* Audit d affichage — SWIFT (by D4RK)
  *
  *   node tools/affichage.mjs
  *   node tools/affichage.mjs --largeurs=360,1600

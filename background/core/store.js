@@ -1,4 +1,4 @@
-/* Magasin memoire des enregistrements reseau — SWIFT (by NeoZ) */
+/* Magasin memoire des enregistrements reseau — SWIFT (by D4RK) */
 import { Emitter } from '../lib/emitter.js';
 import { config } from './config.js';
 import { hostOf, pathOf, schemeOf, throttleFlush } from '../lib/util.js';

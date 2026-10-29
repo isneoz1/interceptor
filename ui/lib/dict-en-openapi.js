@@ -1,4 +1,4 @@
-/* Dictionnaire anglais — OpenAPI et schema JSON (5.0) — SWIFT (by NeoZ)
+/* Dictionnaire anglais — OpenAPI et schema JSON (5.0) — SWIFT (by D4RK)
  *
  * Complete dict-en.js (`...EN_OPENAPI`) : l export OpenAPI 3.1 des appels
  * d API et la transformation « JSON vers schema JSON » de la boite a outils.

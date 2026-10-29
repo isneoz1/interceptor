@@ -1,4 +1,4 @@
-/* Identifiants : ce qu ils contiennent vraiment — SWIFT (by NeoZ)
+/* Identifiants : ce qu ils contiennent vraiment — SWIFT (by D4RK)
  *
  * Une URL d API est pleine d identifiants, et la plupart ne sont pas
  * aleatoires : ils portent un horodatage, parfois une machine, parfois un
@@ -15,6 +15,7 @@
  * specification de l identifiant. Quand la forme ne correspond pas, on le dit
  * plutot que de rendre une date inventee.
  */
+import { tp } from './i18n.js';
 
 const MS_PAR_JOUR = 86400000;
 
@@ -240,5 +241,5 @@ export function remarqueDate(instant) {
   const jours = Math.round((maintenant - instant) / MS_PAR_JOUR);
   if (jours <= 0) return 'aujourd hui';
   if (jours === 1) return 'hier';
-  return 'il y a ' + jours + ' jours';
+  return tp('il y a {n} jours', { n: jours });
 }

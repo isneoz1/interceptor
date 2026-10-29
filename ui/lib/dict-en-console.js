@@ -1,4 +1,4 @@
-/* Dictionnaire anglais — reste de la console — SWIFT (by NeoZ)
+/* Dictionnaire anglais — reste de la console — SWIFT (by D4RK)
  *
  * Les libelles du tableau, du detail, des flux, des menus et de la fenetre
  * compacte. Avec ce fichier, le bouton FR / EN bascule vraiment toute
@@ -141,7 +141,7 @@ export const EN_CONSOLE = {
   'Avec credentials': 'With credentials',
 
   /* --------------------------------- Flux --------------------------------- */
-  'Flux #': 'Stream #',
+  'Flux #{id}': 'Stream #{id}',
   'Rafraichir': 'Refresh',
   'Ouvrir la requete': 'Open the request',
   'Copier les messages affiches': 'Copy the displayed messages',

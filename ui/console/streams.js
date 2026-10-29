@@ -1,4 +1,4 @@
-/* Vue « Flux temps reel » — WebSocket et Server-Sent Events — SWIFT (by NeoZ)
+/* Vue « Flux temps reel » — WebSocket et Server-Sent Events — SWIFT (by D4RK)
  *
  * Les trames arrivent en continu : cette vue suit un flux choisi et affiche
  * chaque message dans l ordre, sans en masquer aucun.
@@ -126,7 +126,7 @@ function dessiner() {
     return;
   }
 
-  box.appendChild(sec('Flux #' + record.id, record.method + ' ' + middle(record.finalUrl || record.url, 90)));
+  box.appendChild(sec(tp('Flux #{id}', { id: record.id }), record.method + ' ' + middle(record.finalUrl || record.url, 90)));
   add(box, kv('Etat', record.state));
   if (record.ws) {
     add(box, kv('Trames', tp('{envoyees} envoyees / {recues} recues', { envoyees: record.ws.sent, recues: record.ws.received })));

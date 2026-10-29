@@ -1,4 +1,4 @@
-/* Audit de transparence — SWIFT (by NeoZ)
+/* Audit de transparence — SWIFT (by D4RK)
  *
  *   node tools/transparence.mjs
  *

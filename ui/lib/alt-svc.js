@@ -1,4 +1,4 @@
-/* Services alternatifs (Alt-Svc) — SWIFT (by NeoZ)
+/* Services alternatifs (Alt-Svc) — SWIFT (by D4RK)
  *
  * RFC 7838 : un serveur annonce qu il est aussi joignable autrement — le plus
  * souvent en HTTP/3 sur le meme port :

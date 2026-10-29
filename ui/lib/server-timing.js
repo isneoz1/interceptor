@@ -1,5 +1,5 @@
 /* Server-Timing : ou le serveur a passe son temps
- * SWIFT (by NeoZ)
+ * SWIFT (by D4RK)
  *
  * Une requete a mis 214 ms. Combien le serveur en revendique-t-il ? C est la
  * seule question qui permette de savoir si le probleme est chez lui ou sur le

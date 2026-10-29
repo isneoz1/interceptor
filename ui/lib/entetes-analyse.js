@@ -1,4 +1,4 @@
-/* Analyse d un entete HTTP — SWIFT (by NeoZ)
+/* Analyse d un entete HTTP — SWIFT (by D4RK)
  *
  * La table de reference dit a quoi sert un entete ; ce module lit sa valeur.
  * Un Set-Cookie, une politique de securite, un Cache-Control ou un Accept ne
@@ -10,7 +10,11 @@ import { analyserContentDisposition } from './entetes-parametres.js';
 import { analyserChampStructure, decrireArticle, FORMES_CONNUES }
   from './champs-structures.js';
 
-const partie = (cle, valeur, note) => ({ cle, valeur: valeur == null ? '' : String(valeur), note: note || '' });
+/* Le nom et la note sont des textes de l interface, traduits a l affichage.
+   La valeur est une donnee, montree telle quelle — sauf quand elle est elle-
+   meme un texte (`texte`). Un nom a trous porte ses valeurs (`trous`). */
+const partie = (cle, valeur, note, { texte = false, trous = null } = {}) =>
+  ({ cle, valeur: valeur == null ? '' : String(valeur), note: note || '', texte, trous });
 
 /* Un risque porte une phrase stable — donc traduisible — et, quand il vient
    d une directive precise, le nom de cette directive a part. */
@@ -53,7 +57,7 @@ function setCookie(valeur) {
     risques.push(risque('prefixe __Secure- : exige l attribut Secure'));
   }
   if (!attributs.has('expires') && !attributs.has('max-age')) {
-    parties.push(partie('Duree', 'cookie de session', 'efface a la fermeture du navigateur'));
+    parties.push(partie('Duree', 'cookie de session', 'efface a la fermeture du navigateur', { texte: true }));
   }
   return { parties, risques };
 }
@@ -336,11 +340,11 @@ const ANALYSEURS = Object.assign(Object.create(null), {
     };
   },
   'x-forwarded-for': v => ({
-    parties: String(v).split(',').map((x, i) => partie('saut ' + (i + 1), x.trim())),
+    parties: String(v).split(',').map((x, i) => partie('saut {n}', x.trim(), '', { trous: { n: i + 1 } })),
     risques: [risque('entete ajoute par un intermediaire : il se falsifie sans difficulte')]
   }),
   'forwarded': v => ({
-    parties: String(v).split(',').map((x, i) => partie('saut ' + (i + 1), x.trim())),
+    parties: String(v).split(',').map((x, i) => partie('saut {n}', x.trim(), '', { trous: { n: i + 1 } })),
     risques: []
   }),
   'server-timing': v => ({

@@ -1,4 +1,4 @@
-/* Clics et saisie a travers les redessins — SWIFT (by NeoZ)
+/* Clics et saisie a travers les redessins — SWIFT (by D4RK)
  *
  *   node tests/saisie.test.mjs
  *

@@ -1,4 +1,4 @@
-/* Verdict, provenance, effacement, carte de source — SWIFT (by NeoZ)
+/* Verdict, provenance, effacement, carte de source — SWIFT (by D4RK)
  *
  *   Resume    le verdict en une phrase, en tete, avec l onglet qui en donne
  *             le detail ; puis la provenance declaree par Firefox

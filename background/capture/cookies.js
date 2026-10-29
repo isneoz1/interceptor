@@ -1,4 +1,4 @@
-/* Mutations de cookies (cookies.onChanged) — SWIFT (by NeoZ)
+/* Mutations de cookies (cookies.onChanged) — SWIFT (by D4RK)
  * Capture aussi les cookies poses en JavaScript, invisibles dans Set-Cookie.
  */
 import { B } from '../lib/util.js';

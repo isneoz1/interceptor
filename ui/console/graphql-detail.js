@@ -1,4 +1,4 @@
-/* GraphQL dans le panneau de detail — SWIFT (by NeoZ)
+/* GraphQL dans le panneau de detail — SWIFT (by D4RK)
  *
  *   Requete  l operation executee, le document, les variables, et la requete
  *            persistee d Apollo, dont le hachage est recalcule ici

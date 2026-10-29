@@ -6,5 +6,21 @@
   "extensionDescription": {
     "message": "See every request Firefox makes: response bodies off the wire, the JavaScript stack behind each call, TLS and cookies. Block, rewrite or replay any of them. No duplicated rows, no telemetry, no dependencies.",
     "description": "Short description shown under the name. Kept close to 200 characters so it is not truncated in about:addons."
+  },
+  "commandePopup": {
+    "message": "Open the SWIFT window",
+    "description": "Keyboard shortcut \"_execute_browser_action\", shown in Manage Extension Shortcuts."
+  },
+  "commandePanneau": {
+    "message": "Open SWIFT in the sidebar",
+    "description": "Keyboard shortcut \"_execute_sidebar_action\", shown in Manage Extension Shortcuts."
+  },
+  "commandeConsole": {
+    "message": "Open the full console in a tab",
+    "description": "Keyboard shortcut \"open-console\", shown in Manage Extension Shortcuts."
+  },
+  "commandeCapture": {
+    "message": "Switch between capture and pause",
+    "description": "Keyboard shortcut \"toggle-capture\", shown in Manage Extension Shortcuts."
   }
 }

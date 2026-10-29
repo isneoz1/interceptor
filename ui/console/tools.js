@@ -1,4 +1,4 @@
-/* Vue « Boite a outils » — SWIFT (by NeoZ)
+/* Vue « Boite a outils » — SWIFT (by D4RK)
  *
  * Un seul texte de travail, tous les outils dessus : on colle une valeur une
  * fois, et chaque panneau la regarde. Le texte peut venir du presse-papiers,
@@ -27,11 +27,12 @@ import { panneauBinaire } from './tools-binaire.js';
 import { panneauEntetes } from './tools-entetes.js';
 import { panneauComparer } from './tools-diff.js';
 import { panneauPatch } from './tools-patch.js';
+import { panneauClePublique } from './tools-cle.js';
 import { panneauChercher } from './tools-chercher.js';
 import { panneauCode } from './tools-code.js';
 import { panneauOtp } from './tools-otp.js';
 
-/* Les outils, ranges par intention plutot qu en une seule rangee de vingt-quatre
+/* Les outils, ranges par intention plutot qu en une seule rangee de vingt-cinq
    boutons. On cherche « ce que je veux faire », pas le nom de l outil : les
    familles portent donc des verbes, et chacune tient sur une ligne. */
 /* Exporte pour la palette de commandes, qui construit son registre a partir
@@ -47,6 +48,7 @@ export const FAMILLES = [
     ['empreintes', 'Empreintes'],
     ['chiffrement', 'Chiffrement'],
     ['cles', 'Cles et essais'],
+    ['cle', 'Cle publique'],
     ['jwt', 'JWT'],
     ['otp', 'Codes OTP']
   ]],
@@ -234,6 +236,7 @@ function dessiner() {
   else if (onglet === 'regex') box.appendChild(panneauRegex(entree, etat, redessiner));
   else if (onglet === 'comparer') box.appendChild(panneauComparer(entree, etat, redessiner, reprendre));
   else if (onglet === 'patch') box.appendChild(panneauPatch(entree, etat, redessiner, reprendre));
+  else if (onglet === 'cle') box.appendChild(panneauClePublique(entree, etat, redessiner));
   else if (onglet === 'url') box.appendChild(panneauUrl(entree));
   else if (onglet === 'adresse') box.appendChild(panneauAdresse(entree, etat, redessiner, reprendre));
   else if (onglet === 'reference') box.appendChild(panneauReference(entree, etat, redessiner));
@@ -280,7 +283,7 @@ function panneauTransformer() {
       }
       for (const r of sortie.multiple) {
         const carte = el('div', { class: 'find info' }, [
-          el('h4', { text: r.libelle }),
+          el('h4', { text: t(r.libelle) }),
           texteLong(r.valeur, { seuil: 4000 })
         ]);
         const acts = el('div', { class: 'actions' });

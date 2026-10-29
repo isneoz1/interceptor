@@ -1,5 +1,5 @@
 /* Dictionnaire anglais — boite a outils, cible, diagnostic interne
- * SWIFT (by NeoZ)
+ * SWIFT (by D4RK)
  *
  * Suite de dict-en.js, dont il complete la table (`...EN_TOOLS`). Meme regle :
  * la cle est le texte francais tel qu il apparait dans le code.
@@ -131,7 +131,10 @@ export const EN_TOOLS = {
   'Placez une valeur dans le texte de travail pour la convertir.':
     'Put a value in the working text to convert it.',
   'Non convertible : ': 'Not convertible: ',
-  'Lectures de « ': 'Readings of "',
+  'Lectures de « {valeur} »': 'Readings of "{valeur}"',
+  '{n} octets en hexadecimal': '{n} bytes as hexadecimal',
+  'Position {n}': 'Position {n}',
+  'trailer {nom}': 'trailer {nom}',
 
   /* ------------------------------ Generateurs ----------------------------- */
   'Generer': 'Generate',

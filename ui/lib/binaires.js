@@ -1,4 +1,4 @@
-/* Formats binaires — SWIFT (by NeoZ)
+/* Formats binaires — SWIFT (by D4RK)
  *
  * Protocol Buffers, MessagePack et CBOR : les trois corps binaires que l on
  * croise vraiment dans du trafic HTTP moderne (gRPC, API compactes, WebAuthn,

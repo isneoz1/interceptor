@@ -1,4 +1,4 @@
-/* Ecriture de fichier depuis la page d arriere-plan — SWIFT (by NeoZ)
+/* Ecriture de fichier depuis la page d arriere-plan — SWIFT (by D4RK)
  *
  * L export est construit et telecharge ici, jamais dans la popup : une popup se
  * ferme des qu elle perd le focus, ce qui revoquerait l URL du blob en pleine

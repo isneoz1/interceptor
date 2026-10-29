@@ -1,4 +1,4 @@
-/* Lectures de securite du panneau de detail — SWIFT (by NeoZ)
+/* Lectures de securite du panneau de detail — SWIFT (by D4RK)
  *
  * Ce que les onglets du detail montrent d une requete du point de vue de la
  * securite, quand il y a quelque chose a montrer — sinon rien, pour ne pas

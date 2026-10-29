@@ -1,5 +1,5 @@
 /* La scene : du vrai trafic, un vrai noyau, une vraie console
- * SWIFT (by NeoZ)
+ * SWIFT (by D4RK)
  *
  * Les captures, les vitrines et la video ont besoin de la meme mise en
  * place : un jeu de trafic passe dans le VRAI noyau — meme magasin, meme
@@ -181,25 +181,79 @@ export async function ouvrirScene(options = {}) {
   /* --- Flux temps reel --- */
   const flux = requete({ url: 'wss://realtime.example.com/socket', type: 'websocket', statut: 101,
     mime: '', taille: 0, duree: 0 });
+  /* La forme exacte que le noyau donne a une session (ingest/page.js) : des
+     messages texte, comme les sondes les voient. Un ping n en fait pas partie :
+     l API WebSocket de la page ne le montre jamais. */
+  const messagesFlux = [
+    { dir: 'send', ts: horloge + 200, data: '{"type":"subscribe","channel":"stock"}' },
+    { dir: 'recv', ts: horloge + 420, data: '{"channel":"stock","ref":"REF-8842","remaining":7}' },
+    { dir: 'recv', ts: horloge + 1900, data: '{"channel":"stock","ref":"REF-1130","remaining":0}' },
+    { dir: 'send', ts: horloge + 3000, data: '{"type":"unsubscribe","channel":"stock"}' }
+  ].map(f => ({ ...f, opcode: 'text', size: f.data.length, truncated: false }));
+  const sensFlux = sens => messagesFlux.filter(f => f.dir === sens);
   flux.ws = {
-    frames: [
-      { dir: 'out', opcode: 1, ts: horloge + 200, size: 38, text: '{"type":"subscribe","channel":"stock"}' },
-      { dir: 'in', opcode: 1, ts: horloge + 420, size: 64, text: '{"channel":"stock","ref":"REF-8842","remaining":7}' },
-      { dir: 'in', opcode: 1, ts: horloge + 1900, size: 63, text: '{"channel":"stock","ref":"REF-1130","remaining":0}' },
-      { dir: 'out', opcode: 9, ts: horloge + 3000, size: 0, text: '' }
-    ]
+    frames: messagesFlux, protocols: null, openedAt: horloge + 100, closedAt: null, close: null,
+    sent: sensFlux('send').length, received: sensFlux('recv').length,
+    bytesSent: sensFlux('send').reduce((n, f) => n + f.size, 0),
+    bytesReceived: sensFlux('recv').reduce((n, f) => n + f.size, 0)
   };
   store.touch(flux.id);
 
   const sse = requete({ url: API + '/v2/events', type: 'other', mime: 'text/event-stream',
     taille: 512, duree: 0 });
   sse.sse = {
+    openedAt: horloge, closedAt: null, withCredentials: false,
     messages: [
-      { event: 'order', data: '{"id":"ORD-77","state":"paid"}', ts: horloge + 800 },
-      { event: 'order', data: '{"id":"ORD-78","state":"preparing"}', ts: horloge + 4200 }
+      { event: 'order', data: '{"id":"ORD-77","state":"paid"}', lastEventId: '77', ts: horloge + 800 },
+      { event: 'order', data: '{"id":"ORD-78","state":"preparing"}', lastEventId: '78', ts: horloge + 4200 }
     ]
   };
   store.touch(sse.id);
+
+  /* --- Les journaux : cookies, navigation, Workers et WebRTC ---
+     Firefox les nourrit par ses evenements. Les vraies couches de capture
+     recoivent ici ces evenements, tels que Firefox les donne : rien n est
+     ecrit dans les journaux a leur place. */
+  const { startCookies } = await import('../background/capture/cookies.js');
+  const { startNavigation } = await import('../background/capture/navigation.js');
+  const { ingestBatch } = await import('../background/ingest/page.js');
+  startCookies();
+  startNavigation();
+  const naviguer = (evenement, ecart, d = {}) => browser.webNavigation[evenement].emettre({
+    tabId: 3, frameId: 0, parentFrameId: -1, url: SITE + '/', timeStamp: T0 + ecart, ...d });
+  naviguer('onBeforeNavigate', 0);
+  naviguer('onCommitted', 40, { transitionType: 'typed', transitionQualifiers: ['from_address_bar'] });
+  naviguer('onDOMContentLoaded', 420);
+  naviguer('onCompleted', 910);
+  naviguer('onBeforeNavigate', 1200, { frameId: 7, parentFrameId: 0, url: 'https://pay.example.com/frame' });
+  naviguer('onCommitted', 1260, { frameId: 7, parentFrameId: 0, url: 'https://pay.example.com/frame',
+    transitionType: 'auto_subframe', transitionQualifiers: [] });
+  naviguer('onErrorOccurred', 1300, { frameId: 9, parentFrameId: 0, url: 'https://ads.tracker.net/slot',
+    error: 'NS_ERROR_BLOCKED_BY_POLICY' });
+  naviguer('onHistoryStateUpdated', 6200, { url: SITE + '/catalog?page=1', transitionType: 'link', transitionQualifiers: [] });
+  naviguer('onReferenceFragmentUpdated', 9100, { url: SITE + '/catalog?page=1#reviews',
+    transitionType: 'link', transitionQualifiers: [] });
+
+  const cookie = (c, cause = 'explicit', removed = false) => browser.cookies.onChanged.emettre({
+    cause, removed, cookie: { path: '/', storeId: 'firefox-default', session: false, ...c } });
+  cookie({ name: 'session', value: 'a1b2c3', domain: 'shop.example.com', secure: true, httpOnly: true,
+    sameSite: 'lax', session: true });
+  cookie({ name: 'cart_id', value: 'C-20931', domain: '.example.com', secure: true, sameSite: 'strict',
+    expirationDate: Math.round(T0 / 1000) + 30 * 86400 });
+  cookie({ name: 'theme', value: 'dark', domain: 'shop.example.com', secure: true, sameSite: 'lax' });
+  cookie({ name: 'trace', value: 'x9', domain: 'api.example.com', secure: false, sameSite: 'no_restriction' });
+  cookie({ name: 'trace', value: 'x9', domain: 'api.example.com', secure: false, sameSite: 'no_restriction' },
+    'expired_overwrite', true);
+
+  ingestBatch([
+    { kind: 'document:start', url: SITE + '/', detail: { referrer: null }, ts: T0 + 60 },
+    { kind: 'serviceWorker:register', url: SITE + '/sw.js', detail: { scope: '/' }, ts: T0 + 880 },
+    { kind: 'document:load', url: SITE + '/', ts: T0 + 910 },
+    { kind: 'worker:create', url: CDN + '/search-worker.js', ts: T0 + 1500 },
+    { kind: 'rtc:create', url: SITE + '/support', detail: { iceServers: [{ urls: 'stun:stun.example.com:3478' }] }, ts: T0 + 30000 },
+    { kind: 'rtc:datachannel:open', url: SITE + '/support', detail: { label: 'chat' }, ts: T0 + 30050 },
+    { kind: 'rtc:state', url: SITE + '/support', detail: { state: 'connected' }, ts: T0 + 31200 }
+  ].map(e => ({ t: 'ctx', ...e })), { tab: { id: 3 }, frameId: 0, url: SITE + '/' });
 
   /* --- Une regle d exemple, pour que la vue « Regles » montre quelque chose --- */
   /* Les captures illustrent un depot anglophone : l interface est rendue dans sa

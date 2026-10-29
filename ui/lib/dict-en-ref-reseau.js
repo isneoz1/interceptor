@@ -1,5 +1,5 @@
 /* Dictionnaire anglais — types de media et ports
- * SWIFT (by NeoZ)
+ * SWIFT (by D4RK)
  *
  * Traduction des descriptions de ref-mime.js et ref-ports.js.
  */

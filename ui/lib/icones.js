@@ -1,4 +1,4 @@
-/* Icones de l interface — SWIFT (by NeoZ)
+/* Icones de l interface — SWIFT (by D4RK)
  *
  * Dessins originaux, traces sur une grille de 24 unites, d un seul trait a
  * bouts ronds : la meme main pour toutes. Les symboles Unicode employes

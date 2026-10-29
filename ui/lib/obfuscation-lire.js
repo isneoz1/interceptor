@@ -1,4 +1,4 @@
-/* Rendre un code lisible — SWIFT (by NeoZ)
+/* Rendre un code lisible — SWIFT (by D4RK)
  *
  * Le versant lecture de obfuscation.js. Trois etapes, toutes statiques : rien
  * n execute le code.

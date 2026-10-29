@@ -1,4 +1,4 @@
-/* Panneau « Entetes » — SWIFT (by NeoZ)
+/* Panneau « Entetes » — SWIFT (by D4RK)
  *
  * La table de reference dit a quoi sert un entete ; ce panneau lit sa valeur.
  * On colle une ligne ou un bloc entier, et chaque entete connu est decoupe,
@@ -47,7 +47,8 @@ export function panneauEntetes(entree) {
     ]);
 
     for (const p of ligne.parties) {
-      add(carte, kv(p.cle, p.valeur + (p.note ? '   ·   ' + t(p.note) : ''), { copy: true }));
+      add(carte, kv(p.trous ? tp(p.cle, p.trous) : p.cle,
+        (p.texte ? t(p.valeur) : p.valeur) + (p.note ? '   ·   ' + t(p.note) : ''), { copy: true }));
     }
     if (ligne.sansAnalyse) {
       carte.appendChild(el('p', { class: 'note', text:

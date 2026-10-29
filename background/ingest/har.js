@@ -1,4 +1,4 @@
-/* Import d un fichier HAR — SWIFT (by NeoZ)
+/* Import d un fichier HAR — SWIFT (by D4RK)
  *
  * Permet de relire une capture faite ailleurs (DevTools, Charles, Fiddler…)
  * dans la meme interface. Les fichiers exportes par SWIFT contiennent
@@ -83,7 +83,8 @@ function bodyFromContent(content) {
     preview: null,
     size: content.size || text.length,
     stored: text.length,
-    truncated: /tronque/i.test(content.comment || ''),
+    // SWIFT l ecrit dans la langue de l interface : « tronque » ou « truncated ».
+    truncated: /tronque|truncated/i.test(content.comment || ''),
     mime: content.mimeType || '',
     charset: '',
     contentEncoding: '',

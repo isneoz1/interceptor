@@ -1,4 +1,4 @@
-/* Moteur de correlation / anti-doublon — SWIFT (by NeoZ)
+/* Moteur de correlation / anti-doublon — SWIFT (by D4RK)
  *
  * Principe : une requete reelle = UN enregistrement, quel que soit le nombre de
  * couches de capture qui l'observent.

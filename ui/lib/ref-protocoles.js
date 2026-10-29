@@ -1,4 +1,4 @@
-/* Tables de reference des protocoles — SWIFT (by NeoZ)
+/* Tables de reference des protocoles — SWIFT (by D4RK)
  *
  * Alertes TLS (RFC 8446 section 6 et registre IANA), erreurs HTTP/3 et QPACK
  * (RFC 9114 section 8.1, RFC 9204), erreurs de transport QUIC (RFC 9000

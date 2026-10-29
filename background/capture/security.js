@@ -1,4 +1,4 @@
-/* Capture TLS / chaine de certificats — SWIFT (by NeoZ)
+/* Capture TLS / chaine de certificats — SWIFT (by D4RK)
  * getSecurityInfo() n'est exploitable que depuis un listener onHeadersReceived bloquant.
  */
 import { B } from '../lib/util.js';

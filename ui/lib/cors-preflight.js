@@ -1,5 +1,5 @@
 /* Preflight CORS : ce qu il autorise, et ce qu il refuse
- * SWIFT (by NeoZ)
+ * SWIFT (by D4RK)
  *
  * Le navigateur envoie un OPTIONS avant certaines requetes, pour demander la
  * permission. Quand la vraie requete echoue, l erreur s affiche sur ELLE —

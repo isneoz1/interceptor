@@ -1,4 +1,4 @@
-/* Configuration persistante — SWIFT (by NeoZ)
+/* Configuration persistante — SWIFT (by D4RK)
  *
  * Regle du projet : toute option presente ici a un effet reel dans le code, et
  * toute option de l interface existe ici. Aucun reglage decoratif.
@@ -95,7 +95,7 @@ export const DEFAULTS = Object.freeze({
   tutorialDone: [],              // lecons terminees
 
   /* ---------------------------- Interface ------------------------- */
-  lang: 'fr',                    // fr | en
+  lang: 'auto',                  // auto (celle de Firefox) | fr | en
   simpleMode: false,             // masque les vues avancees
   sortKey: 'time',               // colonne de tri conservee
   sortDir: 'asc',                // sens du tri conserve

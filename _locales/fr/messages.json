@@ -6,5 +6,21 @@
   "extensionDescription": {
     "message": "Voyez chaque requete de Firefox : corps de reponse lus sur le fil, pile JavaScript a l origine de l appel, TLS et cookies. Bloquez, reecrivez ou rejouez n importe laquelle. Aucun doublon, aucune telemetrie, aucune dependance.",
     "description": "Description courte affichee sous le nom."
+  },
+  "commandePopup": {
+    "message": "Ouvrir la fenetre SWIFT",
+    "description": "Raccourci clavier « _execute_browser_action », dans Gerer les raccourcis des extensions."
+  },
+  "commandePanneau": {
+    "message": "Ouvrir SWIFT dans le panneau lateral",
+    "description": "Raccourci clavier « _execute_sidebar_action », dans Gerer les raccourcis des extensions."
+  },
+  "commandeConsole": {
+    "message": "Ouvrir la console complete dans un onglet",
+    "description": "Raccourci clavier « open-console », dans Gerer les raccourcis des extensions."
+  },
+  "commandeCapture": {
+    "message": "Basculer capture / pause",
+    "description": "Raccourci clavier « toggle-capture », dans Gerer les raccourcis des extensions."
   }
 }

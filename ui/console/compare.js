@@ -1,4 +1,4 @@
-/* Vue « Comparaison » — deux requetes cote a cote — SWIFT (by NeoZ)
+/* Vue « Comparaison » — deux requetes cote a cote — SWIFT (by D4RK)
  *
  * Selectionnez exactement deux lignes (Ctrl+clic) puis « Comparer ».
  * Les entetes et les corps sont confrontes ligne a ligne : ce qui est identique

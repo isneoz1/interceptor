@@ -1,4 +1,4 @@
-/* Contenu des onglets du panneau de detail — SWIFT (by NeoZ)
+/* Contenu des onglets du panneau de detail — SWIFT (by D4RK)
  *
  * Principe : tout champ present dans l enregistrement est affiche. Les blocs
  * connus recoivent un libelle francais ; tout champ inconnu est neanmoins
@@ -647,7 +647,7 @@ function blocGrpcWeb(body, mime) {
   lu.cadres.forEach((cadre, i) => {
     if (cadre.type === 'trailers') {
       for (const [nom, valeur] of Object.entries(cadre.trailers || {})) {
-        add(bloc, kv('trailer ' + nom, valeur, { copy: true }));
+        add(bloc, kv(tp('trailer {nom}', { nom }), valeur, { copy: true }));
       }
       return;
     }

@@ -1,4 +1,4 @@
-/* Panneau « Importer une requete » — SWIFT (by NeoZ)
+/* Panneau « Importer une requete » — SWIFT (by D4RK)
  *
  * Deux entrees possibles, un seul resultat : une ligne dans le tableau, a
  * l etat « pending », que l on peut ensuite rejouer, comparer ou regenerer

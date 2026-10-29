@@ -1,4 +1,4 @@
-/* Description des reglages — SWIFT (by NeoZ)
+/* Description des reglages — SWIFT (by D4RK)
  *
  * Donnees pures : la liste des groupes affiches par console/settings.js et les
  * profils rapides. Chaque cle citee ici existe dans DEFAULTS (core/config.js)
@@ -13,8 +13,8 @@ export const GROUPS = [
     title: 'Interface',
     note: 'Confort de lecture. Ces reglages ne changent rien a la capture.',
     fields: [
-      ['lang', 'Langue', 'select', [['fr', 'Francais'], ['en', 'Anglais']],
-        'Toute l interface, l aide et le tutoriel changent de langue : {entrees} entrees traduites, et un test refuse la construction s il en manque une.'],
+      ['lang', 'Langue', 'select', [['auto', 'Celle de Firefox'], ['fr', 'Francais'], ['en', 'Anglais']],
+        'Celle de Firefox : le francais si Firefox est en francais, l anglais sinon. Toute l interface, l aide et le tutoriel changent de langue : {entrees} entrees traduites, et un test refuse la construction s il en manque une.'],
       ['simpleMode', 'Mode simple', 'bool', 'Ne garde que Requetes, Securite, Synthese, Boite a outils, Reglages, Tutoriel et Aide. Les vues avancees restent accessibles en le desactivant.'],
       ['theme', 'Theme', 'select', [['sombre', 'Sombre'], ['clair', 'Clair'], ['auto', 'Suivre le systeme']]],
       ['highContrast', 'Contraste renforce', 'bool', 'Eclaircit les textes secondaires et marque davantage les separations.'],

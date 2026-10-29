@@ -1,4 +1,4 @@
-/* Dictionnaire anglais — verdict et lectures (5.2) — SWIFT (by NeoZ)
+/* Dictionnaire anglais — verdict et lectures (5.2) — SWIFT (by D4RK)
  *
  * Complete dict-en.js (`...EN_LECTURES2`) : le verdict en une phrase, la
  * provenance declaree par Firefox (Sec-Fetch-*), Clear-Site-Data et les

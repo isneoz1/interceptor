@@ -1,5 +1,5 @@
 /* Dictionnaire anglais — alertes TLS, erreurs HTTP/3 et QUIC, DNS
- * SWIFT (by NeoZ)
+ * SWIFT (by D4RK)
  *
  * Traduction des descriptions de ref-protocoles.js. La cle reste le texte
  * francais, comme partout ailleurs.

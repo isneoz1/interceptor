@@ -1,4 +1,4 @@
-/* JSON-RPC et SOAP dans le panneau de detail — SWIFT (by NeoZ)
+/* JSON-RPC et SOAP dans le panneau de detail — SWIFT (by D4RK)
  *
  *   Requete  les methodes appelees (JSON-RPC), avec leurs parametres et leur
  *            id, ou l operation SOAP, son action et les blocs d en-tete

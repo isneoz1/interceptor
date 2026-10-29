@@ -1,4 +1,4 @@
-/* Primitives d octets — SWIFT (by NeoZ)
+/* Primitives d octets — SWIFT (by D4RK)
  *
  * Le socle commun de tous les encodages : texte <-> octets, octets <-> chaine
  * binaire, octets <-> hexadecimal, octets <-> base64. Aucun DOM, aucune API

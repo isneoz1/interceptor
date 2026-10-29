@@ -1,4 +1,4 @@
-/* Table de reference HTTP — SWIFT (by NeoZ)
+/* Table de reference HTTP — SWIFT (by D4RK)
  *
  * Codes de statut et methodes, tels que le registre IANA les publie. Cette
  * table sert la boite a outils, mais aussi tout affichage qui veut expliquer

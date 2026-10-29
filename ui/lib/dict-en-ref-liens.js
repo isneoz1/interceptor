@@ -1,4 +1,4 @@
-/* Relations de liens, en anglais — SWIFT (by NeoZ)
+/* Relations de liens, en anglais — SWIFT (by D4RK)
  *
  * Chaque description est celle du registre IANA « Link Relations », mot pour
  * mot, l apostrophe droite mise a part : les dictionnaires emploient la

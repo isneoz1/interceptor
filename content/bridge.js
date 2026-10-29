@@ -1,5 +1,5 @@
 /* ============================================================
- * SWIFT — pont content script  (cree par NeoZ)
+ * SWIFT — pont content script  (cree par D4RK)
  *
  * Monde isole. Role :
  *   1. injecter les sondes dans le monde de la page, des document_start ;

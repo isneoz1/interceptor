@@ -1,4 +1,4 @@
-/* Tests des outils avances — SWIFT (cree par NeoZ)
+/* Tests des outils avances — SWIFT (cree par D4RK)
  *
  * Couvre les modules d analyse de protocole : trames sur le fil, politiques de
  * securite, fraicheur de cache, corps multipart, URL canoniques, tables de

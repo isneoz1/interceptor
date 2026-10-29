@@ -1,4 +1,4 @@
-/* JSON Patch, Merge Patch et Pointer — SWIFT (by NeoZ)
+/* JSON Patch, Merge Patch et Pointer — SWIFT (by D4RK)
  *
  *   node tests/patch.test.mjs
  *

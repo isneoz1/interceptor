@@ -1,4 +1,4 @@
-/* Chargement de l interface — SWIFT (cree par NeoZ)
+/* Chargement de l interface — SWIFT (cree par D4RK)
  *
  * Un module d interface qui ne se charge pas laisse une vue vide, sans erreur
  * visible ailleurs que dans la console du navigateur. Ce test importe TOUS les
@@ -243,7 +243,7 @@ function desechapper(litteral) {
 
 /* Ce qui n a pas a etre traduit : symboles, syntaxe de filtre, noms propres. */
 const SANS_TRADUCTION = new Set([
-  'SWIFT', 'NeoZ', 'JSON', 'HTTP', 'URL', 'IP', 'TLS', 'DNS', 'CSP', 'JWT',
+  'SWIFT', 'D4RK', 'JSON', 'HTTP', 'URL', 'IP', 'TLS', 'DNS', 'CSP', 'JWT',
   'HMAC-', 'Vary', 'Opcode', 'CORS', 'HAR', 'UUID', 'ULID', 'MIME',
   /* Des noms d en-tetes : ils s ecrivent pareil dans toutes les langues. */
   'Deprecation', 'Sunset', 'Retry-After', 'CDN-Cache-Control'
@@ -306,7 +306,7 @@ const sourcesUi = fichiersJs(path.join(racine, 'ui'))
   .filter(rel => !rel.includes('/dict-en'))
   .map(rel => fs.readFileSync(path.join(racine, rel), 'utf8'))
   .join('\n');
-const SANS_TRADUCTION_PAGES = new Set(['SWIFT', 'by NeoZ', 'FR', 'req/s']);
+const SANS_TRADUCTION_PAGES = new Set(['SWIFT', 'by D4RK', 'FR', 'req/s']);
 const textesDePage = [];
 for (const page of ['ui/console.html', 'ui/popup.html']) {
   const html = fs.readFileSync(path.join(racine, page), 'utf8').replace(/<(title|script)[^>]*>[\s\S]*?<\/\1>/g, '');
@@ -847,6 +847,29 @@ for (const [quoi, motif, reel] of ANNONCES) {
   const annoncees = [...contribuer.matchAll(/([0-9]+) suites/g)].map(m => Number(m[1]));
   verifier('CONTRIBUTING annonce le bon nombre de suites', annoncees.length >= 1 && annoncees.every(n => n === suites.length),
     'CONTRIBUTING ' + annoncees.join(' et ') + ', reel ' + suites.length);
+}
+
+/* Le nombre d onglets de la boite a outils s ecrit en toutes lettres dans
+   l aide et le tutoriel, dans les deux langues : « vingt et un onglets » est
+   reste ecrit alors qu il y en avait vingt-quatre. */
+{
+  const DIZAINE = { fr: ['vingt', 'trente'], en: ['twenty', 'thirty'] };
+  const UNITES = {
+    fr: ['', ' et un', '-deux', '-trois', '-quatre', '-cinq', '-six', '-sept', '-huit', '-neuf'],
+    en: ['', '-one', '-two', '-three', '-four', '-five', '-six', '-seven', '-eight', '-nine']
+  };
+  const enLettres = (n, langue) => DIZAINE[langue][Math.floor(n / 10) - 2] + UNITES[langue][n % 10];
+  const outils = FAMILLES.flatMap(([, liste]) => liste).length;
+  const sources = [['ui/console/help.js', /, ([a-z -]+?) onglets qui le regardent/g, 'fr'],
+    ['ui/console/content-fr.js', /, ([a-z -]+?) onglets qui le regardent/g, 'fr'],
+    ['ui/console/content-en.js', /, ([a-z-]+) tabs looking at it/g, 'en']];
+  const lus = [];
+  for (const [fichier, motif, langue] of sources) {
+    for (const m of fs.readFileSync(path.join(racine, fichier), 'utf8').matchAll(motif)) lus.push([fichier, m[1], enLettres(outils, langue)]);
+  }
+  verifier('l aide et le tutoriel donnent le bon nombre d onglets de la boite a outils',
+    lus.length === 4 && lus.every(([, lu, attendu]) => lu === attendu),
+    lus.map(([f, lu, attendu]) => f + ' : « ' + lu + ' » pour « ' + attendu + ' »').join(' ; '));
 }
 
 /* « ~48,700 lines » : un ordre de grandeur, que rien ne recomptait — il

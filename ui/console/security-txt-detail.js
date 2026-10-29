@@ -1,4 +1,4 @@
-/* security.txt dans le panneau de detail — SWIFT (by NeoZ)
+/* security.txt dans le panneau de detail — SWIFT (by D4RK)
  *
  * Quand la ligne est un fichier security.txt, l onglet Reponse le montre
  * champ par champ et le confronte a la RFC 9116, au moment de la capture.

@@ -1,5 +1,5 @@
 /* Integrite d un corps : Content-Digest, Repr-Digest, Digest
- * SWIFT (by NeoZ)
+ * SWIFT (by D4RK)
  *
  * Un serveur peut annoncer l empreinte de ce qu il envoie. Un client peut
  * annoncer celle de ce qu il envoie. Lire cette annonce n a qu un interet

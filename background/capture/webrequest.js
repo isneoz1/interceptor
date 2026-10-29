@@ -1,4 +1,4 @@
-/* Capture webRequest — cycle de vie COMPLET (9 evenements) — SWIFT (by NeoZ)
+/* Capture webRequest — cycle de vie COMPLET (9 evenements) — SWIFT (by D4RK)
  *
  * onBeforeRequest -> onBeforeSendHeaders -> onSendHeaders -> onHeadersReceived
  *   -> [onAuthRequired] -> [onBeforeRedirect] -> onResponseStarted -> onCompleted

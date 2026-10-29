@@ -1,4 +1,4 @@
-/* Rejouer une requete — SWIFT (by NeoZ)
+/* Rejouer une requete — SWIFT (by D4RK)
  *
  * SEULE fonction de l extension qui emet volontairement du trafic, et la seule
  * a le faire vers une destination choisie. Elle est :

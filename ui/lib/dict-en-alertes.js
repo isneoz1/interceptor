@@ -1,4 +1,4 @@
-/* Dictionnaire anglais — alertes de securite — SWIFT (by NeoZ)
+/* Dictionnaire anglais — alertes de securite — SWIFT (by D4RK)
  *
  * Titres d alerte, gabarits de preuve et atomes inseres dans ces gabarits.
  * Les gabarits gardent leurs trous (`{hote}`, `{acao}`...) : `tp()` y place

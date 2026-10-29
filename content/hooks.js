@@ -1,5 +1,5 @@
 /* ============================================================
- * SWIFT — sondes du contexte page  (cree par NeoZ)
+ * SWIFT — sondes du contexte page  (cree par D4RK)
  *
  * Execute dans le monde de la page pour observer ce que webRequest
  * ne peut pas voir : trames WebSocket, messages SSE, piles d'appel,

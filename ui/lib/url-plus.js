@@ -1,4 +1,4 @@
-/* URL et noms : normalisation, DNS inverse, homographes — SWIFT (by NeoZ)
+/* URL et noms : normalisation, DNS inverse, homographes — SWIFT (by D4RK)
  *
  *   - normaliserUrl : RFC 3986 section 6.2 (schema et hote en minuscules,
  *     pourcent-encodages non reserves decodes, hexadecimaux en majuscules,

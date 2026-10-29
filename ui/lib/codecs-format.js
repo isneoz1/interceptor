@@ -1,4 +1,4 @@
-/* Formats structures et echappements — SWIFT (by NeoZ)
+/* Formats structures et echappements — SWIFT (by D4RK)
  *
  * JSON, YAML, CSV, XML, listes de proprietes, et les echappements de chaine
  * pour JavaScript, JSON, expressions regulieres et lignes de commande.

@@ -1,4 +1,4 @@
-/* Vue « Synthese » — agregats de la capture — SWIFT (by NeoZ)
+/* Vue « Synthese » — agregats de la capture — SWIFT (by D4RK)
  *
  * Tous les chiffres sont calcules a partir des enregistrements reels du
  * perimetre choisi. Aucune estimation, aucune extrapolation : si une donnee

@@ -1,4 +1,4 @@
-/* Assainissement d un export — SWIFT (by NeoZ)
+/* Assainissement d un export — SWIFT (by D4RK)
  *
  * Un fichier HAR est fait pour etre partage : joint a un ticket, envoye a un
  * collegue, depose sur un outil d analyse. Il contient pourtant tout ce que le
@@ -20,6 +20,7 @@
  * exactement ce que l export masque. Deux listes auraient diverge.
  */
 import { SECRET_PATTERNS } from '../core/secrets.js';
+import { t, tp } from '../../ui/lib/i18n.js';
 
 /* Ces entetes portent un secret par nature : leur valeur entiere disparait,
    sans chercher a savoir a quoi elle ressemble. */
@@ -36,7 +37,8 @@ const ENTETES_SECRETES = new Set([
 const PARAM_SECRET =
   /(^|[_.-])(token|api[_.-]?key|apikey|secret|password|passwd|pwd|auth|access[_.-]?token|refresh[_.-]?token|id[_.-]?token|session|sig|signature|credential|client[_.-]?secret)($|[_.-])/i;
 
-const MARQUE = '[masque par SWIFT]';
+/* Dans la langue de l interface : « [masque par SWIFT] », « [masked by SWIFT] ». */
+const marque = () => t('[masque par SWIFT]');
 
 /**
  * Masque une valeur en gardant de quoi la reconnaitre sans la reveler : sa
@@ -45,8 +47,8 @@ const MARQUE = '[masque par SWIFT]';
 function masquer(valeur) {
   const s = String(valeur == null ? '' : valeur);
   if (!s) return s;
-  if (s.length <= 8) return MARQUE;
-  return s.slice(0, 4) + '… ' + MARQUE + ' (' + s.length + ')';
+  if (s.length <= 8) return marque();
+  return s.slice(0, 4) + '… ' + marque() + ' (' + s.length + ')';
 }
 
 /** Remplace, dans un texte libre, tout ce que les motifs reconnaissent. */
@@ -178,7 +180,7 @@ export function assainirHar(har) {
            peut savoir si les valeurs manquantes ont ete masquees ou n ont
            jamais existe. */
         comment: [(har && har.log && har.log.comment) || '',
-          'Assaini par SWIFT : ' + compte.n + ' valeur(s) masquee(s).']
+          tp('Assaini par SWIFT : {n} valeur(s) masquee(s).', { n: compte.n })]
           .filter(Boolean).join(' '),
         entries: entrees
       }

@@ -1,4 +1,4 @@
-/* Controles d un corps dans le panneau de detail — SWIFT (by NeoZ)
+/* Controles d un corps dans le panneau de detail — SWIFT (by D4RK)
  *
  * Deux constats, poses dans le bloc du corps : le contenu contredit-il le
  * type annonce, et — pour une reponse — ce que gzip aurait fait d un texte

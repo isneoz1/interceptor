@@ -1,4 +1,4 @@
-/* Audit du minutage — SWIFT (by NeoZ)
+/* Audit du minutage — SWIFT (by D4RK)
  *
  *   node tools/minutage.mjs
  *

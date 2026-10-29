@@ -1,4 +1,4 @@
-/* Provenance d une requete (Fetch Metadata) — SWIFT (by NeoZ)
+/* Provenance d une requete (Fetch Metadata) — SWIFT (by D4RK)
  *
  * Firefox joint a ses requetes https quatre en-tetes qui disent d ou elles
  * viennent et pourquoi : Sec-Fetch-Site, -Mode, -Dest et -User. Un serveur

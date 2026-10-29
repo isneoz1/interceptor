@@ -1,4 +1,4 @@
-/* GraphQL sur HTTP — SWIFT (by NeoZ)
+/* GraphQL sur HTTP — SWIFT (by D4RK)
  *
  * Sur le reseau, toutes les requetes GraphQL se ressemblent : POST /graphql,
  * statut 200. Ce module lit ce qu elles portent vraiment.

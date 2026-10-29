@@ -1,4 +1,4 @@
-/* Generation de code a partir d'une requete capturee — SWIFT (by NeoZ)
+/* Generation de code a partir d'une requete capturee — SWIFT (by D4RK)
  *
  * Registre central : les generateurs bruts et « ligne de commande » vivent ici,
  * les clients par langage dans codegen-clients.js. Chaque generateur produit du
@@ -8,6 +8,7 @@ import {
   NL, target, usableHeaders, headerMap, bodyText, shQuote, psQuote, cmdQuote, jsQuote
 } from './codegen-util.js';
 import { CLIENTS, CLIENT_MENU } from './codegen-clients.js';
+import { t, tp } from '../../ui/lib/i18n.js';
 
 /* ------------------------------ Ligne de commande ------------------------- */
 export function toCurl(rec, { platform = 'sh' } = {}) {
@@ -21,7 +22,7 @@ export function toCurl(rec, { platform = 'sh' } = {}) {
   const body = bodyText(rec);
   if (body) parts.push('--data-raw ' + q(body));
   else if (rec.requestBody && rec.requestBody.base64) {
-    parts.push('# corps binaire : ' + rec.requestBody.size + ' octets, non transposable en ligne de commande');
+    parts.push('# ' + tp('corps binaire : {n} octets, non transposable en ligne de commande', { n: rec.requestBody.size }));
   }
   if (rec.redirects.length) parts.push('-L');
   return parts.join(cont);
@@ -40,7 +41,7 @@ export function toHttpie(rec) {
   const parts = ['http ' + (rec.method === 'GET' ? '' : rec.method + ' ') + shQuote(target(rec))];
   for (const h of usableHeaders(rec)) parts.push(shQuote(h.name + ':' + h.value));
   const body = bodyText(rec);
-  if (body) return parts.join(' ') + NL + '# corps : echo ' + shQuote(body) + ' | ' + parts.join(' ');
+  if (body) return parts.join(' ') + NL + '# ' + tp('avec le corps : {commande}', { commande: 'echo ' + shQuote(body) + ' | ' + parts.join(' ') });
   return parts.join(' ');
 }
 
@@ -73,7 +74,7 @@ export function toNode(rec) {
   const body = bodyText(rec);
   if (body) init.body = body;
   return [
-    '// Node 18+ : fetch est natif',
+    '// ' + t('Node 18+ : fetch est natif'),
     'const res = await fetch(' + jsQuote(target(rec)) + ', ' + JSON.stringify(init, null, 2) + ');',
     'console.log(res.status);',
     'console.log(await res.text());'
@@ -139,7 +140,7 @@ export function toHttpResponse(rec) {
   for (const h of rec.responseHeaders || []) lines.push(h.name + ': ' + h.value);
   lines.push('');
   if (rec.responseBody && rec.responseBody.text) lines.push(rec.responseBody.text);
-  else if (rec.responseBody && rec.responseBody.base64) lines.push('[corps binaire, ' + rec.responseBody.size + ' octets]');
+  else if (rec.responseBody && rec.responseBody.base64) lines.push('[' + tp('corps binaire, {n} octets', { n: rec.responseBody.size }) + ']');
   return lines.join('\r\n');
 }
 
@@ -147,21 +148,21 @@ export function toMarkdown(rec) {
   const lines = [
     '### ' + rec.method + ' ' + target(rec),
     '',
-    '| Champ | Valeur |',
+    '| ' + t('Champ') + ' | ' + t('Valeur') + ' |',
     '|---|---|',
-    '| Statut | ' + (rec.statusLine || rec.statusCode || rec.error || 'en cours') + ' |',
-    '| Type | ' + rec.type + ' |',
+    '| ' + t('Statut') + ' | ' + (rec.statusLine || rec.statusCode || rec.error || t('en cours')) + ' |',
+    '| ' + t('Type') + ' | ' + rec.type + ' |',
     '| MIME | ' + (rec.mime || '-') + ' |',
-    '| Taille | ' + (rec.size || 0) + ' octets |',
-    '| Duree | ' + (rec.duration != null ? rec.duration + ' ms' : '-') + ' |',
-    '| Serveur | ' + (rec.ip || '-') + ' |',
-    '| Couches | ' + (rec.sources || []).join(', ') + ' |',
+    '| ' + t('Taille') + ' | ' + tp('{n} octets', { n: rec.size || 0 }) + ' |',
+    '| ' + t('Duree') + ' | ' + (rec.duration != null ? rec.duration + ' ms' : '-') + ' |',
+    '| ' + t('Serveur') + ' | ' + (rec.ip || '-') + ' |',
+    '| ' + t('Couches') + ' | ' + (rec.sources || []).join(', ') + ' |',
     ''
   ];
   if (rec.analysis && rec.analysis.findings.length) {
-    lines.push('**Alertes**', '');
+    lines.push('**' + t('Alertes') + '**', '');
     for (const f of rec.analysis.findings) {
-      lines.push('- `' + f.severity + '` ' + f.title + ' (' + f.where + ')');
+      lines.push('- `' + f.severity + '` ' + t(f.title) + ' (' + f.where + ')');
     }
     lines.push('');
   }
@@ -271,7 +272,7 @@ export function generateScript(kind, records) {
 
   const head = [];
   if (shebang) head.push(shebang);
-  const title = 'SWIFT (by NeoZ) — ' + records.length + ' requetes';
+  const title = tp('SWIFT (by D4RK) — requetes : {n}', { n: records.length });
   head.push(comment ? comment + ' ' + title : title, '');
   const parts = records.map(r => generate(kind, r) + NL);
   return { content: head.concat(parts).join(NL), extension, mime };

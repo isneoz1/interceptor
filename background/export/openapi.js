@@ -1,4 +1,4 @@
-/* Description OpenAPI 3.1 deduite du trafic — SWIFT (by NeoZ)
+/* Description OpenAPI 3.1 deduite du trafic — SWIFT (by D4RK)
  *
  * Les appels d API captures, regroupes en operations (methode + chemin) et
  * decrits en OpenAPI 3.1.0 : parametres d URL, corps envoyes et recus, codes

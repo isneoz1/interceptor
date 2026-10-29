@@ -1,4 +1,4 @@
-/* Panneaux « URL » et « Adresse IP » — SWIFT (by NeoZ)
+/* Panneaux « URL » et « Adresse IP » — SWIFT (by D4RK)
  *
  * Une URL vue dans le tableau se decoupe ici en toutes ses parties, avec ce
  * que le port revele et ce que le nom de domaine cache. Une adresse ou un
@@ -81,7 +81,7 @@ export function panneauUrl(entree) {
   const service = u.portEffectif ? decrirePort(u.portEffectif) : null;
   add(box, kv('Port declare', u.port));
   add(box, kv('Port effectif', u.portEffectif, { always: true }));
-  if (service) add(box, kv('Service connu sur ce port', service.service + ' — ' + service.note));
+  if (service) add(box, kv('Service connu sur ce port', t(service.service) + ' — ' + t(service.note)));
   if (u.portEffectif) add(box, kv('Plage du port', t(plagePort(u.portEffectif))));
 
   add(box, kv('Origine', u.origine, { copy: true }));

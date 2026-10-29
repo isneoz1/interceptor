@@ -1,4 +1,4 @@
-/* Contexte de navigation (webNavigation, 7 evenements) — SWIFT (by NeoZ)
+/* Contexte de navigation (webNavigation, 7 evenements) — SWIFT (by D4RK)
  * Fournit le contexte de page : qui a declenche quoi, transitions, erreurs,
  * navigations d'historique et fragments — invisible pour webRequest.
  */

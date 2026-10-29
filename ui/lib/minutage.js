@@ -1,4 +1,4 @@
-/* Minutage vu par la page — SWIFT (by NeoZ)
+/* Minutage vu par la page — SWIFT (by D4RK)
  *
  * Resource Timing donne les phases d un chargement : attente, DNS, connexion,
  * TLS, premier octet, reception. Pour une ressource d une autre origine qui ne

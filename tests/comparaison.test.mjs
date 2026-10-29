@@ -1,4 +1,4 @@
-/* Comparaisons et donnees exactes — SWIFT (by NeoZ)
+/* Comparaisons et donnees exactes — SWIFT (by D4RK)
  *
  *   node tests/comparaison.test.mjs
  *

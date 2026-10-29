@@ -1,4 +1,4 @@
-/* Signaux HTTP, onglet En-tetes — SWIFT (by NeoZ)
+/* Signaux HTTP, onglet En-tetes — SWIFT (by D4RK)
  *
  * Ce qu un serveur dit, dans ses en-tetes, de la vie de l adresse, du debit
  * accorde, des liens a suivre, des caches traverses et de la priorite :

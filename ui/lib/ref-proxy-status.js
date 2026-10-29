@@ -1,4 +1,4 @@
-/* Types d erreur des mandataires — SWIFT (by NeoZ)
+/* Types d erreur des mandataires — SWIFT (by D4RK)
  *
  * Les registres IANA « HTTP Proxy Error Types » et « HTTP Proxy-Status
  * Parameters » (RFC 9209, sections 2.3 et 2.1), en entier : trente-trois

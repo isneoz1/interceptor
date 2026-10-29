@@ -1,4 +1,4 @@
-/* Lectures de la 4.4 — SWIFT (by NeoZ)
+/* Lectures de la 4.4 — SWIFT (by D4RK)
  *
  *   node tests/lectures.test.mjs
  *

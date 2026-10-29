@@ -1,4 +1,4 @@
-/* Panneau « Generer » — SWIFT (by NeoZ)
+/* Panneau « Generer » — SWIFT (by D4RK)
  *
  * Identifiants, secrets d essai, adresses et valeurs limites. Tout est tire du
  * generateur aleatoire du moteur ; la valeur produite remplace le texte de
@@ -37,7 +37,7 @@ export function panneauGenerateurs(poser, etat, redessiner) {
   box.appendChild(sec('Suites aleatoires', 'longueur en octets'));
   const suites = el('div', { class: 'actions' });
   for (const n of [16, 32, 64]) {
-    suites.appendChild(button(n + ' octets en hexadecimal', () => poser(hexAleatoire(n))));
+    suites.appendChild(button(tp('{n} octets en hexadecimal', { n }), () => poser(hexAleatoire(n))));
   }
   suites.appendChild(button('32 octets en base64', () => poser(base64Aleatoire(32))));
   suites.appendChild(button('32 octets en base64 URL', () => poser(base64UrlAleatoire(32))));

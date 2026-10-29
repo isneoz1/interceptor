@@ -1,4 +1,4 @@
-/* Une CSP deduite de ce que la page a reellement charge — SWIFT (by NeoZ)
+/* Une CSP deduite de ce que la page a reellement charge — SWIFT (by D4RK)
  *
  * Ecrire une Content-Security-Policy, c est enumerer d ou la page a le droit
  * de charger ses scripts, ses styles, ses images, ses connexions. SWIFT

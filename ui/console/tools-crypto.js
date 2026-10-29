@@ -1,4 +1,4 @@
-/* Panneau « Chiffrement » — SWIFT (by NeoZ)
+/* Panneau « Chiffrement » — SWIFT (by D4RK)
  *
  * AES, derivation de cle et verification de signature. Tout passe par le
  * moteur du navigateur : ce panneau ne fait qu offrir les champs et montrer

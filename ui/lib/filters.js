@@ -1,4 +1,4 @@
-/* Analyse et evaluation des filtres — SWIFT (by NeoZ)
+/* Analyse et evaluation des filtres — SWIFT (by D4RK)
  *
  * Syntaxe supportee :
  *   texte libre              -> url + hote + chemin + methode + MIME

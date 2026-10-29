@@ -1,4 +1,4 @@
-/* Vue « Interception » — points d arret en direct — SWIFT (by NeoZ)
+/* Vue « Interception » — points d arret en direct — SWIFT (by D4RK)
  *
  * La seule vue qui retient reellement le trafic. Chaque requete suspendue y
  * attend une decision : laisser passer, abandonner, ou modifier puis envoyer.

@@ -1,4 +1,4 @@
-/* Dictionnaire anglais — page des reglages — SWIFT (by NeoZ)
+/* Dictionnaire anglais — page des reglages — SWIFT (by D4RK)
  *
  * Les titres et libelles courts vivent dans dict-en.js. Ici se trouvent les
  * phrases : notes de section, aides de champ, descriptions de profil. Ce sont
@@ -39,8 +39,9 @@ export const EN_REGLAGES = {
   /* Gabarit a trou : tp() traduit d abord, puis remplace {entrees}. Une aide
      qui cite un nombre calcule doit passer par la, sinon la concatenation la
      rend intraduisible. */
-  'Toute l interface, l aide et le tutoriel changent de langue : {entrees} entrees traduites, et un test refuse la construction s il en manque une.':
-    'The whole interface, the help and the tutorial change language: {entrees} translated entries, and a test refuses the build if one is missing.',
+  'Celle de Firefox : le francais si Firefox est en francais, l anglais sinon. Toute l interface, l aide et le tutoriel changent de langue : {entrees} entrees traduites, et un test refuse la construction s il en manque une.':
+    'Firefox\'s: French if Firefox is in French, English otherwise. The whole interface, the help and the tutorial change language: {entrees} translated entries, and a test refuses the build if one is missing.',
+  'Celle de Firefox': 'Firefox\'s',
   'Profil « {nom} » applique': 'Profile "{nom}" applied',
 
   /* ------------------------------- Interface ------------------------------ */

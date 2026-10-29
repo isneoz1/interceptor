@@ -1,4 +1,4 @@
-/* Vue « Reglages » — SWIFT (by NeoZ)
+/* Vue « Reglages » — SWIFT (by D4RK)
  *
  * Chaque option affichee ici existe dans le noyau et a un effet reel.
  * Les modifications sont appliquees immediatement et conservees.

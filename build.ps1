@@ -1,4 +1,4 @@
-# Fabrication du paquet SWIFT - cree par NeoZ
+# Fabrication du paquet SWIFT - cree par D4RK
 #   .\build.ps1            -> dist/swift-<version>.xpi
 #   .\build.ps1 -Verify    -> verifie seulement, ne construit pas
 
@@ -10,7 +10,7 @@ Set-Location $root
 
 $manifest = Get-Content 'manifest.json' -Raw | ConvertFrom-Json
 $version  = $manifest.version
-Write-Host "SWIFT $version - by NeoZ" -ForegroundColor DarkYellow
+Write-Host "SWIFT $version - by D4RK" -ForegroundColor DarkYellow
 
 # --- Verification d integrite -------------------------------------------------
 $required = @(
@@ -190,6 +190,12 @@ $required = @(
   'ui/lib/dict-en-jose.js',
   'ui/console/jose-detail.js',
   'background/core/jose-liens.js',
+  'ui/lib/cle-formes.js',
+  'ui/lib/dict-en-cles.js',
+  'ui/console/tools-cle.js',
+  'ui/lib/dict-en-exports.js',
+  'ui/lib/dict-en-bibliotheques.js',
+  'background/api/menus.js',
   'ui/console/statusbar.js',
   'ui/console/header.js',
   'ui/console/replay.js',
@@ -306,7 +312,11 @@ if ($node) {
     @{ titre = 'Clics et saisie a travers les redessins'; fichier = 'tests/saisie.test.mjs';
        echec = 'Un clic se perd pendant un redessin, ou un champ d une vue vivante n a pas de nom stable' },
     @{ titre = 'JWT, jeux de cles et decouverte'; fichier = 'tests/jose.test.mjs';
-       echec = 'Un JWT, un jeu de cles JWK ou un document de decouverte est mal verifie ou mal lu' }
+       echec = 'Un JWT, un jeu de cles JWK ou un document de decouverte est mal verifie ou mal lu' },
+    @{ titre = 'Une cle publique sous toutes ses formes'; fichier = 'tests/cles.test.mjs';
+       echec = 'Une forme ou une empreinte de cle publique differe de celle d OpenSSL, d OpenSSH ou de Node' },
+    @{ titre = 'La langue de chacun'; fichier = 'tests/langue.test.mjs';
+       echec = 'Une installation neuve ne suit pas la langue de Firefox, ou un fichier exporte, un menu ou un raccourci n est pas dans la langue choisie' }
   )
 
   $totalAssertions = 0

@@ -1,4 +1,4 @@
-/* Appels RPC sur HTTP : JSON-RPC 2.0 et SOAP — SWIFT (by NeoZ)
+/* Appels RPC sur HTTP : JSON-RPC 2.0 et SOAP — SWIFT (by D4RK)
  *
  * Comme GraphQL, ces protocoles font passer des operations differentes par
  * une seule adresse : la methode (JSON-RPC) ou l operation (SOAP) est dans le

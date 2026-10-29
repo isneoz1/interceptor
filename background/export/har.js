@@ -1,9 +1,14 @@
-/* Export HAR 1.2 — SWIFT (by NeoZ)
+/* Export HAR 1.2 — SWIFT (by D4RK)
  * Format standard, relisible par Firefox DevTools, Charles, Fiddler, Postman...
  */
-import { headerGet, parseContentType } from '../lib/util.js';
+import { B, headerGet, parseContentType } from '../lib/util.js';
+import { t, tp } from '../../ui/lib/i18n.js';
 
-const VERSION = '1.0.0';
+/* La version installee, lue dans le manifeste : jamais une constante ecrite a
+   la main, qui finit par mentir. */
+function version() {
+  try { return String(B.runtime.getManifest().version || ''); } catch { return ''; }
+}
 
 function toHeaders(list) {
   return (list || []).map(h => ({ name: h.name, value: String(h.value ?? '') }));
@@ -49,7 +54,7 @@ function contentOf(rec) {
     text: body.text || body.base64 || ''
   };
   if (body.base64) content.encoding = 'base64';
-  if (body.truncated) content.comment = 'tronque par SWIFT';
+  if (body.truncated) content.comment = t('tronque par SWIFT');
   return content;
 }
 
@@ -75,7 +80,7 @@ function timingsOf(rec) {
       receive: Math.max(0, num(perf.receive)),
       ssl
     };
-    if (num(perf.send) < 0) out.comment = 'send non mesure par le navigateur : compris dans wait';
+    if (num(perf.send) < 0) out.comment = t('send non mesure par le navigateur : compris dans wait');
     return out;
   }
   const total = rec.duration != null ? rec.duration : -1;
@@ -92,7 +97,7 @@ function timingsOf(rec) {
     send: 0,
     wait: wait >= 0 ? wait : Math.max(0, total),
     receive: receive >= 0 ? receive : 0,
-    comment: 'phases detaillees non fournies : ecarts entre evenements webRequest'
+    comment: t('phases detaillees non fournies : ecarts entre evenements webRequest')
   };
 }
 const num = v => (typeof v === 'number' && v >= 0 ? v : -1);
@@ -182,11 +187,11 @@ export function buildHar(records, meta = {}) {
   return {
     log: {
       version: '1.2',
-      creator: { name: 'SWIFT', version: VERSION, comment: 'cree par NeoZ' },
+      creator: { name: 'SWIFT', version: version(), comment: t('cree par D4RK') },
       browser: { name: 'Firefox', version: meta.browserVersion || 'unknown' },
       pages,
       entries,
-      comment: 'Export SWIFT — ' + entries.length + ' requetes, sans doublon.'
+      comment: tp('Export SWIFT — requetes : {n}, sans doublon.', { n: entries.length })
     }
   };
 }

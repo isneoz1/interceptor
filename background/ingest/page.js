@@ -1,4 +1,4 @@
-/* Ingestion des observations du contexte page — SWIFT (by NeoZ)
+/* Ingestion des observations du contexte page — SWIFT (by D4RK)
  *
  * Cette couche voit ce que webRequest ne peut PAS voir :
  *   - trames WebSocket (webRequest ne voit que la poignee de main)

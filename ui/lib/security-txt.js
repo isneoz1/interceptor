@@ -1,4 +1,4 @@
-/* security.txt (RFC 9116) — SWIFT (by NeoZ)
+/* security.txt (RFC 9116) — SWIFT (by D4RK)
  *
  * Le fichier ou un site dit comment lui signaler une faille : qui contacter,
  * jusqu a quand ces informations valent, sa politique, sa cle de chiffrement.

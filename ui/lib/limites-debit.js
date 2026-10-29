@@ -1,4 +1,4 @@
-/* Limites de debit d une API — SWIFT (by NeoZ)
+/* Limites de debit d une API — SWIFT (by D4RK)
  *
  * Ce qu un serveur dit du quota qu il accorde, et du moment ou reessayer.
  *

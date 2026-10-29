@@ -1,4 +1,4 @@
-/* Verification independante de l export OpenAPI — SWIFT (by NeoZ)
+/* Verification independante de l export OpenAPI — SWIFT (by D4RK)
  *
  *   node tools/verifier-openapi.mjs
  *   python tools/verifier-openapi.py dist/verif-openapi

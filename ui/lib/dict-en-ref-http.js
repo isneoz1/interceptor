@@ -1,5 +1,5 @@
 /* Dictionnaire anglais — codes de statut et methodes HTTP
- * SWIFT (by NeoZ)
+ * SWIFT (by D4RK)
  *
  * Traduction des descriptions de ref-http.js. La cle reste le texte francais.
  */

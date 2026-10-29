@@ -1,5 +1,5 @@
 /* Dictionnaire anglais — vue « Regles » et fin des reglages
- * SWIFT (by NeoZ)
+ * SWIFT (by D4RK)
  *
  * La vue « Regles » ecrit en clair ce que chaque regle fera : « Si hote
  * contient « api.example.com », alors la requete part avec 750 ms de retard. »

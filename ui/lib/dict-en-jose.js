@@ -1,4 +1,4 @@
-/* Dictionnaire anglais — jetons JWT, jeux de cles, decouverte (5.7) — SWIFT (by NeoZ) */
+/* Dictionnaire anglais — jetons JWT, jeux de cles, decouverte (5.7) — SWIFT (by D4RK) */
 export const EN_JOSE = {
   'l adresse': 'the address',
   'le cookie « {nom} »': 'the cookie “{nom}”',

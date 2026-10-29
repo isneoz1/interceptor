@@ -1,4 +1,4 @@
-/* Panneaux de la boite a outils — SWIFT (by NeoZ)
+/* Panneaux de la boite a outils — SWIFT (by D4RK)
  *
  * Inspection d une valeur : jeton JWT, empreintes et signatures, mesures,
  * vidage hexadecimal, structures reconnues, expression reguliere.
@@ -64,12 +64,12 @@ export function panneauJwt(entree, etat, redessiner) {
 
   box.appendChild(sec('Entete', Object.keys(jwt.entete || {}).length));
   for (const [cle, valeur] of Object.entries(jwt.entete || {})) {
-    add(box, kv(libelleClaim(cle) + ' (' + cle + ')', formaterValeur(valeur), { copy: true }));
+    add(box, kv(t(libelleClaim(cle)) + ' (' + cle + ')', formaterValeur(valeur), { copy: true }));
   }
 
   box.appendChild(sec('Charge utile', Object.keys(jwt.charge || {}).length));
   for (const [cle, valeur] of Object.entries(jwt.charge || {})) {
-    add(box, kv(libelleClaim(cle) + ' (' + cle + ')', formaterValeur(valeur), { copy: true }));
+    add(box, kv(t(libelleClaim(cle)) + ' (' + cle + ')', formaterValeur(valeur), { copy: true }));
   }
 
   box.appendChild(sec('Charge utile brute'));
@@ -297,13 +297,13 @@ export function panneauMesures(entree) {
   } else {
     box.appendChild(el('p', { class: 'note warn', text:
       t('Des caracteres invisibles se cachent dans ce texte : ils servent a masquer du contenu.') }));
-    for (const c of caches) add(box, kv('Position ' + c.index, c.code));
+    for (const c of caches) add(box, kv(tp('Position {n}', { n: c.index }), c.code));
   }
 
   const freq = frequences(entree, 15);
   box.appendChild(sec('Caracteres les plus frequents', freq.length));
   for (const f of freq) {
-    add(box, kv(f.caractere + '  ' + f.code, f.nombre + '   ·   ' + f.part + ' %'));
+    add(box, kv(t(f.caractere) + '  ' + f.code, f.nombre + '   ·   ' + f.part + ' %'));
   }
   return box;
 }

@@ -1,5 +1,5 @@
 /* ============================================================
- * SWIFT — noyau  (cree par NeoZ)
+ * SWIFT — noyau  (cree par D4RK)
  * Demarrage entierement automatique : aucune action requise.
  * ============================================================ */
 import { B } from './lib/util.js';
@@ -15,6 +15,8 @@ import { startProxy, stopProxy } from './capture/proxy.js';
 import { startPersistence } from './core/persist.js';
 import { startRpc, startBroadcast, collectStats } from './api/rpc.js';
 import { ouvrirSurface, suivreFenetre, normaliserEmplacement } from './api/surface.js';
+import { MENUS_SWIFT } from './api/menus.js';
+import { setLang, lang, t, tp } from '../ui/lib/i18n.js';
 // Installe la promotion des observations orphelines : une observation sans
 // equivalent reseau devient sa propre ligne plutot que d etre perdue.
 import './ingest/promote.js';
@@ -27,6 +29,9 @@ const MENUS = B.menus || B.contextMenus;
 
 async function boot() {
   await config.ready;
+  // La langue de l interface vaut aussi pour ce que le noyau ecrit : menus,
+  // notifications, fichiers exportes.
+  setLang(config.get('lang'));
 
   // 0. Journal de diagnostic : installe avant tout le reste, pour que les
   //    erreurs des couches elles-memes soient capturees des le demarrage.
@@ -58,6 +63,9 @@ async function boot() {
   buildMenus();
 
   config.on('change', values => {
+    const langue = lang();
+    setLang(values.lang);
+    if (lang() !== langue) titrerMenus();
     if (values.captureProxy) startProxy(); else stopProxy();
     if (values.persist) startPersistence();
     correlator.start();
@@ -65,7 +73,7 @@ async function boot() {
     updateBadge(true);
   });
 
-  console.info('%cSWIFT actif — cree par NeoZ', 'color:#FF6611;font-weight:bold');
+  console.info('%cSWIFT actif — cree par D4RK', 'color:#FF6611;font-weight:bold');
   console.info('[SWIFT] console complete :', CONSOLE_URL);
   console.info('[SWIFT] etat initial', collectStats());
 }
@@ -138,8 +146,8 @@ function startNotifications() {
       await B.notifications.create('swift-' + rec.id, {
         type: 'basic',
         iconUrl: B.runtime.getURL('icons/icon.svg'),
-        title: 'SWIFT — alerte critique',
-        message: (first ? first.title : 'Alerte critique') + '\n' + rec.method + ' ' + rec.host
+        title: t('SWIFT — alerte critique'),
+        message: (first ? t(first.title) : t('Alerte critique')) + '\n' + rec.method + ' ' + rec.host
       });
     } catch {}
   });
@@ -163,13 +171,9 @@ if (B.browserAction && B.browserAction.onClicked) {
 function buildMenus() {
   if (!MENUS) return;
   try { MENUS.removeAll(); } catch {}
-  const add = (id, title, contexts) => {
-    try { MENUS.create({ id, title, contexts }); } catch {}
-  };
-  add('ic-console', 'SWIFT : ouvrir la console', ['browser_action', 'page', 'tools_menu']);
-  add('ic-console-tab', 'SWIFT : voir le trafic de cet onglet', ['page']);
-  add('ic-block-host', 'SWIFT : bloquer ce domaine', ['link', 'image', 'page']);
-  add('ic-toggle', 'SWIFT : capture marche / arret', ['browser_action']);
+  for (const [id, title, contexts] of MENUS_SWIFT) {
+    try { MENUS.create({ id, title: t(title), contexts }); } catch {}
+  }
 
   if (!MENUS.onClicked) return;
   MENUS.onClicked.addListener(async (info, tab) => {
@@ -188,11 +192,19 @@ function buildMenus() {
       const rules = [...(config.get('rules') || [])];
       const id = 'block-' + host;
       if (!rules.some(r => r.id === id)) {
-        rules.push({ id, enabled: true, name: 'Bloquer ' + host, match: { host }, action: 'block' });
+        rules.push({ id, enabled: true, name: tp('Bloquer {hote}', { hote: host }), match: { host }, action: 'block' });
         await config.set({ rules, rulesEnabled: true });
       }
     }
   });
+}
+
+/* Les menus deja crees changent de langue avec l interface. */
+function titrerMenus() {
+  if (!MENUS || !MENUS.update) return;
+  for (const [id, title] of MENUS_SWIFT) {
+    try { MENUS.update(id, { title: t(title) }); } catch {}
+  }
 }
 
 function hostOfUrl(url) {

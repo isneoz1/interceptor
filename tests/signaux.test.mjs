@@ -1,4 +1,4 @@
-/* Signaux HTTP — SWIFT (by NeoZ)
+/* Signaux HTTP — SWIFT (by D4RK)
  *
  *   node tests/signaux.test.mjs
  *

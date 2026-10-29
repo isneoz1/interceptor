@@ -1,4 +1,4 @@
-/* Analyse automatique de chaque requete — SWIFT (by NeoZ)
+/* Analyse automatique de chaque requete — SWIFT (by D4RK)
  *
  * Aucune action de l'utilisateur : chaque enregistrement termine est audite.
  * Ce module orchestre — reglages, motifs personnels, compteurs, mise en cache ;

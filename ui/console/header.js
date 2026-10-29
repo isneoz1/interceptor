@@ -1,11 +1,11 @@
-/* Barre d en-tete de la console — SWIFT (by NeoZ)
+/* Barre d en-tete de la console — SWIFT (by D4RK)
  *
  * Libelles traduits, bouton de capture, perimetre, langue, menus Exporter et
  * Actions, imports de fichiers. La coquille (console.js) fournit ce dont ce
  * module a besoin pour agir sur les vues : `api`.
  */
 import { $, el, clear } from '../lib/dom.js';
-import { t, tp, te } from '../lib/i18n.js';
+import { t, tp, te, lang } from '../lib/i18n.js';
 import { B, cmd, state, toast, copy, dropdown, saveConfig } from '../app.js';
 import * as requests from './requests.js';
 import * as detail from './detail.js';
@@ -129,12 +129,13 @@ function applyStaticLabels() {
   const deepLabel = $('#deep-label');
   if (deepLabel) deepLabel.textContent = t('corps');
   const langBtn = $('#lang');
-  if (langBtn) langBtn.textContent = (state.config && state.config.lang === 'en') ? 'EN' : 'FR';
+  /* La langue montree, pas le reglage : « auto » s affiche FR ou EN. */
+  if (langBtn) langBtn.textContent = lang() === 'en' ? 'EN' : 'FR';
 }
 
 function bindHeader() {
   $('#lang').addEventListener('click', async () => {
-    const next = (state.config && state.config.lang) === 'en' ? 'fr' : 'en';
+    const next = lang() === 'en' ? 'fr' : 'en';
     await saveConfig({ lang: next });
     applyStaticLabels();
     api.buildSidebar();

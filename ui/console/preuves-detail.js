@@ -1,4 +1,4 @@
-/* Signatures HTTP, WebAuthn et DNS dans le panneau de detail — SWIFT (by NeoZ)
+/* Signatures HTTP, WebAuthn et DNS dans le panneau de detail — SWIFT (by D4RK)
  *
  *   En-tetes   les signatures de messages HTTP (RFC 9421) : ce qu elles
  *              couvrent, la base exacte signee, et la verification avec une

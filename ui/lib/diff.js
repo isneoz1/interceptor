@@ -1,4 +1,4 @@
-/* Comparaison de deux textes — SWIFT (by NeoZ)
+/* Comparaison de deux textes — SWIFT (by D4RK)
  *
  * La vue Comparaison confronte deux requetes capturees ; la boite a outils,
  * le texte de travail et un autre colle a cote : deux reponses, deux
@@ -423,7 +423,9 @@ export function premiereDifference(gauche, droite) {
     droite: b.length > a.length ? b[commun] : '',
     codeGauche: a.length > b.length ? 'U+' + a.charCodeAt(commun).toString(16).toUpperCase().padStart(4, '0') : '',
     codeDroite: b.length > a.length ? 'U+' + b.charCodeAt(commun).toString(16).toUpperCase().padStart(4, '0') : '',
-    contexte: 'un texte s arrete a ' + commun + ' caracteres, l autre continue'
+    /* Le texte le plus court s arrete la : l interface le dit dans sa langue. */
+    contexte: '',
+    fin: commun
   };
 }
 

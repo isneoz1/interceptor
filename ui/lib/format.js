@@ -1,4 +1,4 @@
-/* Formatage d'affichage — SWIFT (by NeoZ) */
+/* Formatage d'affichage — SWIFT (by D4RK) */
 
 import { t, tp, lang } from './i18n.js';
 import { jsonExactJoli } from './json-exact.js';

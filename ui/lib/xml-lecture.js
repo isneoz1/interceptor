@@ -1,4 +1,4 @@
-/* Lecture structurelle du XML — SWIFT (by NeoZ)
+/* Lecture structurelle du XML — SWIFT (by D4RK)
  *
  * Un decoupage en balises et en textes, en une seule lecture, partage par les
  * lecteurs de messages XML (SAML, SOAP). Il ne valide pas le document et ne

@@ -1,5 +1,5 @@
 /* Capture des corps de reponse via StreamFilter (API exclusive Firefox)
- * SWIFT (by NeoZ)
+ * SWIFT (by D4RK)
  *
  * filterResponseData() ne peut etre appele que depuis un listener bloquant.
  * On privilegie onHeadersReceived (on connait alors Content-Type / Content-Length,

@@ -1,4 +1,4 @@
-/* Panneau « Chercher » — SWIFT (by NeoZ)
+/* Panneau « Chercher » — SWIFT (by D4RK)
  *
  * Trois facons d extraire une valeur du texte de travail : un motif tout pret,
  * un chemin dans du JSON, un selecteur dans du HTML. La quatrieme, l expression
@@ -25,7 +25,7 @@ export function panneauChercher(entree, etat, redessiner, poser) {
     liste.appendChild(button(motif.nom, () => {
       etat.motifChoisi = motif.nom;
       redessiner();
-    }, { class: etat.motifChoisi === motif.nom ? 'on' : 'ghost', title: motif.note }));
+    }, { class: etat.motifChoisi === motif.nom ? 'on' : 'ghost', title: t(motif.note) }));
   }
   box.appendChild(liste);
 

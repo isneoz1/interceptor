@@ -1,4 +1,4 @@
-/* Horodatages — SWIFT (by NeoZ)
+/* Horodatages — SWIFT (by D4RK)
  *
  * Un nombre colle dans un jeton ou un journal peut etre compte depuis 1970,
  * 1601, 1904, 2001 ou l an 1, en secondes, millisecondes, microsecondes ou

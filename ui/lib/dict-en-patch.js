@@ -1,4 +1,4 @@
-/* Dictionnaire anglais — JSON Patch, Merge Patch et Pointer — SWIFT (by NeoZ)
+/* Dictionnaire anglais — JSON Patch, Merge Patch et Pointer — SWIFT (by D4RK)
  *
  * Les phrases du bloc de l onglet Requete (patch-detail.js), du panneau de la
  * boite a outils (tools-patch.js) et de la difference de structure de la vue

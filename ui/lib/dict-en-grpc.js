@@ -1,4 +1,4 @@
-/* Dictionnaire anglais — gRPC-Web — SWIFT (by NeoZ)
+/* Dictionnaire anglais — gRPC-Web — SWIFT (by D4RK)
  *
  * Les noms du protocole ne se traduisent pas : « gRPC-Web », « grpc-status »
  * et « grpc-message » sont les identifiants exacts que porte le fil, et les

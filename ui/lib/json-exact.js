@@ -1,4 +1,4 @@
-/* JSON sans perte — SWIFT (by NeoZ)
+/* JSON sans perte — SWIFT (by D4RK)
  *
  * JSON.parse convertit chaque nombre en double IEEE 754 : un entier au-dela de
  * 2^53 est arrondi. 1234567890123456789, un identifiant ecrit en nombre, est lu

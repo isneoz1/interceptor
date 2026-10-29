@@ -1,4 +1,4 @@
-/* Liens annonces par l en-tete Link — SWIFT (by NeoZ)
+/* Liens annonces par l en-tete Link — SWIFT (by D4RK)
  *
  * RFC 8288, section 3 : `Link: <cible>; rel="type"; attribut=valeur, …`.
  * Un serveur y annonce ce qu il faut precharger (preload, preconnect), la page

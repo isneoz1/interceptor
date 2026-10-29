@@ -1,4 +1,4 @@
-/* Un appui en cours — SWIFT (by NeoZ)
+/* Un appui en cours — SWIFT (by D4RK)
  *
  * Le navigateur ne donne un clic qu a un element present a l appui ET au
  * relachement. Or une vue se redessine d elle-meme — le trafic qui arrive, les

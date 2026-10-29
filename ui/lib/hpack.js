@@ -1,4 +1,4 @@
-/* HPACK — compression des en-tetes HTTP/2 (RFC 7541) — SWIFT (by NeoZ)
+/* HPACK — compression des en-tetes HTTP/2 (RFC 7541) — SWIFT (by D4RK)
  *
  * Une trame HEADERS ne transporte pas des en-tetes lisibles : elle transporte
  * un bloc compresse. Sans ce module, le decodeur de trames s arretait au bord

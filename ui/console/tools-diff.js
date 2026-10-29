@@ -1,4 +1,4 @@
-/* Panneau « Comparer » — SWIFT (by NeoZ)
+/* Panneau « Comparer » — SWIFT (by D4RK)
  *
  * La vue Comparaison confronte deux requetes capturees ; ici on confronte le
  * texte de travail a n importe quel autre texte colle a cote : deux reponses,
@@ -74,9 +74,11 @@ export function panneauComparer(entree, etat, redessiner, poser) {
   const finesse = premiereDifference(entree, etat.autreTexte || '');
   if (finesse) {
     box.appendChild(sec('Premiere difference', tp('position {n}', { n: finesse.position })));
-    add(box, kv('A gauche', (finesse.gauche || '(rien)') + '   ·   ' + finesse.codeGauche));
-    add(box, kv('A droite', (finesse.droite || '(rien)') + '   ·   ' + finesse.codeDroite));
-    add(box, kv('Contexte', finesse.contexte));
+    add(box, kv('A gauche', (finesse.gauche || t('(rien)')) + '   ·   ' + finesse.codeGauche));
+    add(box, kv('A droite', (finesse.droite || t('(rien)')) + '   ·   ' + finesse.codeDroite));
+    add(box, kv('Contexte', finesse.fin != null
+      ? tp('un texte s arrete a {n} caracteres, l autre continue', { n: finesse.fin })
+      : finesse.contexte));
   }
 
   /* ------------------------------ Ligne a ligne ---------------------------- */

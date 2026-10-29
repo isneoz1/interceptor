@@ -1,4 +1,4 @@
-/* Calculs de prefixes — SWIFT (by NeoZ)
+/* Calculs de prefixes — SWIFT (by D4RK)
  *
  * Decouper un reseau en sous-reseaux, resumer une liste de prefixes, passer
  * d une plage d adresses a la liste de prefixes qui la couvre exactement,

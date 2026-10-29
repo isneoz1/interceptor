@@ -1,4 +1,4 @@
-/* Pied de page et diagramme de debit — SWIFT (by NeoZ)
+/* Pied de page et diagramme de debit — SWIFT (by D4RK)
  *
  * Deux affichages temps reel, alimentes uniquement par les chiffres du noyau :
  * aucune valeur n est lissee, interpolee ni inventee.

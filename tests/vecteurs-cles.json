@@ -1,0 +1,98 @@
+{
+  "_source": "Produits le 2026-10-21 par OpenSSL 3.5.7 (cles, PEM, epingles, certificats), OpenSSH 10.3p1 (lignes et empreintes) et Node (JWK), a partir des memes cles.",
+  "ed25519": {
+    "pem": "-----BEGIN PUBLIC KEY-----\r\nMCowBQYDK2VwAyEA24AAbyP4lnR8OqRb0RjfHUxz3g6p+tYEKfVsRzrgyeE=\r\n-----END PUBLIC KEY-----\r\n",
+    "pin": "SsrzEbpeYfNreYlLJWS5su9C812EJW1VsPDRL6LULEY=",
+    "jwk": {
+      "crv": "Ed25519",
+      "x": "24AAbyP4lnR8OqRb0RjfHUxz3g6p-tYEKfVsRzrgyeE",
+      "kty": "OKP"
+    },
+    "ssh": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINuAAG8j+JZ0fDqkW9EY3x1Mc94OqfrWBCn1bEc64Mnh essai@swift",
+    "empreinteSsh": "SHA256:zwrQm1vPNL0vGR800hLPHKbCeI5cr0XNpGvDi2vogko",
+    "empreinteMd5": "MD5:b1:88:f6:b5:ea:81:33:59:e3:1b:0e:0e:d0:68:6e:78",
+    "certificat": "-----BEGIN CERTIFICATE-----\r\nMIIBQDCB86ADAgECAhRoUEeklPAAOOFIY69DaHTBTOVF0jAFBgMrZXAwFjEUMBIG\r\nA1UEAwwLZXNzYWkuc3dpZnQwHhcNMjYxMDIxMTkwNDE4WhcNMjYxMTIwMTkwNDE4\r\nWjAWMRQwEgYDVQQDDAtlc3NhaS5zd2lmdDAqMAUGAytlcAMhANuAAG8j+JZ0fDqk\r\nW9EY3x1Mc94OqfrWBCn1bEc64Mnho1MwUTAdBgNVHQ4EFgQU/uq9ojJVmnNGipPd\r\ncRnlV8YarbkwHwYDVR0jBBgwFoAU/uq9ojJVmnNGipPdcRnlV8YarbkwDwYDVR0T\r\nAQH/BAUwAwEB/zAFBgMrZXADQQAhxkpvxcQRNi5vfLhoWVUDUqAWJXgPdux5sfS/\r\nXvO3pkOWGiv5FSuGFXgxcAmCiaVsTr7tTy/UtXcgCqqvZSwJ\r\n-----END CERTIFICATE-----\r\n",
+    "empreinteCertificat": "32:34:73:C3:CB:F0:FB:C9:78:DB:66:E7:B0:B9:30:75:F0:94:4F:B9:80:7F:52:20:AA:F4:63:70:AA:0A:0C:C5",
+    "identifiantCle": "FE:EA:BD:A2:32:55:9A:73:46:8A:93:DD:71:19:E5:57:C6:1A:AD:B9"
+  },
+  "ed448": {
+    "pem": "-----BEGIN PUBLIC KEY-----\r\nMEMwBQYDK2VxAzoA7NlvaKjYmlnFQyUU0uUkZZIKFqe5x5VOnTmVlaDp/Df11QYx\r\nKy01qDLWzPCt2iWiYTcs3o56NIgA\r\n-----END PUBLIC KEY-----\r\n",
+    "pin": "xA+ALInI1bnjEuNL5oeuqtvemns4akBiSBKkMy26buw=",
+    "jwk": {
+      "crv": "Ed448",
+      "x": "7NlvaKjYmlnFQyUU0uUkZZIKFqe5x5VOnTmVlaDp_Df11QYxKy01qDLWzPCt2iWiYTcs3o56NIgA",
+      "kty": "OKP"
+    }
+  },
+  "rsa2048": {
+    "pem": "-----BEGIN PUBLIC KEY-----\r\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyzNyUaIKfFJi6YzS4IdF\r\nc+ulU/k4lBoKm6292D3f602XOA9ZbizyK5QbrmKXWzen2BKjyALrGs378CLktC/S\r\nKT8SpUzy3Uwdb4jNEfCC0Vy2F2HQsEQLnqjr2KTxIHvVUXKIRL4m7NQTo1D4Riw8\r\nEMi/dbrCnJ2Ui75O2XwMkfBrAs58+DpKQghR5wlEgcSOUkLJFGxYKqRQCzZON46u\r\n/Q720OU7vJd7IFjPW56XGfgD5pH/ULZdMvsBMx8Su2B9vL9J1FyewpCzWNJyB+Q2\r\nBNLS+yG/J0GgnrN+nVPHXl/WB4MpXbEqRpC31jegG0p7GeCeel+kTYC9qpSD+Ler\r\nPQIDAQAB\r\n-----END PUBLIC KEY-----\r\n",
+    "pin": "yM5slwmK2K4glvUs9tk4CIH+7ESe4xS5KZqnk0vRenA=",
+    "jwk": {
+      "kty": "RSA",
+      "n": "yzNyUaIKfFJi6YzS4IdFc-ulU_k4lBoKm6292D3f602XOA9ZbizyK5QbrmKXWzen2BKjyALrGs378CLktC_SKT8SpUzy3Uwdb4jNEfCC0Vy2F2HQsEQLnqjr2KTxIHvVUXKIRL4m7NQTo1D4Riw8EMi_dbrCnJ2Ui75O2XwMkfBrAs58-DpKQghR5wlEgcSOUkLJFGxYKqRQCzZON46u_Q720OU7vJd7IFjPW56XGfgD5pH_ULZdMvsBMx8Su2B9vL9J1FyewpCzWNJyB-Q2BNLS-yG_J0GgnrN-nVPHXl_WB4MpXbEqRpC31jegG0p7GeCeel-kTYC9qpSD-LerPQ",
+      "e": "AQAB"
+    },
+    "pemPkcs1": "-----BEGIN RSA PUBLIC KEY-----\r\nMIIBCgKCAQEAyzNyUaIKfFJi6YzS4IdFc+ulU/k4lBoKm6292D3f602XOA9Zbizy\r\nK5QbrmKXWzen2BKjyALrGs378CLktC/SKT8SpUzy3Uwdb4jNEfCC0Vy2F2HQsEQL\r\nnqjr2KTxIHvVUXKIRL4m7NQTo1D4Riw8EMi/dbrCnJ2Ui75O2XwMkfBrAs58+DpK\r\nQghR5wlEgcSOUkLJFGxYKqRQCzZON46u/Q720OU7vJd7IFjPW56XGfgD5pH/ULZd\r\nMvsBMx8Su2B9vL9J1FyewpCzWNJyB+Q2BNLS+yG/J0GgnrN+nVPHXl/WB4MpXbEq\r\nRpC31jegG0p7GeCeel+kTYC9qpSD+LerPQIDAQAB\r\n-----END RSA PUBLIC KEY-----\r\n",
+    "ssh": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDLM3JRogp8UmLpjNLgh0Vz66VT+TiUGgqbrb3YPd/rTZc4D1luLPIrlBuuYpdbN6fYEqPIAusazfvwIuS0L9IpPxKlTPLdTB1viM0R8ILRXLYXYdCwRAueqOvYpPEge9VRcohEvibs1BOjUPhGLDwQyL91usKcnZSLvk7ZfAyR8GsCznz4OkpCCFHnCUSBxI5SQskUbFgqpFALNk43jq79DvbQ5Tu8l3sgWM9bnpcZ+APmkf9Qtl0y+wEzHxK7YH28v0nUXJ7CkLNY0nIH5DYE0tL7Ib8nQaCes36dU8deX9YHgyldsSpGkLfWN6AbSnsZ4J56X6RNgL2qlIP4t6s9 essai@swift",
+    "empreinteSsh": "SHA256:1Pvjfnse3pnIUCFObVYQ0vQLkfAyOSQDCYx5/w4n5es",
+    "empreinteMd5": "MD5:cf:b5:57:2c:dc:6b:8a:7b:5b:49:76:56:38:5b:a8:2d",
+    "certificat": "-----BEGIN CERTIFICATE-----\r\nMIIDDTCCAfWgAwIBAgIUaIIxXihuxuzPCH/B9OKyWPCwSI8wDQYJKoZIhvcNAQEL\r\nBQAwFjEUMBIGA1UEAwwLZXNzYWkuc3dpZnQwHhcNMjYxMDIxMTkwNDE4WhcNMjYx\r\nMTIwMTkwNDE4WjAWMRQwEgYDVQQDDAtlc3NhaS5zd2lmdDCCASIwDQYJKoZIhvcN\r\nAQEBBQADggEPADCCAQoCggEBAMszclGiCnxSYumM0uCHRXPrpVP5OJQaCputvdg9\r\n3+tNlzgPWW4s8iuUG65il1s3p9gSo8gC6xrN+/Ai5LQv0ik/EqVM8t1MHW+IzRHw\r\ngtFcthdh0LBEC56o69ik8SB71VFyiES+JuzUE6NQ+EYsPBDIv3W6wpydlIu+Ttl8\r\nDJHwawLOfPg6SkIIUecJRIHEjlJCyRRsWCqkUAs2TjeOrv0O9tDlO7yXeyBYz1ue\r\nlxn4A+aR/1C2XTL7ATMfErtgfby/SdRcnsKQs1jScgfkNgTS0vshvydBoJ6zfp1T\r\nx15f1geDKV2xKkaQt9Y3oBtKexngnnpfpE2AvaqUg/i3qz0CAwEAAaNTMFEwHQYD\r\nVR0OBBYEFM1zLELay8PQbAMJ2Q9gwSeZX1fWMB8GA1UdIwQYMBaAFM1zLELay8PQ\r\nbAMJ2Q9gwSeZX1fWMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQELBQADggEB\r\nAJ5aXTMf67IKaWs9B0fdtcZWB2khsfxeJn4c+V3Awqed0+ojg/00nu/piJorIVt0\r\n2iofj+cPqEEQ+GYjJ7kxzEcr1BirCIbnYViWwjETVH7QO9tUgybWpm7xJzBXrSnU\r\nepsIZeQ131HxuxOHOvirumZk1zLRrb149AVNqc2ro09zmg5pSKATaOIlEt1UGGFM\r\nL1/vjKGTGnv1rj4KuYcd0Kt0scN3QO3+UXzMUYz+EC0S4wA35loTfo/UQ5hc5q0d\r\nkSC00HI4RxLwguLe49XVrf9DWVSccZnkWs+B4JjLfYyIRt0A+zZI1h9C9BkVapBw\r\nVuH0Ox94pYqgwvFrM3ZS4dA=\r\n-----END CERTIFICATE-----\r\n",
+    "empreinteCertificat": "61:47:77:80:24:16:E9:AA:E3:F7:21:E7:63:ED:6A:78:27:50:27:C3:00:6F:3C:CF:94:55:33:A2:5D:66:2A:B0",
+    "identifiantCle": "CD:73:2C:42:DA:CB:C3:D0:6C:03:09:D9:0F:60:C1:27:99:5F:57:D6"
+  },
+  "rsa3072": {
+    "pem": "-----BEGIN PUBLIC KEY-----\r\nMIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKCAYEAzSOUjcrTE7gN5y+QH8zD\r\n2uN9pvmDz3Mm0HywC+mzt8zDpWap/ea8FDFH8/a9d7ade7jgUU4MBlkC5QZpBSVR\r\nmjEiF+mSWaP05iMzPhfKJsk1tb3tPfDJwXEDN28IK4VH9f9wtKOiuaJmeiJ9he+e\r\n0mLINkc00+McrmQ2tcTuj34CRxFs8ybmEW7MNKBrRbLA8D63xJC0EWrum52vSMrI\r\n9rIfnFb38dPrpCdzADo9QuGf1SWkUNXY6hMI1H852wNmRD8qeLcUGNrwPVMZgvUu\r\nV/+8dZevAQt4pxrhwVTs2zKviPZ0YKwmzBJNholboEDKWJZFu7c8ly2d8soluI3V\r\nlKjzG4a6/UaSXMb3gYw657BjzRY7hI8mvWT2o+nDC9oVgHOBPEQl3LqA7D7i6J0y\r\nfR1idKM7yLx9Idy0bz+GvcV1UuvGvBSH3RkZGN1+qNP8ycEfUvTnGHFhSZsZXF76\r\nh3KVYt48gM67dkPODXe0Fhzr9scgfA1UEQISNSfrWeozAgMBAAE=\r\n-----END PUBLIC KEY-----\r\n",
+    "pin": "FOvrEcdcYDhZnuMI8Bu2pzzMwzzZVsSghNzoIyH6g9E=",
+    "jwk": {
+      "kty": "RSA",
+      "n": "zSOUjcrTE7gN5y-QH8zD2uN9pvmDz3Mm0HywC-mzt8zDpWap_ea8FDFH8_a9d7ade7jgUU4MBlkC5QZpBSVRmjEiF-mSWaP05iMzPhfKJsk1tb3tPfDJwXEDN28IK4VH9f9wtKOiuaJmeiJ9he-e0mLINkc00-McrmQ2tcTuj34CRxFs8ybmEW7MNKBrRbLA8D63xJC0EWrum52vSMrI9rIfnFb38dPrpCdzADo9QuGf1SWkUNXY6hMI1H852wNmRD8qeLcUGNrwPVMZgvUuV_-8dZevAQt4pxrhwVTs2zKviPZ0YKwmzBJNholboEDKWJZFu7c8ly2d8soluI3VlKjzG4a6_UaSXMb3gYw657BjzRY7hI8mvWT2o-nDC9oVgHOBPEQl3LqA7D7i6J0yfR1idKM7yLx9Idy0bz-GvcV1UuvGvBSH3RkZGN1-qNP8ycEfUvTnGHFhSZsZXF76h3KVYt48gM67dkPODXe0Fhzr9scgfA1UEQISNSfrWeoz",
+      "e": "AQAB"
+    },
+    "pemPkcs1": "-----BEGIN RSA PUBLIC KEY-----\r\nMIIBigKCAYEAzSOUjcrTE7gN5y+QH8zD2uN9pvmDz3Mm0HywC+mzt8zDpWap/ea8\r\nFDFH8/a9d7ade7jgUU4MBlkC5QZpBSVRmjEiF+mSWaP05iMzPhfKJsk1tb3tPfDJ\r\nwXEDN28IK4VH9f9wtKOiuaJmeiJ9he+e0mLINkc00+McrmQ2tcTuj34CRxFs8ybm\r\nEW7MNKBrRbLA8D63xJC0EWrum52vSMrI9rIfnFb38dPrpCdzADo9QuGf1SWkUNXY\r\n6hMI1H852wNmRD8qeLcUGNrwPVMZgvUuV/+8dZevAQt4pxrhwVTs2zKviPZ0YKwm\r\nzBJNholboEDKWJZFu7c8ly2d8soluI3VlKjzG4a6/UaSXMb3gYw657BjzRY7hI8m\r\nvWT2o+nDC9oVgHOBPEQl3LqA7D7i6J0yfR1idKM7yLx9Idy0bz+GvcV1UuvGvBSH\r\n3RkZGN1+qNP8ycEfUvTnGHFhSZsZXF76h3KVYt48gM67dkPODXe0Fhzr9scgfA1U\r\nEQISNSfrWeozAgMBAAE=\r\n-----END RSA PUBLIC KEY-----\r\n",
+    "ssh": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDNI5SNytMTuA3nL5AfzMPa432m+YPPcybQfLAL6bO3zMOlZqn95rwUMUfz9r13tp17uOBRTgwGWQLlBmkFJVGaMSIX6ZJZo/TmIzM+F8omyTW1ve098MnBcQM3bwgrhUf1/3C0o6K5omZ6In2F757SYsg2RzTT4xyuZDa1xO6PfgJHEWzzJuYRbsw0oGtFssDwPrfEkLQRau6bna9Iysj2sh+cVvfx0+ukJ3MAOj1C4Z/VJaRQ1djqEwjUfznbA2ZEPyp4txQY2vA9UxmC9S5X/7x1l68BC3inGuHBVOzbMq+I9nRgrCbMEk2GiVugQMpYlkW7tzyXLZ3yyiW4jdWUqPMbhrr9RpJcxveBjDrnsGPNFjuEjya9ZPaj6cML2hWAc4E8RCXcuoDsPuLonTJ9HWJ0ozvIvH0h3LRvP4a9xXVS68a8FIfdGRkY3X6o0/zJwR9S9OcYcWFJmxlcXvqHcpVi3jyAzrt2Q84Nd7QWHOv2xyB8DVQRAhI1J+tZ6jM= essai@swift",
+    "empreinteSsh": "SHA256:DFBCuSZwjItZHtXmKe8OM9Z/zWXqzOAcWWGfzRPTgwU",
+    "empreinteMd5": "MD5:6a:15:5c:8b:7e:71:c1:38:91:b5:f9:b8:20:7a:ae:16"
+  },
+  "ec256": {
+    "pem": "-----BEGIN PUBLIC KEY-----\r\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEQkjFXKKpEK6bfAyhID1oCo8sjvE1\r\n9Z4QNc3k6ADrqHwv7gsEs8SF2IJ2T3QWXoRjburij1T+64EyuToRGR4VhA==\r\n-----END PUBLIC KEY-----\r\n",
+    "pin": "8Hki2LAxkHUC1NcXglX4rEPQgItyNQGVf3Guy9Cfe1I=",
+    "jwk": {
+      "kty": "EC",
+      "x": "QkjFXKKpEK6bfAyhID1oCo8sjvE19Z4QNc3k6ADrqHw",
+      "y": "L-4LBLPEhdiCdk90Fl6EY27q4o9U_uuBMrk6ERkeFYQ",
+      "crv": "P-256"
+    },
+    "ssh": "ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBEJIxVyiqRCum3wMoSA9aAqPLI7xNfWeEDXN5OgA66h8L+4LBLPEhdiCdk90Fl6EY27q4o9U/uuBMrk6ERkeFYQ= essai@swift",
+    "empreinteSsh": "SHA256:QJ16x/PnNatzwTtWTnmvKOZKCulhghKud+dgdy8pgFs",
+    "empreinteMd5": "MD5:64:84:61:e0:34:17:4c:90:b6:8f:0a:17:0f:95:55:18",
+    "certificat": "-----BEGIN CERTIFICATE-----\r\nMIIBgTCCASegAwIBAgIUV46el7rGjzza2Dyw5cAii0mBAIgwCgYIKoZIzj0EAwIw\r\nFjEUMBIGA1UEAwwLZXNzYWkuc3dpZnQwHhcNMjYxMDIxMTkwNDE4WhcNMjYxMTIw\r\nMTkwNDE4WjAWMRQwEgYDVQQDDAtlc3NhaS5zd2lmdDBZMBMGByqGSM49AgEGCCqG\r\nSM49AwEHA0IABEJIxVyiqRCum3wMoSA9aAqPLI7xNfWeEDXN5OgA66h8L+4LBLPE\r\nhdiCdk90Fl6EY27q4o9U/uuBMrk6ERkeFYSjUzBRMB0GA1UdDgQWBBThYvbQrokH\r\nJon+Q/mmCYlP5ywRnjAfBgNVHSMEGDAWgBThYvbQrokHJon+Q/mmCYlP5ywRnjAP\r\nBgNVHRMBAf8EBTADAQH/MAoGCCqGSM49BAMCA0gAMEUCIQDaW7JtY7VAQN1BCk4i\r\nkjM5iY3fIA7/QbiwByA4n2iJ+AIgfGKTOSepClxcfiksRNfeEJFj8HRSvexcLDE0\r\nzZsWrIg=\r\n-----END CERTIFICATE-----\r\n",
+    "empreinteCertificat": "3A:B7:F4:46:F4:9A:56:86:9D:2A:1E:67:75:BA:AB:93:72:02:ED:D8:0A:73:3D:0C:02:F9:16:6B:91:85:5E:00",
+    "identifiantCle": "E1:62:F6:D0:AE:89:07:26:89:FE:43:F9:A6:09:89:4F:E7:2C:11:9E"
+  },
+  "ec384": {
+    "pem": "-----BEGIN PUBLIC KEY-----\r\nMHYwEAYHKoZIzj0CAQYFK4EEACIDYgAECsHOvPcYaH1fBvSRCnSK043bnlTUETzn\r\n47zHdAwtZ/yt1wekjph1J7JswUIPaW+Dt6562+PdOM1YZ85QNYyMKi3hwX1NxRGx\r\nRIa3J+2+GHeVQFFiJlmYIlG4m4GJLTES\r\n-----END PUBLIC KEY-----\r\n",
+    "pin": "jnK2GV10x2YCp+16bZEkQ6MufDu+KN606tdjNDnqBJk=",
+    "jwk": {
+      "kty": "EC",
+      "x": "CsHOvPcYaH1fBvSRCnSK043bnlTUETzn47zHdAwtZ_yt1wekjph1J7JswUIPaW-D",
+      "y": "t6562-PdOM1YZ85QNYyMKi3hwX1NxRGxRIa3J-2-GHeVQFFiJlmYIlG4m4GJLTES",
+      "crv": "P-384"
+    },
+    "ssh": "ecdsa-sha2-nistp384 AAAAE2VjZHNhLXNoYTItbmlzdHAzODQAAAAIbmlzdHAzODQAAABhBArBzrz3GGh9Xwb0kQp0itON255U1BE85+O8x3QMLWf8rdcHpI6YdSeybMFCD2lvg7euetvj3TjNWGfOUDWMjCot4cF9TcURsUSGtyftvhh3lUBRYiZZmCJRuJuBiS0xEg== essai@swift",
+    "empreinteSsh": "SHA256:7wW/AzU1Vf+dhskwifv69HFNC6A9uNlvCYPL+AmX4Rs",
+    "empreinteMd5": "MD5:ae:bd:c7:1b:de:60:92:64:57:28:b7:51:58:c2:6f:1e"
+  },
+  "ec521": {
+    "pem": "-----BEGIN PUBLIC KEY-----\r\nMIGbMBAGByqGSM49AgEGBSuBBAAjA4GGAAQA7fnKolU0XH1h9oUhKsmLuoZ175tv\r\ncE6op4gH918EFXBRZn0LMHHWbZE+naY6vbsTP8L/cGM2ojMTdUONQcfsi7gBOgrI\r\nm/Ao8z0Wx87aqTUpN9wqLv0Mz4SCH7OCPUc3cqAMPmnXm6AarREVyiIZYQCSiRkL\r\nNem380la7p6fsq8z1GU=\r\n-----END PUBLIC KEY-----\r\n",
+    "pin": "WPEVaLDA4Km4MpoFxxSatRN66Ee3RHi3tQHHnUSIpqQ=",
+    "jwk": {
+      "kty": "EC",
+      "x": "AO35yqJVNFx9YfaFISrJi7qGde-bb3BOqKeIB_dfBBVwUWZ9CzBx1m2RPp2mOr27Ez_C_3BjNqIzE3VDjUHH7Iu4",
+      "y": "AToKyJvwKPM9FsfO2qk1KTfcKi79DM-Egh-zgj1HN3KgDD5p15ugGq0RFcoiGWEAkokZCzXpt_NJWu6en7KvM9Rl",
+      "crv": "P-521"
+    },
+    "ssh": "ecdsa-sha2-nistp521 AAAAE2VjZHNhLXNoYTItbmlzdHA1MjEAAAAIbmlzdHA1MjEAAACFBADt+cqiVTRcfWH2hSEqyYu6hnXvm29wTqiniAf3XwQVcFFmfQswcdZtkT6dpjq9uxM/wv9wYzaiMxN1Q41Bx+yLuAE6Csib8CjzPRbHztqpNSk33Cou/QzPhIIfs4I9RzdyoAw+adeboBqtERXKIhlhAJKJGQs16bfzSVrunp+yrzPUZQ== essai@swift",
+    "empreinteSsh": "SHA256:A4cdI5F0qsaZRWkZdbL9Cm7Q+/mzySLXBZlFGMCMP58",
+    "empreinteMd5": "MD5:4a:0a:53:66:27:a8:74:9d:9a:9d:a5:c5:d1:9d:8a:9b"
+  }
+}

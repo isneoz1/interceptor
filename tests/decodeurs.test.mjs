@@ -1,4 +1,4 @@
-/* Signatures HTTP, WebAuthn, DNS — SWIFT (by NeoZ)
+/* Signatures HTTP, WebAuthn, DNS — SWIFT (by D4RK)
  *
  *   node tests/decodeurs.test.mjs
  *

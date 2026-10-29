@@ -1,4 +1,4 @@
-/* Faits constates, et nonce CSP reutilise — SWIFT (by NeoZ)
+/* Faits constates, et nonce CSP reutilise — SWIFT (by D4RK)
  *
  * Suite d analyzer-regles.js, dont elle suit la regle : une ALERTE ne sort que
  * pour une faille demontrable ; ce qui est exact sans etre une faille reste un

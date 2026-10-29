@@ -1,4 +1,4 @@
-/* JSON Patch, JSON Merge Patch et JSON Pointer — SWIFT (by NeoZ)
+/* JSON Patch, JSON Merge Patch et JSON Pointer — SWIFT (by D4RK)
  *
  * RFC 6901 (JSON Pointer) : « /a/b/0 » designe une valeur ; dans un jeton,
  * « ~1 » s ecrit pour « / » et « ~0 » pour « ~ » (§3), decodes dans cet ordre

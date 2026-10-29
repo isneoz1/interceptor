@@ -1,4 +1,4 @@
-/* Dictionnaire anglais — GraphQL sur HTTP (5.0) — SWIFT (by NeoZ)
+/* Dictionnaire anglais — GraphQL sur HTTP (5.0) — SWIFT (by D4RK)
  *
  * Complete dict-en.js (`...EN_GRAPHQL`) : la lecture des requetes et des
  * reponses GraphQL, la colonne et le filtre du tableau, les faits constates.

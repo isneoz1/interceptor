@@ -1,4 +1,4 @@
-/* Signatures de messages HTTP (RFC 9421) — SWIFT (by NeoZ)
+/* Signatures de messages HTTP (RFC 9421) — SWIFT (by D4RK)
  *
  * Un emetteur signe une partie choisie du message : `Signature-Input` dit
  * laquelle (les composants couverts et les parametres), `Signature` porte la

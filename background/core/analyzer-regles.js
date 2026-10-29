@@ -1,4 +1,4 @@
-/* Regles d analyse — SWIFT (by NeoZ)
+/* Regles d analyse — SWIFT (by D4RK)
  *
  * Une seule ligne de conduite : une alerte ne sort que si elle est
  * DEMONTRABLE a partir de ce qui a ete capture, et si elle correspond a une

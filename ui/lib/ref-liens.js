@@ -1,4 +1,4 @@
-/* Relations de liens — SWIFT (by NeoZ)
+/* Relations de liens — SWIFT (by D4RK)
  *
  * Le registre IANA « Link Relations » (RFC 8288, section 4.2), en entier :
  * cent trente-quatre types, chacun avec sa description et la specification

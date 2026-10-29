@@ -1,4 +1,4 @@
-/* Jetons JWT, jeux de cles et decouverte — SWIFT (by NeoZ)
+/* Jetons JWT, jeux de cles et decouverte — SWIFT (by D4RK)
  *
  *   node tests/jose.test.mjs
  *

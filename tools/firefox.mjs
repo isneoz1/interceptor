@@ -1,5 +1,5 @@
 /* Firefox sans interface, pilote par WebDriver BiDi
- * SWIFT (by NeoZ)
+ * SWIFT (by D4RK)
  *
  * SWIFT est une extension Firefox, mais les audits passaient par Chrome : un
  * comportement propre a Firefox leur echappait. Celui-ci, par exemple :

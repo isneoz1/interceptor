@@ -1,4 +1,4 @@
-/* Traduction de l interface — SWIFT (by NeoZ)
+/* Traduction de l interface — SWIFT (by D4RK)
  *
  * Le francais est la langue source : la cle de traduction EST le texte francais.
  * `t('Requetes')` rend « Requests » en anglais, et le texte d origine sinon.
@@ -18,7 +18,28 @@ const propre = cle => Object.prototype.hasOwnProperty.call(EN, cle);
    `t(label)` — que la lecture du source ne peut pas voir. */
 let temoinManque = null;
 
-export function setLang(lang) { current = lang === 'en' ? 'en' : 'fr'; }
+/* La langue dans laquelle Firefox lui-meme s affiche (« fr », « fr-CA »,
+   « de », « ja »…), ou rien hors d une extension. */
+function langueDeFirefox() {
+  try {
+    const api = globalThis.browser || globalThis.chrome;
+    if (api && api.i18n && typeof api.i18n.getUILanguage === 'function') return api.i18n.getUILanguage();
+  } catch { /* hors extension : la langue du navigateur, plus bas */ }
+  return (globalThis.navigator && globalThis.navigator.language) || '';
+}
+
+/**
+ * La langue a montrer. Un choix enregistre (« fr », « en ») est garde tel
+ * quel ; « auto », la valeur d une installation neuve, suit Firefox : le
+ * francais pour un Firefox en francais, l anglais partout ailleurs — c est
+ * la langue que le plus grand nombre sait lire.
+ */
+export function langueChoisie(reglage, firefox = langueDeFirefox()) {
+  if (reglage === 'fr' || reglage === 'en') return reglage;
+  return /^fr(?![a-z])/i.test(String(firefox || '')) ? 'fr' : 'en';
+}
+
+export function setLang(reglage) { current = langueChoisie(reglage); }
 export function lang() { return current; }
 export function surManque(fn) { temoinManque = typeof fn === 'function' ? fn : null; }
 

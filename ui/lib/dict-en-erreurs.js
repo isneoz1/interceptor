@@ -1,4 +1,4 @@
-/* Dictionnaire anglais — messages d erreur — SWIFT (by NeoZ)
+/* Dictionnaire anglais — messages d erreur — SWIFT (by D4RK)
  *
  * Un decodeur qui refuse une entree dit pourquoi : « caractere invalide dans
  * le base32 : @ ». Ces messages s affichaient en francais dans l interface
@@ -295,6 +295,11 @@ export const EN_ERREURS = {
 
 /* Les messages qui portent une valeur. {nom} : recopie ; {@nom} : traduit. */
 export const MODELES_ERREURS = {
+  'longueur de cle {genre} inattendue': 'unexpected {genre} key length',
+  'type de cle non pris en charge : {oid}': 'key type not supported: {oid}',
+  'coordonnees de la courbe {crv} : {t} octets chacune attendus (RFC 7518 §6.2.1.2)': 'coordinates of the curve {crv}: {t} bytes each expected (RFC 7518 §6.2.1.2)',
+  'cle OpenSSH non prise en charge : {nom}': 'OpenSSH key not supported: {nom}',
+  'la ligne annonce {a}, la cle est {b}': 'the line announces {a}, the key is {b}',
   'algorithme « {alg} » inconnu : la casse compte, et ce n est pas « {proche} » (RFC 7515 §4.1.1)': 'unknown algorithm “{alg}”: case matters, and it is not “{proche}” (RFC 7515 §4.1.1)',
   'ce navigateur ne sait pas verifier {courbe} (Web Crypto)': 'this browser cannot verify {courbe} (Web Crypto)',
   'la cle est sur la courbe {crv}, le jeton annonce {alg} (RFC 9864)': 'the key is on the curve {crv}, the token announces {alg} (RFC 9864)',

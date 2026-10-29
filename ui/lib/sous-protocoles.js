@@ -1,4 +1,4 @@
-/* Sous-protocoles WebSocket — SWIFT (by NeoZ)
+/* Sous-protocoles WebSocket — SWIFT (by D4RK)
  *
  * Une trame WebSocket capturee ressemble a « 42["order",{"id":77}] ». Lue
  * telle quelle, elle ne dit rien. C est en realite un paquet Engine.IO de

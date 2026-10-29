@@ -1,4 +1,4 @@
-/* Corps multipart/form-data — SWIFT (by NeoZ)
+/* Corps multipart/form-data — SWIFT (by D4RK)
  *
  * Decoupe un corps de formulaire (RFC 7578) en ses parties : nom du champ,
  * nom de fichier, type de contenu, contenu. La frontiere est lue dans

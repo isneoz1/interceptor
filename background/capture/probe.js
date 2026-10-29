@@ -1,4 +1,4 @@
-/* Verification de couverture — SWIFT (by NeoZ)
+/* Verification de couverture — SWIFT (by D4RK)
  *
  * Declenche de vraies requetes depuis l onglet actif, uniquement vers l origine
  * de cet onglet (chemins relatifs). Aucun service externe n est contacte.

@@ -1,4 +1,4 @@
-/* Les caches traverses — SWIFT (by NeoZ)
+/* Les caches traverses — SWIFT (by D4RK)
  *
  * Cache-Status (RFC 9211) : chaque cache sur le chemin ajoute un membre a la
  * liste. Le premier est le plus proche de l origine, le dernier le plus

@@ -1,4 +1,4 @@
-/* Banniere de partage social — SWIFT (by NeoZ)
+/* Banniere de partage social — SWIFT (by D4RK)
  *
  * C est l image qu affichent X, Reddit, Discord, LinkedIn et Slack quand
  * quelqu un colle le lien du depot. Sans elle, GitHub sert une vignette
@@ -103,7 +103,7 @@ const PAGE = `<!doctype html><html><head><meta charset="utf-8"><style>
         ${icone}
         <div>
           <div class="nom">SWIFT</div>
-          <div class="par">BY NEOZ</div>
+          <div class="par">BY D4RK</div>
         </div>
       </div>
       <h1>Every request Firefox makes —<br><em>captured, explained, rewritable.</em></h1>
