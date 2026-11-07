@@ -5,7 +5,7 @@
 # SWIFT
 
 **See what your browser really sends.**
-Every request Firefox makes — captured once, explained in plain words, and changeable.
+A network inspector for Firefox: every request captured once, explained in plain words, and changeable.
 Free and open source. No proxy, no certificate, no account. Nothing leaves your machine.
 
 Created by **D4RK** · <sub>formerly INTERCEPTOR, renamed in 5.0</sub>
@@ -27,10 +27,10 @@ Created by **D4RK** · <sub>formerly INTERCEPTOR, renamed in 5.0</sub>
 
 </div>
 
-> Firefox's own network panel shows you *that* a request happened.
-> SWIFT shows you **everything about it** — the response body pulled off the wire, the
-> JavaScript stack that triggered it, the TLS suite that carried it, the exact reason a
-> cookie will be rejected — and lets you block it, rewrite it, or send it again.
+> Firefox's network panel shows one tab's traffic, while it is open.
+> SWIFT keeps recording with it closed and **explains what it saw** — the response body read
+> off the wire, the JavaScript stack that triggered a call, the TLS suite that carried it, the
+> exact reason a cookie will be rejected — and lets you block it, rewrite it, or send it again.
 >
 > Eight capture layers, zero duplicated rows, no telemetry, no dependencies, and an analyser
 > that refuses to report anything it cannot prove.
@@ -111,8 +111,8 @@ If SWIFT saves you an hour, a ⭐ on this page is how the next person finds it.
 
 ## Firefox already has a network panel. Why this?
 
-Because the built-in panel answers *that* a request happened. Most of the time the question
-is *why*.
+Because the built-in panel shows what happened, on one tab, while it is open. Most of the time
+the question is *why*.
 
 | The question you actually have | The built-in panel | SWIFT |
 |---|---|---|
@@ -208,7 +208,7 @@ specific points:
 happens inside your Firefox, on your machine.
 
 **By the numbers**: 262 JavaScript modules, ~53,500 lines, zero external dependencies,
-4038 automated assertions, English and French interface — Firefox's language from the first launch.
+4038 automated assertions, English and French interface — French on a French Firefox, English otherwise.
 
 ---
 

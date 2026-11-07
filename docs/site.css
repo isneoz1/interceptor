@@ -148,10 +148,13 @@ h1 { font-size: var(--texte-accueil); max-width: 13ch; letter-spacing: -.035em; 
 .regles { display: grid; gap: clamp(1.6rem, 1rem + 3vw, 4rem); grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); align-items: start; }
 .regles h2 { margin-bottom: 1.1rem; }
 .regles .texte p:not(.trace) { color: var(--doux); }
-.liste { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--filet); }
-.liste li { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: .1rem 1.4rem; padding: .85rem 0; border-bottom: 1px solid var(--filet); }
+.liste { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--filet); container-type: inline-size; }
+.liste li { display: grid; grid-template-columns: 10rem minmax(0, 1fr); align-items: baseline; gap: .1rem 1.4rem; padding: .85rem 0; border-bottom: 1px solid var(--filet); }
 .liste b { font: 600 1rem var(--mono); }
 .liste span { color: var(--doux); font-size: .96rem; }
+/* Toutes les lignes changent ensemble : avec des largeurs de texte differentes,
+   certaines passaient dessous et d autres non. La colonne decide, pas la police. */
+@container (max-width: 30rem) { .liste li { grid-template-columns: minmax(0, 1fr); } }
 
 /* ------------------------------ La comparaison ---------------------------- */
 .comparer h2 { margin-bottom: clamp(1.4rem, 1rem + 2vw, 2.6rem); max-width: 18ch; }

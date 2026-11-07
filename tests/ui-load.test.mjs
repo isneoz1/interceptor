@@ -930,15 +930,26 @@ verifier('le README annonce partout le meme nombre d assertions',
 {
   const site = fs.readFileSync(path.join(racine, 'docs', 'index.html'), 'utf8');
   const compte = nom => ((new RegExp('data-compte="' + nom + '">([0-9,]+)<').exec(site) || [])[1] || '').replace(/,/g, '');
-  egal('le site annonce le bon nombre d outils', compte('outils'), String(FAMILLES.flatMap(([, liste]) => liste).length));
-  egal('le site annonce le bon nombre de transformations', compte('transformations'), String(TRANSFORMATIONS.length));
+  /* La fiche AMO se colle telle quelle, dans deux langues : chacun de ses
+     chiffres vient du code, et ses captures sont des fichiers du depot. */
+  const fiche = fs.readFileSync(path.join(racine, 'docs', 'amo-listing.md'), 'utf8');
+  const chiffresDeLaFiche = motif => [...new Set([...fiche.matchAll(motif)].map(m => m[1]))].join(' ');
+  const outils = String(FAMILLES.flatMap(([, liste]) => liste).length);
+  const transformations = String(TRANSFORMATIONS.length);
+  egal('le site et la fiche AMO annoncent le bon nombre d outils et de formats',
+    compte('outils') + ' ' + chiffresDeLaFiche(/\b(\d+) (?:tools|outils)\b/g) + ' ' + chiffresDeLaFiche(/\b(\d+) formats\b/g),
+    outils + ' ' + outils + ' ' + GENERATOR_LABELS.length);
+  egal('le site et la fiche AMO annoncent le bon nombre de transformations',
+    compte('transformations') + ' ' + chiffresDeLaFiche(/\b(\d+) (?:local )?transformations\b/g), transformations + ' ' + transformations);
   egal('le site annonce le bon nombre d assertions', compte('assertions'), String(totauxAnnonces[0]));
   const { PRESETS } = await import('../ui/console/rules.js');
-  verifier('le site annonce le bon nombre de modeles de regles', PRESETS.length === 12 && site.includes('Twelve ready-made templates'), String(PRESETS.length));
+  verifier('le site et la fiche AMO annoncent le bon nombre de modeles de regles',
+    PRESETS.length === 12 && site.includes('Twelve ready-made templates') && fiche.includes('Twelve ready-made rules') && fiche.includes('Douze règles toutes prêtes'), String(PRESETS.length));
   const fichiers = [...site.matchAll(/\b(?:src|poster)="([^"]+)"/g), ...site.matchAll(/<link rel="(?:stylesheet|icon)" href="([^"]+)"/g)].map(m => m[1]);
-  verifier('le site reference ses images et ses videos', fichiers.length >= 8, fichiers.length + ' fichiers');
+  const captures = [...fiche.matchAll(/`docs\/(images\/console-[a-z]+\.png)`/g)].map(m => m[1]);
+  verifier('le site et la fiche AMO referencent leurs images', fichiers.length >= 8 && captures.length >= 6, fichiers.length + ' fichiers, ' + captures.length + ' captures');
   egal('le site ne charge rien de personne d autre', fichiers.filter(f => /^(https?:)?\/\//.test(f)).join(' '), '');
-  egal('chaque fichier du site existe', fichiers.filter(f => !fs.existsSync(path.join(racine, 'docs', f))).join(' '), '');
+  egal('chaque fichier du site et de la fiche AMO existe', [...fichiers, ...captures].filter(f => !fs.existsSync(path.join(racine, 'docs', f))).join(' '), '');
   verifier('sa politique de securite le garantit', site.includes("default-src 'none'"));
   egal('le site n execute aucun script', [...site.matchAll(/<script\b([^>]*)>/g)].filter(m => !m[1].includes('application/ld+json')).length, 0);
   verifier('son icone est celle de l extension',
