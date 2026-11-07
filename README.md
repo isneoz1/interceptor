@@ -1245,7 +1245,7 @@ tests, how to add a decoder, and why a string assembled at runtime can never be 
 
 ## 23. Licence
 
-[MIT](LICENSE) — © 2026 NeoZ
+[MIT](LICENSE) — © 2026 D4RK
 
 ---
 

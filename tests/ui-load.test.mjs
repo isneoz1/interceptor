@@ -110,7 +110,16 @@ for (const ressource of manifest.web_accessible_resources || []) {
   verifier('la ressource accessible ' + ressource + ' existe',
     fs.existsSync(path.join(racine, ressource)));
 }
-verifier('la version du manifest est renseignee', /^\d+\.\d+\.\d+$/.test(manifest.version));
+/* Un seul auteur partout : la licence et le bas du README ont garde l ancien
+   nom quand le credit a change dans le manifest et le paquet. */
+const titulaires = [
+  JSON.parse(fs.readFileSync(path.join(racine, 'package.json'), 'utf8')).author,
+  (/^Copyright \(c\) \d{4} (.+)$/m.exec(fs.readFileSync(path.join(racine, 'LICENSE'), 'utf8')) || [])[1],
+  (/^\[MIT\]\(LICENSE\) — © \d{4} (.+)$/m.exec(fs.readFileSync(path.join(racine, 'README.md'), 'utf8')) || [])[1]
+];
+verifier('le manifest renseigne sa version, et son auteur est celui du paquet, de la licence et du README',
+  /^\d+\.\d+\.\d+$/.test(manifest.version) && Boolean(manifest.author) && titulaires.every(t => t === manifest.author),
+  manifest.version + ' par ' + manifest.author + ', ailleurs : ' + titulaires.join(', '));
 
 /* ------------------- 5. Lisibilite : contraste mesure -------------------- */
 /* Une interface sombre a neons est vite jolie et illisible. Chaque paire

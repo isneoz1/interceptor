@@ -107,7 +107,7 @@ listing once it exists.
 
 **Licence**
 
-MIT (already declared in `LICENSE` and in the manifest metadata).
+MIT (already declared in `LICENSE` and in `package.json`).
 
 **Leave unticked**
 
