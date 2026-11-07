@@ -306,6 +306,8 @@ listeners return without changing anything.
 - Add the AMO install badge and link to the top of `README.md`.
 - On the website (`docs/index.html`), point « Get SWIFT for Firefox » at the listing, and
   replace the install section and its note about temporary add-ons.
+- In `.github/ISSUE_TEMPLATE/bug_report.yml`, add addons.mozilla.org to the choices of
+  « How is it installed? ».
 - Upload `docs/images/social-preview.png` under **Settings → General → Social preview**;
   GitHub has no API for it, so it is a manual one-time step.
 - Present it: `docs/launch.md` has texts ready to paste for Hacker News, Reddit, Mozilla

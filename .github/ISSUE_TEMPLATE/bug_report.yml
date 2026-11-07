@@ -6,9 +6,11 @@ body:
     attributes:
       value: |
         Thanks for taking the time. The single most useful thing you can attach is the
-        **diagnostics export**: open the console, go to **System → Internal log**, and click
-        **Export**. It contains SWIFT's own errors and command log — **not your
-        captured traffic**.
+        **diagnostics export**: open the console, go to **System → Internal log** (turn off
+        **Simple mode** in Settings if you do not see it), and click **Export journal**. It
+        contains SWIFT's own errors and command log, **not your captured traffic**. An error
+        message can still quote the address of a page, and this issue is public: read the
+        file before you attach it.
 
   - type: textarea
     id: what
@@ -33,8 +35,8 @@ body:
     id: version
     attributes:
       label: SWIFT version
-      description: Shown in Settings, or the release you downloaded.
-      placeholder: "3.7.0"
+      description: "Shown at the bottom of **Help**, and in about:addons."
+      placeholder: "x.y.z"
     validations:
       required: true
 
@@ -61,7 +63,7 @@ body:
     id: diagnostics
     attributes:
       label: Diagnostics export
-      description: Attach the JSON file from System → Internal log → Export, if you can.
+      description: Attach the JSON file from System → Internal log → Export journal, if you can. Read it first, this issue is public.
 
   - type: checkboxes
     id: checks

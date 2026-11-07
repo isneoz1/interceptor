@@ -1003,7 +1003,7 @@ tools/transparence.mjs     What a page can tell about the probes — it should b
 tools/minutage.mjs         Network timing phases in a real browser: only real measurements
 tools/interaction.mjs      Types, reads and clicks through redraws, in Chrome and in Firefox
 tools/defilement.mjs       Scrolls 20 000 rows in a real browser, looking for holes
-tools/affichage.mjs        Opens every view at four widths, looking for overflow
+tools/affichage.mjs        Opens every view at five widths, looking for overflow
 tools/captures.mjs         Generates the documentation screenshots
 tools/banniere.mjs         Generates the social preview card (docs/images)
 tools/vitrine.mjs          Composes the showcase images at the top of this file
@@ -1153,7 +1153,7 @@ involved — so they live as tools, and each prints a verdict and an exit code:
 
 ```bash
 node tools/defilement.mjs            # 20 000 rows, scrolled for real
-node tools/affichage.mjs             # every view at 350, 700, 1100 and 1600 px
+node tools/affichage.mjs             # every view at 350, 700, 1100, 1280 and 1600 px
 node tools/sockets.mjs               # every kind of socket, against a real server
 node tools/transparence.mjs          # what a page can tell about the probes
 node tools/minutage.mjs              # network timing: only what the browser measured
@@ -1168,7 +1168,7 @@ that the batch-rendered lists keep posting until nothing is left. It then opens 
 panel, which is the heaviest surface in the console, on a 20 000-frame WebSocket session
 and a 5 MB response body, and measures both.
 
-**`affichage.mjs`** opens every view at four widths, including the 350 px of a Firefox
+**`affichage.mjs`** opens every view at five widths, including the 350 px of a Firefox
 sidebar, and looks for a page that overflows horizontally, an element wider than its frame
 with nothing able to scroll it into view, two siblings that overlap when they should stack,
 and text cut off with nothing to say so.
@@ -1221,10 +1221,12 @@ field being saved as it loses focus are reported there as not measurable, never 
 
 ## 22. Contributing
 
-Bug reports and suggestions are welcome.
+Bug reports and suggestions are welcome, and questions have their place in
+[Discussions](https://github.com/isneoz1/interceptor/discussions).
 
 For a useful bug report: open the **Internal log** view, export the diagnostics, and attach
-the file. It contains internal errors and the command log — not your traffic.
+the file. It contains internal errors and the command log, not your traffic. An error message
+can still quote the address of a page, and issues are public: read the file before you attach it.
 
 Before opening a pull request:
 

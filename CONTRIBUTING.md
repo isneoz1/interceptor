@@ -99,7 +99,8 @@ This is the most common contribution, and the easiest to get right.
 ## Reporting a bug
 
 Open the **Internal log** view, export the diagnostics, and attach the file. It carries
-internal errors and the command log — **not your traffic**.
+internal errors and the command log, **not your traffic**. An error message can still quote
+the address of a page, and issues are public: read the file before you attach it.
 
 For anything touching security, see [SECURITY.md](SECURITY.md) instead: those go privately,
 not into a public issue.
@@ -120,7 +121,7 @@ layout engine — or a real mouse — is involved, so they live as tools:
 
 ```bash
 node tools/defilement.mjs      # 20 000 rows scrolled for real: gaps, repeats, jumps
-node tools/affichage.mjs       # every view at 350, 700, 1100 and 1600 px
+node tools/affichage.mjs       # every view at 350, 700, 1100, 1280 and 1600 px
 node tools/sockets.mjs         # WebSocket in page/worker/shared worker, WebRTC channel
 node tools/transparence.mjs    # what a page can tell about the probes: nothing
 node tools/minutage.mjs        # network timing: only what the browser measured

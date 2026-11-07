@@ -11,6 +11,15 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versio
 - **The copyright notice names D4RK**, in `LICENSE` and at the end of the README, as the author
   credit has since 5.8. The licence is still MIT, and `LICENSE` is not in the package, so the
   5.9.0 package does not change.
+- **Private vulnerability reporting and Discussions are on.** `SECURITY.md` and the issue form
+  sent people to both, and neither existed for them.
+
+### Fixed
+
+- **The bug report form matches the interface**: the version is at the bottom of Help, not in
+  Settings, and the button is called Export journal.
+- **A diagnostics export can quote the address of a page**, in an error message. The form, the
+  README and `CONTRIBUTING.md` now say so, and ask you to read the file before you attach it.
 
 ## [5.9.0] — 2026-11-07
 

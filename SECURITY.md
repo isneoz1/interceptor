@@ -24,7 +24,7 @@ SWIFT runs with broad browser permissions — `<all_urls>`, `webRequest`,
 
 ## Out of scope
 
-- The extension requiring broad permissions. That is what a network supervision tool does,
+- The extension requiring broad permissions. That is what a network inspector does,
   and the permissions are listed with their justification in the README.
 - Findings the security analyser does **not** report. The analyser deliberately only reports
   what it can prove; a missing hardening header is not treated as a vulnerability. If you

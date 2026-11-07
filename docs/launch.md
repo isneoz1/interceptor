@@ -23,7 +23,6 @@ inline there, which a GitHub README cannot do, and the page works on a phone.
 - Upload `docs/images/social-preview.png` under **Settings → General → Social preview**. It is
   the image shown when the repository's link is shared anywhere; GitHub has no API for it.
 - Pin the repository on your GitHub profile.
-- Optional: enable **Discussions**, so people can ask without opening an issue.
 
 ## 3. Present it — texts ready to paste
 

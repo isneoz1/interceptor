@@ -828,8 +828,15 @@ for (const [quoi, motif, reel] of ANNONCES) {
     absentes.join(', ') || suitesDuBuild + ' dans build.ps1, ' + suites.length + ' sur le disque');
   const contribuer = fs.readFileSync(path.join(racine, 'CONTRIBUTING.md'), 'utf8');
   const annoncees = [...contribuer.matchAll(/([0-9]+) suites/g)].map(m => Number(m[1]));
-  verifier('CONTRIBUTING annonce le bon nombre de suites', annoncees.length >= 1 && annoncees.every(n => n === suites.length),
-    'CONTRIBUTING ' + annoncees.join(' et ') + ', reel ' + suites.length);
+  /* Le formulaire de bug guide quelqu un qui n a que l interface sous les yeux :
+     il envoyait lire la version dans les Reglages, ou elle n est pas, et cliquer
+     sur un bouton « Export » qui ne s appelle pas ainsi. */
+  const formulaire = fs.readFileSync(path.join(racine, '.github', 'ISSUE_TEMPLATE', 'bug_report.yml'), 'utf8');
+  const oublies = ['Systeme', 'Journal interne', 'Exporter le journal', 'Etat du systeme', 'Mode simple', 'Aide']
+    .map(cle => EN[cle]).filter(libelle => !libelle || !formulaire.includes(libelle));
+  verifier('CONTRIBUTING annonce le bon nombre de suites, et le formulaire de bug cite les vrais libelles de l interface',
+    annoncees.length >= 1 && annoncees.every(n => n === suites.length) && !oublies.length,
+    'CONTRIBUTING ' + annoncees.join(' et ') + ', reel ' + suites.length + ', absents du formulaire : ' + oublies.join(', '));
 }
 
 /* Le nombre d onglets de la boite a outils s ecrit en toutes lettres dans
