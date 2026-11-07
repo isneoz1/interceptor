@@ -33,6 +33,7 @@ $required = @(
   'background/core/persist.js',
   'background/capture/webrequest.js',
   'background/capture/streamfilter.js',
+  'background/capture/debit.js',
   'background/capture/bodies.js',
   'background/capture/security.js',
   'background/capture/dnsinfo.js',
@@ -195,6 +196,13 @@ $required = @(
   'ui/console/tools-cle.js',
   'ui/lib/dict-en-exports.js',
   'ui/lib/dict-en-bibliotheques.js',
+  'ui/lib/dict-en-messages.js',
+  'ui/lib/dict-en-parite.js',
+  'ui/lib/defang.js',
+  'ui/lib/metadonnees-image.js',
+  'ui/console/tools-metadonnees.js',
+  'ui/lib/user-agent.js',
+  'ui/console/ua-detail.js',
   'background/api/menus.js',
   'ui/console/statusbar.js',
   'ui/console/header.js',
@@ -316,7 +324,13 @@ if ($node) {
     @{ titre = 'Une cle publique sous toutes ses formes'; fichier = 'tests/cles.test.mjs';
        echec = 'Une forme ou une empreinte de cle publique differe de celle d OpenSSL, d OpenSSH ou de Node' },
     @{ titre = 'La langue de chacun'; fichier = 'tests/langue.test.mjs';
-       echec = 'Une installation neuve ne suit pas la langue de Firefox, ou un fichier exporte, un menu ou un raccourci n est pas dans la langue choisie' }
+       echec = 'Une installation neuve ne suit pas la langue de Firefox, ou un fichier exporte, un menu ou un raccourci n est pas dans la langue choisie' },
+    @{ titre = 'Ce que font les meilleurs outils'; fichier = 'tests/parite.test.mjs';
+       echec = 'Une regle de parametres, un modele de Charles, une reponse simulee depuis un fichier ou la neutralisation d une adresse differe de sa reference' },
+    @{ titre = 'Ce qu une image revele'; fichier = 'tests/images.test.mjs';
+       echec = 'Une metadonnee d image differe de ce que GDI+ a ecrit, ou une image mal formee fait planter la lecture' },
+    @{ titre = 'Ce qu un navigateur annonce'; fichier = 'tests/navigateurs.test.mjs';
+       echec = 'Un User-Agent est lu autrement que ua-parser-js, ou un indice client est mal interprete' }
   )
 
   $totalAssertions = 0

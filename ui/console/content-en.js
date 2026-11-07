@@ -63,8 +63,8 @@ export const HELP_SECTIONS = [
       ['Navigation', 'The eight Firefox navigation events.'],
       ['Context', 'Workers, Service Workers, WebRTC, WebTransport, page perception metrics.'],
       ['Diagnostics', 'Real state of every layer, core figures, coverage test.'],
-      ['Rules', 'Blocking, redirecting, header rewriting and response mocking, with a visual editor.'],
-      ['Toolbox', 'Twenty-one families of tools on a single working text: encodings, encryption, binary formats, certificates, hashes, network, headers, timestamps, HTTP reference.'],
+      ['Rules', 'Blocking, redirecting, rewriting headers and URL parameters, mocked responses (typed or loaded from a file), throttling — with a visual editor and ready-made templates.'],
+      ['Toolbox', 'Twenty-six tools in six families on a single working text: encodings, encryption, binary formats, certificates, hashes, network, headers, timestamps, image metadata, HTTP reference.'],
       ['Settings', 'Everything configurable, with ready-made profiles.'],
       ['Tutorial', 'Twelve guided lessons with progress tracking.']
     ]
@@ -72,10 +72,10 @@ export const HELP_SECTIONS = [
   {
     h: 'The toolbox',
     p: [
-      'One working text, twenty-five tabs looking at it. You paste a value once — from the clipboard, from a row context menu, or from a detail tab — and every tool works on it. Everything is computed in the page: none of these functions sends a single request.'
+      'One working text, twenty-six tabs looking at it. You paste a value once — from the clipboard, from a row context menu, or from a detail tab — and every tool works on it. Everything is computed in the page: none of these functions sends a single request.'
     ],
     table: [
-      ['Transform', '138 transformations in eighteen families: base64 and base64 URL, base32, base58, base45, Ascii85, URL, HTML entities, hexadecimal, binary, octal, Unicode escapes, punycode, JSON, YAML, CSV, XML, SAML, DNS messages, WebAuthn, gzip and deflate, letter case, lines, string escaping, Protocol Buffers, MessagePack, CBOR, ASN.1. "Try everything" applies every decoding — except DNS and WebAuthn, which would read any bytes — and keeps only the readable results.'],
+      ['Transform', '140 transformations in eighteen families: base64 and base64 URL, base32, base58, base45, Ascii85, URL, HTML entities, hexadecimal, binary, octal, Unicode escapes, punycode, addresses defanged for a report and refanged, JSON, YAML, CSV, XML, SAML, DNS messages, WebAuthn, gzip and deflate, letter case, lines, string escaping, Protocol Buffers, MessagePack, CBOR, ASN.1. "Try everything" applies every decoding — except DNS and WebAuthn, which would read any bytes — and keeps only the readable results.'],
       ['Keys and trials', 'XOR with a repeated key, a sweep of the 255 single-byte keys, all twenty-five Caesar shifts, Vigenere. These ciphers protect nothing: they read back a deliberately obscured value.'],
       ['Public key', 'A public key pasted in any form — PEM, certificate, JWK or key set, an OpenSSH line or a whole authorized_keys file, base64 DER — and all the others: PEM, PKCS #1, JWK, OpenSSH line, with its pin-sha256 pin (RFC 7469), its OpenSSH fingerprints (SHA256 and MD5), its JWK thumbprint (RFC 7638) and its key identifier (RFC 5280). Several keys pasted together are compared: the same key in two forms is recognised.'],
       ['JWT', 'Header, payload, validity, time left. The signature is really verified: HS256 to HS512 with the shared key (text or an “oct” JWK), RS, PS, ES and EdDSA (Ed25519) with the public key pasted as PEM or JWK, or the issuer\'s whole key set (JWKS), from which the key the token designates is chosen. The algorithm is read to the letter: “hs256” is not HS256. With no key the screen says so, rather than letting a decoded token pass for a valid one.'],
@@ -83,12 +83,13 @@ export const HELP_SECTIONS = [
       ['Hashes', 'MD5, SHA-1, SHA-256, SHA-384, SHA-512, CRC-32, Adler-32, FNV-1a, djb2, byte sum, and HMAC with a key.'],
       ['Binary', 'Protocol Buffers, MessagePack and CBOR read byte by byte, without a schema; ASN.1, DER and a summary of an X.509 certificate (subject, issuer, validity, names covered, usages); thirty-seven character sets and mojibake repair.'],
       ['Measurements', 'Characters, bytes, lines, words, Shannon entropy, character frequency, and detection of the invisible characters used to hide content.'],
+      ['Image metadata', 'What a JPEG, PNG or WebP image reveals to anyone who downloads it: the GPS position where it was taken, the author, the camera and its serial number, the software, the XMP. Pasted in base64, hexadecimal or as a data URI; the Response tab of a captured image shows it too.'],
       ['Hexadecimal', 'The classic dump: offset, sixteen bytes, readable column.'],
       ['Identify', 'What the shape of the text suggests: hash family, file signature in the first bytes, alphabet used. Candidates, never a verdict.'],
       ['Timestamp', 'Fourteen possible epochs (Unix in seconds, milliseconds, microseconds and nanoseconds, Windows FILETIME, Chrome, HFS, Apple, .NET ticks, Excel serial, Julian day, NTP, GPS, and the MS-DOS date of ZIP archives) and every notation of one instant. It also reads durations written "1d12h".'],
       ['Numbers', 'An integer rewritten in every base, without losing a digit, with its properties and its reading as an IPv4 address or a port.'],
       ['Structures', 'URL parameters, cookies and headers recognised in the pasted text.'],
-      ['Headers', 'Thirty-three headers broken down in detail: Set-Cookie and its attributes, content security policy, HSTS, Cache-Control, weighted Accept, Authorization. Every real gap is flagged — a missing attribute, a directive that cancels the protection.'],
+      ['Headers', 'Thirty-four headers broken down in detail: Set-Cookie and its attributes, content security policy, HSTS, Cache-Control, weighted Accept, Authorization, User-Agent (browser, engine, system). Every real gap is flagged — a missing attribute, a directive that cancels the protection.'],
       ['Find', 'Twenty ready-made patterns (email, address, hash, token, private key), paths inside a JSON document, CSS and XPath selectors in HTML, and the Luhn checksum.'],
       ['Regular expression', 'Matches, captured groups, position, and the replacement applied.'],
       ['Compare', 'The working text against another one, with no size limit: lines added, removed, in common, the shortest list of changes (on huge, very different texts, an exact list that says when it may not be the shortest), the first difference down to the character, word-by-word comparison, and a unified format that patch and git apply can apply.'],
@@ -134,7 +135,9 @@ export const HELP_SECTIONS = [
       ['Server signals', 'What the headers announce: an address’s deprecation and end date (RFC 9745, RFC 8594, tag:deprecie), the quota left and when to retry (RateLimit, Retry-After, tag:quota), the links to follow or preload (Link, with the IANA registry), alternative services such as HTTP/3 (Alt-Svc), the caches crossed (Cache-Status, CDN-Cache-Control), the intermediaries crossed and the one that produced a 502 or 504 (Proxy-Status, with the IANA registry of error types) and the priority asked for (Priority).'],
       ['Signatures and passkeys', 'HTTP message signatures (RFC 9421) rebuilt and verified, WebAuthn registrations and sign-ins, DNS over HTTPS.'],
       ['Security', 'OAuth 2.0 and OpenID Connect, SAML, content digests, response protections, a CSP derived from what actually loaded.'],
-      ['Tokens and keys', 'Every JWT the request carries (header, cookie, address, body), dated against the capture, and its signature verified with the key its issuer publishes, when the capture holds that key set. A key set received (RFC 7517) is read key by key — a published private key is flagged — and an OAuth or OpenID Connect discovery document is checked: its issuer must be the one its address designates.']
+      ['Tokens and keys', 'Every JWT the request carries (header, cookie, address, body), dated against the capture, and its signature verified with the key its issuer publishes, when the capture holds that key set. A key set received (RFC 7517) is read key by key — a published private key is flagged — and an OAuth or OpenID Connect discovery document is checked: its issuer must be the one its address designates.'],
+      ['Images', 'What a captured image reveals to anyone who downloads it — the GPS position where it was taken, the author, the camera and its serial number, the software — read from its EXIF, XMP and PNG text blocks, in the Response tab.'],
+      ['Browser', 'What the User-Agent and the client hints (Sec-CH-UA) announce: browser, engine, system, mobile, automated client — and what the string no longer says: Windows 11 announces itself as "Windows NT 10.0", macOS stays frozen at 10.15. In the Headers tab.']
     ]
   },
   {
@@ -179,6 +182,8 @@ export const HELP_SECTIONS = [
     p: [
       'By default SWIFT observes without ever modifying or emitting anything.',
       'The Rules view can block, redirect (with $1..$9 capture groups), force HTTPS, rewrite headers and mock a response. While mocking, the real server body is still recorded: the page receives the mock, you see both. The original status code is kept, because Firefox does not let an extension rewrite it.',
+      'It also adds, replaces or removes URL parameters (the others keep their exact spelling), loads a mocked response from a file, images included, and throttles a response: the page receives it at the chosen rate, as on a slow network. The templates reproduce Charles\'s "No Caching", "Block Cookies" and "Throttle" tools as its documentation describes them, and target example.com, the domain reserved for examples: just replace it with yours.',
+      'Several header or URL-parameter rules aimed at the same request all apply, in order; for blocking, redirecting or forcing HTTPS, the first one decides.',
       'The Replay tab, inside a request detail, sends an editable copy of the request. Rules and replay are off by default and require explicit confirmation. Use them only on targets you are responsible for.'
     ]
   },
@@ -342,10 +347,10 @@ export const LESSONS = {
     body: [
       { p: 'By default SWIFT **observes without ever changing anything**. Two mechanisms can change that, both off at first.' },
       { ul: [
-        'The **rules engine**: block a request, redirect it, force HTTPS, rewrite headers, or **mock a response** (the real body is still recorded).',
+        'The **rules engine**: block a request, redirect it, force HTTPS, rewrite headers or URL parameters, **mock a response** (the real body is still recorded), or slow it down to a chosen rate.',
         '**Replay**: send a request again after editing method, URL, headers or body.'
       ] },
-      { p: 'Rules are built with fields and buttons, no JSON required. Five templates are provided. A rule always states in plain words what it will do, as "If … then …".' },
+      { p: 'Rules are built with fields and buttons, no JSON required. Twelve templates are provided, Charles\'s No Caching, Block Cookies and Throttle among them. A rule always states in plain words what it will do, as "If … then …".' },
       { p: 'Use this only on targets you are responsible for.' }
     ]
   },
@@ -353,14 +358,15 @@ export const LESSONS = {
     title: 'The toolbox',
     goal: 'Decode, verify and build a value, without sending anything',
     body: [
-      { p: 'One **working text**, twenty-five tabs looking at it. You paste a value once — from the clipboard, from a row context menu, or from the "Toolbox" button on a response body — and every tool works on it.' },
+      { p: 'One **working text**, twenty-six tabs looking at it. You paste a value once — from the clipboard, from a row context menu, or from the "Toolbox" button on a response body — and every tool works on it.' },
       { p: 'Everything is computed in the page. None of these tools sends a single request: not on load, not on click.' },
       { ul: [
-        '**Transform**: 138 transformations. "Try everything" applies each decoding (except DNS and WebAuthn) and keeps only the readable results — the right first move on an unknown value.',
+        '**Transform**: 140 transformations. "Try everything" applies each decoding (except DNS and WebAuthn) and keeps only the readable results — the right first move on an unknown value.',
         '**JWT**: header, payload, expiry, and the signature really verified when you provide the key — a shared key, a public key or the issuer\'s key set. In a request\'s detail, the Headers tab verifies it on its own when the capture holds the issuer\'s keys.',
         '**Encryption** and **Hashes**: AES, PBKDF2, HKDF, MD5, SHA, CRC-32, HMAC.',
         '**Binary**: Protocol Buffers, MessagePack, CBOR, X.509 certificates, character sets.',
         '**Headers**, **URL**, **IP address**: what the value really says, and what it lacks.',
+        '**Image metadata**: where a photo was taken, who took it and with which camera — what it reveals to anyone who downloads it.',
         '**Reference**: statuses, headers, media types, ports, TLS cipher suites — offline.'
       ] },
       { p: 'A result can be taken as the input of another tool: you chain the steps without ever retyping anything.' }

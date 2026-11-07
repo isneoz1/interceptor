@@ -87,6 +87,9 @@ export async function ouvrirScene(options = {}) {
 
   /* --- Navigation initiale --- */
   requete({ url: SITE + '/', type: 'main_frame', mime: 'text/html', taille: 48213, duree: 214,
+    /* Le User-Agent du Firefox installe sur le poste qui filme ; Firefox
+       n envoie pas d indices clients (Sec-CH-UA). */
+    entetesReq: [{ name: 'User-Agent', value: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:159.0) Gecko/20100101 Firefox/159.0' }],
     entetesRep: [
       { name: 'Cache-Control', value: 'max-age=300, must-revalidate' },
       { name: 'Date', value: new Date(horloge).toUTCString() },
@@ -110,6 +113,14 @@ export async function ouvrirScene(options = {}) {
   }
   for (const nom of ['banner.webp', 'product-01.webp', 'product-02.webp', 'logo.svg']) {
     requete({ url: CDN + '/img/' + nom, type: 'image', mime: 'image/webp', taille: 24000 + nom.length * 900, duree: 40 });
+  }
+  /* Une photo dont les metadonnees EXIF ont ete ecrites par GDI+ (le vecteur
+     de tests/images.test.mjs) : position GPS, auteur, appareil. */
+  {
+    const photo = JSON.parse(fs.readFileSync(path.join(RACINE, 'tests', 'vecteurs-images.json'), 'utf8')).jpegGdiplus.fichier;
+    const octets = Buffer.from(photo, 'base64').length;
+    requete({ url: CDN + '/img/boutique.jpg', type: 'image', mime: 'image/jpeg', taille: octets, duree: 38,
+      corpsRep: { kind: 'binary', base64: photo, text: '', size: octets, stored: octets, mime: 'image/jpeg', source: 'streamFilter' } });
   }
 
   /* --- Appels applicatifs --- */

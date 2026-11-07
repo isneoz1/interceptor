@@ -36,6 +36,8 @@ import { controlesCorps } from './corps-detail.js';
 import { blocVerdict, blocProvenance, blocEffacement, blocSourceMap } from './lectures-detail.js';
 import { signaux } from './signaux-detail.js';
 import { rapportsRequete, collecteRapports } from './rapports-detail.js';
+import { blocMetadonneesReponse } from './tools-metadonnees.js';
+import { blocNavigateurAnnonce } from './ua-detail.js';
 
 /** Rend toutes les cles d un objet, y compris celles qu on n a pas prevues. */
 export function allRows(obj, labels = {}, skip = []) {
@@ -233,6 +235,9 @@ export function headers(rec) {
   box.appendChild(securite.cspObservee(rec));
   /* Les jetons JWT de la requete, verifies avec les cles de leur emetteur. */
   box.appendChild(jose.jetonsJwt(rec));
+  /* Le navigateur annonce : User-Agent et indices clients, lus ensemble. */
+  const annonce = blocNavigateurAnnonce(rec);
+  if (annonce) box.appendChild(annonce);
   box.appendChild(collecteRapports(rec));
   box.appendChild(blocEffacement(rec));
   /* Avenir de l adresse, debit, liens, services alternatifs, caches, priorite. */
@@ -494,7 +499,13 @@ function bodyViewer(body, title, mimeHint, controles = {}) {
     box.appendChild(el('p', { class: 'note warn', text: tp(
       'Une regle de simulation (« {regle} ») a remplace ce corps pour la page. Le contenu ci-dessous est celui reellement envoye par le serveur ; la page, elle, a recu {n} octets de type {type}.',
       { regle: body.replacedBy.rule, n: body.replacedBy.size, type: body.replacedBy.contentType }) }));
-    box.appendChild(el('pre', { class: 'pre', text: body.replacedBy.body }));
+    if (body.replacedBy.base64) {
+      box.appendChild(el('p', { class: 'note', text: t('Contenu binaire servi a la page, ecrit en base64 :') }));
+    }
+    if (body.replacedBy.coupe) {
+      box.appendChild(el('p', { class: 'note', text: t('Seuls les 200 000 premiers caracteres de ce contenu sont gardes avec la requete.') }));
+    }
+    box.appendChild(texteLong(body.replacedBy.base64 || body.replacedBy.body || '', { seuil: 20000 }));
   }
   add(box, kv('Nature', body.kind));
   add(box, kv('Source', body.source));
@@ -538,6 +549,8 @@ function bodyViewer(body, title, mimeHint, controles = {}) {
       class: 'preview-img', alt: 'apercu',
       src: 'data:' + mime + ';base64,' + body.base64
     }));
+    /* Ce que l image revele a qui la telecharge : position, auteur, appareil. */
+    box.appendChild(blocMetadonneesReponse(body.base64));
   }
 
   const text = body.text || '';

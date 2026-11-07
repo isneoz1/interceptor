@@ -6,6 +6,7 @@
  * qui est reellement risque — jamais un avis de style.
  */
 import { base64VersOctets, octetsVersTexte } from './bytes.js';
+import { lireUserAgent } from './user-agent.js';
 import { analyserContentDisposition } from './entetes-parametres.js';
 import { analyserChampStructure, decrireArticle, FORMES_CONNUES }
   from './champs-structures.js';
@@ -136,6 +137,24 @@ function csp(valeur) {
 }
 
 /* ------------------------------- Transport -------------------------------- */
+/* Le User-Agent : ce qu il annonce, et ce qu il ne dit plus (ui/lib/user-agent.js). */
+function userAgent(valeur) {
+  const lu = lireUserAgent(valeur);
+  const parties = [];
+  const nomme = x => (x ? x.nom + (x.version ? ' ' + x.version : '') : null);
+  if (lu.navigateur) parties.push(partie('Navigateur', nomme(lu.navigateur)));
+  else if (lu.derive) {
+    if (lu.derive.famille) parties.push(partie('Derive de', lu.derive.famille));
+    if (lu.derive.jeton) parties.push(partie('Jeton du derive', lu.derive.jeton));
+  } else if (!lu.robot) parties.push(partie('Navigateur', 'non reconnu', '', { texte: true }));
+  if (lu.moteur) parties.push(partie('Moteur', nomme(lu.moteur)));
+  if (lu.systeme) parties.push(partie('Systeme', nomme(lu.systeme)));
+  if (lu.mobile) parties.push(partie('Se declare mobile', 'oui', '', { texte: true }));
+  if (lu.robot) parties.push(partie('Client automatique', lu.robot));
+  for (const r of lu.remarques) parties.push(partie('A savoir', r, '', { texte: true }));
+  return { parties, risques: [] };
+}
+
 function hsts(valeur) {
   const parties = [];
   const risques = [];
@@ -289,6 +308,7 @@ function autorisation(valeur) {
 /* -------------------------------- Registre -------------------------------- */
 const ANALYSEURS = Object.assign(Object.create(null), {
   'set-cookie': setCookie,
+  'user-agent': userAgent,
   'cookie': v => ({
     parties: String(v).split(';').map(p => {
       const net = p.trim();

@@ -279,6 +279,29 @@ if (catalogue) {
     + '  (' + Math.round(fs.statSync(chemin).size / 1024) + ' Ko)');
 }
 
+/* Ce qu une photo revele (5.9) : l onglet Reponse d une image capturee. Le
+   panneau reste haut, et la ligne de l image est amenee dans le tableau. */
+const photo = premier.records.find(r => /boutique\.jpg$/.test(r.url || ''));
+if (photo) {
+  await page('Runtime.evaluate', {
+    expression: 'document.dispatchEvent(new CustomEvent("ic:goto",'
+      + '{ detail: { view: "requests", id: ' + photo.id + ' } }))'
+  });
+  await patienter(800);
+  await page('Runtime.evaluate', {
+    expression: '(() => { const b = [...document.querySelectorAll("#dtabs .dtab")]'
+      + '.find(x => /^(Response|Reponse)/.test(x.textContent.trim())); if (b) b.click(); })()'
+  });
+  await patienter(800);
+  await page('Runtime.evaluate', { expression: defilerJusqua(['Metadonnees d image', 'Image metadata']) });
+  await patienter(400);
+  const { data } = await page('Page.captureScreenshot', { format: 'png' });
+  const chemin = path.join(SORTIE, 'console-photo.png');
+  fs.writeFileSync(chemin, Buffer.from(data, 'base64'));
+  console.log('  ' + path.relative(RACINE, chemin).replace(/\\/g, '/')
+    + '  (' + Math.round(fs.statSync(chemin).size / 1024) + ' Ko)');
+}
+
 /* La popup, dans sa taille reelle : celle que fixe ui/popup.css. Une fenetre
    plus etroite coupait l image a droite, sur le bouton de capture. */
 const TAILLE_POPUP = (() => {

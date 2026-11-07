@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Icone SWIFT (by D4RK) — dessin original, licence MIT comme le reste du
+     depot.
+
+     Un « S » forme de deux fleches opposees : la requete qui part, en haut
+     vers la droite, la reponse qui revient, en bas vers la gauche. C est ce
+     que l outil observe, et l initiale de son nom. Le signe penche vers
+     l avant : la vitesse, sans aucun oiseau ni globe — ni l oiseau du langage
+     Swift d Apple, ni la marque du reseau bancaire SWIFT, qu il ne faut pas
+     evoquer.
+
+     Contrainte principale : rester lisible a 16 px dans la barre d outils.
+     D ou un trait plein de 16 unites (2 px a 16 px), des pointes franches, un
+     fond qui garde sa propre surface sur un theme clair comme sombre, et
+     aucun detail qui disparaitrait en petit. -->
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <title>SWIFT</title>
+  <defs>
+    <linearGradient id="tuile" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2A6CFF"/>
+      <stop offset="1" stop-color="#7034F2"/>
+    </linearGradient>
+    <!-- Un reflet en haut de la tuile : du relief aux grandes tailles, rien
+         qui gene aux petites. -->
+    <linearGradient id="reflet" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity=".20"/>
+      <stop offset=".5" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="4" y="4" width="120" height="120" rx="28" fill="url(#tuile)"/>
+  <rect x="4" y="4" width="120" height="120" rx="28" fill="url(#reflet)"/>
+
+  <g transform="translate(64 64) skewX(-9) scale(.86) translate(-64 -64)">
+    <!-- Le « S » : deux demi-cercles relies par trois traits droits. -->
+    <path d="M86 32 H56 A16 16 0 0 0 56 64 H72 A16 16 0 0 1 72 96 H42" fill="none"
+          stroke="#FFFFFF" stroke-width="16" stroke-linejoin="round"/>
+    <!-- Les deux pointes : la requete sort a droite, la reponse revient a
+         gauche. Les coins arrondis adoucissent sans emousser. -->
+    <g fill="#FFFFFF" stroke="#FFFFFF" stroke-width="4" stroke-linejoin="round">
+      <path d="M85 16 L103 32 L85 48 Z"/>
+      <path d="M43 80 L25 96 L43 112 Z"/>
+    </g>
+  </g>
+</svg>

@@ -4,6 +4,150 @@ All notable changes to this project are documented here.
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning follows
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.9.0] — 2026-11-07
+
+What the best tools do, done the same way and checked against them: Charles's No Caching,
+Block Cookies, Throttle and Map Local, Requestly's query parameters, CyberChef's defang — and
+what a photo or a browser gives away.
+
+### Added
+
+- **Throttle** (Charles's « Throttle »), a new rule action: the page receives the response
+  body at the rate you choose, in kB/s, as on a slow network — the first second at once, then
+  the rest at the rate; a server that falls silent stores up no credit. A response that
+  arrives much faster is paused at its source rather than piled up in memory. Checked in a
+  real Firefox, add-on installed: 1,000,000 bytes take 9 s at 100 kB/s (20 ms without the
+  rule) and arrive intact, recorded whole by SWIFT. It does not add to a mock or a replacement
+  on the same request, which are written in one block.
+- **URL parameters** (Requestly's « Query Param »), a new rule action: add, replace or remove
+  parameters. The request is redirected to the same address with its parameters rewritten;
+  the other parameters keep their exact spelling, and the rewritten address passes without a
+  second redirect — even once the browser has rewritten it by the WHATWG URL Standard (an
+  apostrophe becomes `%27`): a value already there, written another way, is left alone.
+  Several parameter rules on one request apply together. Checked in a real Firefox, add-on
+  installed: one request reaches the server.
+- **A mocked response loaded from a file** (Charles's « Map Local »), up to 5 MB, served with
+  its exact bytes: a UTF-8 text stays editable, and any other file — Latin-1 text, an image, an
+  Office document, a PDF — is kept in base64.
+- **Five new templates**: Charles's **No Caching** and **Block Cookies**, header by header as
+  its documentation describes them, **Throttle**, adding a URL parameter, and removing tracking
+  parameters (`utm_*`, `fbclid`, `gclid`).
+- **Image metadata** — a new toolbox tool, the twenty-sixth, and a block in the Response tab
+  of a captured image: what a JPEG, PNG or WebP reveals to anyone who downloads it — **where
+  the photo was taken** (EXIF GPS and XMP position), the author, the copyright, the camera's
+  make, model and serial number, the lens, the owner, the dates and time zones, the software,
+  the XMP packet and the PNG text blocks — said in one sentence, then field by field. A file
+  built to stall it is read in milliseconds: a value is kept on 4,096 characters (the cut is
+  marked and counted), 200 entries, 20 errors, 16 EXIF blocks and 16 XMP packets at most, the XMP
+  is read on 1 MB, and at most 50 compressed text blocks are inflated, each only as far as its
+  value needs.
+- **What the browser announces**, in the Headers tab and the Headers tool: the `User-Agent`
+  read — browser, engine, system, mobile, automated client, a browser built on Chromium named
+  by its own token — and what the string no longer says, never given as the real version:
+  Windows 11 behind `Windows NT 10.0` (« Windows 10/11 »), macOS frozen at 10.15
+  (« 10.15+ »), the iOS version frozen at 18.6 then 18.7 since iOS 26 (the version is taken
+  from Safari's, which ships with iOS), a reduced Chrome version, `Android 10; K` (no
+  version). Safari is named only on Apple's systems. The client hints (`Sec-CH-UA`…), when the
+  browser sends them, tell Windows 11 from Windows 10 by Microsoft's rule, and the decoy brand
+  is recognised. The string is read on its first 2,048 characters: a page that sets its own
+  User-Agent cannot freeze the console.
+- **Defang and refang**, two new transformations (140 in all): URLs, domains, IPv4 and IPv6
+  addresses neutralised for a report — `https://evil.example` becomes `hxxps[://]evil[.]example`
+  — with exactly the results of CyberChef's own regular expressions, computed without their
+  backtracking: 40 KB of dotted text took them 1.8 s, it takes milliseconds.
+- The **System state** view counts the addresses rewritten by a URL-parameter rule and the
+  responses throttled, next to the other rule counters.
+- **A website**, <https://isneoz1.github.io/interceptor/>: the film plays inline, and the page
+  keeps the promise it makes — no script, nothing loaded from anyone else, and its numbers
+  are held to the code by the tests.
+
+### Changed
+
+- **Rules that modify headers add up**: two rules on the same request — No Caching and Block
+  Cookies on one host — both act. The first one used to win alone.
+- A rule that **removes** a header removes every copy of it, and one that **sets** a header
+  leaves a single one: a second `Cache-Control: max-age` survived No Caching.
+- The notice above the rules engine switch lists every change it allows: blocking,
+  redirection, header and URL-parameter rewriting, mocked responses and throttling.
+- **The demonstration shows 5.9** (`docs/demo.mp4`, three and a half minutes):
+  what the browser announces and what a captured photo gives away in the detail panel, the
+  Image metadata tool and defang in the toolbox, and Charles's No Caching and Throttle
+  templates in the rules. Its captions are written with English quotation marks.
+- **A twenty-second teaser** (`docs/teaser.gif`, `docs/teaser.mp4`) replaces the 14 MB GIF at the
+  top of the README, so the first screen appears at once.
+
+### Fixed
+
+- **A rule on the body did nothing when body capture was off** (the « Quiet observation »
+  profile): a mock or a replacement silently stopped applying. The stream is now opened for
+  such a rule; it applies, and nothing is recorded.
+- **The templates targeted `exemple.com`**, a real domain that belongs to someone, instead of
+  `example.com`, reserved for examples (RFC 2606). The redirect template also dropped the
+  path (`https://api-recette.exemple.com/` for every address): it now keeps it with `$1`.
+- **A rule made from a template, copied or added was named in French on an English screen**,
+  and so was the mocked body of the JSON template.
+- **French left on English screens**: forty one-line messages (« Regles copiees », « Modele
+  ajoute »…) that reached the translator by a detour; the titles of « Try everything »'s
+  results; the stream number and the readings title, assembled before translation.
+- **The help and the tutorial gave stale numbers**: 138 transformations, « five templates »,
+  « twenty-one families of tools », « thirty-three headers ». They now give 140, twelve,
+  twenty-six tools in six families and thirty-four, and a test recounts them.
+- **More French on English screens, older than 5.9**, found by rendering the Rules view with
+  a card for every action: the empty choice of the Method and Resource type lists (« toutes »,
+  « tous »), the tooltips of the move-up and move-down buttons, the labels of the redirect and
+  find-and-replace editors; the « Encadrement » line of the response protections (Framing);
+  and the tooltips of « Import a HAR file » in Settings and of the marker button in the
+  Internal log.
+
+- **The comparison with Firefox's network panel was unfair, and in places false.** It denied
+  the panel a stack trace and WebSocket parsers it has. Every row now states what the panel
+  does, from Mozilla's documentation, and what SWIFT adds. « No browser does this » is gone
+  from the description of the digest check: it could not be proven.
+
+### Tests
+
+- `tests/parite.test.mjs` (new suite, 98 checks): the URL-parameter rule and its single pass,
+  also after thirty values have been put through Node's `URL`, which follows the same
+  standard as the browser, and two parameter rules applied together; No Caching and Block
+  Cookies against Charles's documentation, both on the same request, and headers present
+  twice; files loaded into a mock — UTF-8, Latin-1, BOM, ZIP, PNG — served with their exact
+  bytes; a throttle or a mock without a value, and a malformed rule from an imported file that
+  does nothing rather than break the request; the templates on `example.com`, named in English
+  on an English screen; defang and refang against CyberChef's examples and against its own
+  expressions on 60,000 random texts, and hostile texts under 300 ms; the throttle on a
+  simulated clock — one second of credit at most, a page gone, a stream suspended and resumed —
+  then in the real stream filter with real timers; a mock and a throttle that apply with body
+  capture off.
+- `tests/images.test.mjs` (new suite, 106 checks): a JPEG whose EXIF tags were written by
+  Windows GDI+, compared with what GDI+ reads back; XMP; a PNG reloaded by GDI+; a WebP encoded
+  and decoded by Chrome (`tests/vecteurs-images.json`); files truncated at every byte and
+  random bytes; files built to stall the reader — NUL-filled comments and EXIF tags, a `zTXt`
+  bomb, unclosed XMP, thousands of blocks of every kind — read in under a second, long values
+  cut and said so; a `UserComment` read whole, in any script and in the byte order of the file;
+  a GPS time written as text; every error
+  message translated; the tool and the Response tab block in both languages.
+- `tests/navigateurs.test.mjs` (new suite, 67 checks): the 428 test strings of ua-parser-js
+  1.0.41 (`tests/vecteurs-ua.json`, MIT): no browser, system or engine named wrongly, and at
+  least 61, 22 and 11 named; frozen versions never given as real ones (macOS, Android, iOS 26);
+  Safari only on Apple's systems; crawlers that write no version recognised, a phone called
+  CUBOT and the JavaFX browser not taken for robots; hostile strings of 100,000 characters read in milliseconds; client hints and
+  Microsoft's thresholds; the Headers tool and the detail block in both languages, every
+  label translated.
+- `tests/ui-load.test.mjs`: the help and the tutorial, in both languages, must give the right
+  number of transformations, analysed headers, rule templates, tools and families; every
+  label of the rule editor must have its translation; the website must state the numbers of
+  the code, run no script and load nothing from anyone else. Its source-reading helpers moved
+  to `tests/sources.mjs`, shared with the language suite.
+- `tests/langue.test.mjs`: every one-line message, every button tooltip and every name of
+  the response protections must have its English translation; the twenty-five toolbox
+  panels are rendered in both languages; and the Rules view, with a card for every action and
+  every template, is rendered in English: any text the translator does not know — a single
+  word included — fails, a positive control proves such a word would be seen, and a Throttle
+  card without a value says the 50 kB/s the engine applies.
+- `tests/rendu.test.mjs` renders the twenty-five panels against its hostile inputs.
+
+4038 assertions across twenty suites, plus six browser audits.
+
 ## [5.8.0] — 2026-10-29
 
 One public key, every form; SWIFT in the language of whoever uses it; and the author credit is
@@ -1812,6 +1956,7 @@ First public release.
 - Documentation screenshots are generated by `tools/captures.mjs`, which renders the real
   console against the real kernel rather than producing mockups.
 
+[5.9.0]: https://github.com/isneoz1/interceptor/releases/tag/v5.9.0
 [5.8.0]: https://github.com/isneoz1/interceptor/releases/tag/v5.8.0
 [5.7.0]: https://github.com/isneoz1/interceptor/releases/tag/v5.7.0
 [5.6.0]: https://github.com/isneoz1/interceptor/releases/tag/v5.6.0

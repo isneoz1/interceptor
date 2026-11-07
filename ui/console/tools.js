@@ -28,11 +28,12 @@ import { panneauEntetes } from './tools-entetes.js';
 import { panneauComparer } from './tools-diff.js';
 import { panneauPatch } from './tools-patch.js';
 import { panneauClePublique } from './tools-cle.js';
+import { panneauMetadonnees } from './tools-metadonnees.js';
 import { panneauChercher } from './tools-chercher.js';
 import { panneauCode } from './tools-code.js';
 import { panneauOtp } from './tools-otp.js';
 
-/* Les outils, ranges par intention plutot qu en une seule rangee de vingt-cinq
+/* Les outils, ranges par intention plutot qu en une seule rangee de vingt-six
    boutons. On cherche « ce que je veux faire », pas le nom de l outil : les
    familles portent donc des verbes, et chacune tient sur une ligne. */
 /* Exporte pour la palette de commandes, qui construit son registre a partir
@@ -63,7 +64,8 @@ export const FAMILLES = [
     ['identifier', 'Identifier'],
     ['mesures', 'Mesures'],
     ['temps', 'Horodatage'],
-    ['nombres', 'Nombres']
+    ['nombres', 'Nombres'],
+    ['metadonnees', 'Metadonnees d image']
   ]],
   ['Chercher et comparer', [
     ['chercher', 'Chercher'],
@@ -237,6 +239,7 @@ function dessiner() {
   else if (onglet === 'comparer') box.appendChild(panneauComparer(entree, etat, redessiner, reprendre));
   else if (onglet === 'patch') box.appendChild(panneauPatch(entree, etat, redessiner, reprendre));
   else if (onglet === 'cle') box.appendChild(panneauClePublique(entree, etat, redessiner));
+  else if (onglet === 'metadonnees') box.appendChild(panneauMetadonnees(entree, etat, redessiner));
   else if (onglet === 'url') box.appendChild(panneauUrl(entree));
   else if (onglet === 'adresse') box.appendChild(panneauAdresse(entree, etat, redessiner, reprendre));
   else if (onglet === 'reference') box.appendChild(panneauReference(entree, etat, redessiner));

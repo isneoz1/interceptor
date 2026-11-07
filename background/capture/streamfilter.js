@@ -11,7 +11,8 @@ import { B, bytesToBase64, concatChunks, decodeBytes, isTextualMime, looksBinary
 import { config } from '../core/config.js';
 import { store } from '../core/store.js';
 import { hexPreview } from './bodies.js';
-import { mockFor, replaceFor, noteReplace, noteReplaceSkipped } from '../rules/engine.js';
+import { mockFor, replaceFor, noteReplace, noteReplaceSkipped, throttleFor, fluxNecessaire } from '../rules/engine.js';
+import { creerLimiteur } from './debit.js';
 import { empreintesDeReponse } from './empreintes.js';
 import { analyze } from '../core/analyzer.js';
 
@@ -41,7 +42,13 @@ export function shouldCapture(rec) {
  * la page : la capture est strictement passive, elle ne peut pas casser un site.
  */
 export function attachFilter(rec, requestId, headers) {
-  if (!shouldCapture(rec)) return false;
+  if (!filterState.supported || NO_BODY_TYPES.has(rec.type)) return false;
+  /* Une regle qui touche au corps — simulation, remplacement, debit — a
+     besoin du flux meme quand la capture des corps est coupee (le profil
+     « Observation discrete ») : elle s applique alors, et rien n est
+     enregistre. Sans cela, la regle ne faisait rien, en silence. */
+  const capturer = shouldCapture(rec);
+  if (!capturer && !fluxNecessaire(rec, { url: rec.finalUrl || rec.url })) return false;
 
   let filter;
   try {
@@ -58,7 +65,7 @@ export function attachFilter(rec, requestId, headers) {
   const ctHeader = headerGet(headers, 'content-type');
   const ceHeader = headerGet(headers, 'content-encoding');
   const { mime, charset } = parseContentType(ctHeader);
-  const limit = cap(config.get('maxResponseBodyBytes'));
+  const limit = capturer ? cap(config.get('maxResponseBodyBytes')) : 0;
 
   // Simulation eventuelle : la page recevra un corps de remplacement, mais le
   // corps reel du serveur reste enregistre — aucune information n est perdue.
@@ -77,6 +84,22 @@ export function attachFilter(rec, requestId, headers) {
       compresse ? 'reponse compressee (' + ceHeader + ')' : 'type non textuel (' + (mime || 'inconnu') + ')');
   }
   const retenir = !!mock || remplacable;
+
+  /* « Throttle » : le corps passe tel quel, mais au debit de la regle. Il ne
+     s ajoute pas a une simulation ou a un remplacement, ecrits d un bloc. */
+  const debit = retenir ? null : throttleFor(rec, { url: rec.finalUrl || rec.url });
+  /* Une ecriture qui echoue (la page est partie) arrete le limiteur ; au-dela
+     de quelques secondes d avance, le flux est suspendu plutot qu entasse. */
+  const limiteur = debit ? creerLimiteur({
+    octetsParSeconde: debit.octetsParSeconde,
+    ecrire: octets => filter.write(octets),
+    fermer: () => { try { filter.close(); } catch { /* deja ferme */ } },
+    suspendre: () => { try { filter.suspend(); } catch { /* flux deja termine */ } },
+    reprendre: () => { try { filter.resume(); } catch { /* flux deja termine */ } },
+    /* Une ecriture refusee sur un flux encore ouvert : on le rend a Firefox
+       plutot que de laisser la page attendre une fin qui ne viendrait pas. */
+    echec: () => { try { filter.disconnect(); } catch { /* deja ferme */ } }
+  }) : null;
 
   const chunks = [];
   /* Quand on doit reecrire le corps, on garde TOUT le flux a part, sans se
@@ -108,13 +131,17 @@ export function attachFilter(rec, requestId, headers) {
     } else truncated = true;
     // Reecriture integrale : la page recoit exactement ce que le serveur a envoye,
     // sauf simulation explicite, ou le corps d origine est retenu ici.
-    if (!retenir) filter.write(event.data);
+    if (!retenir) {
+      if (limiteur) limiteur.pousser(bytes); else filter.write(event.data);
+    }
   };
 
   const finish = async (status) => {
     if (done) return;
     done = true;
     filterState.active--;
+    // Capture des corps coupee : la regle s est appliquee, rien ne s enregistre.
+    if (!capturer) return;
     try {
       /* Les octets tels que le filtre les a remis, et transmis a la page :
          d ordinaire deja decodes par Firefox (voir empreintes.js). */
@@ -135,10 +162,15 @@ export function attachFilter(rec, requestId, headers) {
       empreintesDeReponse(rec, recus, {
         contentEncoding: ceHeader || '', truncated, status: rec.statusCode
       }).catch(() => { /* empreinte impossible : le corps reste affiche */ });
+      /* Ce que la page a recu est note a cote, sur 200 000 caracteres au plus :
+         un fichier de 5 Mo charge dans une regle n est pas recopie dans chaque
+         requete qu elle touche. La coupure est dite. */
+      const borne = texte => (texte && texte.length > 200000 ? texte.slice(0, 200000) : texte);
       if (mock && rec.responseBody) {
+        const servi = mock.base64 || mock.body || '';
         rec.responseBody.replacedBy = {
           rule: mock.rule, contentType: mock.contentType,
-          body: mock.body, size: mock.body.length
+          body: borne(mock.body), base64: borne(mock.base64), size: mock.octets.length, coupe: servi.length > 200000
         };
       }
       // Le corps enregistre reste celui du serveur : on note a cote ce que la
@@ -146,8 +178,7 @@ export function attachFilter(rec, requestId, headers) {
       if (remplace != null && rec.responseBody) {
         rec.responseBody.replacedBy = {
           rule: remplacement.rule, contentType: mime || 'text/plain',
-          body: remplace.length > 200000 ? remplace.slice(0, 200000) : remplace,
-          size: remplace.length
+          body: borne(remplace), size: remplace.length, coupe: remplace.length > 200000
         };
       }
       filterState.captured++;
@@ -161,7 +192,9 @@ export function attachFilter(rec, requestId, headers) {
     if (mock) {
       // Substitution complete : on ecrit notre corps puis on ferme le flux.
       try {
-        filter.write(new TextEncoder().encode(mock.body));
+        // Une copie : les octets decodes servent a chaque requete de la regle.
+        // Un corps vide n a rien a ecrire : la fermeture suffit.
+        if (mock.octets.length) filter.write(mock.octets.slice());
         filter.close();
       } catch (e) {
         filterState.failed++;
@@ -193,12 +226,16 @@ export function attachFilter(rec, requestId, headers) {
         try { filter.write(original); filter.close(); }
         catch { try { filter.disconnect(); } catch {} }
       }
+    } else if (limiteur) {
+      // Le flux reste ouvert jusqu a ce que le limiteur ait tout remis.
+      limiteur.terminer();
     } else {
       try { filter.disconnect(); } catch {}
     }
     finish('stop');
   };
   filter.onerror = () => {
+    if (limiteur) limiteur.arreter();
     filterState.failed++;
     rec.bodyFilterError = filter.error || 'stream error';
     finish('error');

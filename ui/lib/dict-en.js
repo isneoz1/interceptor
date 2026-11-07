@@ -32,6 +32,8 @@ import { EN_JOSE } from './dict-en-jose.js';
 import { EN_CLES } from './dict-en-cles.js';
 import { EN_EXPORTS } from './dict-en-exports.js';
 import { EN_BIBLIOTHEQUES } from './dict-en-bibliotheques.js';
+import { EN_MESSAGES } from './dict-en-messages.js';
+import { EN_PARITE } from './dict-en-parite.js';
 
 export const EN = {
   /* ------------------------------ Navigation ----------------------------- */
@@ -230,6 +232,8 @@ export const EN = {
   'Reglages par defaut restaures': 'Default settings restored',
   'Importer': 'Import',
   'Importer un fichier HAR': 'Import a HAR file',
+  'Relire une capture faite ailleurs (DevTools, Charles, Fiddler…)': 'Read back a capture made elsewhere (DevTools, Charles, Fiddler…)',
+  'Ecrit une ligne horodatee : sert a marquer le moment d un test': 'Writes a timestamped line: marks the moment of a test',
   'Importer une session JSON': 'Import a JSON session',
   'Exporter dans un fichier': 'Export to a file',
   'Copier les reglages': 'Copy settings',
@@ -455,5 +459,7 @@ export const EN = {
   ...EN_JOSE,
   ...EN_CLES,
   ...EN_EXPORTS,
-  ...EN_BIBLIOTHEQUES
+  ...EN_BIBLIOTHEQUES,
+  ...EN_MESSAGES,
+  ...EN_PARITE
 };

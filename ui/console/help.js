@@ -65,8 +65,8 @@ export const SECTIONS = [
       ['Navigation', 'Les huit evenements de navigation de Firefox.'],
       ['Workers et WebRTC', 'Workers, Service Workers, WebRTC, etat des sondes de page.'],
       ['Etat du systeme', 'Etat reel de chaque couche, chiffres du noyau, test de couverture.'],
-      ['Regles', 'Blocage, redirection et reecriture d entetes, avec un editeur visuel.'],
-      ['Boite a outils', 'Vingt et une familles d outils sur un seul texte de travail : encodages, chiffrement, formats binaires, certificats, empreintes, reseau, entetes, horodatages, reference HTTP.'],
+      ['Regles', 'Blocage, redirection, reecriture d entetes et de parametres d URL, reponse simulee (ecrite ou chargee depuis un fichier), debit limite — avec un editeur visuel et des modeles prets a l emploi.'],
+      ['Boite a outils', 'Vingt-six outils en six familles sur un seul texte de travail : encodages, chiffrement, formats binaires, certificats, empreintes, reseau, entetes, horodatages, metadonnees d image, reference HTTP.'],
       ['Reglages', 'Tout ce qui se configure, avec des profils prets a l emploi.'],
       ['Tutoriel', 'Douze lecons guidees, avec suivi de progression.']
     ]
@@ -74,10 +74,10 @@ export const SECTIONS = [
   {
     h: 'La boite a outils',
     p: [
-      'Un seul texte de travail, vingt-cinq onglets qui le regardent. On colle une valeur une fois — depuis le presse-papiers, depuis le menu contextuel d une ligne, ou depuis un onglet du detail — et chaque outil travaille dessus. Tout se calcule dans la page : aucune de ces fonctions n emet la moindre requete.'
+      'Un seul texte de travail, vingt-six onglets qui le regardent. On colle une valeur une fois — depuis le presse-papiers, depuis le menu contextuel d une ligne, ou depuis un onglet du detail — et chaque outil travaille dessus. Tout se calcule dans la page : aucune de ces fonctions n emet la moindre requete.'
     ],
     table: [
-      ['Transformer', '138 transformations classees en dix-huit familles : base64 et base64 URL, base32, base58, base45, Ascii85, URL, entites HTML, hexadecimal, binaire, octal, echappements Unicode, punycode, JSON, YAML, CSV, XML, SAML, messages DNS, WebAuthn, gzip et deflate, casse, lignes, echappements de chaine, Protocol Buffers, MessagePack, CBOR, ASN.1. « Tout essayer » applique chaque decodage — sauf DNS et WebAuthn, qui liraient n importe quels octets — et ne garde que les resultats lisibles.'],
+      ['Transformer', '140 transformations classees en dix-huit familles : base64 et base64 URL, base32, base58, base45, Ascii85, URL, entites HTML, hexadecimal, binaire, octal, echappements Unicode, punycode, adresses neutralisees pour un rapport (defang) et retablies, JSON, YAML, CSV, XML, SAML, messages DNS, WebAuthn, gzip et deflate, casse, lignes, echappements de chaine, Protocol Buffers, MessagePack, CBOR, ASN.1. « Tout essayer » applique chaque decodage — sauf DNS et WebAuthn, qui liraient n importe quels octets — et ne garde que les resultats lisibles.'],
       ['Cles et essais', 'XOR avec cle repetee, recherche des 255 cles d un octet, les vingt-cinq decalages de Cesar, Vigenere. Ces chiffres ne protegent rien : ils relisent une valeur volontairement obscurcie.'],
       ['Cle publique', 'Une cle publique collee sous n importe quelle forme — PEM, certificat, JWK ou jeu de cles, ligne OpenSSH ou fichier authorized_keys entier, DER en base64 — et toutes les autres : PEM, PKCS #1, JWK, ligne OpenSSH, avec son epingle pin-sha256 (RFC 7469), ses empreintes OpenSSH (SHA256 et MD5), son empreinte JWK (RFC 7638) et son identifiant de cle (RFC 5280). Plusieurs cles collees ensemble sont comparees : la meme cle sous deux formes est reconnue.'],
       ['JWT', 'Entete, charge utile, validite, temps restant. La signature se verifie vraiment : HS256 a HS512 avec la cle partagee (texte ou JWK « oct »), RS, PS, ES et EdDSA (Ed25519) avec la cle publique collee en PEM ou en JWK, ou tout le jeu de cles (JWKS) de l emetteur, dont la cle designee par le jeton est choisie. L algorithme se lit a la lettre : « hs256 » n est pas HS256. Sans cle, l ecran le dit, plutot que de laisser croire qu un jeton decode est un jeton valide.'],
@@ -85,12 +85,13 @@ export const SECTIONS = [
       ['Empreintes', 'MD5, SHA-1, SHA-256, SHA-384, SHA-512, CRC-32, Adler-32, FNV-1a, djb2, somme des octets, et HMAC avec cle.'],
       ['Binaire', 'Protocol Buffers, MessagePack et CBOR lus octet par octet, sans schema ; ASN.1, DER et resume d un certificat X.509 (sujet, emetteur, validite, noms couverts, usages) ; trente-sept jeux de caracteres et reparation du mojibake.'],
       ['Mesures', 'Caracteres, octets, lignes, mots, entropie de Shannon, frequence des caracteres, et reperage des caracteres invisibles qui servent a masquer du contenu.'],
+      ['Metadonnees d image', 'Ce qu une image JPEG, PNG ou WebP revele a qui la telecharge : la position GPS de la prise de vue, l auteur, l appareil et son numero de serie, le logiciel, le XMP. Collee en base64, en hexadecimal ou en URI de donnees ; l onglet Reponse d une image capturee le montre aussi.'],
       ['Hexadecimal', 'Vidage classique : decalage, seize octets, colonne lisible.'],
       ['Identifier', 'Ce que la forme du texte laisse deviner : famille d empreinte, signature de fichier dans les premiers octets, alphabet employe. Des candidats, jamais un verdict.'],
       ['Horodatage', 'Quatorze origines possibles (Unix en secondes, millisecondes, microsecondes et nanosecondes, FILETIME Windows, Chrome, HFS, Apple, ticks .NET, serie Excel, jour julien, NTP, GPS, et la date MS-DOS des archives ZIP) et toutes les ecritures d un meme instant. Lit aussi les durees ecrites « 1d12h ».'],
       ['Nombres', 'Un entier reecrit dans toutes les bases, sans perte de chiffre, avec ses proprietes et sa lecture en adresse IPv4 ou en port.'],
       ['Structures', 'Parametres d URL, cookies et entetes reconnus dans le texte colle.'],
-      ['Entetes', 'Trente-trois entetes decoupes en detail : Set-Cookie et ses attributs, politique de securite, HSTS, Cache-Control, Accept pondere, Authorization. Chaque manque reel est signale — un attribut absent, une directive qui annule la protection.'],
+      ['Entetes', 'Trente-quatre entetes decoupes en detail : Set-Cookie et ses attributs, politique de securite, HSTS, Cache-Control, Accept pondere, Authorization, User-Agent (navigateur, moteur, systeme). Chaque manque reel est signale — un attribut absent, une directive qui annule la protection.'],
       ['Chercher', 'Vingt motifs tout prets (courriel, adresse, empreinte, jeton, cle privee), chemins dans un JSON, selecteurs CSS et XPath dans du HTML, et la cle de Luhn.'],
       ['Expression reguliere', 'Correspondances, groupes captures, position, et remplacement applique.'],
       ['Comparer', 'Le texte de travail confronte a un autre, sans limite de taille : lignes ajoutees, retirees, communes, la plus courte liste de changements (sur d immenses textes tres differents, une liste exacte qui le dit si elle n est pas la plus courte), premiere difference au caractere pres, comparaison mot a mot, et un format unifie que patch et git apply savent appliquer.'],
@@ -136,7 +137,9 @@ export const SECTIONS = [
       ['Signaux du serveur', 'Ce que les en-tetes annoncent : la depreciation et la date de fin d une adresse (RFC 9745, RFC 8594, tag:deprecie), le quota restant et quand reessayer (RateLimit, Retry-After, tag:quota), les liens a suivre ou a precharger (Link, avec le registre IANA), les services alternatifs comme HTTP/3 (Alt-Svc), les caches traverses (Cache-Status, CDN-Cache-Control), les intermediaires traverses et celui qui a produit une erreur 502 ou 504 (Proxy-Status, avec le registre IANA des types d erreur) et la priorite demandee (Priority).'],
       ['Signatures et cles d acces', 'Signatures de messages HTTP (RFC 9421) reconstruites et verifiees, inscriptions et connexions WebAuthn, DNS par HTTPS.'],
       ['Securite', 'OAuth 2.0 et OpenID Connect, SAML, empreintes de contenu, protections de la reponse, CSP deduite des chargements reels.'],
-      ['Jetons et cles', 'Chaque jeton JWT de la requete (entete, cookie, adresse, corps), date par rapport a la capture, et sa signature verifiee avec la cle que son emetteur publie, quand la capture contient son jeu de cles. Un jeu de cles recu (RFC 7517) est lu cle par cle — une cle privee publiee est signalee — et un document de decouverte OAuth ou OpenID Connect est controle : son emetteur doit etre celui que designe son adresse.']
+      ['Jetons et cles', 'Chaque jeton JWT de la requete (entete, cookie, adresse, corps), date par rapport a la capture, et sa signature verifiee avec la cle que son emetteur publie, quand la capture contient son jeu de cles. Un jeu de cles recu (RFC 7517) est lu cle par cle — une cle privee publiee est signalee — et un document de decouverte OAuth ou OpenID Connect est controle : son emetteur doit etre celui que designe son adresse.'],
+      ['Images', 'Ce qu une image capturee revele a qui la telecharge — la position GPS de la prise de vue, l auteur, l appareil et son numero de serie, le logiciel — lu dans ses blocs EXIF, XMP et texte PNG, dans l onglet Reponse.'],
+      ['Navigateur', 'Ce que le User-Agent et les indices clients (Sec-CH-UA) annoncent : navigateur, moteur, systeme, mobile, client automatique — et ce que la chaine ne dit plus : Windows 11 s annonce « Windows NT 10.0 », macOS reste fige a 10.15. Dans l onglet En-tetes.']
     ]
   },
   {
@@ -186,6 +189,13 @@ export const SECTIONS = [
       'de reecrire des entetes, et de simuler une reponse. Lors d une simulation, le corps reel du serveur ' +
       'reste enregistre : la page recoit le contenu simule, vous voyez les deux. Le code de statut d origine ' +
       'est conserve, Firefox ne permettant pas de le reecrire depuis une extension.',
+      'Elle ajoute, remplace ou retire aussi des parametres d URL (les autres gardent leur ecriture exacte), ' +
+      'charge une reponse simulee depuis un fichier, image comprise, et limite le debit d une reponse : la page ' +
+      'la recoit au rythme choisi, comme sur un reseau lent. Les modeles reprennent les outils « No Caching », ' +
+      '« Block Cookies » et « Throttle » de Charles tels que sa documentation les decrit, et visent example.com, ' +
+      'le domaine reserve aux exemples : il suffit de le remplacer par le votre.',
+      'Plusieurs regles d entetes ou de parametres d URL qui visent la meme requete s appliquent toutes, dans ' +
+      'l ordre ; pour bloquer, rediriger ou forcer le HTTPS, la premiere decide.',
       'L onglet Rejouer, dans le detail d une requete, renvoie une requete modifiable. Regles et rejeu sont ' +
       'desactives par defaut et demandent une confirmation explicite. A n utiliser que sur des cibles dont ' +
       'vous avez la responsabilite.'

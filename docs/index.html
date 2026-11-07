@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SWIFT — see what your browser really sends</title>
+<meta name="description" content="SWIFT is a free, open-source Firefox extension: every request captured, explained in plain words, and changeable. No proxy, no certificate, no account. Nothing leaves your machine.">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; media-src 'self'; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#0b0e14">
+<link rel="canonical" href="https://isneoz1.github.io/interceptor/">
+<link rel="icon" href="images/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="site.css">
+<meta property="og:type" content="website">
+<meta property="og:title" content="SWIFT — see what your browser really sends">
+<meta property="og:description" content="Every request Firefox makes: captured, explained, changeable. Free and open source. No proxy, no certificate, no account.">
+<meta property="og:url" content="https://isneoz1.github.io/interceptor/">
+<meta property="og:image" content="https://isneoz1.github.io/interceptor/images/social-preview.png">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "SWIFT",
+  "description": "A free, open-source Firefox extension that captures every request, explains it in plain words and lets you change it.",
+  "applicationCategory": "DeveloperApplication",
+  "operatingSystem": "Firefox 115 or later",
+  "license": "https://opensource.org/licenses/MIT",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "url": "https://isneoz1.github.io/interceptor/",
+  "codeRepository": "https://github.com/isneoz1/interceptor"
+}
+</script>
+</head>
+<body>
+
+<header class="barre">
+  <a class="marque" href="#haut"><img src="images/icon.svg" alt="" width="28" height="28"><span>SWIFT</span><small>by D4RK</small></a>
+  <nav aria-label="Main navigation">
+    <a href="#photo">What it reveals</a>
+    <a href="#questions">What it answers</a>
+    <a href="#comparer">Compare</a>
+    <a href="#film">The tour</a>
+    <a class="fort" href="#installer">Install</a>
+  </nav>
+</header>
+
+<main id="haut">
+
+<section class="accueil" aria-labelledby="titre">
+  <div class="texte">
+    <p class="trace">every request, once</p>
+    <h1 id="titre">See what your browser <em>really</em> sends.</h1>
+    <p class="chapeau">SWIFT records every request Firefox makes, explains it in plain words, and lets you block, rewrite or replay it. No proxy. No certificate. No account. Nothing leaves your machine.</p>
+    <div class="appels">
+      <a class="bouton plein" href="#installer">Get SWIFT for Firefox</a>
+      <a class="bouton" href="#film">Watch the tour <span>3½ min</span></a>
+      <a class="bouton discret" href="https://github.com/isneoz1/interceptor">Source on GitHub</a>
+    </div>
+  </div>
+  <figure class="ecran debord">
+    <video class="anime" src="teaser.mp4" poster="images/console-requetes.png" width="1280" height="800" autoplay muted loop playsinline aria-label="SWIFT at work: searching requests, reading a token, an error hidden behind a 200, and what a photo reveals"></video>
+    <img class="fixe" src="images/console-requetes.png" width="1600" height="1000" alt="The SWIFT console: every request of a page in one table, with method, status, host, size and timing">
+  </figure>
+</section>
+
+<section class="chiffres" aria-label="SWIFT in numbers">
+  <dl>
+    <div><dt>capture layers</dt><dd>8</dd></div>
+    <div><dt>duplicated rows</dt><dd>0</dd></div>
+    <div><dt>tools</dt><dd data-compte="outils">26</dd></div>
+    <div><dt>transformations</dt><dd data-compte="transformations">140</dd></div>
+    <div><dt>automated checks</dt><dd data-compte="assertions">4,038</dd></div>
+    <div><dt>dependencies</dt><dd>0</dd></div>
+  </dl>
+</section>
+
+<section class="photo" id="photo" aria-labelledby="titre-photo">
+  <div class="texte">
+    <p class="trace">response · image/jpeg</p>
+    <h2 id="titre-photo">A photo can say where it was taken.</h2>
+    <p>Pictures often carry GPS coordinates, the author's name and the camera's serial number. Some sites strip them. Not all do.</p>
+    <p>SWIFT reads them from the image as it arrives — EXIF, XMP, PNG text — and tells you in one sentence what that picture reveals to anyone who downloads it. Paste an image into the toolbox and it does the same.</p>
+  </div>
+  <figure class="ecran debord">
+    <img src="images/cadre-photo.png" width="2000" height="1000" loading="lazy" alt="SWIFT reading a captured photo: the GPS position where it was taken, the author and the camera serial number">
+  </figure>
+</section>
+
+<section class="questions" id="questions" aria-labelledby="titre-questions">
+  <p class="trace">the questions you actually have</p>
+  <h2 id="titre-questions">It answers <em>why</em>, not just <em>that</em>.</h2>
+  <div class="grille">
+    <article class="carte large">
+      <h3>A 200 that hides an error</h3>
+      <p>GraphQL, JSON-RPC and SOAP calls all look alike on the wire: one address, status 200. SWIFT names the operation in the table and reads the real answer.</p>
+      <img src="images/cadre-api.png" width="2000" height="1000" loading="lazy" alt="A GraphQL call named in the table, and the error it hides behind status 200, with its path and code">
+    </article>
+    <article class="carte">
+      <h3>Why was this refused?</h3>
+      <p>A failed CORS request is paired with the preflight that caused it, and the header that said no is named.</p>
+    </article>
+    <article class="carte">
+      <h3>Is this token genuine?</h3>
+      <p>Every JWT a request carries is read, and verified with the key its issuer publishes when the capture holds it.</p>
+    </article>
+    <article class="carte">
+      <h3>Which code made this call?</h3>
+      <p>The JavaScript stack behind fetch, XHR, sendBeacon and WebSocket calls, recorded with DevTools closed.</p>
+    </article>
+    <article class="carte">
+      <h3>What does my browser announce?</h3>
+      <p>The User-Agent read honestly: Windows 11 still writes “NT 10.0”, so SWIFT says Windows 10/11 rather than guess.</p>
+    </article>
+    <article class="carte large inverse">
+      <h3>Findings it can prove</h3>
+      <p>Every finished request is audited on its own: exposed secrets, credentials in clear, cookies that will be rejected and why. If the capture cannot prove it, SWIFT does not say it.</p>
+      <img src="images/cadre-securite.png" width="2000" height="1000" loading="lazy" alt="The security view: each finding with the request that proves it">
+    </article>
+  </div>
+</section>
+
+<section class="regles" aria-labelledby="titre-regles">
+  <div class="texte">
+    <p class="trace">rules · one click</p>
+    <h2 id="titre-regles">Change the traffic, without leaving the browser.</h2>
+    <p>Twelve ready-made templates, and every rule says in plain words what it will do before you turn it on.</p>
+  </div>
+  <ul class="liste">
+    <li><b>No Caching</b><span>header for header as Charles documents it</span></li>
+    <li><b>Block Cookies</b><span>none sent, none set by the server</span></li>
+    <li><b>Throttle</b><span>a response at the rate you choose</span></li>
+    <li><b>Local file</b><span>serve a file in place of the response</span></li>
+    <li><b>URL parameters</b><span>add, replace, remove — tracking ones in one click</span></li>
+    <li><b>Pause</b><span>hold a request, edit it, release it</span></li>
+  </ul>
+</section>
+
+<section class="comparer" id="comparer" aria-labelledby="titre-comparer">
+  <p class="trace">honest comparison</p>
+  <h2 id="titre-comparer">No proxy. No certificate. No licence fee.</h2>
+  <div class="tableau">
+    <table>
+      <thead>
+        <tr><th scope="col"><span class="lecteur">Question</span></th><th scope="col" class="nous">SWIFT</th><th scope="col">Firefox DevTools</th><th scope="col">A debugging proxy (Charles)</th></tr>
+      </thead>
+      <tbody>
+        <tr><th scope="row">What it sees</th><td class="nous" data-nom="SWIFT">Firefox</td><td data-nom="Firefox DevTools">The tab it is open on</td><td data-nom="A debugging proxy">Every app set to use it</td></tr>
+        <tr><th scope="row">Records with the tools closed</th><td class="nous" data-nom="SWIFT">Yes</td><td data-nom="Firefox DevTools">No</td><td data-nom="A debugging proxy">Yes</td></tr>
+        <tr><th scope="row">Reading HTTPS</th><td class="nous" data-nom="SWIFT">Nothing to install</td><td data-nom="Firefox DevTools">Nothing to install</td><td data-nom="A debugging proxy">Its own root certificate must be trusted</td></tr>
+        <tr><th scope="row">Rewrite, mock, pause by rule</th><td class="nous" data-nom="SWIFT">Yes</td><td data-nom="Firefox DevTools">Block, throttle, edit and resend</td><td data-nom="A debugging proxy">Yes</td></tr>
+        <tr><th scope="row">Price</th><td class="nous" data-nom="SWIFT">Free, MIT licence</td><td data-nom="Firefox DevTools">Free</td><td data-nom="A debugging proxy">Charles: USD 50 per licence</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="note">A proxy sees what SWIFT cannot: your other apps and other browsers. SWIFT is the one already inside Firefox, and it keeps response bodies whole by default, where DevTools stops at 1 MiB. Figures from each tool's own documentation and price page, November 2026. SWIFT is an independent project, not affiliated with Mozilla or Charles.</p>
+</section>
+
+<section class="film" id="film" aria-labelledby="titre-film">
+  <p class="trace">the whole tour · eleven chapters</p>
+  <h2 id="titre-film">Every frame is the running tool.</h2>
+  <figure class="ecran">
+    <video src="demo.mp4" poster="images/console-detail.png" width="1280" height="800" controls preload="none" aria-label="A three-and-a-half-minute tour of SWIFT, with captions"></video>
+  </figure>
+</section>
+
+<section class="installer" id="installer" aria-labelledby="titre-installer">
+  <p class="trace">sixty seconds</p>
+  <h2 id="titre-installer">Try it now.</h2>
+  <ol>
+    <li><a href="https://github.com/isneoz1/interceptor/releases/latest">Download the latest <code>.xpi</code></a> from the release page.</li>
+    <li>Open <code>about:debugging#/runtime/this-firefox</code> in Firefox.</li>
+    <li>Click <b>Load Temporary Add-on…</b> and pick the file. Capture starts at once; press <kbd>Ctrl</kbd> + <kbd>K</kbd> to find anything.</li>
+  </ol>
+  <p class="note">SWIFT is not on addons.mozilla.org yet: a temporary add-on goes away when Firefox restarts. It needs Firefox 115 or later.</p>
+</section>
+
+<section class="vie-privee" aria-labelledby="titre-vie">
+  <h2 id="titre-vie">Nothing leaves your machine.</h2>
+  <p>No telemetry, no server, no account — there is nowhere for your traffic to go. Open the source and check: every line is readable, with no build step. This page keeps the same promise: it loads nothing from anyone else.</p>
+</section>
+
+</main>
+
+<footer>
+  <p><b>SWIFT</b> by D4RK · MIT licence · English and French</p>
+  <p><a href="https://github.com/isneoz1/interceptor">GitHub</a> · <a href="https://github.com/isneoz1/interceptor/releases/latest">Releases</a> · <a href="https://github.com/isneoz1/interceptor/blob/main/CHANGELOG.md">Changelog</a> · <a href="https://github.com/isneoz1/interceptor/issues">Report a problem</a></p>
+</footer>
+
+</body>
+</html>

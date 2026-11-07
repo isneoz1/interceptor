@@ -6,26 +6,64 @@
 import { $, el, clear, sec, button, boutonConfirme, vide } from '../lib/dom.js';
 import { redessinerEnPlace } from '../lib/redessin.js';
 import { t, tp, te } from '../lib/i18n.js';
-import { RESOURCE_TYPES } from '../lib/format.js';
+import { RESOURCE_TYPES, DEBIT_PAR_DEFAUT_KO, debitKo } from '../lib/format.js';
 import { state, toast, saveConfig, copy } from '../app.js';
+import { octetsVersBase64 } from '../lib/bytes.js';
 
 const ACTIONS = [
   ['block', 'Bloquer la requete'],
   ['redirect', 'Rediriger vers une autre URL'],
   ['upgrade', 'Forcer le HTTPS'],
   ['modifyHeaders', 'Modifier les entetes'],
+  ['modifyQuery', 'Modifier les parametres d URL'],
   ['mock', 'Simuler la reponse'],
   ['delay', 'Retarder la requete'],
+  ['throttle', 'Limiter le debit de la reponse'],
   ['replaceBody', 'Chercher-remplacer dans la reponse']
 ];
 
+/* Une reponse simulee vit dans les reglages : un fichier plus gros les
+   alourdirait a chaque enregistrement. */
+const FICHIER_MAX_OCTETS = 5 * 1024 * 1024;
+
+/* Le texte d un fichier, s il redonne exactement ses octets une fois reecrit
+   en UTF-8 — UTF-8 valide, sans BOM ni octet nul —, sinon null : un fichier
+   Latin-1, un document Office ou une image partent en base64, octet pour
+   octet. Juger sur le type annonce corrompait un .xlsx (« xml » dans son
+   type) ou un texte Latin-1 (« é » devenait U+FFFD). */
+export function texteExact(octets) {
+  if (octets.length >= 3 && octets[0] === 0xef && octets[1] === 0xbb && octets[2] === 0xbf) return null;
+  if (octets.includes(0)) return null;
+  try { return new TextDecoder('utf-8', { fatal: true, ignoreBOM: true }).decode(octets); } catch { return null; }
+}
+
+/* Ce que la carte affiche par defaut, ecrit dans la regle des le choix de
+   l action : le moteur fait ce que la carte montre. */
+function defautsDeLAction(action, rule) {
+  if (action === 'throttle' && !rule.throttle) return { throttle: { koParSeconde: DEBIT_PAR_DEFAUT_KO } };
+  if (action === 'mock' && !rule.mock) return { mock: { contentType: 'text/plain; charset=utf-8', body: '' } };
+  return {};
+}
+
+/** Le nombre d octets que la page recevra d une reponse simulee. */
+function octetsDuMock(mock) {
+  if (!mock) return 0;
+  if (mock.base64) {
+    const net = String(mock.base64).replace(/\s+/g, '');
+    return Math.floor(net.length * 3 / 4) - (net.endsWith('==') ? 2 : net.endsWith('=') ? 1 : 0);
+  }
+  return new TextEncoder().encode(String(mock.body || '')).length;
+}
+
 const METHODS = ['', 'GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS'];
 
-const PRESETS = [
+/* Les modeles proposes en un clic. Ceux qui reprennent un outil de Charles
+   en reproduisent exactement la documentation officielle. */
+export const PRESETS = [
   {
     label: 'Bloquer la telemetrie courante',
     rule: () => ({
-      id: uid('bloquer-telemetrie'), enabled: true, name: 'Bloquer la telemetrie',
+      id: uid('bloquer-telemetrie'), enabled: true, name: t('Bloquer la telemetrie'),
       match: { urlRegex: 'google-analytics\\.com|googletagmanager\\.com|doubleclick\\.net|facebook\\.net|hotjar\\.com' },
       action: 'block'
     })
@@ -33,47 +71,101 @@ const PRESETS = [
   {
     label: 'Bloquer les images d un domaine',
     rule: () => ({
-      id: uid('bloquer-images'), enabled: false, name: 'Bloquer les images',
-      match: { host: 'exemple.com', type: 'image' }, action: 'block'
+      id: uid('bloquer-images'), enabled: false, name: t('Bloquer les images'),
+      match: { host: 'example.com', type: 'image' }, action: 'block'
     })
   },
   {
     label: 'Rediriger un domaine vers un autre',
     rule: () => ({
-      id: uid('redirection'), enabled: false, name: 'Redirection de test',
-      match: { urlRegex: '^https://api\\.exemple\\.com/(.*)$' },
-      action: 'redirect', redirectUrl: 'https://api-recette.exemple.com/'
+      id: uid('redirection'), enabled: false, name: t('Redirection de test'),
+      match: { urlRegex: '^https://api\\.example\\.com/(.*)$' },
+      action: 'redirect', redirectUrl: 'https://api-staging.example.com/$1'
     })
   },
   {
     label: 'Imposer un User-Agent',
     rule: () => ({
-      id: uid('user-agent'), enabled: false, name: 'User-Agent impose',
-      match: { host: 'exemple.com' }, action: 'modifyHeaders',
+      id: uid('user-agent'), enabled: false, name: t('User-Agent impose'),
+      match: { host: 'example.com' }, action: 'modifyHeaders',
       requestHeaders: [{ name: 'User-Agent', value: 'SWIFT', op: 'set' }]
     })
   },
   {
     label: 'Forcer le HTTPS sur un domaine',
     rule: () => ({
-      id: uid('https'), enabled: false, name: 'Forcer le HTTPS',
-      match: { host: 'exemple.com' }, action: 'upgrade'
+      id: uid('https'), enabled: false, name: t('Forcer le HTTPS'),
+      match: { host: 'example.com' }, action: 'upgrade'
     })
   },
   {
     label: 'Simuler une reponse JSON',
     rule: () => ({
-      id: uid('simulation'), enabled: false, name: 'Reponse simulee',
+      id: uid('simulation'), enabled: false, name: t('Reponse simulee'),
       match: { urlRegex: '/api/statut' }, action: 'mock',
-      mock: { contentType: 'application/json; charset=utf-8', body: '{"statut":"simule par SWIFT"}' }
+      mock: { contentType: 'application/json; charset=utf-8', body: t('{"statut":"simule par SWIFT"}') }
     })
   },
   {
     label: 'Retirer une entete de reponse',
     rule: () => ({
-      id: uid('retirer-entete'), enabled: false, name: 'Retirer Content-Security-Policy',
-      match: { host: 'exemple.com' }, action: 'modifyHeaders',
+      id: uid('retirer-entete'), enabled: false, name: t('Retirer Content-Security-Policy'),
+      match: { host: 'example.com' }, action: 'modifyHeaders',
       responseHeaders: [{ name: 'Content-Security-Policy', value: '', op: 'remove' }]
+    })
+  },
+  /* « The If-Modified-Since and If-None-Match headers are removed from
+     requests, Pragma: no-cache and Cache-control: no-cache are added. The
+     Expires, Last-Modified and ETag headers are removed from responses and
+     Expires: 0 and Cache-Control: no-cache are added. » — Charles. */
+  {
+    label: 'Desactiver le cache (outil « No Caching » de Charles)',
+    rule: () => ({
+      id: uid('sans-cache'), enabled: false, name: t('Sans cache'), match: { host: 'example.com' },
+      action: 'modifyHeaders',
+      requestHeaders: [
+        { name: 'If-Modified-Since', value: '', op: 'remove' }, { name: 'If-None-Match', value: '', op: 'remove' },
+        { name: 'Pragma', value: 'no-cache', op: 'set' }, { name: 'Cache-Control', value: 'no-cache', op: 'set' }],
+      responseHeaders: [
+        { name: 'Expires', value: '', op: 'remove' }, { name: 'Last-Modified', value: '', op: 'remove' },
+        { name: 'ETag', value: '', op: 'remove' },
+        { name: 'Expires', value: '0', op: 'set' }, { name: 'Cache-Control', value: 'no-cache', op: 'set' }]
+    })
+  },
+  /* « The Cookie header is removed from requests [...] The Set-Cookie header
+     is removed from responses » — Charles. Un cookie ecrit en JavaScript
+     (document.cookie) ne passe pas par Set-Cookie : il est stocke, mais le
+     retrait de Cookie l empeche de partir. */
+  {
+    label: 'Bloquer les cookies (outil « Block Cookies » de Charles)',
+    rule: () => ({
+      id: uid('sans-cookies'), enabled: false, name: t('Sans cookies'), match: { host: 'example.com' },
+      action: 'modifyHeaders',
+      requestHeaders: [{ name: 'Cookie', value: '', op: 'remove' }],
+      responseHeaders: [{ name: 'Set-Cookie', value: '', op: 'remove' }]
+    })
+  },
+  {
+    label: 'Limiter le debit d un domaine (outil « Throttle » de Charles)',
+    rule: () => ({
+      id: uid('debit'), enabled: false, name: t('Debit limite'), match: { host: 'example.com' },
+      action: 'throttle', throttle: { koParSeconde: 50 }
+    })
+  },
+  {
+    label: 'Ajouter un parametre a l URL',
+    rule: () => ({
+      id: uid('parametre'), enabled: false, name: t('Parametre de debogage'), match: { host: 'example.com' },
+      action: 'modifyQuery', query: [{ name: 'debug', value: '1', op: 'set' }]
+    })
+  },
+  {
+    label: 'Retirer les parametres de suivi (utm_*, fbclid, gclid)',
+    rule: () => ({
+      id: uid('sans-suivi'), enabled: false, name: t('Sans parametres de suivi'), match: {},
+      action: 'modifyQuery',
+      query: ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'fbclid', 'gclid']
+        .map(name => ({ name, value: '', op: 'remove' }))
     })
   }
 ];
@@ -113,7 +205,7 @@ function dessiner() {
 
   box.appendChild(sec('Interception active', tp('{n} regle(s)', { n: list.length })));
   box.appendChild(el('p', { class: 'note warn', text: t(
-    'Par defaut SWIFT observe sans jamais modifier le trafic. Activer le moteur autorise le blocage, la redirection et la reecriture d entetes. A n utiliser que sur des cibles dont vous avez la responsabilite.') }));
+    'Par defaut SWIFT observe sans jamais modifier le trafic. Activer le moteur autorise le blocage, la redirection, la reecriture d entetes et de parametres d URL, les reponses simulees et le debit limite. A n utiliser que sur des cibles dont vous avez la responsabilite.') }));
 
   /* Interrupteur principal */
   const master = el('div', { class: 'opt' }, [
@@ -142,7 +234,7 @@ function dessiner() {
   /* Barre d actions */
   const actions = el('div', { class: 'actions' });
   actions.appendChild(button('Ajouter une regle', () => {
-    commit([...rules(), { id: uid('regle'), enabled: false, name: 'Nouvelle regle', match: {}, action: 'block' }], 'Regle ajoutee');
+    commit([...rules(), { id: uid('regle'), enabled: false, name: t('Nouvelle regle'), match: {}, action: 'block' }], 'Regle ajoutee');
   }, { class: 'accent' }));
   for (const preset of PRESETS) {
     actions.appendChild(button(preset.label, () => commit([...rules(), preset.rule()], 'Modele ajoute'), { class: 'sm' }));
@@ -204,7 +296,7 @@ function ruleCard(rule, index, list) {
     commit(next);
   }, { class: 'sm', title: 'Descendre' }));
   head.appendChild(button('Dupliquer', () => {
-    const copyRule = { ...rule, id: uid(rule.id.replace(/-[a-z0-9]{5}$/, '')), name: (rule.name || 'Regle') + ' (copie)' };
+    const copyRule = { ...rule, id: uid(rule.id.replace(/-[a-z0-9]{5}$/, '')), name: tp('{nom} (copie)', { nom: rule.name || t('Regle') }) };
     const next = [...list];
     next.splice(index + 1, 0, copyRule);
     commit(next, 'Regle dupliquee');
@@ -217,11 +309,11 @@ function ruleCard(rule, index, list) {
   /* Conditions */
   const match = rule.match || {};
   const grid = el('div', { class: 'rule-grid' });
-  grid.appendChild(labelled('Hote contient', textInput(match.host, v => updateMatch({ host: v || undefined }), 'exemple.com', nom('hote'))));
+  grid.appendChild(labelled('Hote contient', textInput(match.host, v => updateMatch({ host: v || undefined }), 'example.com', nom('hote'))));
   grid.appendChild(labelled('URL (expression reguliere)', textInput(match.urlRegex, v => updateMatch({ urlRegex: v || undefined }), '^https://api\\.', nom('url'))));
   grid.appendChild(labelled('Methode', selectInput(METHODS.map(m => [m, m || 'toutes']), match.method || '', v => updateMatch({ method: v || undefined }), nom('methode'))));
   grid.appendChild(labelled('Type de ressource', selectInput([['', 'tous']].concat(RESOURCE_TYPES.map(t => [t, t])), match.type || '', v => updateMatch({ type: v || undefined }), nom('type'))));
-  grid.appendChild(labelled('Action', selectInput(ACTIONS, rule.action || 'block', v => update({ action: v }), nom('action'))));
+  grid.appendChild(labelled('Action', selectInput(ACTIONS, rule.action || 'block', v => update({ action: v, ...defautsDeLAction(v, rule) }), nom('action'))));
   if (rule.action === 'redirect') {
     grid.appendChild(labelled('Rediriger vers ($1 = groupe capture)',
       textInput(rule.redirectUrl, v => update({ redirectUrl: v }), 'https://…', nom('redirection'))));
@@ -234,10 +326,38 @@ function ruleCard(rule, index, list) {
     panel.appendChild(sec('Reponse simulee', 'le corps reel du serveur reste enregistre'));
     panel.appendChild(labelled('Type de contenu',
       textInput(mock.contentType, v => update({ mock: { ...mock, contentType: v } }), 'application/json; charset=utf-8', nom('mock-type'))));
-    const body = el('textarea', { class: 'field', spellcheck: 'false', rows: '5', dataset: { champ: nom('mock-corps') } });
-    body.value = mock.body || '';
-    body.addEventListener('change', () => update({ mock: { ...mock, body: body.value } }));
-    panel.appendChild(el('label', {}, [t('Corps servi a la page'), body]));
+    if (mock.base64) {
+      panel.appendChild(el('p', { class: 'note', text: tp('Contenu binaire charge depuis « {fichier} » : la page recevra ces {n} octets.',
+        { fichier: mock.fichier || '?', n: octetsDuMock(mock) }) }));
+      panel.appendChild(button('Revenir a un texte', () => update({ mock: { ...mock, base64: undefined, fichier: undefined, body: '' } }), { class: 'sm' }));
+    } else {
+      const body = el('textarea', { class: 'field', spellcheck: 'false', rows: '5', dataset: { champ: nom('mock-corps') } });
+      body.value = mock.body || '';
+      body.addEventListener('change', () => update({ mock: { ...mock, body: body.value } }));
+      panel.appendChild(el('label', {}, [t('Corps servi a la page'), body]));
+    }
+    /* « Map Local » : le corps vient d un fichier, et la page en recoit les
+       octets exacts. Un texte UTF-8 reste modifiable ; tout le reste part en
+       base64. Sans type connu, le fichier est servi en
+       application/octet-stream, jamais avec le type du contenu precedent. */
+    const fichier = el('input', { type: 'file', hidden: true });
+    fichier.addEventListener('change', async () => {
+      const choisi = fichier.files && fichier.files[0];
+      if (!choisi) return;
+      if (choisi.size > FICHIER_MAX_OCTETS) {
+        toast(tp('Fichier trop gros : {n} octets, 5 Mo au plus', { n: choisi.size }), false);
+        return;
+      }
+      const type = choisi.type || 'application/octet-stream';
+      try {
+        const octets = new Uint8Array(await choisi.arrayBuffer());
+        const texte = texteExact(octets);
+        update({ mock: { ...mock, contentType: type, fichier: choisi.name,
+          ...(texte != null ? { body: texte, base64: undefined } : { body: '', base64: octetsVersBase64(octets) }) } }, 'Fichier charge');
+      } catch (e) { toast(te(e), false); }
+    });
+    panel.appendChild(fichier);
+    panel.appendChild(button('Charger depuis un fichier…', () => fichier.click(), { class: 'sm' }));
     panel.appendChild(el('p', { class: 'note', text:
       t('Le code de statut d origine est conserve : Firefox ne permet pas de le reecrire depuis une extension.') }));
     card.appendChild(panel);
@@ -259,6 +379,22 @@ function ruleCard(rule, index, list) {
     card.appendChild(panel);
   }
 
+  if (rule.action === 'throttle') {
+    const panel = el('div', { class: 'hops' });
+    panel.appendChild(sec('Debit de la reponse', 'comme l outil « Throttle » de Charles'));
+    const champ = el('input', { type: 'number', class: 'field', min: '1', max: '100000', step: '1',
+      value: String(debitKo(rule)), dataset: { champ: nom('debit') } });
+    champ.addEventListener('change', () => {
+      const ko = Math.max(1, Math.min(100000, Number(champ.value) || DEBIT_PAR_DEFAUT_KO));
+      champ.value = String(ko);
+      update({ throttle: { koParSeconde: ko } });
+    });
+    panel.appendChild(el('label', {}, [t('Debit (ko/s, 1 ko = 1 000 octets)'), champ]));
+    panel.appendChild(el('p', { class: 'note', text:
+      t('La page recoit le corps de la reponse a ce debit, comme sur un reseau lent ; SWIFT, lui, l enregistre des son arrivee. Ne s ajoute pas a une simulation ni a un remplacement sur la meme requete.') }));
+    card.appendChild(panel);
+  }
+
   if (rule.action === 'replaceBody') {
     const repl = rule.replace || {};
     const panel = el('div', { class: 'hops' });
@@ -277,6 +413,12 @@ function ruleCard(rule, index, list) {
   if (rule.action === 'modifyHeaders') {
     card.appendChild(headerOps('Entetes de requete', rule.requestHeaders || [], ops => update({ requestHeaders: ops }), nom('entetes-requete')));
     card.appendChild(headerOps('Entetes de reponse', rule.responseHeaders || [], ops => update({ responseHeaders: ops }), nom('entetes-reponse')));
+  }
+
+  if (rule.action === 'modifyQuery') {
+    card.appendChild(headerOps('Parametres d URL', rule.query || [], ops => update({ query: ops }), nom('parametres')));
+    card.appendChild(el('p', { class: 'note', text:
+      t('La requete est redirigee vers la meme adresse, parametres reecrits ; les autres parametres gardent leur ecriture exacte.') }));
   }
 
   card.appendChild(el('p', { class: alerteDe(rule) ? 'note warn' : 'note', text: describe(rule) }));
@@ -323,8 +465,15 @@ function describe(rule) {
       { url: rule.redirectUrl || t('(URL manquante)') }),
     upgrade: () => t('la requete http est renvoyee en https'),
     mock: () => tp('la page recoit une reponse simulee ({n} octets), le corps reel restant enregistre',
-      { n: ((rule.mock && rule.mock.body) || '').length }),
+      { n: octetsDuMock(rule.mock) }),
+    modifyQuery: () => tp('la requete repart avec ses parametres d URL reecrits : {ops}', {
+      ops: (rule.query || []).filter(o => o && o.name).map(o => (o.op === 'remove'
+        ? tp('sans {nom}', { nom: o.name }) : o.name + '=' + (o.value ?? ''))).join(', ') || t('(aucun parametre)')
+    }),
     delay: () => tp('la requete part avec {n} ms de retard', { n: rule.delayMs || 0 }),
+    throttle: () => (debitKo(rule) > 0
+      ? tp('la page recoit le corps de la reponse a {n} ko/s', { n: debitKo(rule) })
+      : t('aucun debit valide : la regle n agit pas')),
     replaceBody: () => tp('la page recoit le corps du serveur avec « {cherche} » remplace par « {par} »', {
       cherche: (rule.replace && rule.replace.find) || t('(motif manquant)'),
       par: (rule.replace && rule.replace.replace) || ''

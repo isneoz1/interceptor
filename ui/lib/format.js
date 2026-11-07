@@ -123,6 +123,17 @@ export const RESOURCE_TYPES = [
   'media', 'font', 'websocket', 'web_manifest', 'speculative', 'other'
 ];
 
+/* Le debit d une regle « Throttle » qui n en porte pas encore : celui
+   qu affiche l editeur, et celui qu applique le moteur — les deux le lisent
+   ici, pour ne jamais dire une chose et en faire une autre. */
+export const DEBIT_PAR_DEFAUT_KO = 50;
+
+/** Le debit d une regle en ko/s ; absent, celui par defaut. */
+export function debitKo(rule) {
+  const voulu = rule && rule.throttle ? rule.throttle.koParSeconde : undefined;
+  return Number(voulu == null || voulu === '' ? DEBIT_PAR_DEFAUT_KO : voulu);
+}
+
 /**
  * Rend lisible la preuve d une alerte : le gabarit passe par la traduction,
  * puis chaque valeur inseree — un nom d hote reste tel quel, un atome comme

@@ -53,6 +53,22 @@ function affiche(v) {
   return String(v);
 }
 
+/**
+ * Ce qui est deja anglais : une valeur du dictionnaire, ou l un de ses
+ * gabarits une fois rempli (« 21 rule(s) » vient de « {n} rule(s) »). Un texte
+ * deja traduit qui repasse par t() manque au traducteur sans etre une faute :
+ * c est ce qu un releve des manques doit laisser de cote, et rien d autre. Un
+ * gabarit sans mot a lui (« {valeur} », « {nom}: {valeur} ») accepterait
+ * n importe quel texte : il n est pas retenu.
+ */
+export function dejaAnglais(EN) {
+  const valeurs = new Set(Object.values(EN));
+  const gabarits = [...valeurs]
+    .filter(v => /\{\w+\}/.test(v) && /[a-z]{3}/i.test(v.replace(/\{\w+\}/g, '')))
+    .map(v => new RegExp('^' + v.split(/\{\w+\}/).map(m => m.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('[\\s\\S]+?') + '$'));
+  return texte => valeurs.has(texte) || gabarits.some(g => g.test(texte));
+}
+
 /** Bilan final : code de sortie 1 des qu une verification a echoue. */
 export function bilan(titre) {
   const reussies = total - echecs;

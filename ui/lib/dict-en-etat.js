@@ -66,6 +66,7 @@ export const EN_ETAT = {
   'DNS en echec': 'DNS failed',
   'Regles : latence': 'Rules: latency',
   'Regles : substitutions': 'Rules: replacements',
+  'Regles : parametres et debit': 'Rules: parameters and throttling',
   'Fichiers exportes': 'Files exported',
   'Persistance': 'Persistence',
 
@@ -85,6 +86,7 @@ export const EN_ETAT = {
     '{b} blocked · {r} redirected · {h} forced to https · {e} headers · {s} mocked',
   '{n} retardees · {d} au total': '{n} delayed · {d} in total',
   '{a} appliquees · {e} ecartees': '{a} applied · {e} skipped',
+  '{q} adresses reecrites · {d} reponses ralenties': '{q} addresses rewritten · {d} responses throttled',
   '{e} envoyes · {f} echoues': '{e} sent · {f} failed',
   '{n} ({t})': '{n} ({t})',
   '{e} ecrits · {r} restaures': '{e} written · {r} restored',

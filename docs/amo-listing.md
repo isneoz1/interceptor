@@ -16,14 +16,15 @@ people running Developer Edition, Nightly or ESR *and* willing to flip
       publish. Changing it later means publishing a different add-on and orphaning every
       existing install, so make sure it is what you want *before* the first upload.
 - [ ] **Bump the version.** AMO refuses a version number it has already seen. The repository
-      is at `5.8.0`, which has never been submitted, so it can go up as-is. Only bump again if
+      is at `5.9.0`, which has never been submitted, so it can go up as-is. Only bump again if
       a submission gets rejected and you need to resubmit.
 - [ ] **Build a fresh package**: `npm run build` produces `dist/swift-<version>.xpi`.
 - [x] **Data collection is declared**: `data_collection_permissions` is `{"required": ["none"]}`,
       which AMO requires of every new extension since 3 November 2025. Mozilla's linter
-      (`npx web-ext lint` on the unpacked package) reports 0 errors and two warnings: Firefox
-      115 to 139 do not know this key. That is expected — they ignore it, and since SWIFT
-      collects nothing there is no consent to ask for on those versions.
+      (`npx web-ext lint` on the unpacked package) reported 0 errors and two warnings on 5.8.0:
+      Firefox 115 to 139 do not know this key. That is expected — they ignore it, and since
+      SWIFT collects nothing there is no consent to ask for on those versions. It has not been
+      run on 5.9.0 yet: run it before you submit.
 - [ ] The reviewer will read the source. It is plain ES modules with no build step, no
       minification and no bundler, so no separate source upload is required — say so in the
       notes below.
@@ -108,14 +109,17 @@ WHAT YOU CAN DO WITH IT
 • Read the complete record: headers, bodies, timings, TLS, cookies, stack, and a Raw tab
   that prints every field the extension holds
 • Search with a real syntax: method, status, host, size, duration, content type, and more
-• Block, redirect, or rewrite requests and responses with rules you build in the interface
+• Block, redirect, or rewrite requests and responses with rules you build in the interface;
+  throttle a response, rewrite URL parameters, or serve a mocked response from a file
 • Pause a request before it leaves, edit it, then let it go
+• See what a captured photo gives away: its GPS position, author and camera serial number
 • Replay any request after confirmation
 • Export to HAR, JSON, CSV, Postman or an OpenAPI 3.1 description of the API calls, or
   generate ready-to-run code in 39 formats
   (curl, fetch, Python, PowerShell, Node, HTTPie and others)
-• 138 local transformations across 25 tools: encodings, digests, JWT, OTP, timestamps,
-  identifiers, structured headers, HPACK, SAML, DNS messages, WebAuthn, and more
+• 140 local transformations across 26 tools: encodings, digests, JWT, OTP, timestamps,
+  identifiers, structured headers, HPACK, SAML, DNS messages, WebAuthn, image metadata,
+  and more
 
 A SECURITY ANALYSER THAT DOES NOT GUESS
 
@@ -174,7 +178,7 @@ Reviewers ask why each permission is needed. These are the real reasons.
 |---|---|
 | `<all_urls>` | The point of the add-on is to observe traffic on whatever the user browses. Restricting it to a host list would mean it silently misses everything else. |
 | `webRequest` | The primary capture layer: the nine network lifecycle events. |
-| `webRequestBlocking` | Firefox only allows `filterResponseData()` (the response body) from a blocking listener, and `getSecurityInfo()` (TLS details) inside a blocking `onHeadersReceived` listener; body capture is on by default. The same listeners apply the user's own rules (block, redirect, rewrite headers, mock, delay) and manual interception, which holds a request while the user edits it — off by default, and only while the console is open. When no rule or interception applies, they return without changing anything. |
+| `webRequestBlocking` | Firefox only allows `filterResponseData()` (the response body) from a blocking listener, and `getSecurityInfo()` (TLS details) inside a blocking `onHeadersReceived` listener; body capture is on by default. The same listeners apply the user's own rules (block, redirect, rewrite headers and URL parameters, mock, delay, throttle) and manual interception, which holds a request while the user edits it — off by default, and only while the console is open. When no rule or interception applies, they return without changing anything. |
 | `webNavigation` | Attaches each request to the document and frame that caused it. |
 | `cookies` | The cookie journal, and the analysis of why a cookie will be rejected. |
 | `tabs` | Groups traffic per tab and lets the user filter to the active one. |
@@ -220,7 +224,8 @@ listeners return without changing anything.
 ## After it is published
 
 - Add the AMO install badge and link to the top of `README.md`.
-- Add the AMO listing URL to the repository's homepage field.
+- On the website (`docs/index.html`), point « Get SWIFT for Firefox » at the listing, and
+  replace the install section and its note about temporary add-ons.
 - Upload `docs/images/social-preview.png` under **Settings → General → Social preview**;
   GitHub has no API for it, so it is a manual one-time step.
 - Present it: `docs/launch.md` has texts ready to paste for Hacker News, Reddit, Mozilla

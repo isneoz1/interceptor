@@ -36,6 +36,14 @@ const VUES = (sourceConsole.slice(sourceConsole.indexOf('const VIEWS = {')).matc
    qu on affirme. Le cadrage est exprime en pourcentage de l image source. */
 const VITRINES = [
   {
+    fichier: 'vitrine-photo',
+    source: 'console-photo.png',
+    titre: 'What a photo gives away',
+    phrase: 'An image published on a site can carry where it was taken, who took it and the camera\'s '
+      + 'serial number. SWIFT reads it from the bytes it captured, and says so in one sentence.',
+    cadre: { x: 14.2, y: 47, largeur: 85.8, hauteur: 53 }
+  },
+  {
     fichier: 'vitrine-capture',
     source: 'console-requetes.png',
     titre: 'One request, one row',
@@ -94,6 +102,14 @@ const VITRINES = [
   }
 ];
 
+/* Les cadrages de la page d accueil (docs/index.html) : la meme capture reelle,
+   sans titre — la page porte le sien. */
+const CADRAGES = [
+  { fichier: 'cadre-photo', source: 'console-photo.png', cadre: { x: 14.2, y: 47.5, largeur: 62 } },
+  { fichier: 'cadre-api', source: 'console-graphql.png', cadre: { x: 14.2, y: 46, largeur: 62 } },
+  { fichier: 'cadre-securite', source: 'console-securite.png', cadre: { x: 14.2, y: 5.8, largeur: 62 } }
+];
+
 const LARGEUR = 1200;
 const HAUTEUR = 630;
 
@@ -150,6 +166,18 @@ function page(v) {
 </body></html>`;
 }
 
+/* Un cadrage seul : l image remplit la page, aux proportions de la zone. */
+function pageCadrage(v, largeurPage, hauteurPage) {
+  const { x, y, largeur } = v.cadre;
+  const zoom = 100 / largeur;
+  return `<!doctype html><html><head><meta charset="utf-8"><style>
+  * { margin: 0; padding: 0; }
+  html, body { width: ${largeurPage}px; height: ${hauteurPage}px; overflow: hidden; background: #0D1117; }
+  img { position: absolute; width: ${zoom * 100}%; left: ${-x * zoom}%;
+    top: ${-y * zoom * (largeurPage / hauteurPage) / (1600 / 1000)}%; }
+</style></head><body><img src="${dataUri(v.source)}"></body></html>`;
+}
+
 /* --------------------------------- Le rendu ------------------------------- */
 /* Une capture source absente n est pas une erreur de ce fichier : c est que
    tools/captures.mjs n a pas encore tourne. On le dit et on passe. */
@@ -166,7 +194,15 @@ for (const v of VITRINES) {
 const images = await rendrePages(aRendre,
   { largeur: LARGEUR, hauteur: HAUTEUR, echelle: ECHELLE, attendreMs: 1600 });
 
-for (const { fichier, octets } of images) {
+/* A 62 % de la largeur, ces proportions couvrent la moitie de la hauteur de
+   la capture : le cadre ne deborde jamais de l image. */
+const LARGEUR_CADRAGE = 1000;
+const HAUTEUR_CADRAGE = 500;
+const cadrages = await rendrePages(CADRAGES.filter(v => fs.existsSync(path.join(SORTIE, v.source))).map(v => ({
+  html: pageCadrage(v, LARGEUR_CADRAGE, HAUTEUR_CADRAGE), fichier: path.join(SORTIE, v.fichier + '.png')
+})), { largeur: LARGEUR_CADRAGE, hauteur: HAUTEUR_CADRAGE, echelle: ECHELLE, attendreMs: 1600 });
+
+for (const { fichier, octets } of [...images, ...cadrages]) {
   fs.writeFileSync(fichier, octets);
   console.log('  ' + path.relative(RACINE, fichier).replace(/\\/g, '/')
     + '  (' + Math.round(fs.statSync(fichier).size / 1024) + ' Ko)');

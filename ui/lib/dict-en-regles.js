@@ -14,14 +14,24 @@ export const EN_REGLES = {
   'Moteur de regles arrete': 'Rules engine stopped',
   'Desactive, aucune regle n est evaluee : les regles restent enregistrees.':
     'Turned off, no rule is evaluated: the rules stay saved.',
-  'Par defaut SWIFT observe sans jamais modifier le trafic. Activer le moteur autorise le blocage, la redirection et la reecriture d entetes. A n utiliser que sur des cibles dont vous avez la responsabilite.':
-    'By default SWIFT observes without ever modifying traffic. Turning the engine on allows blocking, redirection and header rewriting. Use it only on targets you are responsible for.',
+  'Par defaut SWIFT observe sans jamais modifier le trafic. Activer le moteur autorise le blocage, la redirection, la reecriture d entetes et de parametres d URL, les reponses simulees et le debit limite. A n utiliser que sur des cibles dont vous avez la responsabilite.':
+    'By default SWIFT observes without ever modifying traffic. Turning the engine on allows blocking, redirection, rewriting headers and URL parameters, mocked responses and throttling. Use it only on targets you are responsible for.',
   'Depuis le demarrage : {e} evaluations, {b} blocages, {r} redirections, {h} entetes modifies.':
     'Since startup: {e} evaluations, {b} blocks, {r} redirects, {h} headers modified.',
   '{n} regle(s)': '{n} rule(s)',
+  'Monter (les regles sont evaluees dans l ordre)': 'Move up (rules are evaluated in order)',
+  'Descendre': 'Move down',
 
   /* --------------------------- Champs d une regle ------------------------- */
   'Hote contient': 'Host contains',
+  /* « toutes » les methodes, « tous » les types : la valeur vide des listes. */
+  'toutes': 'any',
+  'tous': 'any',
+  'Action': 'Action',
+  'Options': 'Options',
+  'Rediriger vers ($1 = groupe capture)': 'Redirect to ($1 = captured group)',
+  'Chercher (expression reguliere)': 'Find (regular expression)',
+  'Remplacer par ($1 = groupe capture)': 'Replace with ($1 = captured group)',
   'Type de ressource': 'Resource type',
   'Type de contenu': 'Content type',
   'URL (expression reguliere)': 'URL (regular expression)',

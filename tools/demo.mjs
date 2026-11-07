@@ -2,7 +2,8 @@
  *
  *   node tools/demo.mjs
  *
- * Produit docs/demo.mp4 et docs/demo.gif : la vraie console, pilotee comme un
+ * Produit docs/demo.mp4 (le film) et docs/teaser.mp4, docs/teaser.gif (une
+ * bande-annonce de vingt secondes) : la vraie console, pilotee comme un
  * operateur la piloterait, filmee image par image. Une visite complete, en
  * chapitres : le tableau et sa recherche, les onglets du detail, les alertes,
  * la palette, chaque vue, la boite a outils, les regles et l interception, la
@@ -30,10 +31,10 @@ import { ouvrirChrome, patienter } from './chrome.mjs';
 const LARGEUR = 1280;
 const HAUTEUR = 800;
 const PAR_SECONDE = 12;
-/* Le GIF s affiche dans le README et se telecharge a chaque visite : moins
-   d images par seconde et une largeur reduite le gardent leger. */
+/* Le GIF de la bande-annonce s affiche en haut du README, et se telecharge a
+   chaque visite : la premiere image doit arriver vite. */
 const GIF_PAR_SECONDE = 8;
-const GIF_LARGEUR = 960;
+const GIF_LARGEUR = 800;
 
 /* La frappe se fait lettre par lettre : voir le mot s ecrire dit ce qui se
    passe bien mieux qu un champ qui se remplit d un coup. */
@@ -44,6 +45,7 @@ const SORTIE = path.join(scene.RACINE, 'docs');
 const IMAGES = fs.mkdtempSync(path.join(process.env.TEMP || '/tmp', 'swift-demo-'));
 const VECTEURS_JOSE = JSON.parse(fs.readFileSync(path.join(scene.RACINE, 'tests', 'vecteurs-jose.json'), 'utf8'));
 const VECTEURS_CLES = JSON.parse(fs.readFileSync(path.join(scene.RACINE, 'tests', 'vecteurs-cles.json'), 'utf8'));
+const VECTEURS_IMAGES = JSON.parse(fs.readFileSync(path.join(scene.RACINE, 'tests', 'vecteurs-images.json'), 'utf8'));
 /* Le nombre d assertions se relit dans le badge du README, comme le fait la
    banniere : un chiffre ecrit ici finirait par mentir. */
 const ASSERTIONS = (fs.readFileSync(path.join(scene.RACINE, 'README.md'), 'utf8').match(/Assertions-([0-9]+)-/) || [])[1];
@@ -74,6 +76,17 @@ async function image() {
   const { data } = await page('Page.captureScreenshot', { format: 'png' });
   fs.writeFileSync(path.join(IMAGES, String(numero++).padStart(5, '0') + '.png'),
     Buffer.from(data, 'base64'));
+}
+
+/* La bande-annonce : quelques plans du film, mis bout a bout. Le film entier
+   dure plus de trois minutes ; ce qu on voit en arrivant sur le depot doit
+   tenir en vingt secondes et s afficher tout de suite. */
+const BANDE = [];
+/** Retient les images filmees pendant `plan`, sur `secondes` au plus. */
+async function pourLaBande(secondes, plan) {
+  const debut = numero;
+  await plan();
+  BANDE.push([debut, Math.min(numero, debut + Math.round(secondes * PAR_SECONDE))]);
 }
 
 /** Tenir le plan : n secondes d images, pendant lesquelles rien ne change. */
@@ -265,13 +278,15 @@ const catalogue = trouver('appel au catalogue', r => /\/v2\/catalog\?/.test(r.ur
 const graphql = trouver('appel GraphQL', r => /\/graphql$/.test(r.url));
 const socket = trouver('WebSocket', r => r.type === 'websocket');
 const evenements = trouver('flux SSE', r => /\/v2\/events$/.test(r.url));
+const pagePrincipale = trouver('page principale', r => r.type === 'main_frame');
+const photo = trouver('photo avec EXIF', r => /boutique\.jpg$/.test(r.url));
 const profil = trouver('PUT /v2/profile', r => r.method === 'PUT');
 
 /* 0. L ouverture. Les deux premieres secondes sont celles ou le spectateur
       decide de rester : une phrase, et la console derriere. */
 await vue('requests', 0.1);
-await carton('SWIFT', 'Every request Firefox makes — captured, explained, rewritable.', 2.6,
-  'A network workstation inside Firefox · by D4RK');
+await pourLaBande(2.2, () => carton('SWIFT', 'Every request Firefox makes — captured, explained, rewritable.', 2.6,
+  'A network workstation inside Firefox · by D4RK'));
 await decouvrir(0.4);
 
 /* 1. Le tableau et sa recherche. */
@@ -279,8 +294,7 @@ await chapitre('Every request, once', 'Eight capture layers merged into one row 
 await legende('Live, from the first request: method, status, host, size, timing, risk');
 await tenir(2.6);
 await legende('Search like a search engine: method, status, host, size, regex');
-await taperDans('q', 'status:5xx');
-await tenir(1.4);
+await pourLaBande(2.2, async () => { await taperDans('q', 'status:5xx'); await tenir(1.4); });
 await agir('(() => { const q = document.getElementById("q"); q.value = ""; q.dispatchEvent(new Event("input", { bubbles: true })); })()', 0.2);
 await taperDans('q', 'method:POST host:api.');
 await tenir(1.6);
@@ -307,8 +321,7 @@ for (let i = 0; i < onglets.length; i++) {
   /* L onglet des en-tetes est le plus riche : on le parcourt. */
   if (/^Headers/.test(onglets[i])) {
     await legende('The JWT this request carries: algorithm, claims, and how its signature can be checked');
-    await defiler('#dbody', 1400, 2.4);
-    await tenir(0.6);
+    await pourLaBande(2.6, async () => { await defiler('#dbody', 1400, 2.4); await tenir(0.6); });
     await legende('One request, ' + onglets.length + ' tabs — everything that was captured about it');
   } else {
     await tenir(1.1);
@@ -323,13 +336,27 @@ await agir('(() => { const c = document.querySelector("#dbody");'
   + ' c.scrollTop = s.offsetTop - c.offsetTop - 8; })()', 2.8);
 await legende('A 200 that hides a GraphQL error — said plainly');
 await agir(ouvrirRequete(graphql.id), 0.6);
-await agir(cliquerTexte('#dtabs .dtab', '^Response'), 2.8);
+await pourLaBande(2.4, () => agir(cliquerTexte('#dtabs .dtab', '^Response'), 2.8));
 await legende('A WebSocket session, message by message');
 await agir(ouvrirRequete(socket.id), 0.6);
 await agir(cliquerTexte('#dtabs .dtab', '^Streams'), 2.4);
 await legende('Server-Sent Events, with their event names and ids');
 await agir(ouvrirRequete(evenements.id), 0.6);
 await agir(cliquerTexte('#dtabs .dtab', '^Streams'), 2.4);
+/* Ce qui est nouveau en 5.9 dans le detail : ce que le navigateur annonce,
+   et ce qu une photo revele. */
+const allerA = titre => '(() => { const c = document.querySelector("#dbody");'
+  + ' const s = [...c.querySelectorAll(".sec")].find(x => x.textContent.startsWith(' + JSON.stringify(titre) + '));'
+  + ' if (!s) throw new Error("section ' + titre + ' absente");'
+  + ' c.scrollTop = s.offsetTop - c.offsetTop - 8; })()';
+await legende('What the browser announces — and what it no longer says');
+await agir(ouvrirRequete(pagePrincipale.id), 0.6);
+await agir(cliquerTexte('#dtabs .dtab', '^Headers'), 0.4);
+await agir(allerA('What the browser announces'), 2.8);
+await legende('A photo reveals where it was taken, who took it, which camera');
+await agir(ouvrirRequete(photo.id), 0.6);
+await agir(cliquerTexte('#dtabs .dtab', '^Response'), 0.8);
+await pourLaBande(3.0, () => agir(allerA('Image metadata'), 3.0));
 await agir('document.getElementById("detail").style.height = ""', 0.1);
 await sansLegende();
 
@@ -345,7 +372,7 @@ await sansLegende();
 /* 4. La palette. */
 await chapitre('Ask anything — Ctrl+K', 'Every view, every tool, every status code and header, from one field.');
 await palette('429');
-await legende('« 429 », Enter: the status code, explained');
+await legende('"429", Enter: the status code, explained');
 await tenir(2.6);
 await agir(touche('k', 'ctrlKey: true'), 0.3);
 await taperDans('pal-q', 'cookie');
@@ -371,9 +398,9 @@ for (const [nom, texte] of [
 await sansLegende();
 
 /* 6. La boite a outils. */
-await chapitre('Twenty-five tools, all local', 'Decode, verify, convert, compare, generate — nothing leaves your machine.');
+await chapitre('Twenty-six tools, all local', 'Decode, verify, convert, compare, generate — nothing leaves your machine.');
 await vue('tools', 0.2);
-await legende('Six families, twenty-five tools — paste anything');
+await legende('Six families, twenty-six tools — paste anything');
 await tenir(2.0);
 const jeton = VECTEURS_JOSE.rfc7515 && JSON.stringify(VECTEURS_JOSE.rfc7515).match(/eyJ[A-Za-z0-9_-]+\.eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+/);
 if (!jeton) throw new Error('jeton de la RFC 7515 introuvable dans les vecteurs');
@@ -401,22 +428,39 @@ for (const [valeur, vers, texte, bouton, section] of [
   ['0190a6f2-7c3e-7b8a-9f00-2b1c3d4e5f60', 'identifier', 'Identify: what is this string?'],
   ['curl -X POST https://api.example.com/v2/cart -H "Content-Type: application/json" -d \'{"item":"REF-8842","quantity":2}\'', 'importer', 'Paste a cURL command: it becomes a request'],
   ['otpauth://totp/Shop:ada@example.com?secret=JBSWY3DPEHPK3PXP&issuer=Shop', 'otp', 'One-time codes, from an otpauth address',
-    '^Read the pasted otpauth link$', 'OTP codes']
+    '^Read the pasted otpauth link$', 'OTP codes'],
+  [VECTEURS_IMAGES.jpegGdiplus.fichier, 'metadonnees', 'Image metadata: GPS position, author, camera — from the file', null, 'Image metadata'],
+  ['Phishing kit at https://login.example-bank.test/verify, served from 203.0.113.42', 'defang', 'Defang: a dangerous address in a report, never a live link']
 ]) {
   await agir('(() => { const p = document.querySelector("#view-tools .pane"); if (p) p.scrollTop = 0; })()', 0);
-  await agir(outil(valeur, vers), 0.4);
+  /* « defang » est une transformation : posee, elle s applique aussitot. */
+  await agir(vers === 'defang' ? outil(valeur, 'transformer', ', transformation: "defang"') : outil(valeur, vers), 0.4);
   if (bouton) await agir(cliquerTexte('#view-tools button', bouton), 0.4);
   await legende(texte);
-  await defiler('#view-tools .pane', await evaluer(debutResultat(section || '')), 0.6);
-  await tenir(2.0);
+  const resultat = async () => { await defiler('#view-tools .pane', await evaluer(debutResultat(section || '')), 0.6); await tenir(2.0); };
+  await (vers === 'defang' || bouton === '^Try everything$' ? pourLaBande(2.4, resultat) : resultat());
 }
 await sansLegende();
 
 /* 7. Agir sur le trafic. */
-await chapitre('Act on the traffic', 'Block, delay, mock or rewrite — or pause a request and edit it.');
+await chapitre('Act on the traffic', 'Block, delay, throttle, mock or rewrite — or pause a request and edit it.');
 await vue('rules', 0.2);
 await legende('Rules: block, delay, mock, rewrite — each one says what it does');
-await tenir(2.8);
+await tenir(2.4);
+/* Les outils de Charles en un clic : le modele ajoute sa regle, decrite en clair. */
+for (const [motif, texte] of [
+  ['No Caching', 'Charles\'s "No Caching" in one click, header for header'],
+  ['Throttle', 'Charles\'s "Throttle": the response, at the rate you choose']
+]) {
+  await agir(cliquerTexte('#view-rules button', motif), 0.6);
+  await legende(texte);
+  const carte = async () => {
+    await defiler('#view-rules .pane', await evaluer('(() => { const p = document.querySelector("#view-rules .pane"); return p.scrollHeight; })()'), 0.8);
+    await tenir(2.2);
+  };
+  await (motif === 'No Caching' ? pourLaBande(2.6, carte) : carte());
+}
+await agir('(() => { const p = document.querySelector("#view-rules .pane"); if (p) p.scrollTop = 0; })()', 0.1);
 await vue('intercept', 0.2);
 await legende('Interception: pause a request, edit it, release it');
 await tenir(2.6);
@@ -514,8 +558,8 @@ await vue('requests', 0.2);
 await chapitre('Free, open, and yours', 'Nothing leaves your machine.');
 await carton('No telemetry · no dependencies · no account',
   ASSERTIONS + ' automated checks · MIT licence · English and French', 2.8);
-await carton('github.com/isneoz1/interceptor',
-  'SWIFT by D4RK · Firefox 115 or later', 3.4);
+await pourLaBande(2.6, () => carton('github.com/isneoz1/interceptor',
+  'SWIFT by D4RK · Firefox 115 or later', 3.4));
 
 navigateur.fermer();
 scene.fermer();
@@ -534,7 +578,8 @@ function ffmpeg(args, quoi) {
 
 const entree = path.join(IMAGES, '%05d.png');
 const mp4 = path.join(SORTIE, 'demo.mp4');
-const gif = path.join(SORTIE, 'demo.gif');
+const teaserMp4 = path.join(SORTIE, 'teaser.mp4');
+const gif = path.join(SORTIE, 'teaser.gif');
 const palettePng = path.join(IMAGES, 'palette.png');
 
 /* Le MP4 : pleine taille, pour la page de version et le partage. `yuv420p` et
@@ -543,25 +588,41 @@ const mp4Fait = ffmpeg(['-y', '-framerate', String(PAR_SECONDE), '-i', entree,
   '-c:v', 'libx264', '-preset', 'slow', '-crf', '20',
   '-pix_fmt', 'yuv420p', '-movflags', '+faststart', mp4], 'MP4');
 
-/* Le GIF : plus leger, car il s affiche dans le README. Une palette calculee
-   sur toute la sequence evite le tramage sale des degrades sombres. */
-let gifFait = ffmpeg(['-y', '-framerate', String(PAR_SECONDE), '-i', entree, '-vf',
+/* La bande-annonce : les plans retenus, renumerotes dans un dossier a part. */
+const BOBINE = path.join(IMAGES, 'bande');
+fs.mkdirSync(BOBINE);
+let retenues = 0;
+for (const [debut, fin] of BANDE) {
+  for (let i = debut; i < fin; i++) {
+    fs.copyFileSync(path.join(IMAGES, String(i).padStart(5, '0') + '.png'),
+      path.join(BOBINE, String(retenues++).padStart(5, '0') + '.png'));
+  }
+}
+console.log('  bande-annonce : ' + retenues + ' images, ' + (retenues / PAR_SECONDE).toFixed(1) + ' s');
+const entreeBande = path.join(BOBINE, '%05d.png');
+const teaserFait = ffmpeg(['-y', '-framerate', String(PAR_SECONDE), '-i', entreeBande,
+  '-c:v', 'libx264', '-preset', 'slow', '-crf', '23',
+  '-pix_fmt', 'yuv420p', '-movflags', '+faststart', teaserMp4], 'MP4 de la bande-annonce');
+
+/* Le GIF : il s affiche dans le README. Une palette calculee sur toute la
+   sequence evite le tramage sale des degrades sombres. */
+let gifFait = ffmpeg(['-y', '-framerate', String(PAR_SECONDE), '-i', entreeBande, '-vf',
   'fps=' + GIF_PAR_SECONDE + ',scale=' + GIF_LARGEUR + ':-1:flags=lanczos,palettegen=stats_mode=diff',
   palettePng], 'palette du GIF');
 if (gifFait) {
-  gifFait = ffmpeg(['-y', '-framerate', String(PAR_SECONDE), '-i', entree, '-i', palettePng,
+  gifFait = ffmpeg(['-y', '-framerate', String(PAR_SECONDE), '-i', entreeBande, '-i', palettePng,
     '-lavfi', 'fps=' + GIF_PAR_SECONDE + ',scale=' + GIF_LARGEUR + ':-1:flags=lanczos[x];[x][1:v]'
       + 'paletteuse=dither=bayer:bayer_scale=3:diff_mode=rectangle',
     '-loop', '0', gif], 'GIF');
 }
 
-for (const [fait, fichier] of [[mp4Fait, mp4], [gifFait, gif]]) {
+for (const [fait, fichier] of [[mp4Fait, mp4], [teaserFait, teaserMp4], [gifFait, gif]]) {
   if (!fait) continue;
   console.log('  ' + path.relative(scene.RACINE, fichier).replace(/\\/g, '/')
     + '  (' + Math.round(fs.statSync(fichier).size / 1024) + ' Ko)');
 }
 
-if (mp4Fait && gifFait) {
+if (mp4Fait && teaserFait && gifFait) {
   fs.rmSync(IMAGES, { recursive: true, force: true });
   console.log('Demonstration terminee.');
 } else {

@@ -139,6 +139,9 @@ export function render() {
     ['Regles : substitutions', tp('{a} appliquees · {e} ecartees', {
       a: s.rules.replaced || 0, e: s.rules.replaceSkipped || 0 }),
                  (s.rules.replaced || s.rules.replaceSkipped) ? 'warn' : null],
+    ['Regles : parametres et debit', tp('{q} adresses reecrites · {d} reponses ralenties', {
+      q: s.rules.queryModified || 0, d: s.rules.throttled || 0 }),
+                 (s.rules.queryModified || s.rules.throttled) ? 'warn' : null],
     ['Rejeux', tp('{e} envoyes · {f} echoues', { e: s.replay.sent, f: s.replay.failed })],
     ['Fichiers exportes', tp('{n} ({t})', { n: s.save.files, t: bytes(s.save.bytes) })],
     ['Persistance', s.persist.enabled

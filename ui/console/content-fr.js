@@ -247,10 +247,10 @@ export const LESSONS = [
     body: [
       { p: 'Par defaut SWIFT **observe sans jamais rien modifier**. Deux mecanismes peuvent changer cela, tous deux desactives au depart.' },
       { ul: [
-        'Le **moteur de regles** : bloquer une requete, rediriger vers une autre URL, forcer le HTTPS, reecrire des entetes, ou **simuler une reponse** (le corps reel reste enregistre).',
+        'Le **moteur de regles** : bloquer une requete, rediriger vers une autre URL, forcer le HTTPS, reecrire des entetes ou des parametres d URL, **simuler une reponse** (le corps reel reste enregistre), ou la ralentir au debit choisi.',
         'Le **rejeu** : renvoyer une requete apres avoir modifie la methode, l URL, les entetes ou le corps.'
       ] },
-      { p: 'Les regles se construisent avec des champs et des boutons, sans ecrire de JSON. Cinq modeles sont fournis. La regle decrit toujours en clair ce qu elle fera, sous la forme « Si … alors … ».' },
+      { p: 'Les regles se construisent avec des champs et des boutons, sans ecrire de JSON. Douze modeles sont fournis, dont les outils No Caching, Block Cookies et Throttle de Charles. La regle decrit toujours en clair ce qu elle fera, sous la forme « Si … alors … ».' },
       { p: 'A n utiliser que sur des cibles dont vous avez la responsabilite.' }
     ],
     actions: [
@@ -267,14 +267,15 @@ export const LESSONS = [
     title: 'La boite a outils',
     goal: 'Decoder, verifier et fabriquer une valeur, sans rien envoyer',
     body: [
-      { p: 'Un seul **texte de travail**, vingt-cinq onglets qui le regardent. On colle une valeur une fois — depuis le presse-papiers, depuis le menu contextuel d une ligne, ou depuis le bouton « Boite a outils » d un corps de reponse — et chaque outil travaille dessus.' },
+      { p: 'Un seul **texte de travail**, vingt-six onglets qui le regardent. On colle une valeur une fois — depuis le presse-papiers, depuis le menu contextuel d une ligne, ou depuis le bouton « Boite a outils » d un corps de reponse — et chaque outil travaille dessus.' },
       { p: 'Tout se calcule dans la page. Aucun de ces outils n emet la moindre requete : ni au chargement, ni au clic.' },
       { ul: [
-        '**Transformer** : 138 transformations. « Tout essayer » applique chaque decodage (sauf DNS et WebAuthn) et ne garde que les resultats lisibles — c est la bonne premiere action sur une valeur inconnue.',
+        '**Transformer** : 140 transformations. « Tout essayer » applique chaque decodage (sauf DNS et WebAuthn) et ne garde que les resultats lisibles — c est la bonne premiere action sur une valeur inconnue.',
         '**JWT** : entete, charge utile, expiration, et la signature reellement verifiee si vous fournissez la cle — cle partagee, cle publique ou jeu de cles de l emetteur. Dans le detail d une requete, l onglet En-tetes la verifie seul quand la capture contient les cles de l emetteur.',
         '**Chiffrement** et **Empreintes** : AES, PBKDF2, HKDF, MD5, SHA, CRC-32, HMAC.',
         '**Binaire** : Protocol Buffers, MessagePack, CBOR, certificats X.509, jeux de caracteres.',
         '**Entetes**, **URL**, **Adresse IP** : ce que la valeur dit vraiment, et ce qui lui manque.',
+        '**Metadonnees d image** : ou une photo a ete prise, par qui et avec quel appareil — ce qu elle revele a qui la telecharge.',
         '**Reference** : statuts, entetes, types de media, ports, suites TLS — hors ligne.'
       ] },
       { p: 'Un resultat se reprend comme entree d un autre outil : on enchaine les etapes sans jamais recopier a la main.' }

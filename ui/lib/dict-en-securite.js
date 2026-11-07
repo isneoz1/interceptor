@@ -77,6 +77,10 @@ export const EN_SECURITE = {
 
   /* ------------------------------ Protections ------------------------------ */
   'Protections de la reponse': 'Response protections',
+  'Encadrement': 'Framing',
+  'Isolation': 'Isolation',
+  /* Une ligne dont le texte n est que la valeur lue (COOP, COEP). */
+  '{valeur}': '{valeur}',
   'document': 'document',
   'ressource': 'resource',
   'Ce qui est en place, et ce qui s applique quand rien n est dit. Une protection absente n est pas une faille a elle seule.':

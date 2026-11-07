@@ -24,6 +24,7 @@ export const LISTE_PANNEAUX = [
   ['comparer', 'tools-diff.js', (m, e, s) => m.panneauComparer(e, s, () => {}, () => {})],
   ['patch', 'tools-patch.js', (m, e, s) => m.panneauPatch(e, s, () => {}, () => {})],
   ['cle', 'tools-cle.js', (m, e, s) => m.panneauClePublique(e, s, () => {})],
+  ['metadonnees', 'tools-metadonnees.js', (m, e, s) => m.panneauMetadonnees(e, s, () => {})],
   ['url', 'tools-reseau.js', (m, e) => m.panneauUrl(e)],
   ['adresse', 'tools-reseau.js', (m, e, s) => m.panneauAdresse(e, s, () => {}, () => {})],
   ['reference', 'tools-reference.js', (m, e, s) => m.panneauReference(e, s, () => {})],

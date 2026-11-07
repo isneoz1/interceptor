@@ -60,6 +60,7 @@ import { decoderSamlTexte } from './saml.js';
 import { dnsVersTexte } from './dns-message.js';
 import { webauthnVersTexte } from './webauthn.js';
 import { jsonVersSchema } from './schema-json.js';
+import { neutraliser, retablir } from './defang.js';
 
 /* Raccourcis d ecriture : e = encodage, d = decodage, a = asynchrone. */
 const e = (cle, groupe, libelle, fn) => ({ cle, groupe, libelle, fn, decode: false, asynchrone: false });
@@ -197,6 +198,10 @@ export const TRANSFORMATIONS = [
   d('puny-dec', 'Domaines', 'Punycode — decoder', punycodeDecoder),
   e('idn-ascii', 'Domaines', 'Nom de domaine vers ASCII (xn--)', domaineVersAscii),
   d('idn-unicode', 'Domaines', 'Nom de domaine vers Unicode', domaineVersUnicode),
+  /* Comme CyberChef : « hxxp », « [.] », « [://] », « [:] », pour qu une
+     adresse douteuse se lise dans un rapport sans devenir un lien. */
+  e('defang', 'Domaines', 'URL et IP — neutraliser pour un rapport (defang)', neutraliser),
+  d('refang', 'Domaines', 'URL et IP — retablir (refang)', retablir),
 
   /* ------------------------------ Compression ----------------------------- */
   a('gzip-dec', 'Compression', 'gzip — decompresser (base64 ou hexadecimal)',

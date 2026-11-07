@@ -16,9 +16,14 @@
  *   4. Le clic droit, la notification et les raccourcis clavier (manifeste et
  *      _locales) existent dans les deux langues.
  *   5. Un HAR exporte en anglais, relu, garde ses corps tronques.
+ *   6. La vue Regles, une carte par action et par modele : en anglais, aucun
+ *      texte que le traducteur ne connait pas, pas meme un mot seul.
  */
 import fs from 'node:fs';
-import { installerTout, enregistrementExemple, egal, memeListe, verifier, bilan } from './harnais.mjs';
+import { fileURLToPath } from 'node:url';
+import { installerTout, installerPage, enregistrementExemple, egal, memeListe, verifier, bilan, dejaAnglais } from './harnais.mjs';
+import path from 'node:path';
+import { racine, fichiersJs, desechapper, argumentsDe } from './sources.mjs';
 
 installerTout();
 const { config, DEFAULTS } = await import('../background/core/config.js');
@@ -258,10 +263,36 @@ setLang('en');
     }
   }
   setLang('en');
-  verifier('aucun mot francais dans les vingt-quatre outils en anglais', enAnglais.size === 0,
+  egal('les vingt-cinq panneaux de la boite a outils sont rendus', panneaux.length, 25);
+  verifier('aucun mot francais dans les vingt-cinq panneaux en anglais', enAnglais.size === 0,
     [...enAnglais].slice(0, 12).map(([f, m]) => f + ' [' + m + ']').join(' || '));
   verifier('aucune phrase restee la meme en francais et en anglais', identiques.size === 0,
     [...identiques.keys()].slice(0, 12).join(' || '));
+}
+
+/* Les messages d une ligne passent par toast(), qui traduit — mais souvent
+   par un detour (copy(texte, message), commit(regles, message)) que la
+   lecture des appels a t() ne voit pas : quarante d entre eux n avaient
+   aucune entree et s affichaient en francais. Le tutoriel francais
+   (content-fr.js) a sa version anglaise a part. */
+{
+  const sansEntree = [];
+  const parcourir = dossier => {
+    for (const nom of fs.readdirSync(new URL(dossier, import.meta.url))) {
+      const rel = dossier + nom;
+      if (fs.statSync(new URL(rel, import.meta.url)).isDirectory()) { parcourir(rel + '/'); continue; }
+      if (!nom.endsWith('.js') || nom.startsWith('dict-en') || nom === 'content-fr.js') continue;
+      const source = fs.readFileSync(new URL(rel, import.meta.url), 'utf8');
+      const messages = [
+        ...[...source.matchAll(/\b(?:copy|commit|toast)\([^;]*?,\s*'([^']+)'\s*[,)]/g)].map(m => m[1]),
+        ...[...source.matchAll(/\btoast\(\s*'([^']+)'/g)].map(m => m[1])
+      ];
+      for (const m of messages) if (/[a-z]{3}/.test(m) && !(m in EN)) sansEntree.push(rel.replace('../', '') + ' : ' + m);
+    }
+  };
+  parcourir('../ui/');
+  parcourir('../background/');
+  verifier('chaque message d une ligne a sa traduction', sansEntree.length === 0, sansEntree.slice(0, 10).join(' || '));
 }
 
 /* Le francais reste celui d avant. */
@@ -329,6 +360,99 @@ verifier('regle « bloquer ce domaine » traduite', typeof EN['Bloquer {hote}'] 
     verifier('raccourci ' + nom + ' : francais present', !!(fr[m[1]] && fr[m[1]].message));
     if (en[m[1]]) sansFrancais('raccourci ' + nom, en[m[1]].message);
   }
+}
+
+/* ------- 6. La vue Regles, chaque action et chaque modele ouverts --------- */
+/* Le releve de tests/rendu.test.mjs ne retient que des phrases : un mot seul
+   lui echappe. Les listes « Methode » et « Type de ressource » affichaient
+   ainsi « toutes » et « tous » sur un ecran anglais, depuis toujours — la vue
+   n y etait rendue sans aucune regle. Ici, chaque action a sa carte, chaque
+   modele est pose, et TOUT texte que le traducteur ne connait pas est releve,
+   mot seul compris. N en sont exclus qu un texte deja anglais et la valeur
+   technique d une liste, affichee telle quelle (GET, main_frame). */
+{
+  installerPage(fileURLToPath(new URL('../', import.meta.url)));
+  const { state } = await import('../ui/app.js');
+  const regles = await import('../ui/console/rules.js');
+  const { surManque } = await import('../ui/lib/i18n.js');
+  const anglais = dejaAnglais(EN);
+  const ACTIONS = ['block', 'redirect', 'upgrade', 'modifyHeaders', 'modifyQuery', 'mock', 'delay', 'throttle', 'replaceBody'];
+  setLang('en');
+  const liste = [
+    ...ACTIONS.map((action, i) => ({ id: 'carte-' + i, enabled: true, name: action, match: { host: 'example.com', method: 'GET', type: 'xmlhttprequest' }, action })),
+    ...regles.PRESETS.map(p => p.rule())
+  ];
+  state.config = { ...(state.config || {}), rulesEnabled: true, rules: liste };
+  const manques = new Set();
+  surManque(texte => manques.add(String(texte)));
+  try { regles.render(); } finally { surManque(null); }
+  /* Le harnais pose `value` en attribut, le navigateur en propriete : les
+     deux sont lus. */
+  const valeursDeListe = new Set();
+  let cartes = 0;
+  const parcourir = n => {
+    if (!n) return;
+    if (n.nodeName === 'OPTION') {
+      const v = n.getAttribute ? n.getAttribute('value') : n.value;
+      if (v) valeursDeListe.add(String(v));
+    }
+    if (/(^| )rule( |$)/.test(String(n.className || ''))) cartes++;
+    for (const e of n.children || []) parcourir(e);
+  };
+  parcourir(document.querySelector('#view-rules'));
+  const garder = s => !anglais(s) && !valeursDeListe.has(s) && /[a-z]/i.test(s);
+  const restes = [...manques].filter(garder);
+  egal('regles : une carte par action et par modele', cartes, liste.length);
+  verifier('regles : les listes portent leurs valeurs techniques', valeursDeListe.has('GET') && valeursDeListe.has('xmlhttprequest'),
+    [...valeursDeListe].slice(0, 8).join(', '));
+  /* Controle positif : un mot francais seul, absent du dictionnaire, est garde. */
+  verifier('regles : le releve garde un mot francais seul', garder('Libelle') && !garder('21 rule(s)') && !garder('GET'));
+  egal('regles en anglais : aucun texte sans traduction, mot seul compris', restes.slice(0, 12).join(' | '), '');
+  /* La carte d une regle « Throttle » sans valeur dit 50 ko/s : ce que le
+     moteur applique (tests/parite.test.mjs). */
+  const textes = [];
+  const lire = n => { if (!n) return; const s = String(n.textContent || '').trim(); if (s) textes.push(s); for (const e of n.children || []) lire(e); };
+  lire(document.querySelector('#view-rules'));
+  verifier('regle « Throttle » sans valeur : la carte dit 50 ko/s, comme le moteur',
+    textes.some(s => s.includes('the page receives the response body at 50 kB/s')), textes.filter(s => /kB\/s/.test(s)).join(' | '));
+  setLang('fr');
+}
+
+/* --------- 7. Bulles de boutons et protections : toutes traduites --------- */
+/* La bulle d un bouton passe par t() dans button(), en troisieme argument :
+   « Monter (les regles sont evaluees dans l ordre) » et « Descendre »
+   n avaient pas d entree, et restaient en francais sur un ecran anglais. */
+{
+  const bullesSansEntree = [];
+  let bulles = 0;
+  for (const rel of fichiersJs(path.join(racine, 'ui'))) {
+    if (/\/dict-en|\/i18n\.js$/.test(rel)) continue;
+    const s = fs.readFileSync(path.join(racine, rel), 'utf8');
+    for (const m of s.matchAll(/\bbutton\(/g)) {
+      if (/[\w.]/.test(s[m.index - 1] || '')) continue;
+      const options = argumentsDe(s, m.index + 'button'.length)[2] || '';
+      for (const x of options.matchAll(/\btitle:\s*'((?:[^'\\]|\\.)*)'/g)) {
+        const texte = desechapper(x[1]);
+        bulles++;
+        if (/[a-z]{3}/i.test(texte) && EN[texte] === undefined) bullesSansEntree.push(rel + ' : ' + texte);
+      }
+    }
+  }
+  /* Controle positif : la lecture trouve bien les bulles des boutons. */
+  verifier('les bulles des boutons sont lues', bulles >= 10, bulles + ' bulles');
+  egal('chaque bulle de bouton a sa traduction', bullesSansEntree.join(' | '), '');
+}
+
+/* Les lignes des protections de la reponse ont un nom que t() traduit a
+   l affichage : « Encadrement » restait en francais sur un ecran anglais. Un
+   nom technique — sigle, nom d en-tete, valeur d en-tete — s ecrit pareil. */
+{
+  const source = fs.readFileSync(path.join(racine, 'ui/lib/protections.js'), 'utf8');
+  const noms = [...new Set([...source.matchAll(/\bligne\(\s*'((?:[^'\\]|\\.)*)'/g)].map(m => desechapper(m[1])))];
+  const technique = n => /^[A-Z]{2,5}$/.test(n) || /^[A-Z][a-z]+(?:-[A-Z][a-z]+)+$/.test(n) || n === 'nosniff';
+  const nomsSansEntree = noms.filter(n => EN[n] === undefined && !technique(n));
+  verifier('protections de la reponse : chaque nom est traduit', noms.length >= 8 && nomsSansEntree.length === 0,
+    nomsSansEntree.join(', ') || noms.length + ' noms');
 }
 
 bilan('La langue de chacun');

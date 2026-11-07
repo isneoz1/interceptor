@@ -13,30 +13,10 @@ import fs from 'fs';
 import path from 'path';
 import url from 'url';
 import { installerTout, egal, proche, verifier, bilan } from './harnais.mjs';
+import { racine, relatif, HORS_PROJET, fichiersJs, desechapper, finDeChaine, finDeGroupe, argumentsDe } from './sources.mjs';
 
 installerTout();
 
-const racine = path.resolve(path.dirname(url.fileURLToPath(import.meta.url)), '..');
-const relatif = p => path.relative(racine, p).split(path.sep).join('/');
-/* Ce qui n appartient pas au projet : le depot git, les paquets construits,
-   les dependances, et les dossiers de travail d outils comme .claude (un
-   worktree y recopie tout le projet, et faisait compter 481 modules pour
-   243). */
-const HORS_PROJET = new Set(['.git', 'dist', 'node_modules', '.claude']);
-
-function fichiersJs(dossier) {
-  const out = [];
-  (function parcourir(d) {
-    for (const e of fs.readdirSync(d, { withFileTypes: true })) {
-      const p = path.join(d, e.name);
-      const rel = relatif(p);
-      if (HORS_PROJET.has(rel.split('/')[0]) || rel.startsWith('tests')) continue;
-      if (e.isDirectory()) parcourir(p);
-      else if (e.name.endsWith('.js')) out.push(rel);
-    }
-  })(dossier);
-  return out;
-}
 
 /* Les deux points d entree demarrent des leur import : ils construisent la
    page et appellent le noyau. Ils sont couverts par le graphe ci-dessous et
@@ -229,17 +209,11 @@ const { EN } = await import('../ui/lib/dict-en.js');
 verifier('le dictionnaire anglais est charge', Object.keys(EN).length > 1500,
   Object.keys(EN).length + ' entrees');
 
-/* Les quatre fonctions qui traduisent leur premier argument. */
-const APPELS_TRADUITS = /\b(?:t|tp|kv|sec|button)\(\s*'((?:[^'\\]|\\.)*)'/g;
+/* Les fonctions qui traduisent leur premier argument. `labelled` (les
+   libelles de l editeur de regles) y manquait : « Rediriger vers ($1 = groupe
+   capture) » s affichait en francais sur un ecran anglais. */
+const APPELS_TRADUITS = /\b(?:t|tp|kv|sec|button|labelled)\(\s*'((?:[^'\\]|\\.)*)'/g;
 
-/* Un litteral tel qu il est ecrit dans le source, ramene a la valeur que le
-   programme manipule vraiment : « \\/ » vaut « \/ », « \' » vaut « ' ». */
-function desechapper(litteral) {
-  return litteral.replace(/\\(u[0-9a-fA-F]{4}|.)/g, (tout, quoi) => {
-    if (quoi[0] === 'u') return String.fromCharCode(parseInt(quoi.slice(1), 16));
-    return { n: '\n', t: '\t', r: '\r', b: '\b', f: '\f', v: '\v', '0': '\0' }[quoi] ?? quoi;
-  });
-}
 
 /* Ce qui n a pas a etre traduit : symboles, syntaxe de filtre, noms propres. */
 const SANS_TRADUCTION = new Set([
@@ -872,6 +846,53 @@ for (const [quoi, motif, reel] of ANNONCES) {
     lus.map(([f, lu, attendu]) => f + ' : « ' + lu + ' » pour « ' + attendu + ' »').join(' ; '));
 }
 
+/* Les autres nombres de l aide et du tutoriel : « 138 transformations »,
+   « Thirty-three headers », « Five templates » et « Twenty-one families »
+   sont restes ecrits apres que le code eut change, faute d etre recomptes. */
+{
+  const { ENTETES_ANALYSABLES } = await import('../ui/lib/entetes-analyse.js');
+  const { PRESETS } = await import('../ui/console/rules.js');
+  const MOTS = {
+    fr: ['zero', 'un', 'deux', 'trois', 'quatre', 'cinq', 'six', 'sept', 'huit', 'neuf', 'dix', 'onze', 'douze',
+      'treize', 'quatorze', 'quinze', 'seize', 'dix-sept', 'dix-huit', 'dix-neuf'],
+    en: ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve',
+      'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen']
+  };
+  const DIZAINES = { fr: ['vingt', 'trente'], en: ['twenty', 'thirty'] };
+  const enLettres = (n, langue) => {
+    if (n < 20) return MOTS[langue][n];
+    const unite = n % 10;
+    const dizaine = DIZAINES[langue][Math.floor(n / 10) - 2];
+    if (!unite) return dizaine;
+    return dizaine + (langue === 'fr' && unite === 1 ? ' et un' : '-' + MOTS[langue][unite]);
+  };
+  const outils = FAMILLES.flatMap(([, liste]) => liste).length;
+  /* Un nombre ecrit en toutes lettres, et rien d autre : « Vingt-six »,
+     « vingt et un », « Thirty-four ». */
+  const N = '([A-Za-z]+(?:-[a-z]+)*(?: et un)?)';
+  const motif = suite => new RegExp(N + ' ' + suite, 'g');
+  const ANNONCES_AIDE = [
+    ['transformations', 'fr', /([0-9]+) transformations/g, String(TRANSFORMATIONS.length)],
+    ['transformations', 'en', /([0-9]+) transformations/g, String(TRANSFORMATIONS.length)],
+    ['en-tetes decoupes', 'fr', motif('entetes decoupes en detail'), enLettres(ENTETES_ANALYSABLES.length, 'fr')],
+    ['en-tetes decoupes', 'en', motif('headers broken down in detail'), enLettres(ENTETES_ANALYSABLES.length, 'en')],
+    ['modeles de regles', 'fr', motif('modeles sont fournis'), enLettres(PRESETS.length, 'fr')],
+    ['modeles de regles', 'en', motif('templates are provided'), enLettres(PRESETS.length, 'en')],
+    ['outils de la vue', 'fr', motif('outils en [a-z]+ familles'), enLettres(outils, 'fr')],
+    ['outils de la vue', 'en', motif('tools in [a-z]+ families'), enLettres(outils, 'en')],
+    ['familles de la vue', 'fr', /outils en ([a-z]+) familles/g, enLettres(FAMILLES.length, 'fr')],
+    ['familles de la vue', 'en', /tools in ([a-z]+) families/g, enLettres(FAMILLES.length, 'en')]
+  ];
+  const FICHIERS_AIDE = { fr: ['ui/console/help.js', 'ui/console/content-fr.js'], en: ['ui/console/content-en.js'] };
+  for (const [quoi, langue, motifAide, attendu] of ANNONCES_AIDE) {
+    const lus = FICHIERS_AIDE[langue].flatMap(f => [...fs.readFileSync(path.join(racine, f), 'utf8').matchAll(motifAide)]
+      .map(m => [f, m[1].toLowerCase()]));
+    verifier('l aide [' + langue + '] annonce le bon nombre de ' + quoi,
+      lus.length > 0 && lus.every(([, lu]) => lu === attendu),
+      (lus.length ? lus.map(([f, lu]) => f + ' : « ' + lu + ' »').join(' ; ') : 'aucune mention') + ' pour « ' + attendu + ' »');
+  }
+}
+
 /* « ~48,700 lines » : un ordre de grandeur, que rien ne recomptait — il
    avait deja derive de plus de cinq cents lignes. Juste a un pour cent pres. */
 {
@@ -903,6 +924,27 @@ verifier('le README annonce partout le meme nombre d assertions',
   totauxAnnonces.length >= 4 && new Set(totauxAnnonces).size === 1,
   totauxAnnonces.join(', '));
 
+/* La page d accueil (docs/index.html) dit les memes chiffres que le code, et
+   tient sa promesse : rien n y vient de personne d autre, et elle n execute
+   rien. Un chiffre ecrit a la main y mentirait comme ailleurs. */
+{
+  const site = fs.readFileSync(path.join(racine, 'docs', 'index.html'), 'utf8');
+  const compte = nom => ((new RegExp('data-compte="' + nom + '">([0-9,]+)<').exec(site) || [])[1] || '').replace(/,/g, '');
+  egal('le site annonce le bon nombre d outils', compte('outils'), String(FAMILLES.flatMap(([, liste]) => liste).length));
+  egal('le site annonce le bon nombre de transformations', compte('transformations'), String(TRANSFORMATIONS.length));
+  egal('le site annonce le bon nombre d assertions', compte('assertions'), String(totauxAnnonces[0]));
+  const { PRESETS } = await import('../ui/console/rules.js');
+  verifier('le site annonce le bon nombre de modeles de regles', PRESETS.length === 12 && site.includes('Twelve ready-made templates'), String(PRESETS.length));
+  const fichiers = [...site.matchAll(/\b(?:src|poster)="([^"]+)"/g), ...site.matchAll(/<link rel="(?:stylesheet|icon)" href="([^"]+)"/g)].map(m => m[1]);
+  verifier('le site reference ses images et ses videos', fichiers.length >= 8, fichiers.length + ' fichiers');
+  egal('le site ne charge rien de personne d autre', fichiers.filter(f => /^(https?:)?\/\//.test(f)).join(' '), '');
+  egal('chaque fichier du site existe', fichiers.filter(f => !fs.existsSync(path.join(racine, 'docs', f))).join(' '), '');
+  verifier('sa politique de securite le garantit', site.includes("default-src 'none'"));
+  egal('le site n execute aucun script', [...site.matchAll(/<script\b([^>]*)>/g)].filter(m => !m[1].includes('application/ld+json')).length, 0);
+  verifier('son icone est celle de l extension',
+    fs.readFileSync(path.join(racine, 'docs', 'images', 'icon.svg'), 'utf8') === fs.readFileSync(path.join(racine, 'icons', 'icon.svg'), 'utf8'));
+}
+
 /* ============ Aucun texte affiche n echappe a la traduction =============== */
 /* Deux formes echappaient a tous les controles precedents, qui ne lisent que
    les appels a t(), tp(), kv(), sec() et button() :
@@ -915,40 +957,6 @@ verifier('le README annonce partout le meme nombre d assertions',
    La 4.6 en a trouve plus de soixante-dix, toutes affichees en francais dans
    l interface anglaise. On lit ici chaque appel en suivant ses parentheses,
    ses chaines et ses commentaires. */
-function finDeChaine(s, i) {
-  const q = s[i];
-  for (let j = i + 1; j < s.length; j++) {
-    if (s[j] === '\\') { j++; continue; }
-    if (s[j] === q) return j;
-  }
-  return s.length;
-}
-function finDeGroupe(s, i) {
-  const ferme = { '(': ')', '{': '}', '[': ']' }[s[i]];
-  let n = 0;
-  for (let j = i; j < s.length; j++) {
-    const c = s[j];
-    if (c === '"' || c === "'" || c === '`') { j = finDeChaine(s, j); continue; }
-    if (c === '/' && s[j + 1] === '/') { j = s.indexOf('\n', j); if (j < 0) return s.length; continue; }
-    if (c === '/' && s[j + 1] === '*') { j = s.indexOf('*/', j) + 1; continue; }
-    if (c === s[i]) n++;
-    else if (c === ferme && --n === 0) return j;
-  }
-  return s.length;
-}
-function argumentsDe(s, ouvrante) {
-  const fin = finDeGroupe(s, ouvrante);
-  const args = [];
-  let debut = ouvrante + 1;
-  for (let j = ouvrante + 1; j < fin; j++) {
-    const c = s[j];
-    if (c === '"' || c === "'" || c === '`') { j = finDeChaine(s, j); continue; }
-    if (c === '(' || c === '{' || c === '[') { j = finDeGroupe(s, j); continue; }
-    if (c === ',') { args.push(s.slice(debut, j).trim()); debut = j + 1; }
-  }
-  args.push(s.slice(debut, fin).trim());
-  return args;
-}
 /* L expression sans ses appels a t() et tp() : ce qui reste est ecrit en dur. */
 function horsTraduction(expr) {
   let sortie = '';

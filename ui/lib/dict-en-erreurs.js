@@ -390,5 +390,16 @@ export const MODELES_ERREURS = {
   'le paquet Engine.IO « {x} » ne porte rien': 'the Engine.IO “{x}” packet carries nothing',
   'URL invalide : {x}': 'invalid URL: {x}',
   'authenticatorData de {n} octets : 37 au minimum': 'authenticatorData of {n} bytes: 37 at least',
-  'transformation inconnue : {x}': 'unknown transformation: {x}'
+  'transformation inconnue : {x}': 'unknown transformation: {x}',
+  /* Les metadonnees d une image abimee (ui/lib/metadonnees-image.js). */
+  'marqueur JPEG attendu a l octet {n}': 'JPEG marker expected at byte {n}',
+  'bloc PNG {type} tronque': 'PNG chunk {type} truncated',
+  'bloc WebP {type} tronque': 'WebP chunk {type} truncated',
+  'bloc {type} sans mot-cle': '{type} chunk without a keyword',
+  'bloc {type} « {cle} » illisible': '{type} chunk “{cle}” unreadable',
+  'etiquette {x} illisible': 'tag {x} unreadable',
+  'plus de {n} blocs compresses : les suivants ne sont pas lus': 'more than {n} compressed chunks: the next ones are not read',
+  'plus de {n} blocs EXIF : les suivants ne sont pas lus': 'more than {n} EXIF blocks: the next ones are not read',
+  'plus de {n} paquets XMP : les suivants ne sont pas lus': 'more than {n} XMP packets: the next ones are not read',
+  'lecture interrompue : {@raison}': 'reading interrupted: {@raison}'
 };
