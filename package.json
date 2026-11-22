@@ -1,6 +1,6 @@
 {
   "name": "swift",
-  "version": "5.9.0",
+  "version": "6.0.0",
   "description": "A network inspector for Firefox: every request captured once, explained in plain words, and changeable. Created by D4RK.",
   "author": "D4RK",
   "license": "MIT",

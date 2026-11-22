@@ -80,6 +80,40 @@ for (const [alg, proche] of [['hs256', 'HS256'], ['None', 'none'], ['Rs256', 'RS
   verifier('RFC 7515 §4.1.1 : « ' + alg + ' » n est pas « ' + proche + ' »', (message || '').includes('la casse compte') && message.includes('« ' + proche + ' »'), message);
 }
 
+/* ============ 1 bis. Fabriquer un jeton signe (6.0) : RFC 7515 A.1 =========
+   L entete et la charge utile de l exemple, avec leurs CRLF, sont repris du
+   jeton publie lui-meme : signes avec la JWK « oct » de l annexe, ils doivent
+   redonner ce jeton, octet pour octet. */
+{
+  const { EN } = await import('../ui/lib/dict-en.js');
+  const partie = (jws, i) => Buffer.from(jws.split('.')[i], 'base64url').toString('utf8');
+  const a1 = V.rfc7515.A1;
+  const fait = await J.signerJwtHmac(partie(a1.jws, 0), partie(a1.jws, 1), JSON.stringify(a1.jwk));
+  egal('fabriquer, RFC 7515 A.1 : le jeton est celui de la RFC, a l octet', fait.jeton, a1.jws);
+
+  for (const alg of ['HS384', 'HS512']) {
+    const jeton = (await J.signerJwtHmac('{"alg":"' + alg + '"}', '{"sub":"x"}', 'cle de test')).jeton;
+    verifier('fabriquer ' + alg + ' : se verifie avec sa cle, pas avec une autre',
+      (await J.verifierJwt(jeton, 'cle de test')).valide === true && (await J.verifierJwt(jeton, 'autre cle')).valide === false);
+  }
+
+  const charge = '{"id":12345678901234567890, "nom":"é"}';
+  const grand = await J.signerJwtHmac('{"alg":"HS256"}', charge, 'k');
+  egal('fabriquer : la charge est encodee telle qu ecrite, grand entier et espace compris', partie(grand.jeton, 1), charge);
+
+  const refus = [];
+  for (const [quoi, entete, corps, cle] of [['entete illisible', '{', '{}', 'k'], ['entete en tableau', '[1]', '{}', 'k'],
+    ['charge illisible', '{"alg":"HS256"}', 'x', 'k'], ['RS256', '{"alg":"RS256"}', '{}', 'k'],
+    ['hs256', '{"alg":"hs256"}', '{}', 'k'], ['none', '{"alg":"none"}', '{}', 'k'], ['cle vide', '{"alg":"HS256"}', '{}', '  ']]) {
+    try { await J.signerJwtHmac(entete, corps, cle); refus.push(quoi + ' : accepte'); }
+    catch (e) { if (EN[e.message] === undefined) refus.push(quoi + ' : message sans traduction, ' + e.message); }
+  }
+  verifier('fabriquer : chaque entree impossible est refusee, et le refus se traduit', refus.length === 0, refus.join(' ; '));
+
+  const lourde = await J.signerJwtHmac('{"alg":"HS256"}', '{"d":"' + 'x'.repeat(400000) + '"}', 'k');
+  verifier('fabriquer : une charge de 400 Ko se signe et se verifie', (await J.verifierJwt(lourde.jeton, 'k')).valide === true);
+}
+
 /* ========================= 2. RFC 7517 annexe A =========================== */
 const pub = K.lireJwks(V.rfc7517.A1);
 egal('RFC 7517 A.1 : deux cles', pub.cles.length, 2);

@@ -4,16 +4,20 @@
  * sont construites, ce qui permet de garder des centaines de milliers
  * d enregistrements a l ecran sans jamais en masquer un seul.
  */
-import { $, el, clear, frag, vide } from '../lib/dom.js';
+import { $, el, clear, frag, vide, button } from '../lib/dom.js';
 import { parseQuery } from '../lib/filters.js';
 import { COLUMNS, COLUMN_ORDER, normalize, template, columnLabel, columnTitle } from '../lib/columns.js';
 import { t, tp } from '../lib/i18n.js';
 import { state, cmd, toast, dropdown, visibleRecords, scopeCount, saveConfig } from '../app.js';
 import { openRowMenu, closeContextMenu, grip } from './rowmenu.js';
+import * as visite from './visite.js';
 import { hauteurLigne as mesureLigne, invaliderHauteur, recalerHauteur } from './rowsize.js';
 import { fenetreVirtuelle, memeFenetre } from '../lib/fenetre-virtuelle.js';
 
 const OVERSCAN = 12;
+/* La valeur de DEFAULTS.detailHeight (background/core/config.js) et de
+   `.detail` dans console.css. */
+const HAUTEUR_DETAIL_PAR_DEFAUT = 46;
 
 /* Derniere fenetre reellement dessinee. Pendant un defilement fluide, elle ne
    change pas a chaque image : la redessiner soixante fois par seconde pour un
@@ -133,7 +137,13 @@ export function applyConfig() {
   const widths = (state.config && state.config.columnWidths) || {};
   table.style.setProperty('--cols', template(activeColumns(), widths));
   const detail = $('#detail');
-  if (state.config && state.config.detailHeight) detail.style.height = state.config.detailHeight + '%';
+  /* La hauteur par defaut est celle de la feuille, qui agrandit le detail en
+     fenetre etroite (56 %, puis 62 %). Posee en style, elle l emportait sur
+     ces regles : dans le panneau lateral, le detail restait a 46 %. Seule une
+     hauteur choisie a la souris s impose donc. */
+  const hauteur = state.config && Number(state.config.detailHeight);
+  if (hauteur && hauteur !== HAUTEUR_DETAIL_PAR_DEFAUT) detail.style.height = hauteur + '%';
+  else detail.style.removeProperty('height');
   invaliderHauteur();   // densite/taille du texte changent la hauteur des lignes
   // Les puces et le bouton de suivi sont construits avant que le noyau ait
   // livre la configuration : sans ce rappel, ils gardent la langue de depart
@@ -358,10 +368,7 @@ export function renderRows(depuisDefilement = false) {
     clear(body);
     body.style.paddingTop = '0px';
     body.style.paddingBottom = '0px';
-    body.appendChild(vide('Aucune requete',
-      state.query || state.facets.size
-        ? 'Aucune ligne ne correspond au filtre. Videz la recherche ou changez de perimetre.'
-        : 'Naviguez sur un site : les requetes apparaissent ici en direct.'));
+    body.appendChild(tableauVide());
     return;
   }
 
@@ -425,6 +432,74 @@ export function renderRows(depuisDefilement = false) {
   }
 
   if (follow) wrap.scrollTop = wrap.scrollHeight;
+}
+
+/* Un tableau vide est le premier ecran que voit quelqu un qui vient
+   d installer. Il disait « naviguez sur un site » meme quand la capture
+   etait en pause, ou quand tout avait ete capture dans un autre onglet que
+   celui du perimetre. Il dit maintenant POURQUOI il est vide, et offre le
+   geste qui le remplit. */
+function tableauVide() {
+  const actions = boutons => el('div', { class: 'actions empty-actions' }, boutons);
+
+  if (String(state.query || '').trim() || state.facets.size) {
+    const bloc = vide('Aucune requete',
+      'Aucune ligne ne correspond au filtre. Videz la recherche ou changez de perimetre.');
+    bloc.appendChild(actions([button('Effacer le filtre', effacerFiltre, { class: 'accent' })]));
+    return bloc;
+  }
+
+  if (state.config && state.config.capturing === false) {
+    const bloc = vide('Capture en pause',
+      'Rien de nouveau n est enregistre tant que la capture est en pause.');
+    bloc.appendChild(actions([button('Reprendre la capture', () => {
+      const capture = $('#capture');
+      if (capture) capture.click();
+    }, { class: 'accent' })]));
+    return bloc;
+  }
+
+  /* Des requetes existent, mais hors du perimetre : un onglet ou rien ne
+     s est encore passe, alors que les autres ont du trafic. */
+  const ailleurs = state.scope === 'all' ? 0 : state.order.length;
+  if (ailleurs > 0) {
+    const bloc = el('div', { class: 'empty' }, [
+      el('b', { text: t('Rien sur cet onglet') }),
+      tp('{n} requete(s) capturee(s) dans les autres onglets.', { n: ailleurs })
+    ]);
+    bloc.appendChild(actions([button('Voir tout Firefox', voirToutFirefox, { class: 'accent' })]));
+    return bloc;
+  }
+
+  const bloc = vide('Aucune requete', 'Naviguez sur un site : les requetes apparaissent ici en direct.');
+  bloc.appendChild(actions([
+    button('Visite guidee', () => visite.demarrer(), { class: 'accent' }),
+    button('Ouvrir le tutoriel', () => aller('tutorial')),
+    button('Ouvrir l aide', () => aller('help'))
+  ]));
+  bloc.appendChild(el('p', { class: 'note', text:
+    t('Astuce : Ctrl+K ouvre n importe quelle vue, outil ou action, et repond aux questions comme « 429 » ou « cache-status ».') }));
+  return bloc;
+}
+
+function aller(vue) {
+  document.dispatchEvent(new CustomEvent('ic:goto', { detail: { view: vue } }));
+}
+
+/** Retire la recherche et les facettes : le tableau montre tout le perimetre. */
+function effacerFiltre() {
+  const input = $('#q');
+  if (input) input.value = '';
+  state.facets.clear();
+  buildFacets();
+  runQuery('');
+}
+
+function voirToutFirefox() {
+  state.scope = 'all';
+  const choix = $('#scope');
+  if (choix) choix.value = 'all';
+  render();
 }
 
 function updateCount() {

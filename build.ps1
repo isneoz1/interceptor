@@ -251,6 +251,8 @@ $required = @(
   'ui/lib/source-map.js',
   'ui/console/lectures-detail.js',
   'ui/lib/dict-en-lectures2.js',
+  'ui/console/visite.js',
+  'ui/lib/dict-en-guide.js',
   'icons/icon.svg'
 )
 $missing = $required | Where-Object { -not (Test-Path $_) }
@@ -380,8 +382,25 @@ foreach ($item in $include) {
 
 $xpi = Join-Path $dist "swift-$version.xpi"
 if (Test-Path $xpi) { Remove-Item $xpi -Force }
-Compress-Archive -Path (Join-Path $stage '*') -DestinationPath "$xpi.zip" -CompressionLevel Optimal -Force
-Move-Item "$xpi.zip" $xpi -Force
+
+# Compress-Archive de Windows PowerShell 5.1 ecrit les chemins des entrees avec
+# des antislashs (« ui\console.js ») : une archive ZIP les veut separes par des
+# barres obliques (APPNOTE 4.4.17), et Firefox ne trouve plus les fichiers d un
+# tel paquet. L archive s ecrit donc ici, entree par entree, avec des barres
+# obliques, sous PowerShell 5.1 comme sous PowerShell 7.
+Add-Type -AssemblyName System.IO.Compression
+Add-Type -AssemblyName System.IO.Compression.FileSystem
+$flux = [System.IO.File]::Open($xpi, [System.IO.FileMode]::CreateNew)
+try {
+  $archive = New-Object System.IO.Compression.ZipArchive($flux, [System.IO.Compression.ZipArchiveMode]::Create)
+  try {
+    foreach ($fichier in Get-ChildItem -Path $stage -Recurse -File) {
+      $nom = $fichier.FullName.Substring($stage.Length + 1).Replace('\', '/')
+      [void][System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile(
+        $archive, $fichier.FullName, $nom, [System.IO.Compression.CompressionLevel]::Optimal)
+    }
+  } finally { $archive.Dispose() }
+} finally { $flux.Dispose() }
 Remove-Item $stage -Recurse -Force
 
 $size = [math]::Round((Get-Item $xpi).Length / 1KB, 1)

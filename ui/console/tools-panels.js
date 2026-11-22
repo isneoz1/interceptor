@@ -20,7 +20,8 @@ import { ALGORITHMES, empreinteHex, hmacHex, crc32, adler32, fnv1a32, djb2, somm
   from '../lib/hashes.js';
 import { EMPREINTES_SUP, empreinteSup, CRC_VARIANTES, crc, murmur3, xxhash32 }
   from '../lib/empreintes-tout.js';
-import { verifierJwt, cleAttendue, ALGORITHMES_JWT, enteteJwt } from '../lib/jwt.js';
+import { verifierJwt, cleAttendue, ALGORITHMES_JWT, enteteJwt, signerJwtHmac } from '../lib/jwt.js';
+import { base64VersOctets } from '../lib/bytes.js';
 import { lireJwks, verifierAvecJeu, nomCle } from '../lib/jwks.js';
 import { frequences, caracteresCaches } from '../lib/codecs-text.js';
 import { dureeLisible } from '../lib/temps.js';
@@ -28,12 +29,13 @@ import { lirePhp, versJs, ressemblePhp } from '../lib/php-serialise.js';
 import { ecrireValeurJson } from '../lib/json-exact.js';
 
 /* ---------------------------------- JWT ----------------------------------- */
-export function panneauJwt(entree, etat, redessiner) {
+export function panneauJwt(entree, etat, redessiner, reprendre) {
   const box = frag();
   box.appendChild(sec('Jeton JWT', 'entete, charge utile, validite et signature'));
 
   if (!String(entree || '').trim()) {
     box.appendChild(el('p', { class: 'note', text: t('Collez un jeton dans le texte de travail.') }));
+    box.appendChild(panneauFabriquerJwt(entree, etat, redessiner, reprendre));
     return box;
   }
 
@@ -41,6 +43,7 @@ export function panneauJwt(entree, etat, redessiner) {
   try { jwt = decoderJwt(entree); }
   catch (e) {
     box.appendChild(el('p', { class: 'note', text: t('Ce texte n est pas un JWT : ') + te(e) }));
+    box.appendChild(panneauFabriquerJwt(entree, etat, redessiner, reprendre));
     return box;
   }
 
@@ -77,6 +80,101 @@ export function panneauJwt(entree, etat, redessiner) {
 
   add(box, kv('Signature', jwt.signature, { copy: true }));
   box.appendChild(panneauSignatureJwt(entree, jwt, etat, redessiner));
+  box.appendChild(panneauFabriquerJwt(entree, etat, redessiner, reprendre));
+  return box;
+}
+
+/* ------------------------- Fabriquer un jeton signe ------------------------ */
+/* Pour essayer une API avec un jeton modifie — un role, une expiration — il
+   faut le resigner, et donc un autre outil. Ici, l entete et la charge utile
+   du jeton colle se reprennent tels quels, se modifient, et se signent avec
+   VOTRE cle partagee ; le jeton obtenu est aussitot verifie avec elle.
+   Seule la cle partagee (HS256 a HS512) est proposee : signer en RS ou en ES
+   demanderait une cle privee, et la boite a outils n en accepte aucune. */
+const ENTETE_MODELE = '{"alg":"HS256","typ":"JWT"}';
+
+/* L entete ou la charge du jeton colle, octet pour octet : relu puis reecrit,
+   un grand entier perdrait ses chiffres et la signature changerait de sens. */
+function partieDuJeton(entree, rang) {
+  const parts = String(entree || '').trim().replace(/^Bearer\s+/i, '').split('.');
+  if (parts.length !== 3) return null;
+  try {
+    const texte = new TextDecoder('utf-8', { fatal: true }).decode(base64VersOctets(parts[rang]));
+    return texte.trim().startsWith('{') ? texte : null;
+  } catch { return null; }
+}
+
+function panneauFabriquerJwt(entree, etat, redessiner, reprendre) {
+  const box = frag();
+  box.appendChild(sec('Fabriquer un jeton signe', 'HS256, HS384 ou HS512, avec votre cle partagee'));
+
+  const enteteDepart = etat.fabEntete != null ? etat.fabEntete : (partieDuJeton(entree, 0) || ENTETE_MODELE);
+  const chargeDepart = etat.fabCharge != null ? etat.fabCharge
+    : (partieDuJeton(entree, 1) || '{"sub":"1234567890","iat":' + Math.floor(Date.now() / 1000) + '}');
+
+  const champEntete = el('textarea', {
+    class: 'field', spellcheck: 'false', rows: '2', dataset: { champ: 'jwt-fab-entete' },
+    placeholder: t('entete JSON, par exemple {"alg":"HS256","typ":"JWT"}')
+  });
+  champEntete.value = enteteDepart;
+  const champCharge = el('textarea', {
+    class: 'field', spellcheck: 'false', rows: '4', dataset: { champ: 'jwt-fab-charge' },
+    placeholder: t('charge utile JSON : sub, exp, role…')
+  });
+  champCharge.value = chargeDepart;
+  const champCle = el('input', {
+    type: 'text', class: 'field bloc', spellcheck: 'false', dataset: { champ: 'jwt-fab-cle' },
+    placeholder: t('votre cle partagee : un texte, ou une JWK « oct »'), value: etat.fabCle || ''
+  });
+  const retenir = () => {
+    etat.fabEntete = champEntete.value;
+    etat.fabCharge = champCharge.value;
+    etat.fabCle = champCle.value;
+  };
+  for (const champ of [champEntete, champCharge, champCle]) champ.addEventListener('change', retenir);
+  box.appendChild(champEntete);
+  box.appendChild(champCharge);
+  box.appendChild(champCle);
+
+  const actions = el('div', { class: 'actions' });
+  actions.appendChild(button('Signer le jeton', async () => {
+    retenir();
+    try {
+      const fait = await signerJwtHmac(etat.fabEntete, etat.fabCharge, etat.fabCle);
+      const controle = await verifierJwt(fait.jeton, etat.fabCle);
+      etat.fabResultat = { ...fait, verifie: !!controle.valide };
+      etat.fabErreur = null;
+    } catch (e) {
+      etat.fabResultat = null;
+      etat.fabErreur = te(e);
+    }
+    redessiner();
+  }, { class: 'accent' }));
+  actions.appendChild(button('Repartir du modele', () => {
+    etat.fabEntete = ENTETE_MODELE;
+    etat.fabCharge = null;
+    etat.fabResultat = null;
+    etat.fabErreur = null;
+    redessiner();
+  }, { class: 'ghost' }));
+  box.appendChild(actions);
+
+  if (etat.fabErreur) {
+    box.appendChild(el('p', { class: 'note warn', text: t('Echec : ') + etat.fabErreur }));
+  } else if (etat.fabResultat) {
+    const r = etat.fabResultat;
+    add(box, kv('Jeton signe', r.jeton, { copy: true, hl: true }));
+    add(box, kv('Algorithme', r.algorithme));
+    box.appendChild(el('p', { class: r.verifie ? 'note ok' : 'note warn', text: r.verifie
+      ? t('Verifie aussitot avec la meme cle : signature valide.')
+      : t('La verification du jeton fabrique a echoue : ne l employez pas.') }));
+    const suite = el('div', { class: 'actions' });
+    suite.appendChild(button('Copier le jeton', () => copy(r.jeton, 'Jeton copie')));
+    if (typeof reprendre === 'function') suite.appendChild(button('Reprendre comme entree', () => reprendre(r.jeton)));
+    box.appendChild(suite);
+  }
+  box.appendChild(el('p', { class: 'note', text:
+    t('Le jeton est signe dans la page, avec la cle que vous donnez : rien n est envoye. Il ne vaut que pour un service qui partage cette cle, et dont vous avez la responsabilite.') }));
   return box;
 }
 

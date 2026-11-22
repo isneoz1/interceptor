@@ -232,7 +232,9 @@ if (B.commands && B.commands.onCommand) {
 B.runtime.onInstalled.addListener(details => {
   if (details.reason === 'install') {
     console.info('[SWIFT] installe — la capture demarre automatiquement.');
-    openConsole({ view: 'help' });
+    /* Le tableau, et la visite guidee par-dessus : deux minutes pour savoir
+       ou se trouve chaque chose, plutot qu un mode d emploi a lire d abord. */
+    openConsole({ view: 'requests', visite: true });
   }
 });
 

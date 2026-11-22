@@ -17,7 +17,7 @@
  * donc aucun verdict approximatif. Sans cle, la fonction le dit plutot que de
  * laisser croire a une validite.
  */
-import { texteVersOctets, base64VersOctets } from './bytes.js';
+import { texteVersOctets, base64VersOctets, octetsVersBase64 } from './bytes.js';
 import { sujetCrypto as sujet, importerClePublique as importerPublique } from './cles-publiques.js';
 
 const HACHAGE = { 256: 'SHA-256', 384: 'SHA-384', 512: 'SHA-512' };
@@ -152,6 +152,47 @@ export async function verifierJwt(jeton, cle) {
   const importee = await importerPublique(cle, { name: 'ECDSA', namedCurve });
   const valide = await sujet().verify({ name: 'ECDSA', hash }, importee, signature, signe);
   return { valide, algorithme: alg, methode: 'cle publique sur courbe elliptique', courbe: namedCurve };
+}
+
+/* --------------------------- Fabriquer un jeton --------------------------- */
+/* Par morceaux (octetsVersBase64) : une charge utile de plusieurs centaines
+   de kilo-octets ne doit pas depasser le nombre d arguments d un appel. */
+const base64url = octets => octetsVersBase64(octets)
+  .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+
+function objetJson(texte, erreur) {
+  let lu;
+  try { lu = JSON.parse(texte); } catch { throw new Error(erreur); }
+  if (!lu || typeof lu !== 'object' || Array.isArray(lu)) throw new Error(erreur);
+  return lu;
+}
+
+/**
+ * Signe un jeton par cle partagee (RFC 7515 §5.1, RFC 7518 §3.2), a partir
+ * d un entete et d une charge utile ecrits a la main.
+ *
+ * Les deux textes sont encodes TELS QU ILS SONT ECRITS : une signature porte
+ * sur des octets, et reecrire le JSON — reordonner, reespacer, arrondir un
+ * grand entier — changerait ce qui est signe. Ils sont seulement lus pour
+ * verifier qu ils sont des objets JSON. Le secret se lit comme a la
+ * verification (texte, ou JWK « oct ») : un jeton fabrique ici se verifie
+ * avec la meme cle, dans cet outil comme sur le serveur.
+ */
+export async function signerJwtHmac(enteteTexte, chargeTexte, cle) {
+  const entete = String(enteteTexte == null ? '' : enteteTexte).trim();
+  const charge = String(chargeTexte == null ? '' : chargeTexte).trim();
+  const lu = objetJson(entete, 'entete illisible : un objet JSON est attendu');
+  objetJson(charge, 'charge utile illisible : un objet JSON est attendu');
+  const alg = typeof lu.alg === 'string' ? lu.alg : '';
+  if (!/^HS(256|384|512)$/.test(alg)) {
+    throw new Error('signature par cle partagee : l entete doit annoncer « alg » HS256, HS384 ou HS512');
+  }
+  if (!String(cle == null ? '' : cle).trim()) throw new Error('cle partagee vide');
+  const hash = HACHAGE[Number(alg.slice(2))];
+  const signe = base64url(texteVersOctets(entete)) + '.' + base64url(texteVersOctets(charge));
+  const importee = await sujet().importKey('raw', secretHmac(cle), { name: 'HMAC', hash }, false, ['sign']);
+  const signature = new Uint8Array(await sujet().sign('HMAC', importee, texteVersOctets(signe)));
+  return { jeton: signe + '.' + base64url(signature), algorithme: alg };
 }
 
 /** Ce qu il faut fournir pour verifier un jeton, avant meme d avoir la cle. */

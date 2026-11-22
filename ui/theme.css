@@ -247,6 +247,11 @@ svg.ico {
 .btn.armed {
   color: var(--on-accent); background: var(--red-fill); border-color: var(--red-fill); font-weight: 600;
 }
+/* Arme, un bouton « danger » gardait au survol son texte rouge sur fond
+   rose : le second clic, celui qui agit, ne se voyait plus. */
+.btn.armed:hover, .btn.danger.armed:hover {
+  color: var(--on-accent); background: var(--red-fill); border-color: var(--red-fill);
+}
 .btn.ghost { background: transparent; border-color: transparent; box-shadow: none; color: var(--dim); }
 .btn.ghost:hover { background: var(--surface-2); border-color: var(--line-soft); color: var(--text); }
 
@@ -413,7 +418,10 @@ pre.pre.stack { color: var(--dim); white-space: pre; }
 .menu-wrap { position: relative; }
 .menu {
   position: absolute; right: 0; top: calc(100% + 6px); z-index: 60;
-  min-width: 240px; max-height: 72vh; overflow: auto; padding: 5px;
+  /* Jamais plus large que la fenetre : le script le recale ensuite du cote
+     ou il tient (ui/app.js). */
+  min-width: min(240px, calc(100vw - 12px)); max-width: calc(100vw - 12px);
+  max-height: 72vh; overflow: auto; padding: 5px;
   background: var(--elev); border: 1px solid var(--line); border-radius: var(--r-lg);
   box-shadow: var(--shadow);
   animation: deplier .12s ease-out;
@@ -556,9 +564,9 @@ pre.pre { font-size: calc(12px * var(--scale)); }
   .find { padding: 9px 10px; }
 }
 
-/* Vraiment etroit : on retire ce qui n aide plus a cette largeur. */
+/* Vraiment etroit : on retire ce qui n aide plus a cette largeur. Les marges
+   du cadre et des onglets se resserrent dans console.css : posees ici, elles
+   etaient ecrasees par ses regles, chargees apres celle-ci. */
 @media (max-width: 420px) {
-  .pane { padding: 12px 10px 32px; }
   .sec em { display: none; }
-  .dtab { padding: 8px 7px; }
 }

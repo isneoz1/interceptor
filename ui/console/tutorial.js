@@ -11,6 +11,7 @@ import { state, toast, saveConfig } from '../app.js';
 import { lang } from '../lib/i18n.js';
 import { LESSONS as LESSONS_EN } from './content-en.js';
 import { LESSONS } from './content-fr.js';
+import * as visite from './visite.js';
 
 let current = 0;
 
@@ -115,6 +116,7 @@ export function render() {
     render();
   }));
   bottom.appendChild(button('Aide de reference', () => go('help')));
+  bottom.appendChild(button('Visite guidee de l interface', () => visite.demarrer()));
   box.appendChild(bottom);
 
   box.appendChild(el('p', { class: 'note', text:

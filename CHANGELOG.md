@@ -6,20 +6,119 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versio
 
 ## [Unreleased]
 
+## [6.0.0] — 2026-11-22
+
+Simple to pick up: a guided tour, a quick guide, ready-made searches and an empty table that
+says what to do — and the bugs that made SWIFT look empty or broken when it was not.
+
+### Added
+
+- **A guided tour of the console**, thirteen steps: the capture button, the search, the
+  one-click filters, the table, the scope, the sidebar, Export, Actions, the dock, Settings
+  and the status bar, each lit up in turn with two sentences, then `Ctrl+K`. It shows only
+  what exists on screen — a zone hidden at this width is skipped, never lit up in the void —
+  takes the arrow keys and `Esc`, and clicks nothing for you. It starts by itself after
+  installation (the console now opens on the request table rather than the help page), and
+  again from Help, the Tutorial, the Actions menu, `Ctrl+K` and an empty table.
+- **Help opens on a quick guide**, *I want to… → do this*: thirteen everyday tasks in one line
+  each, in both languages, and a **clickable table of contents** over all its sections.
+- **Twelve ready-made searches** behind the `?` next to the search box — what fails, server
+  errors, data sent, responses over a megabyte, requests over a second, critical alerts, third
+  parties that set cookies, GraphQL mutations, pages served without a CSP, cleartext traffic,
+  addresses whose retirement is announced, pinned rows — then the full syntax. It used to open
+  the whole Help, away from the table, to learn how to write `status:>=400`.
+- **An empty table says why it is empty**, with the button that fixes it: a filter (« Clear the
+  filter »), capture paused (« Resume capture »), traffic captured in other tabs only (« Show
+  all of Firefox », with the count), or nothing yet (the tour, the tutorial, the help, and a
+  `Ctrl+K` tip).
+- **Build a signed test token**, in the JWT tool: the header and payload of the pasted token,
+  or of a template, edited by hand and signed with HS256, HS384 or HS512 using your shared key
+  (text or `oct` JWK), then verified at once with the same key. Both texts are encoded exactly
+  as written — a large integer keeps its digits, the member order stays — and the result is
+  byte-identical to the example of RFC 7515 Appendix A.1. Only shared keys: signing with RS,
+  PS or ES would take a private key, which the toolbox never accepts.
+- The Tutorial's first lesson and its last offer the tour; the Help's table of views now lists
+  all of them, Sites and paths, Interception, Internal log and Help included.
+
 ### Changed
 
+- **Clear asks twice.** The first click arms the button (« Confirm? », in red), the second —
+  within four seconds — clears; in the console and in the compact window alike. It sat next to
+  « Actions », and one click too many lost a whole session. Chosen from `Ctrl+K`, it still
+  clears at once.
+- **The search box keeps its room.** Below about 1,240 px at the chosen text size — half a
+  screen, a detached window, enlarged text — the header puts the search on its own line
+  instead of crushing it to a few pixels under the scope list. The scope list itself is
+  capped, its long tab titles no longer widen the header.
+- **In a narrow window** (the sidebar), the one-click filters and the status bar keep to one
+  line that scrolls sideways, instead of five and three: in a 350 × 760 px sidebar the table
+  shows sixteen rows instead of nine. Settings put a wide control under its explanation, a log line puts its
+  detail under the time and event, and the keyboard shortcuts read in one column.
+- **The text-size setting applies everywhere**: the table headers, the detail tabs, the
+  menus, the chips, section titles, the status bar, the palette and the tutorial followed a
+  fixed size — at 130 %, column labels stayed at 10.5 px over 15 px rows.
+- The sidebar reduced to icons keeps its urgent counters — a serious alert, an internal error,
+  a suspended request — as a dot on the icon, and each button is named for screen readers;
+  its tooltip gives the view's name and what it shows.
 - **The copyright notice names D4RK**, in `LICENSE` and at the end of the README, as the author
-  credit has since 5.8. The licence is still MIT, and `LICENSE` is not in the package, so the
-  5.9.0 package does not change.
+  credit has since 5.8. The licence is still MIT.
 - **Private vulnerability reporting and Discussions are on.** `SECURITY.md` and the issue form
   sent people to both, and neither existed for them.
 
 ### Fixed
 
+- **A console opened in a tab or a detached window showed an empty table.** « Active tab »
+  meant the tab the console itself was in, so nothing captured elsewhere was in scope. It now
+  means the web tab you used last, named in the scope's tooltip. In the sidebar, « Active
+  tab » stayed on the tab of the moment it opened: it now follows you when you switch tabs,
+  in its own window, and moves on when that tab is closed.
+- **Menus spilled out of the window.** Anchored to an edge of their button, they ran off the
+  left of a narrow window, labels cut and out of reach. They are now measured once open, turned
+  to the side where they fit, shifted if they fit on neither, and opened upwards near the bottom.
+- **The row context menu went off the bottom of a low window**, with no way to scroll: its
+  height was estimated at thirty pixels an entry. It is measured, bounded by the window, and
+  scrolls. `Esc` now closes it too.
+- **The detail panel kept 46 % of the height in the sidebar**: the default height, written into
+  the page, overrode the narrow-window rules (56 %, then 62 %), and the 620 px rule came before
+  the 760 px one that overrode it. Only a height you drag is kept now, and the rules are in
+  order — as are the 420 px rules of `theme.css`, which `console.css` overrode.
+- **The table header let rows show through** when the table, wider than the window, scrolled
+  sideways: the cells beyond the first screen had no background.
+- **The help and the tutorial described what SWIFT no longer does**: the security lesson listed
+  e-mail addresses, card numbers and missing security headers among the alerts — removed in
+  4.x because they cannot be proven — and three lessons named views that had been renamed
+  (Diagnostics, Context). The English help still called two views by their old names. The
+  HAR import lesson sent you to a Settings section; it now opens the Actions menu where the
+  import is.
+- **The compact window was French on an English screen** when empty, and so was its capture
+  button's tooltip: neither went through the translator.
+- **`build.ps1` under Windows PowerShell 5.1 wrote a package Firefox could not read**: its
+  `Compress-Archive` names the entries with backslashes (`ui\console.js`), where a ZIP archive
+  requires forward slashes (APPNOTE 4.4.17). The script now writes the archive itself, entry by
+  entry, the same under PowerShell 5.1 and 7.
+- **The Hashes line of the help left out most of the tool**: SHA-3, Keccak, SHAKE, BLAKE2,
+  RIPEMD-160, SM3, MD4, NTLM, xxHash, MurmurHash3 and the twenty named CRC variants.
 - **The bug report form matches the interface**: the version is at the bottom of Help, not in
   Settings, and the button is called Export journal.
 - **A diagnostics export can quote the address of a page**, in an error message. The form, the
   README and `CONTRIBUTING.md` now say so, and ask you to read the file before you attach it.
+
+### Tests
+
+- `tests/jose.test.mjs`: the signed token built from the header and payload of RFC 7515
+  Appendix A.1 — taken from the published token itself, CRLFs included — is that token, byte
+  for byte; HS384 and HS512 tokens verify with their key and not with another; a payload is
+  encoded exactly as written, a 20-digit integer and a space included; every impossible input
+  (unreadable or array header, unreadable payload, RS256, `hs256`, `none`, empty key) is
+  refused with a message that has its English translation; 400 KB are signed and verified.
+- `tests/ui-load.test.mjs` loads the two new modules and holds the new help section to its
+  English twin.
+- Checked outside the suites, in a real browser: every view rendered in both languages and
+  compared fragment by fragment, the console booted against sample traffic at 350, 380, 1000
+  and 1280 px, in both themes and at 130 % text size, the tour step by step, the compact
+  window empty in English.
+
+4047 assertions across twenty suites, plus six browser audits.
 
 ## [5.9.0] — 2026-11-07
 
@@ -1973,7 +2072,8 @@ First public release.
 - Documentation screenshots are generated by `tools/captures.mjs`, which renders the real
   console against the real kernel rather than producing mockups.
 
-[Unreleased]: https://github.com/isneoz1/interceptor/compare/v5.9.0...HEAD
+[Unreleased]: https://github.com/isneoz1/interceptor/compare/v6.0.0...HEAD
+[6.0.0]: https://github.com/isneoz1/interceptor/releases/tag/v6.0.0
 [5.9.0]: https://github.com/isneoz1/interceptor/releases/tag/v5.9.0
 [5.8.0]: https://github.com/isneoz1/interceptor/releases/tag/v5.8.0
 [5.7.0]: https://github.com/isneoz1/interceptor/releases/tag/v5.7.0

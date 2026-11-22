@@ -5,12 +5,34 @@ import { cmd, toast } from '../app.js';
 import { t, tp, lang } from '../lib/i18n.js';
 import { HELP_SECTIONS as SECTIONS_EN } from './content-en.js';
 import { RACCOURCIS } from './raccourcis.js';
+import * as visite from './visite.js';
+
+const go = vue => document.dispatchEvent(new CustomEvent('ic:goto', { detail: { view: vue } }));
 
 export const SECTIONS = [
   {
     h: 'Par ou commencer',
-    p: ['Si vous decouvrez l outil, ouvrez le **Tutoriel** dans la barre laterale : douze lecons guidees, avec des boutons qui font reellement l action decrite et des verifications qui lisent l etat reel de votre capture. Cette page-ci est la reference complete, a garder sous la main.'],
+    p: ['Si vous decouvrez l outil, lancez la **visite guidee** avec le bouton ci-dessus : deux minutes pour savoir ou se trouve chaque chose. Ouvrez ensuite le **Tutoriel** dans la barre laterale : douze lecons guidees, avec des boutons qui font reellement l action decrite et des verifications qui lisent l etat reel de votre capture. Cette page-ci est la reference complete, a garder sous la main.'],
     ul: []
+  },
+  {
+    h: 'Guide rapide : je veux…',
+    p: ['Les gestes les plus utiles, chacun en une ligne. La **visite guidee** montre ou se trouve chaque chose ; le **Tutoriel** apprend a s en servir, lecon par lecon.'],
+    table: [
+      ['Voir ce qui echoue', 'La puce « Erreurs » sous la barre d outils, ou status:>=400 dans la recherche.'],
+      ['Trouver un appel d API', 'La puce « API », ou method:POST host:api. ; gql: et rpc: retrouvent une operation GraphQL ou JSON-RPC par son nom.'],
+      ['Tout lire d une requete', 'Cliquez sa ligne : le panneau du bas ouvre douze onglets, du verdict en une phrase a l enregistrement brut.'],
+      ['Comprendre un jeton', 'L onglet En-tetes du detail lit chaque JWT, le date, et verifie sa signature quand la capture contient les cles de son emetteur.'],
+      ['Comparer deux requetes', 'Ctrl+clic sur deux lignes, puis « Comparer » ou la touche C.'],
+      ['Renvoyer une requete modifiee', 'L onglet Rejouer du detail, une fois le rejeu permis dans Reglages -> Interception active.'],
+      ['Bloquer ou ralentir un site', 'Clic droit sur une ligne -> « Bloquer cet hote », ou un modele de la vue Regles : Throttle, No Caching, Block Cookies…'],
+      ['Partager une capture sans fuite', 'Exporter -> « HAR 1.2 — secrets masques, pour partage » : jetons, cookies et cles y perdent leur valeur.'],
+      ['Suivre une WebSocket', 'La vue Flux temps reel, ou l onglet Flux du detail de la connexion.'],
+      ['Decoder une valeur inconnue', 'Boite a outils -> Transformer -> « Tout essayer ».'],
+      ['Signer un jeton de test', 'Boite a outils -> JWT -> « Fabriquer un jeton signe », avec votre propre cle partagee.'],
+      ['Retrouver une fonction', 'Ctrl+K, puis quelques lettres de ce que vous cherchez.'],
+      ['Garder une interface simple', 'Reglages -> Interface -> Mode simple : sept vues, l essentiel.']
+    ]
   },
   {
     h: 'Prise en main en trois etapes',
@@ -59,16 +81,20 @@ export const SECTIONS = [
       ['Requetes', 'Le flux complet, avec le detail en douze onglets.'],
       ['Securite', 'Toutes les alertes trouvees automatiquement, classees par gravite.'],
       ['Synthese', 'Agregats de la session : statuts, types, domaines les plus lourds et en erreur, requetes les plus lentes, adresses telechargees plusieurs fois, adresses qui annoncent leur retrait, compression possible mesuree, debit dans le temps.'],
+      ['Sites et chemins', 'Ce qui existe sur chaque hote visite, reconstruit a partir du trafic observe.'],
       ['Comparaison', 'Deux requetes selectionnees, confrontees ligne a ligne (entetes et corps).'],
       ['Flux temps reel', 'WebSocket et Server-Sent Events, message par message, en direct.'],
       ['Cookies', 'Chaque pose, modification ou suppression de cookie, y compris en JavaScript.'],
       ['Navigation', 'Les huit evenements de navigation de Firefox.'],
       ['Workers et WebRTC', 'Workers, Service Workers, WebRTC, etat des sondes de page.'],
       ['Etat du systeme', 'Etat reel de chaque couche, chiffres du noyau, test de couverture.'],
+      ['Journal interne', 'Les erreurs de SWIFT lui-meme et ses commandes, a exporter pour un rapport de bogue.'],
       ['Regles', 'Blocage, redirection, reecriture d entetes et de parametres d URL, reponse simulee (ecrite ou chargee depuis un fichier), debit limite — avec un editeur visuel et des modeles prets a l emploi.'],
+      ['Interception', 'Les requetes suspendues avant leur depart, a modifier puis relacher une par une.'],
       ['Boite a outils', 'Vingt-six outils en six familles sur un seul texte de travail : encodages, chiffrement, formats binaires, certificats, empreintes, reseau, entetes, horodatages, metadonnees d image, reference HTTP.'],
       ['Reglages', 'Tout ce qui se configure, avec des profils prets a l emploi.'],
-      ['Tutoriel', 'Douze lecons guidees, avec suivi de progression.']
+      ['Tutoriel', 'Douze lecons guidees, avec suivi de progression.'],
+      ['Aide', 'Ce mode d emploi, hors ligne, qui suit exactement la version installee.']
     ]
   },
   {
@@ -80,9 +106,9 @@ export const SECTIONS = [
       ['Transformer', '140 transformations classees en dix-huit familles : base64 et base64 URL, base32, base58, base45, Ascii85, URL, entites HTML, hexadecimal, binaire, octal, echappements Unicode, punycode, adresses neutralisees pour un rapport (defang) et retablies, JSON, YAML, CSV, XML, SAML, messages DNS, WebAuthn, gzip et deflate, casse, lignes, echappements de chaine, Protocol Buffers, MessagePack, CBOR, ASN.1. « Tout essayer » applique chaque decodage — sauf DNS et WebAuthn, qui liraient n importe quels octets — et ne garde que les resultats lisibles.'],
       ['Cles et essais', 'XOR avec cle repetee, recherche des 255 cles d un octet, les vingt-cinq decalages de Cesar, Vigenere. Ces chiffres ne protegent rien : ils relisent une valeur volontairement obscurcie.'],
       ['Cle publique', 'Une cle publique collee sous n importe quelle forme — PEM, certificat, JWK ou jeu de cles, ligne OpenSSH ou fichier authorized_keys entier, DER en base64 — et toutes les autres : PEM, PKCS #1, JWK, ligne OpenSSH, avec son epingle pin-sha256 (RFC 7469), ses empreintes OpenSSH (SHA256 et MD5), son empreinte JWK (RFC 7638) et son identifiant de cle (RFC 5280). Plusieurs cles collees ensemble sont comparees : la meme cle sous deux formes est reconnue.'],
-      ['JWT', 'Entete, charge utile, validite, temps restant. La signature se verifie vraiment : HS256 a HS512 avec la cle partagee (texte ou JWK « oct »), RS, PS, ES et EdDSA (Ed25519) avec la cle publique collee en PEM ou en JWK, ou tout le jeu de cles (JWKS) de l emetteur, dont la cle designee par le jeton est choisie. L algorithme se lit a la lettre : « hs256 » n est pas HS256. Sans cle, l ecran le dit, plutot que de laisser croire qu un jeton decode est un jeton valide.'],
+      ['JWT', 'Entete, charge utile, validite, temps restant. La signature se verifie vraiment : HS256 a HS512 avec la cle partagee (texte ou JWK « oct »), RS, PS, ES et EdDSA (Ed25519) avec la cle publique collee en PEM ou en JWK, ou tout le jeu de cles (JWKS) de l emetteur, dont la cle designee par le jeton est choisie. L algorithme se lit a la lettre : « hs256 » n est pas HS256. Sans cle, l ecran le dit, plutot que de laisser croire qu un jeton decode est un jeton valide. Et un jeton de test se fabrique : entete et charge utile ecrits a la main, signes en HS256, HS384 ou HS512 avec votre cle, puis verifies aussitot.'],
       ['Chiffrement', 'AES-GCM, AES-CBC et AES-CTR dans les deux sens, avec vecteur d initialisation et donnees authentifiees ; derivation PBKDF2 et HKDF ; verification d une signature detachee RSA, RSA-PSS, ECDSA ou HMAC. Tout passe par le moteur du navigateur, rien ne sort de la machine.'],
-      ['Empreintes', 'MD5, SHA-1, SHA-256, SHA-384, SHA-512, CRC-32, Adler-32, FNV-1a, djb2, somme des octets, et HMAC avec cle.'],
+      ['Empreintes', 'MD5, SHA-1 et SHA-2, SHA-3, Keccak et SHAKE, BLAKE2b et BLAKE2s, RIPEMD-160, SM3, MD4 et NTLM, xxHash32 et xxHash64, MurmurHash3, CRC-32 et vingt variantes de CRC nommees, Adler-32, FNV-1a, djb2, somme des octets, et HMAC avec cle.'],
       ['Binaire', 'Protocol Buffers, MessagePack et CBOR lus octet par octet, sans schema ; ASN.1, DER et resume d un certificat X.509 (sujet, emetteur, validite, noms couverts, usages) ; trente-sept jeux de caracteres et reparation du mojibake.'],
       ['Mesures', 'Caracteres, octets, lignes, mots, entropie de Shannon, frequence des caracteres, et reperage des caracteres invisibles qui servent a masquer du contenu.'],
       ['Metadonnees d image', 'Ce qu une image JPEG, PNG ou WebP revele a qui la telecharge : la position GPS de la prise de vue, l auteur, l appareil et son numero de serie, le logiciel, le XMP. Collee en base64, en hexadecimal ou en URI de donnees ; l onglet Reponse d une image capturee le montre aussi.'],
@@ -170,6 +196,7 @@ export const SECTIONS = [
     h: 'Exports',
     table: [
       ['HAR 1.2', 'Relu par les outils de developpement de Firefox, Charles, Fiddler, Postman. Enrichi des couches, du TLS, des piles et des alertes.'],
+      ['HAR masque', 'Le meme HAR, partageable : les entetes, parametres et valeurs qui portent un secret perdent leur valeur, et le fichier dit combien.'],
       ['JSON', 'Enregistrements complets et statistiques du noyau.'],
       ['CSV', 'Tableau pour analyse externe, en UTF-8 avec BOM.'],
       ['Markdown', 'Rapport d alertes classe par gravite.'],
@@ -243,9 +270,27 @@ export function render() {
     ? 'Network supervision station for Firefox, created by D4RK. This page holds everything you need to know: it works offline and always matches the installed version.'
     : 'Poste de supervision reseau pour Firefox, cree par D4RK. Cette page contient tout ce qu il faut savoir : elle fonctionne hors ligne et suit exactement la version installee.' }));
 
+  /* Deux portes d entree avant la reference : la visite montre ou se trouve
+     chaque chose, le tutoriel apprend a s en servir. */
+  box.appendChild(el('div', { class: 'actions' }, [
+    button('Visite guidee de l interface', () => visite.demarrer(), { class: 'accent' }),
+    button('Ouvrir le tutoriel', () => go('tutorial'))
+  ]));
+
   const sections = lang() === 'en' ? SECTIONS_EN : SECTIONS;
-  for (const section of sections) {
-    box.appendChild(el('h2', { text: section.h }));
+  const titreSyntaxe = lang() === 'en' ? 'Search syntax' : 'Syntaxe de recherche';
+  const titreInstallation = lang() === 'en' ? 'Permanent installation' : 'Installation permanente';
+
+  /* Le sommaire : une page de vingt sections ne se parcourt pas a la molette
+     quand on cherche une seule reponse. */
+  const sommaire = el('nav', { class: 'help-toc', 'aria-label': t('Sommaire de l aide') });
+  sections.forEach((section, i) => sommaire.appendChild(lienSommaire(section.h, 'aide-' + i)));
+  sommaire.appendChild(lienSommaire(titreSyntaxe, 'aide-syntaxe'));
+  sommaire.appendChild(lienSommaire(titreInstallation, 'aide-installation'));
+  box.appendChild(sommaire);
+
+  sections.forEach((section, i) => {
+    box.appendChild(el('h2', { id: 'aide-' + i, text: section.h }));
     for (const p of section.p || []) box.appendChild(richText('p', p));
     if (section.ul) {
       const ul = el('ul');
@@ -255,10 +300,10 @@ export function render() {
     if (section.table) box.appendChild(table(['', ''], section.table));
     /* Les raccourcis viennent de la liste que lit aussi la fenetre « ? ». */
     if (section.raccourcis) box.appendChild(table(['', ''], RACCOURCIS.map(([k, d]) => [t(k), t(d)])));
-  }
+  });
 
   /* Syntaxe de recherche : construite depuis le code, donc toujours exacte. */
-  box.appendChild(el('h2', { text: lang() === 'en' ? 'Search syntax' : 'Syntaxe de recherche' }));
+  box.appendChild(el('h2', { id: 'aide-syntaxe', text: titreSyntaxe }));
   box.appendChild(el('p', { text: t(
     'Ecrivez du texte libre, ou combinez les criteres ci-dessous. Prefixez par un tiret pour exclure : « -image ». Encadrez de guillemets pour chercher une expression avec des espaces. Une expression reguliere s ecrit entre deux barres obliques : /\\/api\\/v[0-9]+\\//.') }));
   box.appendChild(table(lang() === 'en' ? ['Criterion', 'Meaning'] : ['Critere', 'Signification'],
@@ -274,7 +319,7 @@ export function render() {
   box.appendChild(el('p', { text: t(
     'La case « corps » a cote de la recherche delegue le travail au noyau : il cherche aussi dans les corps, les entetes, les trames WebSocket, les messages SSE et les piles JavaScript. Les corps ne transitent jamais en masse vers l interface, seuls les identifiants correspondants reviennent.') }));
 
-  box.appendChild(el('h2', { text: lang() === 'en' ? 'Permanent installation' : 'Installation permanente' }));
+  box.appendChild(el('h2', { id: 'aide-installation', text: titreInstallation }));
   box.appendChild(el('p', { text: t(
     'Un chargement temporaire (about:debugging) disparait a la fermeture de Firefox. Pour une installation durable il faut un paquet .xpi signe par Mozilla, ou Firefox Developer Edition / Nightly avec xpinstall.signatures.required = false dans about:config.') }));
 
@@ -294,6 +339,16 @@ export function render() {
         .then(() => toast(t('Adresse de la console copiee')), () => {});
     })
   ]));
+}
+
+/* Une entree du sommaire : elle amene le titre de sa section en haut du cadre. */
+function lienSommaire(titre, cible) {
+  const lien = el('button', { class: 'chip', type: 'button' }, titre);
+  lien.addEventListener('click', () => {
+    const titreSection = document.getElementById(cible);
+    if (titreSection && typeof titreSection.scrollIntoView === 'function') titreSection.scrollIntoView({ block: 'start' });
+  });
+  return lien;
 }
 
 function table(head, rows) {

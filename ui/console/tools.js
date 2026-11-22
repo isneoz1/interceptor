@@ -93,6 +93,7 @@ let sortie = null;            // { ok, valeur } ou { ok:false, erreur }
 const etat = {
   empreintes: {}, cleHmac: '', algoHmac: 'SHA-256', hmac: null,
   cleJwt: '', jwtVerdict: null,
+  fabEntete: null, fabCharge: null, fabCle: '', fabResultat: null, fabErreur: null,
   motif: '', options: 'gi', remplacement: '',
   cleXor: '', xorHex: false, xorCandidats: null, cleVigenere: '',
   base: 10, prefixeTest: '',
@@ -145,6 +146,12 @@ export function poser(texte, { bascule = true, vers = null, famille = null, tran
   etat.empreintes = {};
   etat.hmac = null;
   etat.jwtVerdict = null;
+  /* Un nouveau jeton colle : le fabricant repart de son entete et de sa
+     charge. La cle reste, elle ne depend pas du jeton. */
+  etat.fabEntete = null;
+  etat.fabCharge = null;
+  etat.fabResultat = null;
+  etat.fabErreur = null;
   etat.xorCandidats = null;
   etat.questionRef = undefined;
   sortie = null;
@@ -222,7 +229,7 @@ function dessiner() {
   if (onglet === 'transformer') box.appendChild(panneauTransformer());
   else if (onglet === 'cles') box.appendChild(panneauCles(entree, etat, redessiner, reprendre));
   else if (onglet === 'chiffrement') box.appendChild(panneauChiffrement(entree, etat, redessiner, reprendre));
-  else if (onglet === 'jwt') box.appendChild(panneauJwt(entree, etat, redessiner));
+  else if (onglet === 'jwt') box.appendChild(panneauJwt(entree, etat, redessiner, reprendre));
   else if (onglet === 'empreintes') box.appendChild(panneauEmpreintes(entree, redessiner, etat));
   else if (onglet === 'mesures') box.appendChild(panneauMesures(entree));
   else if (onglet === 'hex') box.appendChild(panneauHex(entree));

@@ -40,11 +40,13 @@ function render() {
 
   const list = clear($('#list'));
   if (!rows.length) {
+    /* Ces deux phrases s ecrivaient sans passer par t() : la fenetre compacte
+       vide restait en francais dans une interface anglaise. */
     list.appendChild(el('li', { class: 'empty' }, [
       el('b', { text: t('Aucune requete') }),
       state.scope === 'tab'
-        ? 'Rien sur cet onglet. Naviguez, ou basculez sur « Tout Firefox ».'
-        : 'Rien de capture pour le moment.'
+        ? t('Rien sur cet onglet. Naviguez, ou basculez sur « Tout Firefox ».')
+        : t('Rien de capture pour le moment.')
     ]));
     return;
   }
@@ -94,8 +96,22 @@ function applyCapture() {
   const btn = $('#capture');
   btn.classList.toggle('paused', !on);
   $('#capture-label').textContent = on ? t('Capture') : t('En pause');
-  btn.title = on ? 'Capture active — cliquer pour mettre en pause'
-                 : 'En pause — cliquer pour reprendre';
+  /* La bulle restait en francais : elle ne passait pas par t(). Ce sont les
+     memes phrases que le bouton de la console. */
+  btn.title = on ? t('Capture active — cliquer pour mettre en pause')
+                 : t('Capture en pause — cliquer pour reprendre');
+}
+
+/* « Vider » efface toute la capture : comme dans la console, le premier clic
+   arme le bouton, le second — dans les quatre secondes — vide. */
+let armementVider = null;
+function desarmerVider() {
+  clearTimeout(armementVider);
+  armementVider = null;
+  const btn = $('#clear');
+  if (!btn) return;
+  btn.classList.remove('armed');
+  btn.textContent = t('Vider');
 }
 
 function buildQuick() {
@@ -153,6 +169,13 @@ function bind() {
   });
 
   $('#clear').addEventListener('click', async () => {
+    if (!armementVider) {
+      armementVider = setTimeout(desarmerVider, 4000);
+      $('#clear').classList.add('armed');
+      $('#clear').textContent = t('Confirmer ?');
+      return;
+    }
+    desarmerVider();
     const res = await cmd('clear', {});
     if (res.error) return toast(res.error, false);
     state.records.clear();

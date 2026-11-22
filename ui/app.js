@@ -116,9 +116,51 @@ export function dropdown(button, itemsFn, opts = {}) {
     if (!opening) { menu.hidden = true; return; }
     build();
     menu.hidden = false;
+    caserDansLaFenetre(menu, opts);
   });
 
   return menu;
+}
+
+/* Un menu s aligne sur un bord de son bouton, et sortait de la fenetre quand
+   ce bouton en etait proche : dans le panneau lateral, ou la barre passe a la
+   ligne, le menu « Exporter » debordait a gauche et ses libelles etaient
+   coupes, hors d atteinte. Une fois ouvert, il est mesure, retourne du cote
+   ou il tient, et decale juste assez s il ne tient d aucun ; en bas de la
+   fenetre, il s ouvre vers le haut si la place y est. */
+function caserDansLaFenetre(menu, opts) {
+  if (typeof menu.getBoundingClientRect !== 'function' || !menu.style) return;
+  const largeur = Number(window.innerWidth) || 0;
+  const hauteur = Number(window.innerHeight) || 0;
+  if (!largeur || !hauteur) return;
+  const MARGE = 6;
+  menu.style.left = '';
+  menu.style.right = '';
+  menu.classList.toggle('left', !!opts.left);
+  menu.classList.toggle('up', !!opts.up);
+
+  let r = menu.getBoundingClientRect();
+  if (r.left < MARGE && !menu.classList.contains('left')) {
+    menu.classList.add('left');
+    r = menu.getBoundingClientRect();
+  } else if (r.right > largeur - MARGE && menu.classList.contains('left')) {
+    menu.classList.remove('left');
+    r = menu.getBoundingClientRect();
+  }
+  const aGauche = menu.classList.contains('left');
+  if (r.right > largeur - MARGE) {
+    const d = Math.ceil(r.right - (largeur - MARGE));
+    if (aGauche) menu.style.left = -d + 'px'; else menu.style.right = d + 'px';
+  } else if (r.left < MARGE) {
+    const d = Math.ceil(MARGE - r.left);
+    if (aGauche) menu.style.left = d + 'px'; else menu.style.right = -d + 'px';
+  }
+
+  const ancre = menu.parentElement;
+  if (!opts.up && r.bottom > hauteur - MARGE && ancre && typeof ancre.getBoundingClientRect === 'function') {
+    const a = ancre.getBoundingClientRect();
+    if (a.top > hauteur - a.bottom) menu.classList.add('up');
+  }
 }
 
 document.addEventListener('click', () => closeMenus());
@@ -251,12 +293,87 @@ export function scopeCount() {
   return n;
 }
 
+/* ----------------------- L onglet que l on observe ------------------------ */
+/* « Onglet actif » designe l onglet ou l on navigue. Le panneau lateral et la
+   popup le trouvent en demandant l onglet actif de leur fenetre. Mais une
+   console ouverte dans un onglet, ou dans une fenetre detachee, EST l onglet
+   actif de sa fenetre : le perimetre designait la console elle-meme, et le
+   tableau restait vide alors que tout etait capture. Elle prend donc le
+   dernier onglet web consulte. Et dans tous les cas, l onglet suivi change
+   quand l utilisateur change d onglet, au lieu de rester celui du demarrage. */
+let ongletConsole = null;   // l onglet de la console, quand elle en est un
+let fenetreSuivie = null;   // la fenetre du panneau lateral ou de la popup
+
+function pageDeSwift(onglet) {
+  const adresse = String((onglet && onglet.url) || '');
+  let base = '';
+  try { base = B.runtime.getURL(''); } catch { base = ''; }
+  return !!base && adresse.startsWith(base);
+}
+
+/** L identifiant de l onglet que « Onglet actif » doit montrer, ou null. */
+export async function ongletObserve() {
+  const tabs = B.tabs;
+  if (!tabs || typeof tabs.query !== 'function') return null;
+  if (typeof tabs.getCurrent === 'function') {
+    try { ongletConsole = (await tabs.getCurrent()) || null; } catch { ongletConsole = null; }
+  }
+  if (!ongletConsole) {
+    const actifs = await tabs.query({ active: true, currentWindow: true });
+    const actif = actifs && actifs[0];
+    if (actif && actif.windowId != null) fenetreSuivie = actif.windowId;
+    return actif ? actif.id : null;
+  }
+  let retenu = null;
+  for (const onglet of (await tabs.query({})) || []) {
+    if (onglet.id === ongletConsole.id || pageDeSwift(onglet)) continue;
+    if (!retenu || (onglet.lastAccessed || 0) > (retenu.lastAccessed || 0)) retenu = onglet;
+  }
+  return retenu ? retenu.id : null;
+}
+
+/** Suit l onglet ou l on navigue ; `rappel(id, titreSeul)` chaque fois qu il
+ *  change — `titreSeul` quand seul son titre a change. */
+export function suivreOngletObserve(rappel) {
+  const tabs = B.tabs;
+  if (!tabs) return;
+  const prevenir = (titreSeul = false) => { if (typeof rappel === 'function') rappel(state.tabId, titreSeul); };
+  /* L onglet suivi change de titre en chargeant sa page : la bulle du
+     perimetre, qui le nomme, gardait l ancien (« Nouvel onglet »). */
+  if (tabs.onUpdated && typeof tabs.onUpdated.addListener === 'function') {
+    const surTitre = (id, changement) => {
+      if (id === state.tabId && changement && changement.title) prevenir(true);
+    };
+    try { tabs.onUpdated.addListener(surTitre, { properties: ['title'] }); }
+    catch { tabs.onUpdated.addListener(surTitre); }
+  }
+  if (tabs.onActivated && typeof tabs.onActivated.addListener === 'function') {
+    tabs.onActivated.addListener(async info => {
+      const id = info && info.tabId;
+      if (id == null || id === state.tabId) return;
+      if (ongletConsole) {
+        if (id === ongletConsole.id) return;   // revenir sur la console ne change rien
+        try { if (pageDeSwift(await tabs.get(id))) return; } catch { return; }
+      } else if (fenetreSuivie != null && info.windowId !== fenetreSuivie) {
+        return;                                // une autre fenetre de Firefox
+      }
+      state.tabId = id;
+      prevenir();
+    });
+  }
+  if (tabs.onRemoved && typeof tabs.onRemoved.addListener === 'function') {
+    tabs.onRemoved.addListener(async id => {
+      if (id !== state.tabId) return;
+      try { state.tabId = await ongletObserve(); } catch { state.tabId = null; }
+      prevenir();
+    });
+  }
+}
+
 /** Recupere l instantane complet au demarrage. */
 export async function bootstrap() {
-  try {
-    const tabs = await B.tabs.query({ active: true, currentWindow: true });
-    if (tabs && tabs[0]) state.tabId = tabs[0].id;
-  } catch { /* le perimetre « tout Firefox » reste disponible */ }
+  try { state.tabId = await ongletObserve(); }
+  catch { /* le perimetre « tout Firefox » reste disponible */ }
 
   const snap = await cmd('snapshot', { tabId: null, limit: 0 });
   if (snap.error) { toast(snap.error, false); return false; }
@@ -317,6 +434,11 @@ export function appliquerEchelle(config) {
   // La largeur sert aussi aux vues qui adaptent leur mise en page en JS.
   root.dataset.largeur = window.innerWidth <= 560 ? 'etroite'
     : window.innerWidth <= 900 ? 'moyenne' : 'large';
+  /* L en-tete tient sur une ligne a partir d environ 1 240 px a l echelle 1.
+     En dessous — demi-ecran, fenetre detachee, texte agrandi — la recherche
+     etait ecrasee a quelques pixels et la case « corps » passait sous la
+     liste du perimetre : la recherche prend alors sa propre ligne. */
+  root.dataset.entete = window.innerWidth < 1240 * total ? 'deux' : 'une';
   // L echelle change la hauteur des lignes : les vues qui mesurent le DOM
   // (tableau virtualise) doivent remesurer, sinon elles gardent l ancienne.
   if (avant !== root.style.getPropertyValue('--scale')) {

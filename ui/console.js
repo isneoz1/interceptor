@@ -8,10 +8,10 @@
  * ============================================================ */
 import { $, el, clear } from './lib/dom.js';
 import { differerSiAppui } from './lib/appui.js';
-import { t } from './lib/i18n.js';
+import { t, tp } from './lib/i18n.js';
 import { icone, poserIcones } from './lib/icones.js';
 import {
-  B, cmd, state, toast, copy, dropdown, closeMenus, connect, bootstrap, saveConfig
+  B, cmd, state, toast, copy, dropdown, closeMenus, connect, bootstrap, saveConfig, suivreOngletObserve
 } from './app.js';
 import * as requests from './console/requests.js';
 import * as detail from './console/detail.js';
@@ -31,8 +31,12 @@ import * as palette from './console/palette.js';
 import { RACCOURCIS } from './console/raccourcis.js';
 import * as debugview from './console/debug.js';
 import * as intercept from './console/intercept.js';
+import * as visite from './console/visite.js';
+import { closeContextMenu } from './console/rowmenu.js';
 import { renderFoot, renderSpark } from './console/statusbar.js';
-import { initHeader, applyStaticLabels, applyCaptureButton, buildScope, saveFilter } from './console/header.js';
+import {
+  initHeader, applyStaticLabels, applyCaptureButton, buildScope, saveFilter, viderCapture
+} from './console/header.js';
 
 /* Les vues, dans l ordre ou elles apparaissent dans la barre laterale.
  *
@@ -171,10 +175,14 @@ function buildSidebar() {
     }
     /* La barre se reconstruit a chaque changement de reglage (langue, mode
        simple) : sans cette marque, la vue ouverte perdait sa surbrillance. */
+    /* Sous 1120 px la colonne ne garde que les icones : le libelle masque ne
+       nomme plus le bouton pour un lecteur d ecran, et la bulle ne disait que
+       l indice. Le nom passe donc par aria-label, et la bulle dit les deux. */
     const btn = el('button', {
       class: 'navbtn' + (state.view === key ? ' on' : ''), type: 'button', dataset: { view: key },
       'aria-current': state.view === key ? 'page' : null,
-      title: view.hint ? t(view.hint) : null
+      'aria-label': t(view.label),
+      title: view.hint ? tp('{vue} — {indice}', { vue: t(view.label), indice: t(view.hint) }) : t(view.label)
     }, [
       icone(view.ico) || el('span', { class: 'ico' }),
       el('span', { class: 'lbl', text: t(view.label) }),
@@ -247,6 +255,11 @@ function bindKeyboard() {
     const typing = !!(cible && typeof cible.matches === 'function'
       && cible.matches('input, textarea, select'));
 
+    /* La visite guidee recouvre la page : tant qu elle est ouverte, elle seule
+       recoit les touches — sinon une fleche avancait la visite ET changeait la
+       requete ouverte derriere elle. */
+    if (visite.estOuverte()) { visite.clavier(ev); return; }
+
     /* Ctrl+K reste actif pendant la saisie : c est justement quand on cherche
        quelque chose qu on veut l atteindre par son nom. */
     if ((ev.ctrlKey || ev.metaKey) && ev.key.toLowerCase() === 'k') {
@@ -257,6 +270,9 @@ function bindKeyboard() {
 
     if (ev.key === 'Escape') {
       closeMenus();
+      /* Le menu du clic droit sur une ligne restait ouvert : Echap ne fermait
+         que les menus deroulants. */
+      closeContextMenu();
       if (palette.estOuverte()) { palette.basculer(false); return; }
       if (!$('#keys').hidden) { toggleKeys(false); return; }
       if (!typing && detail.isOpen()) detail.close();
@@ -305,8 +321,10 @@ function bindKeyboard() {
         groupe: 'Capture', faire: () => $('#capture').click() },
       { id: 'suivre', libelle: 'Suivre le flux ou le figer',
         groupe: 'Capture', faire: () => requests.toggleFollow() },
+      /* Choisie dans la palette, la commande est deja deliberee : elle vide
+         sans passer par le second clic que demande le bouton de l en-tete. */
       { id: 'vider', libelle: 'Vider toute la capture',
-        groupe: 'Capture', faire: () => $('#clear').click() },
+        groupe: 'Capture', faire: () => viderCapture() },
       { id: 'chercher', libelle: 'Placer le curseur dans la recherche',
         groupe: 'Tableau', faire: () => { setView('requests'); $('#q').focus(); } },
       { id: 'colonnes', libelle: 'Colonnes du tableau',
@@ -314,10 +332,19 @@ function bindKeyboard() {
       { id: 'exporter', libelle: 'Exporter dans un fichier',
         groupe: 'Exporter', faire: () => $('#export').click() },
       { id: 'raccourcis', libelle: 'Raccourcis clavier',
-        groupe: 'Aide', faire: () => toggleKeys(true) }
+        groupe: 'Aide', faire: () => toggleKeys(true) },
+      { id: 'visite', libelle: 'Visite guidee de l interface',
+        groupe: 'Aide', faire: () => visite.demarrer() }
     ]
   });
   palette.init();
+
+  /* La derniere etape de la visite mene a la suite : le tutoriel, ou la
+     palette elle-meme. */
+  visite.definirRappels({
+    tutoriel: () => setView('tutorial'),
+    palette: () => palette.basculer(true)
+  });
 
   $('#keys-close').addEventListener('click', () => toggleKeys(false));
   $('#keys').addEventListener('click', ev => { if (ev.target.id === 'keys') toggleKeys(false); });
@@ -365,6 +392,13 @@ function bindKeyboard() {
   renderSpark();
   refreshBadges();
 
+  /* « Onglet actif » suit l onglet ou l on navigue : la liste des onglets se
+     relit (son titre est dans la bulle du perimetre) et la vue se redessine. */
+  suivreOngletObserve((id, titreSeul) => {
+    buildScope();
+    if (!titreSeul && state.scope === 'tab') renderView();
+  });
+
   // Intention deposee par un menu contextuel, la popup ou l installation.
   const intent = await cmd('takeIntent', {});
   if (intent && intent.intent) {
@@ -374,6 +408,9 @@ function bindKeyboard() {
     }
     setView(intent.intent.view || 'requests');
     if (intent.intent.id != null) detail.open(intent.intent.id);
+    /* L installation demande la visite guidee : on la lance une fois la
+       console posee, pour qu elle eclaire des zones deja dessinees. */
+    if (intent.intent.visite) setTimeout(() => visite.demarrer(), 400);
   } else {
     const last = (state.config && state.config.lastView) || 'requests';
     setView(VIEWS[last] && !VIEWS[last].hidden ? last : 'requests');

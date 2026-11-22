@@ -16,7 +16,7 @@ Created by **D4RK** · <sub>formerly INTERCEPTOR, renamed in 5.0</sub>
 ![Manifest V2](https://img.shields.io/badge/Manifest-V2-444?style=flat)
 [![MIT licence](https://img.shields.io/badge/Licence-MIT-00DDFF?style=flat)](LICENSE)
 ![No dependencies](https://img.shields.io/badge/Dependencies-none-2ea043?style=flat)
-![4038 assertions](https://img.shields.io/badge/Assertions-4038-2ea043?style=flat)
+![4047 assertions](https://img.shields.io/badge/Assertions-4047-2ea043?style=flat)
 ![English and French](https://img.shields.io/badge/UI-EN%20%2F%20FR-444?style=flat)
 
 [**Website**](https://isneoz1.github.io/interceptor/) · [**Try it in 60 seconds**](#try-it-in-60-seconds) · [**Download**](https://github.com/isneoz1/interceptor/releases/latest) · [**Why not the built-in panel?**](#firefox-already-has-a-network-panel-why-this) · [**Screenshots**](#2-screenshots) · [**How it works**](#4-how-it-works-the-capture-layers) · [**Changelog**](CHANGELOG.md)
@@ -36,16 +36,18 @@ Created by **D4RK** · <sub>formerly INTERCEPTOR, renamed in 5.0</sub>
 > that refuses to report anything it cannot prove.
 
 > [!NOTE]
-> **New in 5.9** — what the best tools do, done the same way and checked against them.
-> Charles's **No Caching**, **Block Cookies** and **Throttle** become one-click templates,
-> header for header as its documentation describes them; a mocked response can be **loaded
-> from a file**, images included (Charles's *Map Local*); URL parameters are added, replaced or
-> removed (Requestly's *Query Param*) while the others keep their exact spelling. A captured
-> photo says **what it gives away** — where it was taken, who took it, the camera's serial
-> number — read from its EXIF, XMP and PNG text, and the toolbox reads one you paste. The
-> Headers tab says **what the browser announces**, and what its User-Agent no longer says:
-> Windows 11 still writes `Windows NT 10.0`. And CyberChef's **defang** puts a dangerous
-> address in a report without it becoming a link.
+> **New in 6.0** — simple to pick up, and the bugs that hid it.
+> A **two-minute guided tour** lights up each part of the console in turn — it starts on its
+> own after installation, and again from Help, the Tutorial, the Actions menu or `Ctrl+K`.
+> Help opens on a **quick guide** (*I want to… → do this*) and a clickable table of contents.
+> The `?` next to the search box offers **twelve ready-made searches**. An empty table says
+> **why** it is empty — capture paused, traffic in another tab, a filter — with the button that
+> fixes it. The JWT tool **builds a signed test token** (HS256, HS384, HS512) from a header and
+> a payload you write, byte-identical to RFC 7515's own example. And the bugs: the console
+> opened in a tab or a detached window showed **an empty table** (its "active tab" was itself),
+> and the sidebar's never followed you to another tab; **Clear** wiped a whole session in one
+> click; menus spilled out of a narrow window; the header crushed the search box below 1,240 px;
+> the text-size setting skipped headers, tabs, menus and chips.
 >
 > [Every earlier version →](CHANGELOG.md)
 
@@ -86,7 +88,8 @@ No account, no build step, no package to install.
 3. Click "Load Temporary Add-on…" and pick  manifest.json
 ```
 
-Capture starts immediately. Browse anything, then press **Ctrl+K** and type `req` to open
+Capture starts immediately, and a **two-minute guided tour** shows where everything is —
+replay it any time from Help. Browse anything, then press **Ctrl+K** and type `req` to open
 the request table. There is nothing to configure — and nothing leaves your machine, because
 there is nowhere for it to go.
 
@@ -207,8 +210,8 @@ specific points:
 **What it is not**: not a proxy, not a vulnerability scanner, not an attack tool. Everything
 happens inside your Firefox, on your machine.
 
-**By the numbers**: 262 JavaScript modules, ~53,500 lines, zero external dependencies,
-4038 automated assertions, English and French interface — French on a French Firefox, English otherwise.
+**By the numbers**: 264 JavaScript modules, ~54,400 lines, zero external dependencies,
+4047 automated assertions, English and French interface — French on a French Firefox, English otherwise.
 
 ---
 
@@ -381,7 +384,9 @@ temporary load above.
 
 ### C. First run
 
-Nothing to configure. On first start the console opens on the help page. After that:
+Nothing to configure. On first start the console opens on the request table with a
+two-minute guided tour of the interface; Help starts with a quick guide, *I want to… → do
+this*. After that:
 
 - **Ctrl+Shift+Y** — the compact window
 - **Alt+Shift+S** — the sidebar panel
@@ -489,6 +494,11 @@ never below 88 % or above 130 % of the size you chose.
 What clicking the icon opens is your choice — popup, tab, sidebar or detached window — in
 the settings or from the dock button, which remembers it.
 
+Wherever it opens, the **Active tab** scope means the tab you are browsing: in the sidebar
+it follows you when you switch tabs; in a console opened as a tab or a detached window — which
+is itself the active tab of its window — it takes the web tab you used last, and its tooltip
+names it.
+
 <div align="center"><img src="docs/images/popup.png" width="380" alt="Popup"></div>
 
 ---
@@ -543,7 +553,13 @@ advanced views and keeps only the essentials.
 | View | What it shows |
 |---|---|
 | **Tutorial** | Twelve lessons to get to grips with the tool. A lesson is only ticked once you have actually performed the action — never on your behalf. |
-| **Help** | The complete manual, offline. |
+| **Help** | The complete manual, offline. It opens on a quick guide — *I want to… → do this* — and a clickable table of contents. |
+
+And over every view, the **guided tour**: thirteen steps that light up the capture button, the
+search, the one-click filters, the table, the scope, the sidebar, the menus and the status bar,
+two sentences each. It skips what the window is too narrow to show, takes the arrow keys and
+`Esc`, and never clicks anything for you. It starts by itself after installation; Help, the
+Tutorial, the Actions menu and `Ctrl+K` start it again.
 
 ---
 
@@ -634,7 +650,9 @@ Firefox's names for criteria that already exist are accepted as synonyms: `statu
 
 The **bodies** checkbox extends the search to bodies, headers, frames and stacks.
 The ★ button saves the current filter and recalls recent searches.
-The `?` button next to the field opens the full syntax help.
+The `?` button next to the field offers twelve ready-made searches — what fails, server errors,
+critical alerts, third parties that set cookies, pages served without a CSP… — then the full
+syntax help.
 
 ---
 
@@ -708,7 +726,7 @@ own secret and tracker patterns in the settings.
 | **Keys and trials** | XOR (including single-byte key search), Vigenère, Caesar across all 26 shifts |
 | **Public key** | One public key pasted in any form — PEM (SubjectPublicKeyInfo or PKCS #1), a certificate, a JWK or a whole key set, an OpenSSH line or a whole `authorized_keys` file, base64 DER — and all the others: PEM, PKCS #1, JWK, OpenSSH line, with the **`pin-sha256` pin** (RFC 7469), the **OpenSSH SHA256 and MD5 fingerprints**, the **JWK thumbprint** (RFC 7638), the **key identifier** a certificate carries (RFC 5280 §4.2.1.2) and the certificate's SHA-256 fingerprint. Several keys pasted together are compared: the same key in two forms is recognised. RSA, ECDSA P-256 / P-384 / P-521, Ed25519 and Ed448; a private key is refused |
 | **Encryption** | AES-GCM / CBC / CTR, PBKDF2 derivation, RSA and ECDSA signing and verification |
-| **JWT** | Header and payload decoding, labels for standard claims, signature verification — HS with the shared key (text or an `oct` JWK), RS, PS, ES and **EdDSA / Ed25519** with a public key in PEM or JWK, or the issuer's **whole key set (JWKS)**, from which the key the token designates is chosen — `alg` read to the letter (RFC 7515 §4.1.1), **JWK thumbprint (RFC 7638)** |
+| **JWT** | Header and payload decoding, labels for standard claims, signature verification — HS with the shared key (text or an `oct` JWK), RS, PS, ES and **EdDSA / Ed25519** with a public key in PEM or JWK, or the issuer's **whole key set (JWKS)**, from which the key the token designates is chosen — `alg` read to the letter (RFC 7515 §4.1.1), **JWK thumbprint (RFC 7638)**. And **a signed test token is built**: the header and payload of the pasted token, or of a template, edited by hand and signed with HS256, HS384 or HS512 using your shared key (text or `oct` JWK) — encoded exactly as written, so a large integer keeps its digits — then verified at once with the same key. Checked byte for byte against the example of RFC 7515 Appendix A.1. Only shared keys: signing with RS, PS or ES would take a private key, which the toolbox never accepts |
 | **Digests** | MD5, SHA-1, SHA-2, SHA-3, Keccak, SHAKE, BLAKE2b/2s, RIPEMD-160, SM3, MD4, NTLM, CRC (20 standard variants), Adler-32, FNV-1a, MurmurHash3, xxHash32, **xxHash64**, **SipHash-2-4**, HMAC |
 | **Measures** | Length, bytes, Shannon entropy, character distribution |
 | **Hexadecimal** | Hex dump with ASCII column |
@@ -994,10 +1012,10 @@ ui/                        The interface — one page for all four surfaces
 ├── app.js                 Shared state, kernel access, theme, scale
 ├── popup.html/.js         The popup
 ├── theme.css, console.css Visual foundation (everything keys off --scale)
-├── console/               One view per file, plus the detail panel
+├── console/               One view per file, plus the detail panel and the guided tour
 └── lib/                   Codecs, digests, network, reference tables, i18n
 
-tests/                     4038 assertions, no browser required
+tests/                     4047 assertions, no browser required
 tools/sockets.mjs          Real WebSockets against a real server: page, worker, WebRTC
 tools/transparence.mjs     What a page can tell about the probes — it should be nothing
 tools/minutage.mjs         Network timing phases in a real browser: only real measurements
@@ -1081,7 +1099,7 @@ a setting, right-click menu and exported files included.
 npm test
 ```
 
-4038 assertions, with no browser and no dependencies. The kernel and interface modules are
+4047 assertions, with no browser and no dependencies. The kernel and interface modules are
 written for Firefox; `tests/harnais.mjs` supplies the minimum WebExtension API and DOM they
 need to import and run under Node. **The logic under test is exactly the logic that runs in
 the browser, with no rewriting.**
@@ -1090,7 +1108,7 @@ the browser, with no rewriting.**
 |---|---|---|
 | `core.test.mjs` | 241 | URL normalisation, correlation signatures, the store, the rule engine (both ways: what matches **and** what must not), the security analyser rule by rule, HAR export, curl import, all 39 code generators, and the settings applied to what the page probes send — a body the settings refuse is not kept |
 | `avance.test.mjs` | 469 | WebSocket and HTTP/2 frames, CSP, RFC 9111 freshness, multipart, canonical URLs and homographs, protocol tables, binary structures, rare digests, generators |
-| `ui-load.test.mjs` | 632 | Actual loading of the 213 interface modules, complete module graph (no dead import, no file outside the graph), consistency with the HTML pages and the manifest, **full translation coverage** — every displayed string must have a dictionary entry, including labels that reach the translator through a table (`allRows` labels, search help, CSP directive meanings), the labels of the rule editor, **no text written straight into the page or built by concatenation**, which no dictionary entry can match, and **every text of the HTML pages** — labels, tooltips, screen-reader names, placeholders — translated and set again by the script — and **measured contrast**: every colour pair in both themes is checked against the WCAG 2.1 thresholds. It also holds the documentation to the code: **both help pages and both tutorials must have the same sections, item for item**, every setting must be read by the code, the profiles must do what they say, and the README must name every settings group, profile, search criterion, analyser fact and kernel file, and state the right number of reference tables, link relations, proxy error types, tools, required files, test suites and lines of code — and the help and the tutorial, in both languages, the right number of transformations, analysed headers, rule templates, tools and families; every suite in `tests/` must run in both `npm test` and the build; and the website must state the same numbers as the code, run no script, and load nothing from anyone else |
+| `ui-load.test.mjs` | 635 | Actual loading of the 215 interface modules, complete module graph (no dead import, no file outside the graph), consistency with the HTML pages and the manifest, **full translation coverage** — every displayed string must have a dictionary entry, including labels that reach the translator through a table (`allRows` labels, search help, CSP directive meanings), the labels of the rule editor, **no text written straight into the page or built by concatenation**, which no dictionary entry can match, and **every text of the HTML pages** — labels, tooltips, screen-reader names, placeholders — translated and set again by the script — and **measured contrast**: every colour pair in both themes is checked against the WCAG 2.1 thresholds. It also holds the documentation to the code: **both help pages and both tutorials must have the same sections, item for item**, every setting must be read by the code, the profiles must do what they say, and the README must name every settings group, profile, search criterion, analyser fact and kernel file, and state the right number of reference tables, link relations, proxy error types, tools, required files, test suites and lines of code — and the help and the tutorial, in both languages, the right number of transformations, analysed headers, rule templates, tools and families; every suite in `tests/` must run in both `npm test` and the build; and the website must state the same numbers as the code, run no script, and load nothing from anyone else |
 | `detail-coverage.test.mjs` | 130 | Each of a record's 60 fields is displayed, each tab has a render function, each searchable field exists |
 | `outils.test.mjs` | 108 | The toolbox, against published vectors |
 | `rendu.test.mjs` | 116 | The interface **actually rendered**: nineteen views — the three logs among them — against three captures, the eleven detail tabs, the twenty-five toolbox panels against thirty-two hostile inputs, and 264 deliberately malformed HAR files — then a fragment-by-fragment comparison of both languages, so nothing can stay in French on an English screen — every view and every tab is compared, none is skipped. It also counts the commands each view sends the kernel: **a view that re-renders itself in a loop is caught in a second instead of freezing the tab**. Finally the translator itself reports every text it could not translate while everything is rendered in English: a French sentence that arrives through a variable can no longer hide. Then the table's **Follow** mode: a request opened from elsewhere is brought into view, reading suspends Follow and closing resumes it, the setting applies when it changes and only then; and what the screen shows — no bold markers left raw, punctuation that follows the language |
@@ -1101,7 +1119,7 @@ the browser, with no rewriting.**
 | `signaux.test.mjs` | 185 | What 5.4 and 5.5 read in response headers, against the texts that define them: the three HTTP date forms, and IMF-fixdate checked on five hundred instants against ECMA-262's `toUTCString`; every example of **RFC 9745** (`Deprecation`), **RFC 8594** (`Sunset`), **RFC 9110** (`Retry-After`), **RFC 8288** (`Link`), **RFC 7838** (`Alt-Svc`), **RFC 9211** (`Cache-Status`), **RFC 9213** (`CDN-Cache-Control`) and **RFC 9218** (`Priority`), **RFC 9209** (`Proxy-Status`) and **RFC 9532** (`next-hop-aliases`), and of drafts -11, -07 and -05 of the IETF **RateLimit** draft; the 134 link relations, and the 33 proxy error types with their recommended status and parameters, against snapshots of the IANA registries; the kernel tags, the summary, the verdict lines and the Headers tab in both languages; and **hostile input** — every reader takes 3,000 generated values and a 200 KB one without throwing, and 5,000 links or 10,000 exhausted quotas draw their tab in under a second |
 | `comparaison.test.mjs` | 156 | What 5.5 repaired, against independent references: the comparison engine gives **the shortest list of changes** on two thousand random cases (checked against the longest common subsequence computed by dynamic programming) and handles 200,000 lines; the unified diff is **byte-identical to GNU diffutils 3.12** on eleven cases, finds the same 20,000 hunks as GNU on 200,000 lines, and re-applies to the second text on a thousand more (and on six hundred with GNU `patch`, run locally); the Comparison view — rendered with two requests in both languages — with repeated headers, CRLF and unknown measures; **lossless JSON against `JSON.parse`** on twenty thousand texts, and `JSON.stringify` on three thousand values; the toolbox transformations and the protocol readers with integers beyond 2^53, duplicate keys and `__proto__`; **CBOR and MessagePack** against vectors generated by the Python `cbor2` and `msgpack` libraries, the 81 examples of **RFC 8949 Appendix A** and its 94 ill-formed sequences (Appendix F.1); the lazy JSON tree and long texts; the eleven detail tabs and several tools rendered, in both languages, for a request whose headers, token and bodies are full of names like `constructor`, `__proto__` and `toString` — nothing inherited from JavaScript may show; and a guard that fails on any new silent cut in a view |
 | `patch.test.mjs` | 76 | What 5.6 reads, against its references: all 112 cases of the community **json-patch-tests** suite (RFC 6902, Appendix A included), its 4 disabled cases too — read losslessly, an `op` written twice is seen; the 15 cases of **RFC 7396** Appendix A and its §3 example, written byte for byte, member order included; the **RFC 6901** examples of §5 and §6, its syntax, the `~01` decoding order and the key written twice that makes a reference undefined; 3,000 produced patches applied back to the second document; 3,000 generated patches that give the same result, or fail at the same operation, applied at once or operation by operation; large inputs — 10,000 operations on 100,000 elements, a merge of 100,000 members — under 1.5 s; the equality of RFC 6902 §4.6, numbers included; 3,000 hostile inputs; and the Request tab, the toolbox panel and the Comparison view in both languages |
-| `jose.test.mjs` | 88 | What 5.7 reads, against vectors extracted from the texts and verified at extraction: **RFC 7515 Appendix A** — HS256 with its `oct` JWK, RS256, ES256, ES512 — and **RFC 8037 A.4** (EdDSA) verified, and refused once altered; the unsecured example (A.5); **RFC 9864** `Ed25519`, and a key of another curve refused; `hs256`, `None` and `Rs256` refused (RFC 7515 §4.1.1); the **RFC 7517 Appendix A** sets, public and private, the private keys flagged; a symmetric key, a 1024-bit RSA key and a duplicate `kid`; the choice of a key by `kid`, type, `use`, `key_ops` and `alg`; the **RFC 8037 A.3** thumbprint; the examples of **RFC 8414 §3.2** and **OpenID Connect Discovery §4.2**, an issuer read at the wrong address, both placements for an issuer with a path, https, required members, PKCE; then the kernel finding the issuer's keys in the capture, a key of another issuer that proves nothing against a token, and the Headers tab, the Response tab and the toolbox in both languages |
+| `jose.test.mjs` | 94 | What 5.7 reads, against vectors extracted from the texts and verified at extraction: **RFC 7515 Appendix A** — HS256 with its `oct` JWK, RS256, ES256, ES512 — and **RFC 8037 A.4** (EdDSA) verified, and refused once altered; the token 6.0 builds from the header and payload of **RFC 7515 A.1**, identical to the published one byte for byte, HS384 and HS512 built and verified, a payload encoded exactly as written, every impossible input refused with a translated message, and 400 KB signed; the unsecured example (A.5); **RFC 9864** `Ed25519`, and a key of another curve refused; `hs256`, `None` and `Rs256` refused (RFC 7515 §4.1.1); the **RFC 7517 Appendix A** sets, public and private, the private keys flagged; a symmetric key, a 1024-bit RSA key and a duplicate `kid`; the choice of a key by `kid`, type, `use`, `key_ops` and `alg`; the **RFC 8037 A.3** thumbprint; the examples of **RFC 8414 §3.2** and **OpenID Connect Discovery §4.2**, an issuer read at the wrong address, both placements for an issuer with a path, https, required members, PKCE; then the kernel finding the issuer's keys in the capture, a key of another issuer that proves nothing against a token, and the Headers tab, the Response tab and the toolbox in both languages |
 | `cles.test.mjs` | 221 | What 5.8 reads, against tools that read the **same keys**: seven keys — Ed25519, Ed448, RSA 2048 and 3072, ECDSA P-256, P-384 and P-521 — each read in every form it has (PEM, PKCS #1, JWK, OpenSSH line, certificate, base64 DER), and each form giving back all the others byte for byte: the PEM and the `pin-sha256` pin of **OpenSSL 3.5**, the JWK of **Node**, the OpenSSH line and its SHA256 and MD5 fingerprints from **OpenSSH 10.3** (`ssh-keygen`), the certificate fingerprint and key identifier of OpenSSL; a whole `authorized_keys` file with options, mixed pastes, refused private keys and lying lines; the toolbox panel in both languages |
 | `langue.test.mjs` | 132 | The language of whoever uses SWIFT: a new install follows **Firefox's language** (French for `fr`, `fr-CA`, `fr_BE`; English for `de`, `en-US`, `ja`, `es-ES`, and for `frr` or `fy-NL`, which are not French), a saved choice is never replaced; every exported file — findings report, CSV, HAR and sanitised HAR, Postman collection, generated code, Markdown sheet — **without a word of French** in English and unchanged in French; the CSV separator for ten regions, and no formula slipped into a CSV cell; the right-click menu, the alert notification and the four keyboard shortcuts (manifest and `_locales`) in both languages; a HAR exported in English, re-imported, keeps its truncated bodies; the twenty-five toolbox panels rendered in French and in English with thirty-one real pastes — a JWT, a certificate, a URL, a cURL command, a block of headers… — and no French word, no sentence left identical; the navigation and context logs, the timestamp readings, the generator and the stream titles in English; and a guard over the whole source: no text is assembled before being translated; every one-line message, every button tooltip and every name of the response protections has its translation; and the Rules view, with a card for every action and every template, where any text the translator does not know — a single word included — fails, and a Throttle card without a value says the 50 kB/s the engine applies |
 | `saisie.test.mjs` | 430 | **No click lost, nothing typed lost**: the redraw deferred while a pointer is pressed, checked with real events — the last request per view, once, after the click; superseded by the click's own redraw; a missed release noticed at the next move; an error in one view neither blocking the others nor swallowed; a redraw asked for during a redraw of the same view run after it, not inside it. Then every field of every view that redraws itself — the toolbox and its panels under seven inputs, the Rules with every action and header operation, the Settings, the Interception queue — must carry a stable name, unique in its view and shared with no other view; and the Interception view must redraw only when its queue or its settings change |
@@ -1133,7 +1151,7 @@ the address a browser hands back after a redirect.
 .\build.ps1            # verify, test, then write dist/swift-<version>.xpi
 ```
 
-The script checks that the 238 required files are present and that every surface declared in
+The script checks that the 240 required files are present and that every surface declared in
 the manifest exists on disk, then runs the 20 test suites. **If a test fails, the build
 stops.**
 
@@ -1231,7 +1249,7 @@ can still quote the address of a page, and issues are public: read the file befo
 Before opening a pull request:
 
 ```bash
-npm test              # all 4038 assertions must pass
+npm test              # all 4047 assertions must pass
 .\build.ps1 -Verify   # the build must be green
 ```
 

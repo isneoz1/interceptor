@@ -37,7 +37,19 @@ body { display: flex; flex-direction: column; overflow: hidden; }
 
 .top .grow { flex: 1 1 auto; min-width: 120px; display: flex; align-items: center; gap: 6px; }
 #q { flex: 1; min-width: 0; }
+/* Le perimetre liste les onglets ouverts, titres compris : sans borne, une
+   liste s elargit a son plus long titre et prenait la place de la recherche. */
+#scope { max-width: calc(168px * var(--scale)); text-overflow: ellipsis; }
 .top .actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; margin: 0; }
+
+/* Deux lignes quand une seule ne suffit pas, calcule dans ui/app.js d apres
+   la largeur et l echelle reelles : la recherche passe sous l identite et
+   les actions, et garde toute la largeur. */
+:root[data-entete='deux'] .top {
+  height: auto; flex-wrap: wrap; row-gap: 8px; padding-top: 8px; padding-bottom: 8px;
+}
+:root[data-entete='deux'] .top .grow { order: 3; flex-basis: 100%; }
+:root[data-entete='deux'] .top .actions { margin-left: auto; }
 
 /* Separateur vertical de la barre : isole le groupe d icones de droite. */
 .top .actions .sep {
@@ -177,6 +189,10 @@ body { display: flex; flex-direction: column; overflow: hidden; }
 }
 .thead > div {
   position: relative;
+  /* Chaque cellule porte le fond de l en-tete : plus large que la fenetre, le
+     tableau defile de cote, et les cellules au-dela du premier ecran etaient
+     transparentes — le texte des lignes passait dessous, lisible au travers. */
+  background: var(--elev);
   padding: 9px 10px; cursor: pointer; user-select: none;
   /* Casse normale : les largeurs de colonne sont faites pour elle. En
      capitales espacees, « Method » et « Duration » se coupaient a 1280 px. */
@@ -630,6 +646,9 @@ body { display: flex; flex-direction: column; overflow: hidden; }
 /* ============================ Menu contextuel ============================= */
 .ctxmenu {
   position: fixed; z-index: 80; min-width: 240px; padding: 5px;
+  /* Vingt-six entrees ne tiennent pas dans une fenetre basse : le menu
+     defile au lieu de deborder hors de l ecran. */
+  max-height: calc(100vh - 16px); max-width: calc(100vw - 16px); overflow-y: auto;
   background: var(--elev); border: 1px solid var(--line); border-radius: var(--r-lg);
   box-shadow: var(--shadow);
   animation: deplier .12s ease-out;
@@ -709,18 +728,23 @@ body[data-contrast="fort"] .sec > span::after { display: none; }
   .side .navbtn { justify-content: center; padding: 9px 0; }
   .side .navbtn span.lbl, .side .group { display: none; }
   .side .navbtn .badge { display: none; }
+  /* Reduite aux icones, la colonne perdait aussi les compteurs urgents : une
+     alerte grave, une erreur interne, une requete suspendue. Ils restent, en
+     pastille sur l icone ; le nombre est dans la vue. */
+  .side .navbtn .badge.hot {
+    display: block; position: absolute; top: 5px; right: 6px;
+    width: 8px; height: 8px; padding: 0; overflow: hidden;
+    border-radius: 50%; background: var(--red); color: transparent; font-size: 0; line-height: 0;
+  }
   .navbtn.on::before { left: -6px; }
   .diff { grid-template-columns: 1fr; }
 }
 @media (max-width: 860px) {
   .spark { display: none; }
 }
-@media (max-width: 620px) {
-  /* Sous cette largeur, le detail occupe presque tout : une colonne de
-     tableau de 200 px et un detail de 40 % ne servent ni l un ni l autre. */
-  .detail { height: 62%; }
-  .facets { padding-bottom: 6px; }
-}
+/* Du plus large au plus etroit : a egalite de selecteur, la regle ecrite la
+   derniere l emporte. Le bloc de 620 px etait ecrit avant celui de 760 px,
+   qui l ecrasait — le detail ne prenait jamais ses 62 %. */
 @media (max-width: 760px) {
   .top { height: auto; flex-wrap: wrap; gap: 7px; padding: 8px 10px; }
   .top .grow { order: 3; flex-basis: 100%; }
@@ -732,6 +756,37 @@ body[data-contrast="fort"] .sec > span::after { display: none; }
      400 px — une barre de defilement horizontale sur toutes les vues, en
      permanence. Elle a le droit de passer a la ligne. */
   .top .actions { flex-wrap: wrap; flex-shrink: 1; row-gap: 6px; }
+}
+@media (max-width: 620px) {
+  /* Sous cette largeur, le detail occupe presque tout : une colonne de
+     tableau de 200 px et un detail de 40 % ne servent ni l un ni l autre. */
+  .detail { height: 62%; }
+  /* Les filtres d un clic tiennent sur une ligne qui defile : a 350 px ils
+     s empilaient sur cinq rangees, et le tableau ne gardait que neuf lignes
+     visibles dans le panneau lateral. Le pied de page fait de meme. Pas la
+     barre d outils : ses menus Colonnes et Tri seraient rognes par le
+     defilement. */
+  .facets { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 8px; }
+  .facets .chip { flex-shrink: 0; }
+  .bottom { flex-wrap: nowrap; overflow-x: auto; white-space: nowrap; gap: 14px; }
+  /* Une option et son controle : le libelle garde au moins 180 px, et un
+     controle large (une liste de 180 px) passe dessous plutot que d ecraser
+     l explication en une colonne de quelques mots. */
+  .opt { flex-wrap: wrap; gap: 8px 16px; }
+  .opt .lbl { flex: 1 1 180px; }
+  .opt select { min-width: 0; max-width: 100%; }
+  /* Une ligne de journal : l heure et l evenement, puis le detail sur toute
+     la largeur. En trois colonnes, il restait cinquante pixels au detail. */
+  .log { grid-template-columns: auto 1fr; gap: 2px 10px; }
+  .log > :nth-child(3) { grid-column: 1 / -1; }
+  /* La liste des raccourcis passe en une colonne : la touche, puis l effet. */
+  .overlay .sheet { padding: 20px 18px; }
+  .overlay .keys { grid-template-columns: 1fr; gap: 0; }
+  .overlay .keys span { margin-bottom: 9px; }
+}
+@media (max-width: 420px) {
+  .pane { padding: 12px 10px 32px; }
+  .dtab { padding: 8px 7px; }
 }
 
 /* ===================== Confort de lecture et redimension ================== */
@@ -813,3 +868,70 @@ body[data-contrast="fort"] .sec > span::after { display: none; }
   font: 400 11.5px/1.5 var(--sans); color: var(--mute);
 }
 body[data-contrast="fort"] .pal-item.on { outline: 1px solid var(--accent); }
+
+/* ===================== La taille du texte, partout ======================== */
+/* Le reglage « taille du texte » agrandissait les lignes du tableau mais pas
+   son en-tete, les onglets du detail, les menus, les puces, les titres de
+   section ni le pied de page : a 130 %, les libelles des colonnes restaient a
+   10,5 px au-dessus de lignes a 15 px. Ce qui avait une taille fixe suit
+   desormais --scale, comme le reste. Ces regles viennent apres les
+   declarations completes et ne changent que la taille. */
+.brand .title strong { font-size: calc(14px * var(--scale)); }
+.brand .title span { font-size: calc(11px * var(--scale)); }
+.side .group, .thead > div, .navbtn .badge, .dtab .n, .menu .head, .famille-nom {
+  font-size: calc(10.5px * var(--scale));
+}
+.chip .n, .tag, .pill, .frame b, .ctxmenu .head { font-size: calc(11px * var(--scale)); }
+.chip, .sec em, .toolbar .count, .bottom, .tile label, .opt .lbl i, .rule-grid label, .hops label,
+.tuto-dot, .dline, .lesson kbd, .pal-groupe, .pal-aide {
+  font-size: calc(11.5px * var(--scale));
+}
+.dtab, .detail-head .who, .menu button, .menu label, .ctxmenu button, .checks label,
+.lesson .goal, .lesson code, .help code, .toast, .overlay .keys b { font-size: calc(12px * var(--scale)); }
+.empty, .card h4, .diff-col h4, .check, .overlay .keys span { font-size: calc(12.5px * var(--scale)); }
+.sec, .pal-vide, .check .mark { font-size: calc(13px * var(--scale)); }
+.pal-nom { font-size: calc(13.5px * var(--scale)); }
+.empty b, .help h2, #pal-q { font-size: calc(15px * var(--scale)); }
+.overlay h3 { font-size: calc(16px * var(--scale)); }
+.lesson h3 { font-size: calc(20px * var(--scale)); }
+.tile b { font-size: calc(24px * var(--scale)); }
+
+/* ======================= Tableau vide : quoi faire ======================== */
+.empty .actions { justify-content: center; margin: 18px 0 0; }
+.empty .note { margin: 14px auto 0; }
+
+/* =========================== Sommaire de l aide =========================== */
+.help-toc { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 28px; }
+.help-toc .chip { cursor: pointer; }
+
+/* ============================ Visite guidee ===============================
+   Un voile sur toute la page, une fenetre decoupee sur la zone decrite, et
+   une bulle a cote. Le voile retient les clics : pendant la visite, rien
+   d autre ne reagit. */
+.visite { position: fixed; inset: 0; z-index: 97; }
+.visite.centre { display: grid; place-items: center; padding: 16px; background: var(--voile); }
+.visite-trou {
+  position: fixed; border-radius: var(--r-lg); pointer-events: none;
+  box-shadow: 0 0 0 9999px var(--voile), 0 0 0 2px var(--accent);
+  transition: left .18s ease, top .18s ease, width .18s ease, height .18s ease;
+}
+.visite-bulle {
+  position: fixed; width: min(380px, calc(100vw - 16px)); max-height: calc(100vh - 16px); overflow: auto;
+  padding: 16px 18px 12px;
+  background: var(--elev); border: 1px solid var(--line); border-radius: var(--r-lg);
+  box-shadow: var(--shadow);
+  animation: deplier .14s ease-out;
+}
+.visite.centre .visite-bulle { position: relative; width: min(460px, calc(100vw - 32px)); }
+.visite-compte {
+  color: var(--mute); font: 500 calc(11px * var(--scale))/1 var(--mono); font-variant-numeric: tabular-nums;
+}
+.visite-bulle h3 {
+  margin: 8px 0 6px; color: var(--text);
+  font: 650 calc(15px * var(--scale))/1.35 var(--sans); letter-spacing: -.01em;
+}
+.visite-bulle p { margin: 0 0 12px; color: var(--dim); font: 400 calc(12.5px * var(--scale))/1.65 var(--sans); }
+.visite-nav { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.visite-nav .grow { flex: 1; }
+.visite-suite { margin: 10px 0 2px; }
+body[data-contrast="fort"] .visite-trou { box-shadow: 0 0 0 9999px var(--voile), 0 0 0 3px var(--accent); }

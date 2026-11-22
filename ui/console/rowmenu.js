@@ -89,8 +89,14 @@ export function openRowMenu(ev, api) {
   }
 
   document.body.appendChild(menu);
-  const width = 244;
-  const height = menu.childNodes.length * 30 + 20;
+  /* La taille reelle, une fois le menu pose : estimee a trente pixels par
+     entree, elle se trompait des que l echelle du texte changeait, et le menu
+     — vingt-six entrees — depassait le bas d une fenetre basse sans pouvoir
+     defiler. La feuille le borne a la hauteur de la fenetre ; ici, il se
+     place la ou il tient en entier. */
+  const mesure = typeof menu.getBoundingClientRect === 'function' ? menu.getBoundingClientRect() : null;
+  const width = mesure && mesure.width > 0 ? mesure.width : 244;
+  const height = mesure && mesure.height > 0 ? mesure.height : menu.childNodes.length * 30 + 20;
   const maxLeft = (window.innerWidth || 1200) - width - 8;
   const maxTop = (window.innerHeight || 800) - height - 8;
   menu.style.left = Math.max(4, Math.min(ev.clientX, maxLeft)) + 'px';

@@ -14,9 +14,69 @@ import * as stats from './stats.js';
 import { renderFoot } from './statusbar.js';
 import { GENERATOR_MENU } from '../../background/export/codegen.js';
 import { bindDock } from './dock.js';
+import * as visite from './visite.js';
 
 let api = {};
 let tabsCache = [];
+
+/* Les recherches que l on fait le plus, a un clic du champ : le bouton « ? »
+   les propose avant de renvoyer vers la syntaxe complete. Chacune est un
+   critere documente dans l aide, rien d inedit. */
+const RECHERCHES = [
+  ['Tout ce qui echoue', 'status:>=400'],
+  ['Erreurs du serveur', 'status:5xx'],
+  ['Envois de donnees', 'method:POST'],
+  ['Reponses de plus d un mega-octet', 'size:>1000000'],
+  ['Requetes de plus d une seconde', 'duration:>1000'],
+  ['Alertes critiques', 'risk:critical'],
+  ['Tiers qui posent des cookies', 'third:true cookies:>0'],
+  ['Mutations GraphQL', 'gql:mutation'],
+  ['Pages servies sans CSP', '-has-response-header:content-security-policy type:main_frame'],
+  ['Trafic en clair', 'tag:cleartext'],
+  ['Adresses dont le retrait est annonce', 'tag:deprecie'],
+  ['Lignes epinglees', 'flag:true']
+];
+
+/* « Vider » efface toute la capture, sans retour possible, et se trouve a
+   cote de « Actions » : un clic de trop perdait une session entiere. Le
+   premier clic arme le bouton, le second — dans les quatre secondes — vide. */
+const ARME_MS = 4000;
+let armementVider = null;
+
+function desarmerVider() {
+  clearTimeout(armementVider);
+  armementVider = null;
+  const btn = $('#clear');
+  if (!btn) return;
+  btn.classList.remove('armed');
+  btn.textContent = t('Vider');
+  btn.title = t('Vider toute la capture');
+}
+
+/** Vide toute la capture, sans demander : la palette l appelle directement. */
+export async function viderCapture() {
+  const res = await cmd('clear', {});
+  if (res.error) return toast(res.error, false);
+  state.records.clear();
+  state.order.length = 0;
+  state.selection.clear();
+  state.deepIds = null;
+  detail.close();
+  if (api.renderView) api.renderView();
+  toast('Capture videe');
+}
+
+/* L etiquette d un onglet dans une liste ou une bulle. */
+const etiquetteOnglet = tab => (tab.title || tab.url || '').slice(0, 60);
+
+/* La bulle du perimetre dit quel onglet « Onglet actif » montre : depuis une
+   console ouverte dans un onglet, ce n est pas celui qu on a sous les yeux. */
+function bulleScope() {
+  if (state.scope !== 'tab' || state.tabId == null) return t('Perimetre observe');
+  const onglet = tabsCache.find(o => o.id === state.tabId);
+  return onglet ? tp('Perimetre observe — onglet suivi : {onglet}', { onglet: etiquetteOnglet(onglet) })
+    : t('Perimetre observe');
+}
 
 /** Injecte les actions de la coquille : changement de vue, rendu, barre laterale. */
 export function initHeader(shell) {
@@ -60,6 +120,7 @@ export async function buildScope() {
     select.value = 'all';
     state.scope = 'all';
   }
+  select.title = bulleScope();
 }
 
 function applyStaticLabels() {
@@ -71,7 +132,8 @@ function applyStaticLabels() {
   };
   set('#export', 'Exporter');
   set('#more', 'Actions');
-  set('#clear', 'Vider', 'Vider toute la capture');
+  /* Arme, le bouton garde son « Confirmer ? » jusqu au second clic. */
+  if (!armementVider) set('#clear', 'Vider', 'Vider toute la capture');
   set('#columns', 'Colonnes');
   set('#sort', 'Tri');
   set('#follow', null, 'Suivre le flux en direct');
@@ -124,7 +186,7 @@ function applyStaticLabels() {
   if (invite) invite.placeholder = t('Chercher une vue, un outil, un en-tete, un code, une methode…');
   const aidePalette = $('#pal-aide');
   if (aidePalette) aidePalette.textContent = t('Fleches pour choisir · Entree pour lancer · Echap pour fermer');
-  $('#scope').title = t('Perimetre observe');
+  $('#scope').title = bulleScope();
   $('#q').placeholder = t('Filtrer :  method:POST   status:5xx   host:api.   size:>100000   -image   /regex/');
   const deepLabel = $('#deep-label');
   if (deepLabel) deepLabel.textContent = t('corps');
@@ -156,23 +218,41 @@ function bindHeader() {
   });
 
   $('#clear').addEventListener('click', async () => {
-    const res = await cmd('clear', {});
-    if (res.error) return toast(res.error, false);
-    state.records.clear();
-    state.order.length = 0;
-    state.selection.clear();
-    state.deepIds = null;
-    detail.close();
-    api.renderView();
-    toast('Capture videe');
+    if (!armementVider) {
+      const btn = $('#clear');
+      armementVider = setTimeout(desarmerVider, ARME_MS);
+      btn.classList.add('armed');
+      btn.textContent = t('Confirmer ?');
+      btn.title = t('Cliquez de nouveau dans les quatre secondes pour effacer toute la capture');
+      return;
+    }
+    desarmerVider();
+    await viderCapture();
   });
 
   $('#scope').addEventListener('change', ev => {
     state.scope = ev.target.value;
+    ev.target.title = bulleScope();
     api.renderView();
   });
 
-  $('#q-help').addEventListener('click', () => api.setView('help'));
+  /* Le « ? » de la recherche : des recherches pretes a lancer, puis la
+     syntaxe complete. Il ouvrait l aide entiere, et l on perdait de vue le
+     tableau pour apprendre a ecrire status:>=400. */
+  dropdown($('#q-help'), () => [
+    { kind: 'head', label: 'Recherches toutes faites' },
+    ...RECHERCHES.map(([quoi, requete]) => ({
+      label: tp('{quoi} — {requete}', { quoi: t(quoi), requete }),
+      action: () => { api.setView('requests'); applyQuery(requete); }
+    })),
+    { kind: 'sep' },
+    { label: 'Effacer la recherche', action: () => { api.setView('requests'); applyQuery(''); } },
+    { label: 'Toute la syntaxe de recherche', action: () => {
+      api.setView('help');
+      const titre = document.getElementById('aide-syntaxe');
+      if (titre && typeof titre.scrollIntoView === 'function') titre.scrollIntoView({ block: 'start' });
+    } }
+  ], { left: true });
 
   // Icone de droite de la barre : acces direct aux reglages, comme dans
   // n importe quel outil moderne. Elle double l entree de la barre laterale,
@@ -264,6 +344,7 @@ function bindHeader() {
 
   dropdown($('#more'), () => [
     { kind: 'head', label: 'Apprendre' },
+    { label: 'Visite guidee de l interface', action: () => visite.demarrer() },
     { label: 'Ouvrir le tutoriel', action: () => api.setView('tutorial') },
     { kind: 'sep' },
     { kind: 'head', label: 'Analyse' },

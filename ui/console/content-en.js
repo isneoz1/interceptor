@@ -7,8 +7,27 @@
 export const HELP_SECTIONS = [
   {
     h: 'Where to start',
-    p: ['New here? Open the **Tutorial** in the sidebar: twelve guided lessons whose buttons really perform the action described, and whose checkboxes read your real capture. This page is the full reference, to keep at hand.'],
+    p: ['New here? Start the **guided tour** with the button above: two minutes to learn where everything is. Then open the **Tutorial** in the sidebar: twelve guided lessons whose buttons really perform the action described, and whose checkboxes read your real capture. This page is the full reference, to keep at hand.'],
     ul: []
+  },
+  {
+    h: 'Quick guide: I want to…',
+    p: ['The most useful moves, one line each. The **guided tour** shows where everything is; the **Tutorial** teaches how to use it, lesson by lesson.'],
+    table: [
+      ['See what fails', 'The “Errors” chip under the toolbar, or status:>=400 in the search box.'],
+      ['Find an API call', 'The “API” chip, or method:POST host:api.; gql: and rpc: find a GraphQL or JSON-RPC operation by its name.'],
+      ['Read everything about a request', 'Click its row: the bottom panel opens twelve tabs, from the one-sentence verdict to the raw record.'],
+      ['Understand a token', 'The Headers tab of the detail reads every JWT, dates it, and verifies its signature when the capture holds its issuer’s keys.'],
+      ['Compare two requests', 'Ctrl+click two rows, then “Compare” or the C key.'],
+      ['Send a request again, edited', 'The Replay tab of the detail, once replay is allowed in Settings -> Active interception.'],
+      ['Block or slow down a site', 'Right-click a row -> “Block this host”, or a template in the Rules view: Throttle, No Caching, Block Cookies…'],
+      ['Share a capture without leaking it', 'Export -> “HAR 1.2 — secrets masked, for sharing”: tokens, cookies and keys lose their value.'],
+      ['Follow a WebSocket', 'The Live streams view, or the Streams tab in the connection’s detail.'],
+      ['Decode an unknown value', 'Toolbox -> Transform -> “Try everything”.'],
+      ['Sign a test token', 'Toolbox -> JWT -> “Build a signed token”, with your own shared key.'],
+      ['Find a feature', 'Ctrl+K, then a few letters of what you are looking for.'],
+      ['Keep the interface simple', 'Settings -> Interface -> Simple mode: seven views, the essentials.']
+    ]
   },
   {
     h: 'Three steps to get going',
@@ -57,16 +76,20 @@ export const HELP_SECTIONS = [
       ['Requests', 'The full flow, with the twelve-tab detail panel.'],
       ['Security', 'Every alert found automatically, sorted by severity.'],
       ['Summary', 'Session aggregates: statuses, types, heaviest domains and domains in error, slowest requests, addresses downloaded several times, addresses announcing their retirement, measured possible compression, throughput over time.'],
+      ['Sites and paths', 'What exists on each visited host, rebuilt from the observed traffic.'],
       ['Comparison', 'Two selected requests, compared line by line (headers and bodies).'],
       ['Live streams', 'WebSocket and Server-Sent Events, message by message, live.'],
       ['Cookies', 'Every cookie set, changed or removed, including those written in JavaScript.'],
       ['Navigation', 'The eight Firefox navigation events.'],
-      ['Context', 'Workers, Service Workers, WebRTC, WebTransport, page perception metrics.'],
-      ['Diagnostics', 'Real state of every layer, core figures, coverage test.'],
+      ['Workers and WebRTC', 'Workers, Service Workers, WebRTC, WebTransport, page perception metrics.'],
+      ['System state', 'Real state of every layer, core figures, coverage test.'],
+      ['Internal log', 'SWIFT’s own errors and commands, to export for a bug report.'],
       ['Rules', 'Blocking, redirecting, rewriting headers and URL parameters, mocked responses (typed or loaded from a file), throttling — with a visual editor and ready-made templates.'],
+      ['Interception', 'Requests held before they leave, to edit then release one by one.'],
       ['Toolbox', 'Twenty-six tools in six families on a single working text: encodings, encryption, binary formats, certificates, hashes, network, headers, timestamps, image metadata, HTTP reference.'],
       ['Settings', 'Everything configurable, with ready-made profiles.'],
-      ['Tutorial', 'Twelve guided lessons with progress tracking.']
+      ['Tutorial', 'Twelve guided lessons with progress tracking.'],
+      ['Help', 'This manual, offline, matching the installed version exactly.']
     ]
   },
   {
@@ -78,9 +101,9 @@ export const HELP_SECTIONS = [
       ['Transform', '140 transformations in eighteen families: base64 and base64 URL, base32, base58, base45, Ascii85, URL, HTML entities, hexadecimal, binary, octal, Unicode escapes, punycode, addresses defanged for a report and refanged, JSON, YAML, CSV, XML, SAML, DNS messages, WebAuthn, gzip and deflate, letter case, lines, string escaping, Protocol Buffers, MessagePack, CBOR, ASN.1. "Try everything" applies every decoding — except DNS and WebAuthn, which would read any bytes — and keeps only the readable results.'],
       ['Keys and trials', 'XOR with a repeated key, a sweep of the 255 single-byte keys, all twenty-five Caesar shifts, Vigenere. These ciphers protect nothing: they read back a deliberately obscured value.'],
       ['Public key', 'A public key pasted in any form — PEM, certificate, JWK or key set, an OpenSSH line or a whole authorized_keys file, base64 DER — and all the others: PEM, PKCS #1, JWK, OpenSSH line, with its pin-sha256 pin (RFC 7469), its OpenSSH fingerprints (SHA256 and MD5), its JWK thumbprint (RFC 7638) and its key identifier (RFC 5280). Several keys pasted together are compared: the same key in two forms is recognised.'],
-      ['JWT', 'Header, payload, validity, time left. The signature is really verified: HS256 to HS512 with the shared key (text or an “oct” JWK), RS, PS, ES and EdDSA (Ed25519) with the public key pasted as PEM or JWK, or the issuer\'s whole key set (JWKS), from which the key the token designates is chosen. The algorithm is read to the letter: “hs256” is not HS256. With no key the screen says so, rather than letting a decoded token pass for a valid one.'],
+      ['JWT', 'Header, payload, validity, time left. The signature is really verified: HS256 to HS512 with the shared key (text or an “oct” JWK), RS, PS, ES and EdDSA (Ed25519) with the public key pasted as PEM or JWK, or the issuer\'s whole key set (JWKS), from which the key the token designates is chosen. The algorithm is read to the letter: “hs256” is not HS256. With no key the screen says so, rather than letting a decoded token pass for a valid one. And a test token can be built: header and payload written by hand, signed with HS256, HS384 or HS512 using your key, then verified at once.'],
       ['Encryption', 'AES-GCM, AES-CBC and AES-CTR both ways, with initialisation vector and authenticated data; PBKDF2 and HKDF derivation; verification of a detached RSA, RSA-PSS, ECDSA or HMAC signature. Everything goes through the browser engine, nothing leaves the machine.'],
-      ['Hashes', 'MD5, SHA-1, SHA-256, SHA-384, SHA-512, CRC-32, Adler-32, FNV-1a, djb2, byte sum, and HMAC with a key.'],
+      ['Hashes', 'MD5, SHA-1 and SHA-2, SHA-3, Keccak and SHAKE, BLAKE2b and BLAKE2s, RIPEMD-160, SM3, MD4 and NTLM, xxHash32 and xxHash64, MurmurHash3, CRC-32 and twenty named CRC variants, Adler-32, FNV-1a, djb2, byte sum, and HMAC with a key.'],
       ['Binary', 'Protocol Buffers, MessagePack and CBOR read byte by byte, without a schema; ASN.1, DER and a summary of an X.509 certificate (subject, issuer, validity, names covered, usages); thirty-seven character sets and mojibake repair.'],
       ['Measurements', 'Characters, bytes, lines, words, Shannon entropy, character frequency, and detection of the invisible characters used to hide content.'],
       ['Image metadata', 'What a JPEG, PNG or WebP image reveals to anyone who downloads it: the GPS position where it was taken, the author, the camera and its serial number, the software, the XMP. Pasted in base64, hexadecimal or as a data URI; the Response tab of a captured image shows it too.'],
@@ -166,6 +189,7 @@ export const HELP_SECTIONS = [
     h: 'Exports',
     table: [
       ['HAR 1.2', 'Read by Firefox DevTools, Charles, Fiddler, Postman. Enriched with layers, TLS, stacks and alerts.'],
+      ['Sanitised HAR', 'The same HAR, shareable: headers, parameters and values that carry a secret lose their value, and the file says how many.'],
       ['JSON', 'Complete records and core statistics.'],
       ['CSV', 'Spreadsheet-friendly table, UTF-8 with BOM.'],
       ['Markdown', 'Alert report sorted by severity.'],
@@ -283,7 +307,7 @@ export const LESSONS = {
     title: 'Security alerts',
     goal: 'Read what the analysis finds on its own',
     body: [
-      { p: 'Every finished request is audited automatically: API keys, tokens, passwords, e-mails, card numbers validated with the Luhn checksum, cleartext HTTP, dubious certificates, missing security headers, permissive CORS, badly protected session cookies, trackers.' },
+      { p: 'Every finished request is audited automatically, and an alert only comes out when the capture proves it: a secret in a known provider\'s format (AWS, GitHub, Stripe…), credentials or a token in the URL, data sent in the clear, a refused certificate, exploitable CORS, a cookie the browser will reject. A missing security header is not a flaw: it is not reported, and known trackers get a tag, never an alert.' },
       { p: 'Sensitive values are **masked** by default: a key shows as "sk_liv…C0 (32)". Masking can be turned off in the settings when you must see the whole value.' },
       { p: 'The Security view gathers everything, sorted by severity. Clicking an alert opens the request concerned.' },
       { p: 'You can add **your own secret patterns** and **your own tracking domains** in the settings; the format is "Name = regular expression = severity".' }
@@ -295,7 +319,7 @@ export const LESSONS = {
     body: [
       { p: '**Live streams** follows WebSockets and Server-Sent Events message by message, both directions. webRequest only sees the handshake: the content comes from probes placed inside the page.' },
       { p: '**Cookies** logs every set, change and removal, including cookies written in JavaScript, with the call stack that wrote them.' },
-      { p: '**Navigation** lists the eight Firefox navigation events. **Context** gathers Workers, Service Workers, WebRTC, WebTransport and page perception metrics (first paint, largest element, layout shifts).' }
+      { p: '**Navigation** lists the eight Firefox navigation events. **Workers and WebRTC** gathers Workers, Service Workers, WebRTC, WebTransport and page perception metrics (first paint, largest element, layout shifts).' }
     ]
   },
   synthese: {
@@ -336,7 +360,7 @@ export const LESSONS = {
         '**Light**: very long sessions, modest machine.',
         '**Quiet observation**: metadata only, no content kept.'
       ] },
-      { p: 'Each capture layer can be switched independently, and the Diagnostics view shows for each one the setting AND whether the API really exists in your Firefox.' },
+      { p: 'Each capture layer can be switched independently, and the System state view shows for each one the setting AND whether the API really exists in your Firefox.' },
       { p: 'The **language** (Firefox\'s, French or English), **simple mode**, theme, density, text size, contrast, time format, icon click behaviour and badge counter are set there too.' },
       { p: '**Simple mode** keeps only Requests, Security, Summary, Toolbox, Settings, Tutorial and Help: enough to work without ever getting lost. The advanced views come back when you turn it off.' }
     ]
@@ -376,7 +400,7 @@ export const LESSONS = {
     title: 'Verify, and know the limits',
     goal: 'Know what is captured, and what cannot be',
     body: [
-      { p: 'The **coverage test** in Diagnostics fires real requests from the active tab, towards its own origin only: fetch, POST with body, XHR, image, sendBeacon, EventSource, WebSocket and a script tag. It then counts the rows that appeared.' },
+      { p: 'The **coverage test** in System state fires real requests from the active tab, towards its own origin only: fetch, POST with body, XHR, image, sendBeacon, EventSource, WebSocket and a script tag. It then counts the rows that appeared.' },
       { p: 'What no Firefox extension can do, and SWIFT therefore does not claim to do:' },
       { ul: [
         'Privileged pages: about:config, about:addons, New Tab, error pages.',

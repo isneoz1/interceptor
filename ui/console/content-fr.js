@@ -7,6 +7,7 @@
 import { $ } from '../lib/dom.js';
 import { state, toast } from '../app.js';
 import { poser } from './tools.js';
+import * as visite from './visite.js';
 
 const go = (view, query) =>
   document.dispatchEvent(new CustomEvent('ic:goto', { detail: { view, query } }));
@@ -30,6 +31,7 @@ export const LESSONS = [
       { p: 'Le bouton vert en haut a gauche indique que la capture tourne. Cliquez dessus pour mettre en pause, recliquez pour reprendre.' }
     ],
     actions: [
+      ['Lancer la visite guidee', () => visite.demarrer()],
       ['Mettre en pause / reprendre', () => $('#capture').click()],
       ['Ouvrir le panneau lateral', async () => {
         try { await (typeof browser !== 'undefined' ? browser : chrome).sidebarAction.open(); }
@@ -133,7 +135,7 @@ export const LESSONS = [
     title: 'Les alertes de securite',
     goal: 'Lire ce que l analyse trouve toute seule',
     body: [
-      { p: 'Chaque requete terminee est auditee automatiquement : cles d API, jetons, mots de passe, e-mails, cartes bancaires validees par la cle de Luhn, HTTP en clair, certificats douteux, entetes de securite absents, CORS trop permissif, cookies de session mal proteges, pisteurs.' },
+      { p: 'Chaque requete terminee est auditee automatiquement, et une alerte ne sort que si elle se demontre a partir de la capture : un secret au format d un fournisseur connu (AWS, GitHub, Stripe…), des identifiants ou un jeton dans l URL, un envoi en clair, un certificat refuse, un CORS exploitable, un cookie que le navigateur rejettera. Un entete de securite absent n est pas une faille : il n est pas signale, et les pisteurs connus recoivent un marqueur, jamais une alerte.' },
       { p: 'Les valeurs sensibles sont **masquees** par defaut : une cle apparait sous la forme « sk_liv…C0 (32) ». Le masquage se coupe dans les reglages si vous devez voir la valeur entiere.' },
       { p: 'La vue Securite regroupe tout, classe par gravite. Un clic sur une alerte ouvre la requete concernee.' },
       { p: 'Vous pouvez ajouter **vos propres motifs** de secret et **vos propres domaines** de pistage dans les reglages : le format est « Nom = expression reguliere = severite ».' }
@@ -156,12 +158,12 @@ export const LESSONS = [
     body: [
       { p: '**Flux temps reel** suit les WebSocket et les Server-Sent Events message par message, dans les deux sens. webRequest ne voit que la poignee de main : le contenu vient des sondes posees dans la page.' },
       { p: '**Cookies** journalise chaque pose, modification et suppression, y compris les cookies ecrits en JavaScript, avec la pile d appel qui les a poses.' },
-      { p: '**Navigation** liste les huit evenements de navigation de Firefox. **Contexte** rassemble les Workers, Service Workers, WebRTC, WebTransport et les mesures de perception de page (premier affichage, plus grand element, decalages).' }
+      { p: '**Navigation** liste les huit evenements de navigation de Firefox. **Workers et WebRTC** rassemble les Workers, Service Workers, WebRTC, WebTransport et les mesures de perception de page (premier affichage, plus grand element, decalages).' }
     ],
     actions: [
       ['Ouvrir Flux temps reel', () => go('streams')],
       ['Ouvrir le journal des cookies', () => go('cookies')],
-      ['Ouvrir le journal de contexte', () => go('context')]
+      ['Ouvrir Workers et WebRTC', () => go('context')]
     ],
     checks: [
       ['Vous avez ouvert Flux temps reel', () => seen().views.has('streams')],
@@ -179,7 +181,7 @@ export const LESSONS = [
     ],
     actions: [
       ['Ouvrir la synthese', () => go('summary')],
-      ['Ouvrir le diagnostic', () => go('stats')]
+      ['Ouvrir l etat du systeme', () => go('stats')]
     ],
     checks: [
       ['Vous avez ouvert la synthese', () => seen().views.has('summary')]
@@ -207,7 +209,12 @@ export const LESSONS = [
     ],
     actions: [
       ['Ouvrir le menu Exporter', () => { go('requests'); setTimeout(() => $('#export').click(), 60); }],
-      ['Importer un fichier HAR', () => { go('settings'); toast('Reglages -> Sauvegarde -> Importer un HAR'); }]
+      /* L import est dans le menu Actions ; on l ouvre, plutot que de renvoyer
+         vers une section des reglages ou il fallait encore le chercher. */
+      ['Importer un fichier HAR', () => {
+        go('requests');
+        setTimeout(() => { $('#more').click(); toast('Choisissez « Importer un fichier HAR » dans ce menu'); }, 60);
+      }]
     ],
     checks: [
       ['Vous avez exporte au moins un fichier', () => !!(stats() && stats().save.files > 0)]
@@ -226,7 +233,7 @@ export const LESSONS = [
         '**Leger** : sessions tres longues, machine modeste.',
         '**Observation discrete** : metadonnees seules, aucun contenu conserve.'
       ] },
-      { p: 'Chaque couche de capture s active independamment, et la vue Diagnostic montre pour chacune le reglage ET la disponibilite reelle de l API dans votre Firefox.' },
+      { p: 'Chaque couche de capture s active independamment, et la vue Etat du systeme montre pour chacune le reglage ET la disponibilite reelle de l API dans votre Firefox.' },
       { p: 'La **langue** (celle de Firefox, francais ou anglais), le **mode simple**, le theme, la densite, la taille du texte, le contraste, le format de l heure, le comportement du clic sur l icone et le compteur du badge se reglent aussi la.' },
       { p: 'Le **mode simple** ne garde que Requetes, Securite, Synthese, Boite a outils, Reglages, Tutoriel et Aide : de quoi travailler sans jamais se perdre. Les vues avancees reviennent en le desactivant.' }
     ],
@@ -236,7 +243,7 @@ export const LESSONS = [
     ],
     checks: [
       ['Vous avez ouvert les reglages', () => seen().views.has('settings')],
-      ['Vous avez ouvert le diagnostic', () => seen().views.has('stats')]
+      ['Vous avez ouvert l etat du systeme', () => seen().views.has('stats')]
     ]
   },
 
@@ -297,7 +304,7 @@ export const LESSONS = [
     title: 'Verifier et connaitre les limites',
     goal: 'Savoir ce qui est capture, et ce qui ne peut pas l etre',
     body: [
-      { p: 'Le **test de couverture** du Diagnostic declenche de vraies requetes depuis l onglet actif, vers sa propre origine uniquement : fetch, POST avec corps, XHR, image, sendBeacon, EventSource, WebSocket, balise script. Il compte ensuite les lignes apparues.' },
+      { p: 'Le **test de couverture** de l Etat du systeme declenche de vraies requetes depuis l onglet actif, vers sa propre origine uniquement : fetch, POST avec corps, XHR, image, sendBeacon, EventSource, WebSocket, balise script. Il compte ensuite les lignes apparues.' },
       { p: 'Ce qu aucune extension Firefox ne peut faire, et que SWIFT ne pretend donc pas faire :' },
       { ul: [
         'Les pages privilegiees : about:config, about:addons, Nouvel onglet, pages d erreur.',
@@ -311,6 +318,7 @@ export const LESSONS = [
     ],
     actions: [
       ['Lancer le test de couverture', () => { go('stats'); toast('Cliquez sur « Lancer le test » dans Verification de couverture'); }],
+      ['Revoir la visite guidee', () => visite.demarrer()],
       ['Ouvrir l aide complete', () => go('help')]
     ],
     checks: [
