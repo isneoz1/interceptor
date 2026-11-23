@@ -253,6 +253,12 @@ $required = @(
   'ui/lib/dict-en-lectures2.js',
   'ui/console/visite.js',
   'ui/lib/dict-en-guide.js',
+  # 6.1 : lire une reponse collee, et les outils qui interrogent le reseau
+  'ui/lib/reponse-brute.js',
+  'ui/console/tools-reponse.js',
+  'ui/console/tools-requete.js',
+  'ui/console/tools-websocket.js',
+  'ui/lib/dict-en-direct.js',
   'icons/icon.svg'
 )
 $missing = $required | Where-Object { -not (Test-Path $_) }
@@ -332,7 +338,9 @@ if ($node) {
     @{ titre = 'Ce qu une image revele'; fichier = 'tests/images.test.mjs';
        echec = 'Une metadonnee d image differe de ce que GDI+ a ecrit, ou une image mal formee fait planter la lecture' },
     @{ titre = 'Ce qu un navigateur annonce'; fichier = 'tests/navigateurs.test.mjs';
-       echec = 'Un User-Agent est lu autrement que ua-parser-js, ou un indice client est mal interprete' }
+       echec = 'Un User-Agent est lu autrement que ua-parser-js, ou un indice client est mal interprete' },
+    @{ titre = 'Interroger le reseau'; fichier = 'tests/reseau.test.mjs';
+       echec = 'Une reponse collee, une requete envoyee, une resolution DNS, une session WebSocket ou une vue en direct est fausse' }
   )
 
   $totalAssertions = 0

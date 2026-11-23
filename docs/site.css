@@ -113,7 +113,12 @@ h1 { font-size: var(--texte-accueil); max-width: 13ch; letter-spacing: -.035em; 
 
 /* ------------------------------ Les chiffres ------------------------------ */
 .chiffres { padding-top: clamp(2.4rem, 2rem + 2vw, 4rem); }
-.chiffres dl { margin: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1px; background: var(--filet); border: 1px solid var(--filet); border-radius: 12px; overflow: hidden; }
+/* Six chiffres : six colonnes, trois ou deux. Des colonnes automatiques en
+   donnaient cinq entre 800 et 1 000 px, et le sixieme restait seul sur sa
+   ligne, a cote d une bande vide. */
+.chiffres dl { margin: 0; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 1px; background: var(--filet); border: 1px solid var(--filet); border-radius: 12px; overflow: hidden; }
+@media (max-width: 1100px) { .chiffres dl { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 520px) { .chiffres dl { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .chiffres div { background: var(--encre); padding: 1rem 1.2rem; display: flex; flex-direction: column-reverse; gap: .1rem; }
 .chiffres dt { font: 500 .8rem var(--mono); color: var(--doux); }
 .chiffres dd { margin: 0; font-size: clamp(1.8rem, 1.4rem + 1.6vw, 2.7rem); font-weight: 750; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }

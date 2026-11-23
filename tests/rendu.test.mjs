@@ -296,7 +296,7 @@ verifier('le controle a bien importe des fichiers deformes', importsFaits >= 200
 
 /* ================= 4. Les panneaux de la boite a outils =================== */
 const PANNEAUX = await chargerPanneaux();
-egal('les vingt-cinq panneaux de la boite a outils sont couverts', PANNEAUX.length, 25);
+egal('les vingt-neuf panneaux de la boite a outils sont couverts', PANNEAUX.length, 29);
 
 /* Ce qu un operateur colle vraiment : un collage rate, un jeton tronque, un
    corps vide, et quelques valeurs qu aucun humain ne tape. */

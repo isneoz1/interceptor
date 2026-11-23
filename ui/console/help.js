@@ -28,6 +28,11 @@ export const SECTIONS = [
       ['Bloquer ou ralentir un site', 'Clic droit sur une ligne -> « Bloquer cet hote », ou un modele de la vue Regles : Throttle, No Caching, Block Cookies…'],
       ['Partager une capture sans fuite', 'Exporter -> « HAR 1.2 — secrets masques, pour partage » : jetons, cookies et cles y perdent leur valeur.'],
       ['Suivre une WebSocket', 'La vue Flux temps reel, ou l onglet Flux du detail de la connexion.'],
+      ['Juger les en-tetes d un site sans le capturer', 'Boite a outils -> Lire une reponse : collez la sortie de curl -I, elle est lue comme une reponse capturee.'],
+      ['Envoyer une requete de zero', 'Boite a outils -> Envoyer une requete, une fois le rejeu permis : une adresse, une commande cURL ou une requete brute suffit.'],
+      ['Essayer un serveur WebSocket', 'Boite a outils -> Client WebSocket : ouvrez la connexion, envoyez, lisez chaque message en direct.'],
+      ['Savoir ou mene un nom de domaine', 'Boite a outils -> Resolution DNS : les adresses que Firefox obtient, par DNS sur HTTPS s il est actif.'],
+      ['Voir les choses changer en direct', 'Rien a faire : chaque vue suit le trafic d elle-meme — tableau, flux, securite, journaux, synthese, comparaison — sans vous faire perdre votre place.'],
       ['Decoder une valeur inconnue', 'Boite a outils -> Transformer -> « Tout essayer ».'],
       ['Signer un jeton de test', 'Boite a outils -> JWT -> « Fabriquer un jeton signe », avec votre propre cle partagee.'],
       ['Retrouver une fonction', 'Ctrl+K, puis quelques lettres de ce que vous cherchez.'],
@@ -91,7 +96,7 @@ export const SECTIONS = [
       ['Journal interne', 'Les erreurs de SWIFT lui-meme et ses commandes, a exporter pour un rapport de bogue.'],
       ['Regles', 'Blocage, redirection, reecriture d entetes et de parametres d URL, reponse simulee (ecrite ou chargee depuis un fichier), debit limite — avec un editeur visuel et des modeles prets a l emploi.'],
       ['Interception', 'Les requetes suspendues avant leur depart, a modifier puis relacher une par une.'],
-      ['Boite a outils', 'Vingt-six outils en six familles sur un seul texte de travail : encodages, chiffrement, formats binaires, certificats, empreintes, reseau, entetes, horodatages, metadonnees d image, reference HTTP.'],
+      ['Boite a outils', 'Trente outils en sept familles sur un seul texte de travail : encodages, chiffrement, formats binaires, certificats, empreintes, reseau, entetes, horodatages, metadonnees d image, reference HTTP — et les requetes, connexions WebSocket et resolutions DNS que vous lancez.'],
       ['Reglages', 'Tout ce qui se configure, avec des profils prets a l emploi.'],
       ['Tutoriel', 'Douze lecons guidees, avec suivi de progression.'],
       ['Aide', 'Ce mode d emploi, hors ligne, qui suit exactement la version installee.']
@@ -100,7 +105,7 @@ export const SECTIONS = [
   {
     h: 'La boite a outils',
     p: [
-      'Un seul texte de travail, vingt-six onglets qui le regardent. On colle une valeur une fois — depuis le presse-papiers, depuis le menu contextuel d une ligne, ou depuis un onglet du detail — et chaque outil travaille dessus. Tout se calcule dans la page : aucune de ces fonctions n emet la moindre requete.'
+      'Un seul texte de travail, trente onglets qui le regardent. On colle une valeur une fois — depuis le presse-papiers, depuis le menu contextuel d une ligne, ou depuis un onglet du detail — et chaque outil travaille dessus. Tout se calcule dans la page, sauf la famille « Interroger le reseau » — une requete, un WebSocket, une resolution DNS — qui n emet rien sans votre clic.'
     ],
     table: [
       ['Transformer', '140 transformations classees en dix-huit familles : base64 et base64 URL, base32, base58, base45, Ascii85, URL, entites HTML, hexadecimal, binaire, octal, echappements Unicode, punycode, adresses neutralisees pour un rapport (defang) et retablies, JSON, YAML, CSV, XML, SAML, messages DNS, WebAuthn, gzip et deflate, casse, lignes, echappements de chaine, Protocol Buffers, MessagePack, CBOR, ASN.1. « Tout essayer » applique chaque decodage — sauf DNS et WebAuthn, qui liraient n importe quels octets — et ne garde que les resultats lisibles.'],
@@ -124,6 +129,10 @@ export const SECTIONS = [
       ['JSON Patch', 'Applique au texte de travail un JSON Patch (RFC 6902), en entier ou pas du tout, ou un merge patch (RFC 7396) ; ou produit celui qui mene a un second document. Sans perte : un grand entier garde ses chiffres, et un pointeur qui designe une cle ecrite deux fois echoue, comme le veut RFC 6901.'],
       ['URL', 'Chaque partie d une URL, le service connu derriere le port, et l avertissement quand un domaine punycode ressemble a un autre.'],
       ['Adresse IP', 'Calcul complet d un sous-reseau IPv4 ou IPv6 : masque, joker, reseau, diffusion, plage utilisable, nom inverse, categorie (RFC 1918, 6598, 4193...) et test d appartenance a un prefixe. Plus le decoupage en sous-reseaux, le resume d une liste de prefixes, la conversion d une plage en prefixes et l enumeration des adresses.'],
+      ['Lire une reponse', 'Une reponse collee — la sortie de curl -I, -i, -iL ou -v, un bloc copie ailleurs — lue comme une reponse capturee : protections, fraicheur HTTP, CSP (celle d une balise meta du corps colle aussi), CORS, signaux du serveur, collecte de rapports, jetons. De plusieurs reponses, la derniere est lue ; une ligne qui n est pas un en-tete est montree. Juger un site sans l avoir capture.'],
+      ['Envoyer une requete', 'Une requete composee de zero, ou reprise d une commande cURL ou d une requete HTTP brute, envoyee depuis le navigateur avec l en-tete X-Swift-Replay : la reponse s affiche, la requete apparait dans le tableau. Demande l autorisation du rejeu.'],
+      ['Client WebSocket', 'Une connexion ouverte vers l adresse de votre choix : messages envoyes en texte ou en octets hexadecimaux, messages recus en direct, les plus recents en haut, et la fermeture avec le sens de son code. Demande l autorisation du rejeu.'],
+      ['Resolution DNS', 'Un nom demande au resolveur de Firefox — DNS sur HTTPS s il est actif : adresses et leur categorie, nom canonique, duree mesuree, cache ignore ou non, IPv4 ou IPv6 seulement.'],
       ['Reference', 'Hors ligne, des tables completes : codes de statut, methodes, en-tetes (tout le registre permanent de l IANA), types de media, ports, suites TLS, alertes TLS, fermetures WebSocket, erreurs HTTP/2, HTTP/3 et QUIC, types et codes de reponse DNS, erreurs reseau de Firefox, et relations de liens (registre IANA). « Tout » cherche dans toutes a la fois, sur le nom comme sur la description ; Ctrl+K aussi.'],
       ['Generer', 'UUID v3, v4, v5 et v7, ULID, NanoID, suites aleatoires, mots de passe avec leur entropie reelle, adresse materielle, adresse privee, port dynamique, et seize valeurs limites qui font tomber les validateurs mal ecrits.'],
       ['Importer une requete', 'Une commande cURL ou une requete HTTP brute devient une ligne du tableau, a l etat « pending ». Elle n est pas emise : l onglet « Rejouer » de son detail s en charge si vous le demandez.']
@@ -243,7 +252,7 @@ export const SECTIONS = [
   {
     h: 'Securite de l extension',
     ul: [
-      'Aucune sortie reseau, sauf deux actions volontaires : le test de couverture (vers l origine de l onglet actif) et le rejeu de requete.',
+      'Aucune sortie reseau, sauf des actions volontaires, toujours sur un clic : le test de couverture (vers l origine de l onglet actif), le rejeu et l envoi de requetes, le client WebSocket et la resolution DNS de la boite a outils.',
       'Aucun innerHTML sur des donnees capturees : un site observe ne peut rien injecter dans cette interface.',
       'Aucun eval, aucune chaine executee. CSP stricte sur les pages de l extension.',
       'Jeton aleatoire par document entre la page et l extension ; les commandes d interface exigent un expediteur interne.',

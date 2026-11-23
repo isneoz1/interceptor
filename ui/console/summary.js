@@ -22,9 +22,19 @@ function secClassement(titre, total) {
     : total ? tp('{n} lignes', { n: total }) : '');
 }
 
-/** Le bouton qui montre ce qui suit les quinze premieres lignes. */
-function boutonSuite(reste, montrer) {
-  const bouton = button(tp('Tout afficher ({n} de plus)', { n: reste }), () => { bouton.remove(); montrer(); });
+/* Les classements que le lecteur a deplies. La synthese se redessine en
+   direct pendant le trafic : sans cette memoire, chaque redessin repliait la
+   liste qu on etait en train de lire. */
+const deplies = new Set();
+
+/** Le bouton qui montre ce qui suit les quinze premieres lignes, et s en
+ *  souvient pour les redessins suivants. */
+function boutonSuite(reste, montrer, cle) {
+  const bouton = button(tp('Tout afficher ({n} de plus)', { n: reste }), () => {
+    if (cle) deplies.add(cle);
+    bouton.remove();
+    montrer();
+  });
   return bouton;
 }
 
@@ -52,7 +62,7 @@ function tally(list, keyOf, valueOf) {
 }
 
 /** Diagramme a barres horizontales : libelle, barre proportionnelle, valeur. */
-function chart(rows, format, toneOf) {
+function chart(rows, format, toneOf, cle) {
   const max = rows.reduce((m, r) => Math.max(m, r[1]), 0) || 1;
   const box = el('div', { class: 'chart' });
   const barre = ([label, value]) => {
@@ -64,11 +74,12 @@ function chart(rows, format, toneOf) {
       })));
     box.appendChild(el('div', { class: 'val', text: format ? format(value) : String(value) }));
   };
+  if (cle && deplies.has(cle)) { rows.forEach(barre); return box; }
   rows.slice(0, TOP).forEach(barre);
   if (rows.length <= TOP) return box;
   const conteneur = el('div', null, [box]);
   conteneur.appendChild(el('div', { class: 'actions' },
-    boutonSuite(rows.length - TOP, () => rows.slice(TOP).forEach(barre))));
+    boutonSuite(rows.length - TOP, () => rows.slice(TOP).forEach(barre), cle)));
   return conteneur;
 }
 
@@ -107,8 +118,11 @@ function rankList(title, rows, describe) {
   if (rows.length > TOP) {
     const hote = el('div');
     box.appendChild(hote);
-    box.appendChild(el('div', { class: 'actions' },
-      boutonSuite(rows.length - TOP, () => listeProgressive(hote, rows.slice(TOP), ligne))));
+    if (deplies.has(title)) listeProgressive(hote, rows.slice(TOP), ligne);
+    else {
+      box.appendChild(el('div', { class: 'actions' },
+        boutonSuite(rows.length - TOP, () => listeProgressive(hote, rows.slice(TOP), ligne), title)));
+    }
   }
   return box;
 }
@@ -177,46 +191,46 @@ export function render() {
   left.appendChild(sec('Statuts'));
   left.appendChild(chart(
     tally(list, r => (r.error ? 'erreur reseau' : r.statusCode == null ? 'en cours' : String(r.statusCode))),
-    null, statusClassOf));
+    null, statusClassOf, 'statuts'));
 
   left.appendChild(sec('Types de ressource'));
-  left.appendChild(chart(tally(list, r => typeLabel(r.type))));
+  left.appendChild(chart(tally(list, r => typeLabel(r.type)), null, null, 'types'));
 
   left.appendChild(sec('Protocoles observes'));
   left.appendChild(chart(tally(list, r => r.protocol
-    || (r.scheme ? tp('{s} (protocole non mesure)', { s: r.scheme }) : null))));
+    || (r.scheme ? tp('{s} (protocole non mesure)', { s: r.scheme }) : null)), null, null, 'protocoles'));
 
   left.appendChild(sec('Couches de capture'));
   const layers = new Map();
   for (const rec of list) for (const s of rec.sources || []) layers.set(s, (layers.get(s) || 0) + 1);
-  left.appendChild(chart([...layers.entries()].sort((a, b) => b[1] - a[1])));
+  left.appendChild(chart([...layers.entries()].sort((a, b) => b[1] - a[1]), null, null, 'couches'));
 
   const right = el('div');
   cols.appendChild(right);
 
   const parVolume = tally(list, r => r.host, r => r.size || 0);
   right.appendChild(secClassement('Domaines par volume recu', parVolume.length));
-  right.appendChild(chart(parVolume, bytes));
+  right.appendChild(chart(parVolume, bytes, null, 'volume'));
 
   const parNombre = tally(list, r => r.host);
   right.appendChild(secClassement('Domaines par nombre de requetes', parNombre.length));
-  right.appendChild(chart(parNombre));
+  right.appendChild(chart(parNombre, null, null, 'nombre'));
 
   const enErreur = tally(list.filter(r => r.error || r.statusCode >= 400), r => r.host);
   if (enErreur.length) {
     right.appendChild(secClassement('Domaines en erreur', enErreur.length));
-    right.appendChild(chart(enErreur, null, () => 's-5'));
+    right.appendChild(chart(enErreur, null, () => 's-5', 'erreurs'));
   }
 
   const types = tally(list, r => r.mime);
   right.appendChild(secClassement('Types de contenu', types.length));
-  right.appendChild(chart(types));
+  right.appendChild(chart(types, null, null, 'mime'));
 
   const tags = new Map();
   for (const rec of list) for (const marqueur of rec.tags || []) tags.set(marqueur, (tags.get(marqueur) || 0) + 1);
   const tagRows = [...tags.entries()].sort((a, b) => b[1] - a[1]);
   right.appendChild(secClassement('Marqueurs de l analyse', tagRows.length));
-  right.appendChild(tagRows.length ? chart(tagRows)
+  right.appendChild(tagRows.length ? chart(tagRows, null, null, 'marqueurs')
     : el('p', { class: 'note', text: t('Aucun marqueur pose sur ce perimetre.') }));
 
   /* ------------------------------- Debit ---------------------------------- */

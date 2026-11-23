@@ -32,7 +32,7 @@ function etapes() {
     { cible: '#scope', titre: t('Le perimetre'),
       texte: t('« Onglet actif » suit l onglet ou vous naviguez ; « Tout Firefox » montre tout ce qui a ete capture, tous onglets confondus.') },
     { cible: '#side', titre: t('Les vues'),
-      texte: t('Cette colonne ouvre les autres vues : Securite, Synthese, Flux temps reel, Boite a outils, Regles… Survolez une vue pour savoir ce qu elle montre ; les touches 1 a 9 y menent aussi.') },
+      texte: t('Cette colonne ouvre les autres vues : Securite, Synthese, Flux temps reel, Boite a outils, Regles… Chacune suit le trafic en direct, sans bouton a presser. Survolez une vue pour savoir ce qu elle montre ; les touches 1 a 9 y menent aussi.') },
     { cible: '#export', titre: t('Exporter'),
       texte: t('HAR fidele, HAR aux secrets masques pour partager, JSON, CSV, Postman, OpenAPI, rapport, ou script pour votre langage : sur les lignes filtrees, ou sur votre selection.') },
     { cible: '#more', titre: t('Le menu Actions'),

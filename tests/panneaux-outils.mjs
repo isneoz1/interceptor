@@ -29,7 +29,13 @@ export const LISTE_PANNEAUX = [
   ['adresse', 'tools-reseau.js', (m, e, s) => m.panneauAdresse(e, s, () => {}, () => {})],
   ['reference', 'tools-reference.js', (m, e, s) => m.panneauReference(e, s, () => {})],
   ['generer', 'tools-generer.js', (m, e, s) => m.panneauGenerateurs(() => {}, s, () => {})],
-  ['importer', 'tools-import.js', (m, e, s) => m.panneauImport(e, s, () => {})]
+  ['importer', 'tools-import.js', (m, e, s) => m.panneauImport(e, s, () => {})],
+  /* 6.1 : une reponse collee, et les outils qui interrogent le reseau —
+     rendus seulement : aucun n emet quoi que ce soit sans un clic. */
+  ['reponse', 'tools-reponse.js', (m, e, s) => m.panneauReponse(e, s, () => {})],
+  ['requete', 'tools-requete.js', (m, e, s) => m.panneauRequete(e, s, () => {})],
+  ['dns', 'tools-requete.js', (m, e, s) => m.panneauDns(e, s, () => {})],
+  ['websocket', 'tools-websocket.js', (m, e, s) => m.panneauWebSocket(e, s, () => {})]
 ];
 
 /** Les panneaux, chacun pret a etre rendu : [nom, (entree, etat) => noeud]. */

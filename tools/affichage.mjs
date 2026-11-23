@@ -118,9 +118,14 @@ const INSPECTION = `
     if (s.display !== 'block' && s.display !== 'flex') continue;
     if (s.display === 'flex' && s.flexDirection.indexOf('row') === 0) continue;
     if (s.position === 'absolute' || s.position === 'fixed') continue;
+    /* Un element en ligne (un mot en gras dans une phrase) suit le texte et ne
+       s empile pas : quand il passe a la ligne, son rectangle couvre deux
+       lignes et « recouvrait » le mot en gras suivant, sans qu il y ait rien
+       a voir a l ecran. */
     const freres = [...parent.children].filter(visible).filter(c => {
       const cs = getComputedStyle(c);
-      return cs.position !== 'absolute' && cs.position !== 'fixed' && cs.position !== 'sticky';
+      return cs.position !== 'absolute' && cs.position !== 'fixed' && cs.position !== 'sticky'
+        && cs.display !== 'inline';
     });
     for (let i = 1; i < freres.length; i++) {
       const a = freres[i - 1].getBoundingClientRect();

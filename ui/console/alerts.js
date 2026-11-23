@@ -19,6 +19,12 @@ let loading = false;
 let rendu = null;
 function arreterRendu() { if (rendu) { rendu.arreter(); rendu = null; } }
 let loaded = false;
+/* Ce que la derniere lecture a vu : le nombre d alertes du noyau et le
+   perimetre demande. La vue se relit d elle-meme quand l un des deux change —
+   elle attendait un clic sur « Actualiser », et un changement de perimetre la
+   laissait sur les alertes de l onglet precedent. */
+let compteLu = null;
+let perimetreLu;
 
 function scopeTab() {
   if (state.scope === 'all') return null;
@@ -30,6 +36,8 @@ function scopeTab() {
 async function load() {
   if (loading) return;
   loading = true;
+  compteLu = state.stats && state.stats.analyzer ? state.stats.analyzer.findings : null;
+  perimetreLu = scopeTab();
   const res = await cmd('findings', { tabId: scopeTab(), limit: 20000 });
   loading = false;
   loaded = true;
@@ -48,6 +56,14 @@ async function load() {
    Sans cela, le lecteur remontait en haut a chaque redessin, et seule la
    premiere lettre tapee dans le filtre comptait. */
 export function render() { return redessinerEnPlace($('#view-alerts'), dessiner); }
+
+/** Appelee a chaque releve du noyau, vue ouverte : de nouvelles alertes se
+ *  lisent sans clic, et la position du lecteur est gardee par le redessin. */
+export function suivre(stats) {
+  if (loading || !loaded) return;
+  const compte = stats && stats.analyzer ? stats.analyzer.findings : null;
+  if (compte !== compteLu || scopeTab() !== perimetreLu) load();
+}
 
 function dessiner() {
   const pane = clear($('#view-alerts'));
@@ -100,10 +116,12 @@ function dessiner() {
   }
   box.appendChild(actions);
 
+  /* Le perimetre a change depuis la derniere lecture : on relit, une fois. */
+  if (loaded && !loading && scopeTab() !== perimetreLu) load();
   if (!cache.findings.length) {
     box.appendChild(vide('Aucune alerte', loading
       ? 'Lecture en cours…'
-      : 'Aucune alerte sur le perimetre observe. Cliquez sur « Actualiser » apres avoir navigue.'));
+      : 'Aucune alerte sur le perimetre observe. La liste se complete d elle-meme pendant que vous naviguez.'));
     if (!loading && !loaded) load();
     return;
   }

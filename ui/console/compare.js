@@ -24,6 +24,7 @@ import { lireJsonExact, ecrireJsonExact } from '../lib/json-exact.js';
 import { produirePatch, patchEnArbre } from '../lib/json-patch.js';
 import { SENS_OPERATIONS } from './patch-detail.js';
 import { state, cmd, toast, copy } from '../app.js';
+import { redessinerEnPlace } from '../lib/redessin.js';
 
 let left = null;
 let right = null;
@@ -45,6 +46,35 @@ export async function loadSelection() {
   if (a.error || b.error) { toast(a.error || b.error, false); left = right = null; }
   else { left = a.record; right = b.record; }
   render();
+}
+
+/* En direct : une requete comparee qui recoit encore — un corps qui arrive,
+   une reponse qui se termine, une trame de plus — se relit d elle-meme, au
+   plus une fois par seconde, chacune gardant son cote. La comparaison
+   restait sinon figee sur l instant du clic. */
+let relecture = null;
+let relueA = 0;
+export function suivre(records) {
+  if (!left || !right || loading || relecture) return;
+  const touchees = (records || []).some(r => r && (r.id === left.id || r.id === right.id));
+  if (!touchees) return;
+  relecture = setTimeout(relire, Math.max(0, 1000 - (Date.now() - relueA)));
+}
+
+async function relire() {
+  relecture = null;
+  if (!left || !right || state.view !== 'compare') return;
+  relueA = Date.now();
+  const gauche = left.id;
+  const droite = right.id;
+  const [a, b] = await Promise.all([cmd('record', { id: gauche }), cmd('record', { id: droite })]);
+  /* Une requete disparue garde ce qui est affiche ; une autre paire choisie
+     pendant la lecture n est pas ecrasee. */
+  if (a.error || b.error || !a.record || !b.record) return;
+  if (!left || !right || left.id !== gauche || right.id !== droite) return;
+  left = a.record;
+  right = b.record;
+  redessinerEnPlace($('#view-compare'), render);
 }
 
 /* ----------------------------- Comparaisons ------------------------------ */

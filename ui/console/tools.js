@@ -5,7 +5,9 @@
  * d une transformation precedente, ou d une requete capturee (menu contextuel
  * du tableau, onglets du detail).
  *
- * Tout se passe en local : aucune de ces fonctions n emet de trafic.
+ * Tout se passe en local, sauf la famille « Interroger le reseau » — une
+ * requete, une connexion WebSocket, une resolution DNS — qui n emet rien sans
+ * un clic, et pour les deux premieres sans l autorisation du rejeu.
  */
 import { $, el, clear, sec, button } from '../lib/dom.js';
 import { redessinerEnPlace } from '../lib/redessin.js';
@@ -32,8 +34,11 @@ import { panneauMetadonnees } from './tools-metadonnees.js';
 import { panneauChercher } from './tools-chercher.js';
 import { panneauCode } from './tools-code.js';
 import { panneauOtp } from './tools-otp.js';
+import { panneauReponse } from './tools-reponse.js';
+import { panneauRequete, panneauDns } from './tools-requete.js';
+import { panneauWebSocket } from './tools-websocket.js';
 
-/* Les outils, ranges par intention plutot qu en une seule rangee de vingt-six
+/* Les outils, ranges par intention plutot qu en une seule rangee de trente
    boutons. On cherche « ce que je veux faire », pas le nom de l outil : les
    familles portent donc des verbes, et chacune tient sur une ligne. */
 /* Exporte pour la palette de commandes, qui construit son registre a partir
@@ -57,7 +62,15 @@ export const FAMILLES = [
     ['url', 'URL'],
     ['adresse', 'Adresse IP'],
     ['entetes', 'Entetes'],
+    ['reponse', 'Lire une reponse'],
     ['reference', 'Reference']
+  ]],
+  /* Les seuls outils qui emettent : regroupes, pour qu on sache d un regard
+     lesquels touchent au reseau. */
+  ['Interroger le reseau', [
+    ['requete', 'Envoyer une requete'],
+    ['websocket', 'Client WebSocket'],
+    ['dns', 'Resolution DNS']
   ]],
   ['Lire et mesurer', [
     ['analyse', 'Structures'],
@@ -112,7 +125,11 @@ const etat = {
   importBrut: false,
   codeSens: 'lisible', codeStyle: 'securise', codeEmbellir: true, codeSortie: null,
   otpForme: 'base32', otpAlgo: 'SHA-1', otpChiffres: 6, otpPas: 30, otpSecret: null,
-  otpResultat: null, otpVoisins: null, otpCompteur: 0
+  otpResultat: null, otpVoisins: null, otpCompteur: 0,
+  reponseUrl: '', reponseType: 'main_frame',
+  reqMethode: null, reqUrl: null, reqEntetes: null, reqCorps: null, reqResultats: [], reqEnvoi: false, reqErreur: null,
+  wsUrl: null, wsProtocoles: '', wsMessage: '', wsHex: false,
+  dnsNom: null, dnsFamille: '', dnsSansCache: false, dnsResultats: [], dnsEnCours: false, dnsErreur: null
 };
 
 /** Ouvre la reference sur une question deja posee : la famille et le mot
@@ -153,6 +170,11 @@ export function poser(texte, { bascule = true, vers = null, famille = null, tran
   etat.fabResultat = null;
   etat.fabErreur = null;
   etat.xorCandidats = null;
+  /* Un formulaire vide se remplit du nouveau texte (une commande cURL, une
+     adresse) ; un formulaire deja ecrit a la main n est jamais ecrase. */
+  if (!etat.reqUrl) etat.reqUrl = null;
+  if (!etat.dnsNom) etat.dnsNom = null;
+  if (!etat.wsUrl) etat.wsUrl = null;
   etat.questionRef = undefined;
   sortie = null;
   if (vers && ONGLETS.some(([id]) => id === vers)) onglet = vers;
@@ -178,7 +200,7 @@ function dessiner() {
   pane.appendChild(box);
 
   box.appendChild(sec('Boite a outils',
-    tp('{t} transformations en {f} familles d outils — tout se calcule en local',
+    tp('{t} transformations en {f} familles d outils — tout se calcule en local, sauf ce que vous envoyez',
       { t: TRANSFORMATIONS.length, f: FAMILLES.length })));
 
   /* ---------------------------- Texte de travail ------------------------- */
@@ -250,6 +272,10 @@ function dessiner() {
   else if (onglet === 'url') box.appendChild(panneauUrl(entree));
   else if (onglet === 'adresse') box.appendChild(panneauAdresse(entree, etat, redessiner, reprendre));
   else if (onglet === 'reference') box.appendChild(panneauReference(entree, etat, redessiner));
+  else if (onglet === 'reponse') box.appendChild(panneauReponse(entree, etat, redessiner));
+  else if (onglet === 'requete') box.appendChild(panneauRequete(entree, etat, redessiner));
+  else if (onglet === 'websocket') box.appendChild(panneauWebSocket(entree, etat, redessiner));
+  else if (onglet === 'dns') box.appendChild(panneauDns(entree, etat, redessiner));
   else if (onglet === 'generer') box.appendChild(panneauGenerateurs(reprendre, etat, redessiner));
   else if (onglet === 'importer') box.appendChild(panneauImport(entree, etat, redessiner));
 }

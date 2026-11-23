@@ -114,6 +114,25 @@ const VIEWS = {
 
 let pendingRender = null;
 
+/* -------------------------------- En direct ------------------------------- */
+/* Chaque arrivee de trafic incremente cette version ; une vue calculee sur le
+   trafic (Synthese, Sites et chemins) se redessine au releve suivant du noyau
+   — une fois par seconde au plus — si elle a change depuis son dernier dessin.
+   Les vues qui lisent le noyau (Securite, journaux) se relisent quand ses
+   compteurs bougent. Plus rien n attend un clic sur « Actualiser ». */
+let versionTrafic = 0;
+let versionDessinee = -1;
+const JOURNAUX = new Set(['cookies', 'navigation', 'context']);
+const CALCULEES = new Set(['summary', 'sitemap']);
+
+function enDirect() {
+  const s = state.stats;
+  if (!s) return;
+  if (state.view === 'alerts') alerts.suivre(s);
+  else if (JOURNAUX.has(state.view)) journal.suivre(state.view, s);
+  else if (CALCULEES.has(state.view) && versionDessinee !== versionTrafic) renderView();
+}
+
 /* ------------------------------- Routage -------------------------------- */
 export function setView(name) {
   if (!VIEWS[name]) name = 'requests';
@@ -145,6 +164,7 @@ function renderView() { differerSiAppui('vue', redessinerVue); }
 function redessinerVue() {
   const view = VIEWS[state.view];
   if (!view) return;
+  versionDessinee = versionTrafic;
   // Les vues se redessinent entierement a chaque changement : on conserve la
   // position de lecture, sans quoi un simple reglage renverrait en haut de page.
   const before = document.querySelector('#view-' + state.view + ' .pane');
@@ -358,14 +378,17 @@ function bindKeyboard() {
 
   connect({
     onDelta: records => {
+      versionTrafic++;
       refreshBadges();
       /* Le panneau ouvert suit la ligne qu il affiche : une session qui recoit
          encore doit se voir grandir sans qu on la referme. */
       detail.surDelta(records);
-      if (state.view === 'requests' || state.view === 'streams' || state.view === 'alerts') scheduleRender();
+      if (state.view === 'requests' || state.view === 'streams') scheduleRender();
+      else if (state.view === 'compare') compare.suivre(records);
     },
     onStats: () => { renderFoot(); renderSpark(); refreshBadges(); debugview.tick(); intercept.charger();
-                     if (state.view === 'stats') scheduleRender(); },
+                     if (state.view === 'stats') scheduleRender();
+                     enDirect(); },
     // Une requete suspendue doit apparaitre tout de suite, pas a la seconde suivante.
     onIntercept: () => { intercept.charger(); refreshBadges(); },
     onClear: () => { detail.close(); renderView(); },

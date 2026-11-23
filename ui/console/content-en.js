@@ -23,6 +23,11 @@ export const HELP_SECTIONS = [
       ['Block or slow down a site', 'Right-click a row -> “Block this host”, or a template in the Rules view: Throttle, No Caching, Block Cookies…'],
       ['Share a capture without leaking it', 'Export -> “HAR 1.2 — secrets masked, for sharing”: tokens, cookies and keys lose their value.'],
       ['Follow a WebSocket', 'The Live streams view, or the Streams tab in the connection’s detail.'],
+      ['Judge a site’s headers without capturing it', 'Toolbox -> Read a response: paste the output of curl -I, it is read like a captured response.'],
+      ['Send a request from scratch', 'Toolbox -> Send a request, once replay is allowed: an address, a cURL command or a raw request is enough.'],
+      ['Try a WebSocket server', 'Toolbox -> WebSocket client: open the connection, send, read every message live.'],
+      ['Find where a domain name leads', 'Toolbox -> DNS resolution: the addresses Firefox gets, over DNS over HTTPS when it is on.'],
+      ['Watch things change live', 'Nothing to do: every view follows the traffic by itself — table, streams, security, logs, summary, comparison — without making you lose your place.'],
       ['Decode an unknown value', 'Toolbox -> Transform -> “Try everything”.'],
       ['Sign a test token', 'Toolbox -> JWT -> “Build a signed token”, with your own shared key.'],
       ['Find a feature', 'Ctrl+K, then a few letters of what you are looking for.'],
@@ -86,7 +91,7 @@ export const HELP_SECTIONS = [
       ['Internal log', 'SWIFT’s own errors and commands, to export for a bug report.'],
       ['Rules', 'Blocking, redirecting, rewriting headers and URL parameters, mocked responses (typed or loaded from a file), throttling — with a visual editor and ready-made templates.'],
       ['Interception', 'Requests held before they leave, to edit then release one by one.'],
-      ['Toolbox', 'Twenty-six tools in six families on a single working text: encodings, encryption, binary formats, certificates, hashes, network, headers, timestamps, image metadata, HTTP reference.'],
+      ['Toolbox', 'Thirty tools in seven families on a single working text: encodings, encryption, binary formats, certificates, hashes, network, headers, timestamps, image metadata, HTTP reference — and the requests, WebSocket connections and DNS lookups you start.'],
       ['Settings', 'Everything configurable, with ready-made profiles.'],
       ['Tutorial', 'Twelve guided lessons with progress tracking.'],
       ['Help', 'This manual, offline, matching the installed version exactly.']
@@ -95,7 +100,7 @@ export const HELP_SECTIONS = [
   {
     h: 'The toolbox',
     p: [
-      'One working text, twenty-six tabs looking at it. You paste a value once — from the clipboard, from a row context menu, or from a detail tab — and every tool works on it. Everything is computed in the page: none of these functions sends a single request.'
+      'One working text, thirty tabs looking at it. You paste a value once — from the clipboard, from a row context menu, or from a detail tab — and every tool works on it. Everything is computed in the page, except the “Query the network” family — a request, a WebSocket, a DNS lookup — which sends nothing until you click.'
     ],
     table: [
       ['Transform', '140 transformations in eighteen families: base64 and base64 URL, base32, base58, base45, Ascii85, URL, HTML entities, hexadecimal, binary, octal, Unicode escapes, punycode, addresses defanged for a report and refanged, JSON, YAML, CSV, XML, SAML, DNS messages, WebAuthn, gzip and deflate, letter case, lines, string escaping, Protocol Buffers, MessagePack, CBOR, ASN.1. "Try everything" applies every decoding — except DNS and WebAuthn, which would read any bytes — and keeps only the readable results.'],
@@ -119,6 +124,10 @@ export const HELP_SECTIONS = [
       ['JSON Patch', 'Applies a JSON Patch (RFC 6902) to the working text, entirely or not at all, or a merge patch (RFC 7396); or produces the one that leads to a second document. Lossless: a large integer keeps its digits, and a pointer that designates a key written twice fails, as RFC 6901 requires.'],
       ['URL', 'Every part of a URL, the service known behind the port, and a warning when a punycode domain looks like another one.'],
       ['IP address', 'Full subnet computation for IPv4 or IPv6: mask, wildcard, network, broadcast, usable range, reverse name, category (RFC 1918, 6598, 4193...) and a membership test against a prefix. Plus splitting into subnets, summarising a list of prefixes, turning a range into prefixes and enumerating addresses.'],
+      ['Read a response', 'A pasted response — the output of curl -I, -i, -iL or -v, a block copied from elsewhere — read like a captured response: protections, HTTP freshness, CSP (one in a meta tag of the pasted body too), CORS, server signals, report collection, tokens. Of several responses, the last one is read; a line that is not a header is shown. Judge a site without capturing it.'],
+      ['Send a request', 'A request written from scratch, or taken from a cURL command or a raw HTTP request, sent from the browser with the X-Swift-Replay header: the response shows here, the request shows up in the table. Needs replay to be allowed.'],
+      ['WebSocket client', 'A connection opened to the address of your choice: messages sent as text or as hexadecimal bytes, messages received live, newest first, and the closing with the meaning of its code. Needs replay to be allowed.'],
+      ['DNS resolution', 'A name asked of the Firefox resolver — DNS over HTTPS when it is on: addresses and their category, canonical name, measured duration, cache bypassed or not, IPv4 or IPv6 only.'],
       ['Reference', 'Offline, complete tables: status codes, methods, headers (the whole IANA permanent registry), media types, ports, TLS cipher suites, TLS alerts, WebSocket close codes, HTTP/2, HTTP/3 and QUIC errors, DNS record types and response codes, Firefox network errors, and link relations (IANA registry). All searches every table at once, names and descriptions alike; so does Ctrl+K.'],
       ['Generate', 'UUID v3, v4, v5 and v7, ULID, NanoID, random sequences, passwords with their real entropy, hardware address, private address, dynamic port, and sixteen edge-case values that break sloppy validators.'],
       ['Import a request', 'A cURL command or a raw HTTP request becomes a row in the table, in the "pending" state. It is not sent: the "Replay" tab of its detail does that, if you ask for it.']
@@ -226,7 +235,7 @@ export const HELP_SECTIONS = [
   {
     h: 'Extension security',
     ul: [
-      'No network output, except two deliberate actions: the coverage test (towards the active tab own origin) and request replay.',
+      'No network output, except deliberate actions, always on a click: the coverage test (towards the active tab own origin), replaying and sending requests, the WebSocket client and the DNS lookups of the toolbox.',
       'No innerHTML on captured data: an observed site cannot inject anything into this interface.',
       'No eval, no executed string. Strict CSP on extension pages.',
       'Random per-document token between page and extension; interface commands require an internal sender.',
@@ -382,8 +391,8 @@ export const LESSONS = {
     title: 'The toolbox',
     goal: 'Decode, verify and build a value, without sending anything',
     body: [
-      { p: 'One **working text**, twenty-six tabs looking at it. You paste a value once — from the clipboard, from a row context menu, or from the "Toolbox" button on a response body — and every tool works on it.' },
-      { p: 'Everything is computed in the page. None of these tools sends a single request: not on load, not on click.' },
+      { p: 'One **working text**, thirty tabs looking at it. You paste a value once — from the clipboard, from a row context menu, or from the "Toolbox" button on a response body — and every tool works on it.' },
+      { p: 'Everything is computed in the page. Only the Query the network family sends anything, and only when you click.' },
       { ul: [
         '**Transform**: 140 transformations. "Try everything" applies each decoding (except DNS and WebAuthn) and keeps only the readable results — the right first move on an unknown value.',
         '**JWT**: header, payload, expiry, and the signature really verified when you provide the key — a shared key, a public key or the issuer\'s key set. In a request\'s detail, the Headers tab verifies it on its own when the capture holds the issuer\'s keys.',
@@ -391,7 +400,8 @@ export const LESSONS = {
         '**Binary**: Protocol Buffers, MessagePack, CBOR, X.509 certificates, character sets.',
         '**Headers**, **URL**, **IP address**: what the value really says, and what it lacks.',
         '**Image metadata**: where a photo was taken, who took it and with which camera — what it reveals to anyone who downloads it.',
-        '**Reference**: statuses, headers, media types, ports, TLS cipher suites — offline.'
+        '**Reference**: statuses, headers, media types, ports, TLS cipher suites — offline.',
+        '**Read a response**, **Send a request**, **WebSocket client**, **DNS resolution**: judge pasted headers, then talk to a server yourself — live.'
       ] },
       { p: 'A result can be taken as the input of another tool: you chain the steps without ever retyping anything.' }
     ]

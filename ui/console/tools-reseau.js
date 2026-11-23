@@ -147,7 +147,7 @@ export function panneauAdresse(entree, etat, redessiner, poser) {
   add(box, kv('Famille', bloc.famille, { hl: true }));
   add(box, kv('Adresse', bloc.adresse, { copy: true }));
   add(box, kv('Prefixe', '/' + bloc.prefixe, { always: true }));
-  add(box, kv('Categorie', bloc.categorie, { hl: true }));
+  add(box, kv('Categorie', t(bloc.categorie), { hl: true }));
 
   if (bloc.famille === 'IPv4') {
     add(box, kv('Masque de sous-reseau', bloc.masque, { copy: true }));

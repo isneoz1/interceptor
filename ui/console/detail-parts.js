@@ -206,7 +206,10 @@ export function resume(rec) {
 }
 
 /* ------------------------------ 2. En-tetes ------------------------------- */
-export function headers(rec) {
+/* `reponseSeule` : une reponse collee dans la boite a outils, sans requete —
+   le bloc des entetes envoyes n y dirait qu une absence. */
+export function headers(rec, options) {
+  const reponseSeule = !!(options && options.reponseSeule);
   const box = frag();
   const url = rec.finalUrl || rec.url;
   let params = [];
@@ -216,7 +219,7 @@ export function headers(rec) {
     box.appendChild(sec('Parametres de l URL', params.length));
     for (const [name, value] of params) add(box, kv(name, value, { copy: true }));
   }
-  box.appendChild(headerBlock('Entetes envoyees', rec.requestHeaders));
+  if (!reponseSeule) box.appendChild(headerBlock('Entetes envoyees', rec.requestHeaders));
   box.appendChild(headerBlock('Entetes recues', rec.responseHeaders));
   if (rec.pageMeta && rec.pageMeta.requestHeaders && rec.pageMeta.requestHeaders.length) {
     box.appendChild(headerBlock('Entetes vues par le code JavaScript', rec.pageMeta.requestHeaders));

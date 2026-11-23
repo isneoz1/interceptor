@@ -27,6 +27,12 @@ export function trouverChrome() {
   candidats.push('C:/Program Files/Google/Chrome/Application/chrome.exe');
   candidats.push('C:/Program Files (x86)/Google/Chrome/Application/chrome.exe');
   candidats.push('/usr/bin/google-chrome', '/usr/bin/chromium', '/usr/bin/chromium-browser');
+  /* Edge est un Chromium, livre avec chaque Windows : il parle le meme
+     protocole DevTools. Sans lui, les audits ne tournaient pas sur un Windows
+     ou personne n avait installe Chrome. SWIFT_CHROME impose un autre chemin. */
+  candidats.push('C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe');
+  candidats.push('C:/Program Files/Microsoft/Edge/Application/msedge.exe');
+  if (process.env.SWIFT_CHROME) candidats.unshift(process.env.SWIFT_CHROME);
   return candidats.find(c => fs.existsSync(c)) || null;
 }
 

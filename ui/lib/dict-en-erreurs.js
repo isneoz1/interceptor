@@ -401,5 +401,9 @@ export const MODELES_ERREURS = {
   'plus de {n} blocs compresses : les suivants ne sont pas lus': 'more than {n} compressed chunks: the next ones are not read',
   'plus de {n} blocs EXIF : les suivants ne sont pas lus': 'more than {n} EXIF blocks: the next ones are not read',
   'plus de {n} paquets XMP : les suivants ne sont pas lus': 'more than {n} XMP packets: the next ones are not read',
-  'lecture interrompue : {@raison}': 'reading interrupted: {@raison}'
+  'lecture interrompue : {@raison}': 'reading interrupted: {@raison}',
+  /* Ce que le noyau rend aux outils qui interrogent le reseau (6.1). */
+  'nom d hote invalide : {nom}': 'invalid host name: {nom}',
+  'resolution impossible : {raison}': 'resolution failed: {raison}',
+  'echec du rejeu : {raison}': 'replay failed: {raison}'
 };

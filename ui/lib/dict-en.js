@@ -35,6 +35,7 @@ import { EN_BIBLIOTHEQUES } from './dict-en-bibliotheques.js';
 import { EN_MESSAGES } from './dict-en-messages.js';
 import { EN_PARITE } from './dict-en-parite.js';
 import { EN_GUIDE } from './dict-en-guide.js';
+import { EN_DIRECT } from './dict-en-direct.js';
 
 export const EN = {
   /* ------------------------------ Navigation ----------------------------- */
@@ -463,5 +464,6 @@ export const EN = {
   ...EN_BIBLIOTHEQUES,
   ...EN_MESSAGES,
   ...EN_PARITE,
-  ...EN_GUIDE
+  ...EN_GUIDE,
+  ...EN_DIRECT
 };

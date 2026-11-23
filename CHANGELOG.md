@@ -6,6 +6,99 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versio
 
 ## [Unreleased]
 
+## [6.1.0] — 2026-11-23
+
+Four tools that talk to the network — only when you click — and a console where every view
+follows the traffic by itself.
+
+### Added
+
+- **A seventh toolbox family, *Query the network*** — the only one that sends anything, and
+  only on your click. The toolbox now holds 30 tools in 7 families.
+- **Send a request**: a request written from scratch — method, address, headers, body — or
+  taken from the working text: an address, a cURL command or a raw HTTP request, read by the
+  same parsers as the import. It leaves from the browser by the same path as a replay, with
+  the site's cookies and the `X-Swift-Replay` header, and shows up in the table; the status
+  and its meaning, the duration, the size, the headers the browser refused to set, the
+  headers and the body come back in the panel, and every send of the session stays listed.
+  Like any request SWIFT sends, it needs replay to be allowed — the panel offers the button.
+- **WebSocket client**: a connection opened to the address of your choice, with subprotocols
+  if you need them; text sent as is, or bytes written in hexadecimal; every message sent and
+  received shown **live**, newest first — binary ones in hexadecimal, a long one with its
+  length and « Show all » — with at most one redraw per 120 ms burst. The closing is read
+  with the meaning of its code, and an error says what usually causes it, since a WebSocket
+  never tells the page. The connection lives outside the view: changing tool or view does
+  not cut it. Needs replay to be allowed.
+- **DNS resolution**: a host name — or the host of an address — asked of Firefox's own
+  resolver on your click (`browser.dns.resolve`), over DNS over HTTPS when its TRR setting is
+  on: the addresses with their category, the canonical name, whether TRR answered and the
+  measured duration; Firefox's cache bypassed or not, IPv4 or IPv6 only. An international
+  name goes out in punycode, an IP address is not sent, and a name that RFC 1123 refuses is
+  stopped before it leaves.
+- **Read a response**: paste the headers of a response — the output of `curl -I`, `curl -i`,
+  `curl -iL` with its redirects, `curl -v`, or a block copied from elsewhere — and they are
+  read exactly like a captured response, by the Headers tab's own code: protections,
+  RFC 9111 freshness, CSP (one declared in a `<meta>` tag of a pasted body included), CORS,
+  server signals, report collection, tokens. Give the address, and whether it is a page:
+  HSTS and framing depend on it. A line that is neither a status line nor a header is shown,
+  never dropped in silence; with several responses — redirects, `100 Continue`,
+  `103 Early Hints` — the last one is read, the one the browser keeps, and a status line
+  written inside a body stays body.
+- **The Help's quick guide** gains five lines: judge a site's headers without capturing it,
+  send a request from scratch, try a WebSocket server, find where a domain name leads, and
+  watch things change live. Its toolbox table, the security section and the Toolbox lesson
+  of the Tutorial describe the four tools, and say which family sends something.
+
+### Changed
+
+- **Every view is live.** Security, the three logs (cookies, navigation, context), the
+  Summary and Sites and paths waited for a click on « Refresh »: they now read the core
+  again whenever its counters move — at most once a second — and keep your scroll position,
+  your filter and what you were typing. A Comparison whose requests are still receiving
+  reads them again by itself, at most once a second, each one keeping its side.
+- **The Summary keeps the rankings you unfolded** with « Show all » across those redraws:
+  each one folded back up every second while you read it.
+- The guided tour says that every view follows the traffic live, and an empty Security view
+  says that its list fills itself as you browse.
+- The toolbox header says that everything is computed locally, *except what you send*.
+- `tools/chrome.mjs` falls back on Microsoft Edge, a Chromium shipped with every Windows, so
+  the browser audits run on a machine without Chrome; `SWIFT_CHROME` still forces a path.
+
+### Fixed
+
+- **IP address categories were shown in French on an English screen** — « privee
+  (RFC 1918) », « boucle locale » — by the Address tool, since its first version: none of
+  the 27 had a translation. They all do, and the DNS resolution tool uses them too.
+- **The Security view stayed on the previous tab's alerts** after a change of scope, until
+  « Refresh ». It reads the new scope at once.
+- The layout audit (`tools/affichage.mjs`) took a bold word wrapping inside its own sentence
+  for an overlap: an inline element follows the text and is no longer counted.
+
+### Tests
+
+- A twenty-first suite, `tests/reseau.test.mjs` (164 assertions), goes through the real code
+  path, from the click in the panel to the core's own command dispatcher, with only
+  `fetch`, `dns.resolve` and `WebSocket` imitated so that nothing leaves: RFC 9112 (§2.1,
+  §4, §5.1, §5.2) and what `curl -I`, `-iL` and `-v` write; the pasted response read by the
+  Headers tab's code, a `<meta>` CSP included; a request taken from an address, a cURL
+  command and a raw request, then sent by the real replay down to `fetch` — `X-Swift-Replay`,
+  credentials, forbidden headers refused and named, no body on a GET — and refused while
+  replay is not allowed; the DNS flags, punycode and the names RFC 1123 refuses; a WebSocket
+  session driven end to end, close codes included, and a burst of messages that redraws the
+  panel once; Security, the logs and the Comparison reading the core again on their own, and
+  only when something changed; and every state of these panels in English.
+- `tests/rendu.test.mjs` and `tests/langue.test.mjs` render the twenty-nine toolbox panels,
+  `tests/saisie.test.mjs` checks the names of their fields under seven inputs.
+- Checked outside the suites, in a real Firefox 160 with the add-on installed: each of the
+  four tools driven through its own interface against a local HTTP and WebSocket server — the
+  server received the composed request with `X-Swift-Replay` and without the refused
+  `Cookie`, the request showed up in the table, the WebSocket echoed text and bytes and was
+  closed with code 4001 and its reason, `localhost` resolved to `127.0.0.1` and `::1` — and the
+  cookie log and the Security view updated without a click; no internal error was logged.
+  The six browser audits pass.
+
+4276 assertions across twenty-one suites, plus six browser audits.
+
 ## [6.0.0] — 2026-11-22
 
 Simple to pick up: a guided tour, a quick guide, ready-made searches and an empty table that
@@ -2072,7 +2165,8 @@ First public release.
 - Documentation screenshots are generated by `tools/captures.mjs`, which renders the real
   console against the real kernel rather than producing mockups.
 
-[Unreleased]: https://github.com/isneoz1/interceptor/compare/v6.0.0...HEAD
+[Unreleased]: https://github.com/isneoz1/interceptor/compare/v6.1.0...HEAD
+[6.1.0]: https://github.com/isneoz1/interceptor/releases/tag/v6.1.0
 [6.0.0]: https://github.com/isneoz1/interceptor/releases/tag/v6.0.0
 [5.9.0]: https://github.com/isneoz1/interceptor/releases/tag/v5.9.0
 [5.8.0]: https://github.com/isneoz1/interceptor/releases/tag/v5.8.0

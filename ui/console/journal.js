@@ -9,7 +9,7 @@ import { redessinerEnPlace } from '../lib/redessin.js';
 import { t, tp } from '../lib/i18n.js';
 import { listeProgressive } from '../lib/liste-progressive.js';
 import { clock, middle } from '../lib/format.js';
-import { cmd, toast, copy } from '../app.js';
+import { state, cmd, toast, copy } from '../app.js';
 
 const KINDS = {
   cookies: {
@@ -28,9 +28,18 @@ const KINDS = {
 
 const cache = {};
 const filters = {};
+/* Le nombre d entrees que le noyau annoncait a la derniere lecture, par
+   journal : quand il change, le journal se relit seul. Il fallait cliquer sur
+   « Actualiser » pour voir un cookie pose depuis l ouverture de la vue. */
+const comptesLus = {};
+const enLecture = {};
 
 async function load(kind) {
+  if (enLecture[kind]) return;
+  enLecture[kind] = true;
+  comptesLus[kind] = state.stats && state.stats.logs ? state.stats.logs[kind] : undefined;
   const res = await cmd('logs', { kind, limit: 20000 });
+  enLecture[kind] = false;
   if (res.error) { toast(res.error, false); return; }
   cache[kind] = res.entries || [];
   render(kind);
@@ -41,6 +50,14 @@ async function load(kind) {
    Sans cela, le lecteur remontait en haut a chaque redessin, et seule la
    premiere lettre tapee dans le filtre comptait. */
 export function render(kind) { return redessinerEnPlace($('#view-' + kind), () => dessiner(kind)); }
+
+/** Appelee a chaque releve du noyau, journal ouvert : il se relit des que de
+ *  nouvelles entrees existent. Le redessin garde la position du lecteur. */
+export function suivre(kind, stats) {
+  if (!cache[kind] || enLecture[kind]) return;
+  const compte = stats && stats.logs ? stats.logs[kind] : undefined;
+  if (compte !== undefined && compte !== comptesLus[kind]) load(kind);
+}
 
 function dessiner(kind) {
   const meta = KINDS[kind];

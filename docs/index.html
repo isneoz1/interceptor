@@ -68,9 +68,9 @@
   <dl>
     <div><dt>capture layers</dt><dd>8</dd></div>
     <div><dt>duplicated rows</dt><dd>0</dd></div>
-    <div><dt>tools</dt><dd data-compte="outils">26</dd></div>
+    <div><dt>tools</dt><dd data-compte="outils">30</dd></div>
     <div><dt>transformations</dt><dd data-compte="transformations">140</dd></div>
-    <div><dt>automated checks</dt><dd data-compte="assertions">4,047</dd></div>
+    <div><dt>automated checks</dt><dd data-compte="assertions">4,276</dd></div>
     <div><dt>dependencies</dt><dd>0</dd></div>
   </dl>
 </section>
@@ -116,6 +116,22 @@
       <h3>Findings it can prove</h3>
       <p>Every finished request is audited on its own: exposed secrets, credentials in clear, cookies that will be rejected and why. If the capture cannot prove it, SWIFT does not say it.</p>
       <img src="images/cadre-securite.png" width="2000" height="1000" loading="lazy" alt="The security view: each finding with the request that proves it">
+    </article>
+    <article class="carte">
+      <h3>Is this site well protected?</h3>
+      <p>Paste the output of <code>curl -I</code>: its headers are read exactly like a captured response — HSTS, CSP, framing, caching, CORS.</p>
+    </article>
+    <article class="carte">
+      <h3>Does this API answer?</h3>
+      <p>Write a request, or paste a cURL command, and send it from Firefox on your click. The answer comes back explained, and the call shows up in the table.</p>
+    </article>
+    <article class="carte">
+      <h3>What does this WebSocket say?</h3>
+      <p>Open a connection, send text or bytes, and read every message live, newest first. A close code comes with its meaning.</p>
+    </article>
+    <article class="carte">
+      <h3>Where does this name lead?</h3>
+      <p>The addresses Firefox’s own resolver returns — over DNS over HTTPS when it is on — with their category and the time it took.</p>
     </article>
   </div>
 </section>
@@ -177,7 +193,7 @@
 
 <section class="vie-privee" aria-labelledby="titre-vie">
   <h2 id="titre-vie">Nothing leaves your machine.</h2>
-  <p>No telemetry, no server, no account — there is nowhere for your traffic to go. Open the source and check: every line is readable, with no build step. This page keeps the same promise: it loads nothing from anyone else.</p>
+  <p>No telemetry, no server, no account — there is nowhere for your traffic to go. The only traffic SWIFT ever sends is what you start yourself: a replay, a request you write, a WebSocket you open, a name you look up. Open the source and check: every line is readable, with no build step. This page keeps the same promise: it loads nothing from anyone else.</p>
 </section>
 
 </main>

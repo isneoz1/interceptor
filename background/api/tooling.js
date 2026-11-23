@@ -9,7 +9,9 @@
  *   clearDebug    vide ce journal
  *   debugNote     y ecrit un repere depuis l interface
  *   mesurerCompressions  ce que gzip ferait des textes servis sans compression
+ *   dnsResolve    resout un nom par le resolveur de Firefox, sur un clic
  */
+import { B } from '../lib/util.js';
 import { store } from '../core/store.js';
 import { analyze } from '../core/analyzer.js';
 import { analyserCurl } from '../ingest/curl.js';
@@ -19,7 +21,43 @@ import { mesurerCompression } from '../../ui/lib/corps-controles.js';
 
 const MESURES_MAX = 5000;
 
+/* Un nom d hote tel que DNS l accepte (RFC 1123 §2.1, deja en punycode : la
+   console convertit un nom international avant de l envoyer) : des etiquettes
+   de 63 caracteres au plus, 253 en tout. Le soulignement est admis, que des
+   noms de service emploient (_dmarc, _acme-challenge). */
+const NOM_HOTE = /^(?=.{1,253}$)([a-z0-9_](?:[a-z0-9_-]{0,61}[a-z0-9_])?)(\.[a-z0-9_](?:[a-z0-9_-]{0,61}[a-z0-9_])?)*$/i;
+
 export const TOOLING_COMMANDS = {
+  /* --------------------------- Resolution DNS -------------------------- */
+  /**
+   * Resout un nom par le resolveur de Firefox (dns.resolve) : la seule sortie
+   * de l outil « Resolution DNS », et seulement sur un clic. Firefox peut la
+   * faire passer par DNS sur HTTPS (TRR) : la reponse le dit. La duree est
+   * celle que la page d arriere-plan a mesuree, cache compris quand il sert.
+   */
+  dnsResolve: async ({ nom, sansCache = false, famille = '' }) => {
+    const hote = String(nom == null ? '' : nom).trim().replace(/\.$/, '').toLowerCase();
+    if (!hote) return { error: 'nom vide' };
+    if (!NOM_HOTE.test(hote)) return { error: 'nom d hote invalide : ' + hote };
+    if (!B.dns || typeof B.dns.resolve !== 'function') return { error: 'resolution DNS indisponible dans ce navigateur' };
+    const drapeaux = ['canonical_name'];
+    if (sansCache) drapeaux.push('bypass_cache');
+    if (famille === 'ipv4') drapeaux.push('disable_ipv6');
+    if (famille === 'ipv6') drapeaux.push('disable_ipv4');
+    const debut = Date.now();
+    try {
+      const r = await B.dns.resolve(hote, drapeaux);
+      return { ok: true, resultat: {
+        nom: hote, a: debut, duree: Date.now() - debut, drapeaux,
+        adresses: Array.isArray(r && r.addresses) ? r.addresses.map(String) : [],
+        canonique: (r && r.canonicalName) || null,
+        trr: !!(r && r.isTRR)
+      } };
+    } catch (e) {
+      return { error: 'resolution impossible : ' + String((e && e.message) || e) };
+    }
+  },
+
   /* ---------------------- Interception en direct ----------------------- */
   /** File des requetes actuellement suspendues. */
   interceptList: () => ({
