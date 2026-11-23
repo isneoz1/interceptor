@@ -61,6 +61,9 @@ follows the traffic by itself.
 - The guided tour says that every view follows the traffic live, and an empty Security view
   says that its list fills itself as you browse.
 - The toolbox header says that everything is computed locally, *except what you send*.
+- **The website** presents the four new tools in four cards, and says that the only traffic
+  SWIFT ever sends is what you start yourself: a replay, a request you write, a WebSocket you
+  open, a name you look up.
 - `tools/chrome.mjs` falls back on Microsoft Edge, a Chromium shipped with every Windows, so
   the browser audits run on a machine without Chrome; `SWIFT_CHROME` still forces a path.
 
@@ -71,6 +74,9 @@ follows the traffic by itself.
   the 27 had a translation. They all do, and the DNS resolution tool uses them too.
 - **The Security view stayed on the previous tab's alerts** after a change of scope, until
   « Refresh ». It reads the new scope at once.
+- **The website left one figure alone on its line**, next to an empty band, between 800 and
+  1,000 px wide: six figures in columns sized automatically made five and one. They now sit
+  six, three or two to a row.
 - The layout audit (`tools/affichage.mjs`) took a bold word wrapping inside its own sentence
   for an overlap: an inline element follows the text and is no longer counted.
 
