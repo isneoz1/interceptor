@@ -119,6 +119,8 @@ export function panneauRequete(entree, etat, redessiner) {
   const actions = el('div', { class: 'actions' });
   if (permis) {
     actions.appendChild(button(etat.reqEnvoi ? 'Envoi…' : 'Envoyer', async () => {
+      /* Un double clic, ou un clic pendant l envoi, n envoie pas deux fois. */
+      if (etat.reqEnvoi) return;
       retenir();
       const cible = String(etat.reqUrl || '').trim();
       if (!/^https?:\/\//i.test(cible)) return toast('Adresse http ou https attendue', false);
@@ -226,6 +228,7 @@ export function panneauDns(entree, etat, redessiner) {
   sansCache.addEventListener('change', () => { etat.dnsSansCache = sansCache.checked; });
 
   const resoudre = button(etat.dnsEnCours ? 'Resolution…' : 'Resoudre', async () => {
+    if (etat.dnsEnCours) return;
     etat.dnsNom = nom.value;
     etat.dnsFamille = famille.value;
     etat.dnsSansCache = sansCache.checked;

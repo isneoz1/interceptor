@@ -337,6 +337,14 @@ const compter = nom => commandes.filter(c => c === nom).length;
   cliquer(vue, 'Reprendre le texte de travail');
   egal('rien a reprendre : le formulaire reste, le toast le dit', etat.reqUrl + ' | ' + dernierToast(),
     'https://autre.example/ping | Ni commande cURL, ni requete HTTP brute, ni adresse dans le texte de travail');
+
+  /* Deux clics coup sur coup — ou un clic pendant l envoi : un seul envoi. */
+  repondre = () => new Response('pong', { status: 200, statusText: 'OK' });
+  vue = rendre(() => panneauRequete('', etat, () => {}));
+  const avantDouble = appelsFetch.length;
+  await Promise.all([cliquer(vue, 'Envoyer'), cliquer(vue, 'Envoyer')]);
+  egal('un double clic sur Envoyer : un seul envoi', appelsFetch.length - avantDouble, 1);
+  egal('l envoi fini, le bouton revient', etat.reqEnvoi + ' ' + etat.reqResultats[0].status, 'false 200');
 }
 
 /* ======================= 3. Resolution DNS, sur un clic ==================== */
@@ -413,6 +421,15 @@ const compter = nom => commandes.filter(c => c === nom).length;
   await cliquer(vue, 'Resoudre');
   vue = rendre(() => panneauDns('', etat, () => {}));
   verifier('panneau : l echec est dit, les resolutions precedentes restent', plat(vue).includes('Echec : resolution impossible : NS_ERROR_UNKNOWN_HOST') && plat(vue).includes('93.184.215.14'));
+
+  /* Deux clics coup sur coup : une seule resolution. */
+  resoudre = async () => ({ addresses: ['127.0.0.1'], canonicalName: 'localhost', isTRR: false });
+  vue = rendre(() => panneauDns('', etat, () => {}));
+  champ(vue, 'dns-nom').value = 'localhost';
+  const avantDouble = appelsDns.length;
+  await Promise.all([cliquer(vue, 'Resoudre'), cliquer(vue, 'Resoudre')]);
+  egal('un double clic sur Resoudre : une seule resolution', appelsDns.length - avantDouble, 1);
+  egal('la resolution finie, le bouton revient', etat.dnsEnCours + ' ' + etat.dnsResultats[0].nom, 'false localhost');
 }
 
 /* ==================== 4. Client WebSocket, de bout en bout ================= */
@@ -500,6 +517,17 @@ globalThis.WebSocket = FauxWebSocket;
   ws.recevoir('hors de la vue');
   await attendre(200);
   egal('une autre vue ouverte : le message est garde, rien n est redessine', redessins - base + ' ' + session.messages.length, '1 6');
+  /* Un autre outil a l ecran : la connexion vit, mais le panneau n y est
+     plus — le titre qu il avait pose est detache de la page. Chaque rafale
+     redessinait sinon l autre outil, huit fois par seconde. */
+  state.view = 'tools';
+  const titreWs = cherche(vue, n => n.classList && n.classList.contains('sec'));
+  titreWs.isConnected = false;
+  ws.recevoir('autre outil a l ecran');
+  await attendre(200);
+  egal('un autre outil a l ecran : le message est garde, rien n est redessine', redessins - base + ' ' + session.messages.length, '1 7');
+  titreWs.isConnected = true;
+  state.view = 'requests';
 
   const [m1, m2, m3, m4] = session.messages;
   egal('envoye : le texte, sa taille en octets UTF-8', [m1.sens, m1.texte, m1.taille, m1.binaire].join(' '), 'envoye bonjour é 10 false');
@@ -509,11 +537,11 @@ globalThis.WebSocket = FauxWebSocket;
 
   vue = panneau('');
   const cadres = tous(vue, n => n.classList && n.classList.contains('frame'));
-  egal('le journal : chaque message, les plus recents en haut', cadres.map(c => (c.classList.contains('send') ? '↑' : '↓')).join(''), '↓↓↓↓↑↑');
-  verifier('le journal : le dernier recu en tete', plat(cadres[0]).includes('hors de la vue'));
-  egal('le journal : un binaire porte son explication', cadres[2].getAttribute('title'), 'message binaire, montre en hexadecimal');
+  egal('le journal : chaque message, les plus recents en haut', cadres.map(c => (c.classList.contains('send') ? '↑' : '↓')).join(''), '↓↓↓↓↓↑↑');
+  verifier('le journal : le dernier recu en tete', plat(cadres[0]).includes('autre outil a l ecran'));
+  egal('le journal : un binaire porte son explication', cadres[3].getAttribute('title'), 'message binaire, montre en hexadecimal');
   const lu = plat(vue);
-  verifier('l etat de la session montre', lu.includes('Etat ouverte') && lu.includes('Sous-protocole accepte superchat') && lu.includes('6 message(s), les plus recents en haut'));
+  verifier('l etat de la session montre', lu.includes('Etat ouverte') && lu.includes('Sous-protocole accepte superchat') && lu.includes('7 message(s), les plus recents en haut'));
 
   /* Une seconde connexion remplace la premiere ; la premiere ne parle plus. */
   cliquer(vue, 'Fermer la connexion');
@@ -524,14 +552,14 @@ globalThis.WebSocket = FauxWebSocket;
   const ferme = plat(vue);
   verifier('fermee : le code et son sens', ferme.includes('Code de fermeture 1000 Fermeture normale') && ferme.includes('La transaction est terminee, des deux cotes.'));
   verifier('fermee : la raison donnee', ferme.includes('Raison donnee au revoir'));
-  verifier('fermee : le journal reste', ferme.includes('6 message(s)'));
+  verifier('fermee : le journal reste', ferme.includes('7 message(s)'));
 
   champ(vue, 'ws-protocoles').value = '';
   cliquer(vue, 'Ouvrir la connexion');
   const ws2 = FauxWebSocket.crees[1];
   egal('sans sous-protocole : aucun n est demande', ws2 && ws2.demandes, null);
   ws.recevoir('message tardif de l ancienne');
-  egal('l ancienne connexion ne parle plus a la session', session.messages.length, 6);
+  egal('l ancienne connexion ne parle plus a la session', session.messages.length, 7);
   ws2.emettre('error');
   ws2.fermer(1006, '', false);
   vue = panneau('');

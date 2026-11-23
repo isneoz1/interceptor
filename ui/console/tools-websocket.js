@@ -28,14 +28,20 @@ const session = {
 };
 
 /* Le redessin de la derniere vue rendue, appele quand un message arrive :
-   au plus une fois tous les 120 ms, pour qu un flux rapide reste fluide. */
+   au plus une fois tous les 120 ms, pour qu un flux rapide reste fluide.
+   Seulement si le panneau est a l ecran : la connexion survit quand on passe
+   a un autre outil, et chaque rafale redessinait alors cet autre outil — un
+   calcul refait huit fois par seconde, une selection de texte perdue. Le
+   temoin est le titre du dernier panneau dessine ; detache de la page, il ne
+   l est plus (un noeud sans `isConnected` compte pour present). */
 let relancer = null;
+let temoin = null;
 let minuteur = null;
 function redessinerBientot() {
   if (minuteur) return;
   minuteur = setTimeout(() => {
     minuteur = null;
-    if (relancer && state.view === 'tools') relancer();
+    if (relancer && state.view === 'tools' && temoin && temoin.isConnected !== false) relancer();
   }, 120);
 }
 
@@ -103,7 +109,8 @@ export function panneauWebSocket(entree, etat, redessiner) {
   relancer = redessiner;
   const box = frag();
   const permis = envoiPermis();
-  box.appendChild(sec('Client WebSocket', ETATS[session.etat]));
+  temoin = sec('Client WebSocket', ETATS[session.etat]);
+  box.appendChild(temoin);
   box.appendChild(el('p', { class: 'note warn', text:
     t('La connexion part du navigateur, vers l adresse que vous donnez, et reste ouverte tant que vous ne la fermez pas. A n ouvrir que vers des services dont vous avez la responsabilite.') }));
 

@@ -14,20 +14,20 @@ jobs:
   test:
     name: ${{ matrix.os }} · Node ${{ matrix.node }}
     runs-on: ${{ matrix.os }}
-    # Les neuf suites prennent quelques secondes. Dix minutes laissent toute la
-    # marge du monde a un runner lent, et font echouer en dix minutes ce qui
-    # tournerait sinon six heures : un test qui se bloque doit se voir.
+    # Les vingt et une suites prennent environ une minute. Dix minutes laissent
+    # toute la marge du monde a un runner lent, et font echouer en dix minutes ce
+    # qui tournerait sinon six heures : un test qui se bloque doit se voir.
     timeout-minutes: 10
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
-        node: ['20', '22', '24']
+        node: ['20', '22', '24', '26']
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: ${{ matrix.node }}
 
@@ -43,9 +43,9 @@ jobs:
     timeout-minutes: 15
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: '24'
 
@@ -54,7 +54,7 @@ jobs:
         shell: pwsh
         run: ./build.ps1
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: swift-xpi
           path: dist/*.xpi

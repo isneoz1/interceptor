@@ -16,7 +16,7 @@ Created by **D4RK** · <sub>formerly INTERCEPTOR, renamed in 5.0</sub>
 ![Manifest V2](https://img.shields.io/badge/Manifest-V2-444?style=flat)
 [![MIT licence](https://img.shields.io/badge/Licence-MIT-00DDFF?style=flat)](LICENSE)
 ![No dependencies](https://img.shields.io/badge/Dependencies-none-2ea043?style=flat)
-![4276 assertions](https://img.shields.io/badge/Assertions-4276-2ea043?style=flat)
+![4281 assertions](https://img.shields.io/badge/Assertions-4281-2ea043?style=flat)
 ![English and French](https://img.shields.io/badge/UI-EN%20%2F%20FR-444?style=flat)
 
 [**Website**](https://isneoz1.github.io/interceptor/) · [**Try it in 60 seconds**](#try-it-in-60-seconds) · [**Download**](https://github.com/isneoz1/interceptor/releases/latest) · [**Why not the built-in panel?**](#firefox-already-has-a-network-panel-why-this) · [**Screenshots**](#2-screenshots) · [**How it works**](#4-how-it-works-the-capture-layers) · [**Changelog**](CHANGELOG.md)
@@ -211,7 +211,7 @@ specific points:
 happens inside your Firefox, on your machine.
 
 **By the numbers**: 269 JavaScript modules, ~55,500 lines, zero external dependencies,
-4276 automated assertions, English and French interface — French on a French Firefox, English otherwise.
+4281 automated assertions, English and French interface — French on a French Firefox, English otherwise.
 
 ---
 
@@ -1026,7 +1026,7 @@ ui/                        The interface — one page for all four surfaces
 ├── console/               One view per file, plus the detail panel and the guided tour
 └── lib/                   Codecs, digests, network, reference tables, i18n
 
-tests/                     4276 assertions, no browser required
+tests/                     4281 assertions, no browser required
 tools/sockets.mjs          Real WebSockets against a real server: page, worker, WebRTC
 tools/transparence.mjs     What a page can tell about the probes — it should be nothing
 tools/minutage.mjs         Network timing phases in a real browser: only real measurements
@@ -1110,7 +1110,7 @@ a setting, right-click menu and exported files included.
 npm test
 ```
 
-4276 assertions, with no browser and no dependencies. The kernel and interface modules are
+4281 assertions, with no browser and no dependencies. The kernel and interface modules are
 written for Firefox; `tests/harnais.mjs` supplies the minimum WebExtension API and DOM they
 need to import and run under Node. **The logic under test is exactly the logic that runs in
 the browser, with no rewriting.**
@@ -1137,7 +1137,7 @@ the browser, with no rewriting.**
 | `parite.test.mjs` | 98 | What 5.9 takes from the best tools, against their own documentation or a reference implementation: the URL-parameter rule — added, replaced or removed without touching how the other parameters are written, and a second pass that changes nothing, so no redirect loop, even after the browser has rewritten the address by the WHATWG URL Standard (an apostrophe becomes `%27`): thirty values put through Node's `URL`, which follows the same standard; two URL-parameter rules on one request applied together — contrary ones no longer send it back and forth; Charles's **No Caching** and **Block Cookies**, header by header, against the sentences of Charles's documentation, both acting on the same request, and a header present twice removed or set entirely; a file loaded into a mock — UTF-8 text, Latin-1, a BOM, a ZIP, a PNG — served with its exact bytes; a throttle or a mock rule without a value doing what the editor shows, and a malformed rule from an imported file doing nothing rather than breaking the request; every template on `example.com` (RFC 2606), named in English on an English screen; **defang and refang**, identical to CyberChef's own expressions on its DefangIP examples and on **60,000 random texts**, and never slow — 40 KB of hostile text in under 300 ms; the **throttle** on a simulated clock — never more than the rate allows, at most one second of credit after a silence, every byte delivered in order, a page gone stops everything, an overflowing response suspends the stream and resumes it — and in the real stream filter with real timers; and, with body capture turned off, a mock or a throttle that still applies |
 | `images.test.mjs` | 106 | What an image reveals, against files that others wrote or validated: a JPEG whose EXIF tags were **written by Windows GDI+**, each value compared with what GDI+ reads back — text, dates, serial number, GPS position in degrees, minutes and seconds; the same JPEG with an XMP block; a PNG with `tEXt`, UTF-8 `iTXt`, compressed `zTXt` and XMP, and `eXIf`, reloaded by GDI+; a WebP **encoded by Chrome**, EXIF and XMP chunks added, that Chrome decodes; what the image reveals, said in one sentence, and nothing for an image without metadata; a file truncated at every byte, random bytes and an IFD that points to itself — never an exception, never a loop; **files built to stall the reader** — four 65 KB comments of NUL bytes, EXIF tags of 60 KB, a `zTXt` bomb of 20 MB, 512 KB of unclosed XMP tags, thousands of blocks of every kind — read in under a second, long values cut at 4,096 characters and said so, 200 entries, 20 errors, 16 EXIF blocks, 16 XMP packets and 50 decompressions at most, and the rest counted or said; a `UserComment` read whole in any script and in the byte order of the file, and a GPS time written as text that no longer stops the reading; every error message translated; the toolbox panel and the Response tab block in both languages, every label translated |
 | `navigateurs.test.mjs` | 67 | What a browser announces, against the 428 test strings of **ua-parser-js 1.0.41**: **no false claim** — not one browser, system or engine named wrongly — and at least 61 browsers, 22 systems and 11 engines named; what the string no longer says — Windows 10/11 behind `NT 10.0`, macOS 10.15+, no Android version behind `Android 10; K`, and since iOS 26 the iOS version taken from Safari's rather than the frozen 18.6 — never given as the real one; Safari named only on Apple's systems (not GNOME Web, BlackBerry or Tizen); browsers built on Chromium named by their own token, robots and command-line clients, crawlers that write no version (Yahoo! Slurp, Slackbot, TelegramBot), and a phone called CUBOT or the JavaFX browser never taken for one; strings of 100,000 hostile characters read in milliseconds; client hints with **Microsoft's thresholds** for Windows 11 and the decoy brand; the Headers tool and the detail block in both languages, every label translated |
-| `reseau.test.mjs` | 164 | What 6.1 adds, through the real code path — from the click in the panel to the core's own command dispatcher, with only `fetch`, `dns.resolve` and `WebSocket` imitated so that nothing leaves: **Read a response** against RFC 9112 (§2.1, §4, §5.1, §5.2) — what `curl -I`, `curl -iL` and its redirects, `curl -v` and an interim response (RFC 9110 §15.2) write, obsolete line folding, a status line written inside a body that stays body — then read by the Headers tab's own code, body included, down to a CSP declared in a `<meta>` tag; **Send a request**: an address, a cURL command or a raw HTTP request taken from the working text, then sent by the real replay all the way to `fetch` — `X-Swift-Replay`, the site's cookies, forbidden headers refused and named, no body on a GET — and nothing sent while replay is not allowed; **DNS resolution**: the name read from the text (punycode, IP addresses set aside), the flags passed to `dns.resolve`, names that RFC 1123 refuses stopped before they leave, failures translated; the **WebSocket client** driven end to end — subprotocols, text and hexadecimal bytes sent, text and binary messages received, the close code and its meaning, a burst of messages redrawing the panel once; Security, the logs and the Comparison **reading the core again by themselves** when it counts something new, and only then; and every state of these panels in English — which is how the IP address categories, shown in French on an English screen by the Address tool since its first day, were found |
+| `reseau.test.mjs` | 169 | What 6.1 adds, through the real code path — from the click in the panel to the core's own command dispatcher, with only `fetch`, `dns.resolve` and `WebSocket` imitated so that nothing leaves: **Read a response** against RFC 9112 (§2.1, §4, §5.1, §5.2) — what `curl -I`, `curl -iL` and its redirects, `curl -v` and an interim response (RFC 9110 §15.2) write, obsolete line folding, a status line written inside a body that stays body — then read by the Headers tab's own code, body included, down to a CSP declared in a `<meta>` tag; **Send a request**: an address, a cURL command or a raw HTTP request taken from the working text, then sent by the real replay all the way to `fetch` — `X-Swift-Replay`, the site's cookies, forbidden headers refused and named, no body on a GET — and nothing sent while replay is not allowed; **DNS resolution**: the name read from the text (punycode, IP addresses set aside), the flags passed to `dns.resolve`, names that RFC 1123 refuses stopped before they leave, failures translated; the **WebSocket client** driven end to end — subprotocols, text and hexadecimal bytes sent, text and binary messages received, the close code and its meaning, a burst of messages redrawing the panel once and another tool on screen not at all; a double click that sends once; Security, the logs and the Comparison **reading the core again by themselves** when it counts something new, and only then; and every state of these panels in English — which is how the IP address categories, shown in French on an English screen by the Address tool since its first day, were found |
 
 Expected values come from published sources: RFC vectors (4226, 6238, 6455, 4231, 7541, 9113,
 3986, 7578, 9111, 8187, 2231, 2047, 6266, 7638, 8941, 9421, 9651, 8484, 9745, 8594, 9110, 8288,
@@ -1261,7 +1261,7 @@ can still quote the address of a page, and issues are public: read the file befo
 Before opening a pull request:
 
 ```bash
-npm test              # all 4276 assertions must pass
+npm test              # all 4281 assertions must pass
 .\build.ps1 -Verify   # the build must be green
 ```
 
