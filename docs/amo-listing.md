@@ -20,16 +20,16 @@ AMO's public API, and the field limits in its source, `mozilla/addons-server`.
       publish. Changing it later means publishing a different add-on and orphaning every
       existing install, so make sure it is what you want *before* the first upload.
 - [ ] **Bump the version.** AMO refuses a version number it has already seen. The repository
-      is at `6.1.0`, which has never been submitted, so it can go up as-is. Only bump again if
+      is at `6.1.1`, which has never been submitted, so it can go up as-is. Only bump again if
       a submission gets rejected and you need to resubmit.
-- [ ] **The package**: `swift-6.1.0.xpi` from the GitHub release, its SHA-256 is in the release
+- [ ] **The package**: `swift-6.1.1.xpi` from the GitHub release, its SHA-256 is in the release
       notes. `npm run build` produces a new `dist/swift-<version>.xpi` from the repository.
 - [x] **Data collection is declared**: `data_collection_permissions` is `{"required": ["none"]}`,
       which AMO requires of every new extension since 3 November 2025. Mozilla's linter
       (`npx web-ext lint` on the unpacked package) reported 0 errors and two warnings on 5.8.0:
       Firefox 115 to 139 do not know this key. That is expected — they ignore it, and since
       SWIFT collects nothing there is no consent to ask for on those versions. It has not been
-      run on 6.1.0 yet: run it before you submit, or read the report of AMO's own validator,
+      run on 6.1.1 yet: run it before you submit, or read the report of AMO's own validator,
       which checks the package when you upload it.
 - [ ] The reviewer will read the source. It is plain ES modules with no build step, no
       minification and no bundler, so no separate source upload is required — say so in the

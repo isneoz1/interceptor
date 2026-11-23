@@ -6,6 +6,35 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versio
 
 ## [Unreleased]
 
+## [6.1.1] — 2026-11-23
+
+Two defects in 6.1.0's new tools, found by reading them again the same day, and a continuous
+integration that no longer leans on deprecated actions.
+
+### Fixed
+
+- **A WebSocket session redrew the toolbox while another tool was on screen.** The connection
+  rightly survives a change of tool, but every burst of messages redrew the toolbox: the
+  other tool's panel was recomputed up to eight times a second, and a text selection in it
+  was lost. The redraw now runs only while the WebSocket client is on screen.
+- **A double click sent twice.** Two clicks on « Send » in Send a request, or on « Resolve »
+  in DNS resolution — or a click while the previous one was still running — sent the request,
+  or the lookup, twice.
+
+### Changed
+
+- **Continuous integration** runs the suites on Node 20, 22, 24 and 26, on Linux and Windows,
+  with `actions/checkout`, `setup-node` and `upload-artifact` v7, which run on Node 24: the
+  v4 actions ran on Node 20, which GitHub has deprecated.
+
+### Tests
+
+- `tests/reseau.test.mjs` (169 assertions): a double click on « Send » or « Resolve » sends
+  once, and a message that arrives while another tool is on screen is kept without
+  redrawing anything — each check fails without its fix.
+
+4281 assertions across twenty-one suites, plus six browser audits.
+
 ## [6.1.0] — 2026-11-23
 
 Four tools that talk to the network — only when you click — and a console where every view
@@ -25,8 +54,7 @@ follows the traffic by itself.
 - **WebSocket client**: a connection opened to the address of your choice, with subprotocols
   if you need them; text sent as is, or bytes written in hexadecimal; every message sent and
   received shown **live**, newest first — binary ones in hexadecimal, a long one with its
-  length and « Show all » — with at most one redraw per 120 ms burst, and none while another
-  tool is on screen. The closing is read
+  length and « Show all » — with at most one redraw per 120 ms burst. The closing is read
   with the meaning of its code, and an error says what usually causes it, since a WebSocket
   never tells the page. The connection lives outside the view: changing tool or view does
   not cut it. Needs replay to be allowed.
@@ -65,9 +93,6 @@ follows the traffic by itself.
 - **The website** presents the four new tools in four cards, and says that the only traffic
   SWIFT ever sends is what you start yourself: a replay, a request you write, a WebSocket you
   open, a name you look up.
-- **Continuous integration** runs the suites on Node 20, 22, 24 and 26, on Linux and Windows,
-  with `actions/checkout`, `setup-node` and `upload-artifact` v7, which run on Node 24: the
-  v4 actions ran on Node 20, which GitHub has deprecated.
 - `tools/chrome.mjs` falls back on Microsoft Edge, a Chromium shipped with every Windows, so
   the browser audits run on a machine without Chrome; `SWIFT_CHROME` still forces a path.
 
@@ -86,7 +111,7 @@ follows the traffic by itself.
 
 ### Tests
 
-- A twenty-first suite, `tests/reseau.test.mjs` (169 assertions), goes through the real code
+- A twenty-first suite, `tests/reseau.test.mjs` (164 assertions), goes through the real code
   path, from the click in the panel to the core's own command dispatcher, with only
   `fetch`, `dns.resolve` and `WebSocket` imitated so that nothing leaves: RFC 9112 (§2.1,
   §4, §5.1, §5.2) and what `curl -I`, `-iL` and `-v` write; the pasted response read by the
@@ -94,8 +119,8 @@ follows the traffic by itself.
   command and a raw request, then sent by the real replay down to `fetch` — `X-Swift-Replay`,
   credentials, forbidden headers refused and named, no body on a GET — and refused while
   replay is not allowed; the DNS flags, punycode and the names RFC 1123 refuses; a WebSocket
-  session driven end to end, close codes included, a burst of messages that redraws the panel
-  once and another tool on screen that is not redrawn at all; a double click that sends once; Security, the logs and the Comparison reading the core again on their own, and
+  session driven end to end, close codes included, and a burst of messages that redraws the
+  panel once; Security, the logs and the Comparison reading the core again on their own, and
   only when something changed; and every state of these panels in English.
 - `tests/rendu.test.mjs` and `tests/langue.test.mjs` render the twenty-nine toolbox panels,
   `tests/saisie.test.mjs` checks the names of their fields under seven inputs.
@@ -107,7 +132,7 @@ follows the traffic by itself.
   cookie log and the Security view updated without a click; no internal error was logged.
   The six browser audits pass.
 
-4281 assertions across twenty-one suites, plus six browser audits.
+4276 assertions across twenty-one suites, plus six browser audits.
 
 ## [6.0.0] — 2026-11-22
 
@@ -2175,7 +2200,8 @@ First public release.
 - Documentation screenshots are generated by `tools/captures.mjs`, which renders the real
   console against the real kernel rather than producing mockups.
 
-[Unreleased]: https://github.com/isneoz1/interceptor/compare/v6.1.0...HEAD
+[Unreleased]: https://github.com/isneoz1/interceptor/compare/v6.1.1...HEAD
+[6.1.1]: https://github.com/isneoz1/interceptor/releases/tag/v6.1.1
 [6.1.0]: https://github.com/isneoz1/interceptor/releases/tag/v6.1.0
 [6.0.0]: https://github.com/isneoz1/interceptor/releases/tag/v6.0.0
 [5.9.0]: https://github.com/isneoz1/interceptor/releases/tag/v5.9.0

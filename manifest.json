@@ -3,7 +3,7 @@
   "default_locale": "en",
   "name": "__MSG_extensionName__",
   "short_name": "SWIFT",
-  "version": "6.1.0",
+  "version": "6.1.1",
   "author": "D4RK",
   "homepage_url": "https://github.com/isneoz1/interceptor",
   "description": "__MSG_extensionDescription__",
