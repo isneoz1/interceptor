@@ -67,7 +67,7 @@ byte for byte — the test suite rebuilds and verifies the RFC's own worked exam
 that adds a URL parameter with an apostrophe redirects forever if you compare spellings,
 because the browser hands the address back with %27.
 
-No telemetry, no server, no dependencies, MIT. 4281 assertions run under Node, many of
+No telemetry, no server, no dependencies, MIT. 4592 assertions run under Node, many of
 them against published vectors (RFCs, Yubico's fido2, dnspython, graphql-core).
 
 https://isneoz1.github.io/interceptor/

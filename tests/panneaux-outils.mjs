@@ -34,8 +34,13 @@ export const LISTE_PANNEAUX = [
      rendus seulement : aucun n emet quoi que ce soit sans un clic. */
   ['reponse', 'tools-reponse.js', (m, e, s) => m.panneauReponse(e, s, () => {})],
   ['requete', 'tools-requete.js', (m, e, s) => m.panneauRequete(e, s, () => {})],
-  ['dns', 'tools-requete.js', (m, e, s) => m.panneauDns(e, s, () => {})],
-  ['websocket', 'tools-websocket.js', (m, e, s) => m.panneauWebSocket(e, s, () => {})]
+  ['dns', 'tools-dns.js', (m, e, s) => m.panneauDns(e, s, () => {})],
+  ['websocket', 'tools-websocket.js', (m, e, s) => m.panneauWebSocket(e, s, () => {})],
+  /* 6.2 : verifier un site, GraphQL, un flux, RDAP. */
+  ['verifier', 'tools-verifier.js', (m, e, s) => m.panneauVerifier(e, s, () => {})],
+  ['graphql', 'tools-graphql.js', (m, e, s) => m.panneauGraphql(e, s, () => {})],
+  ['sse', 'tools-sse.js', (m, e, s) => m.panneauSse(e, s, () => {})],
+  ['rdap', 'tools-rdap.js', (m, e, s) => m.panneauRdap(e, s, () => {})]
 ];
 
 /** Les panneaux, chacun pret a etre rendu : [nom, (entree, etat) => noeud]. */

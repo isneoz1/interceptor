@@ -64,12 +64,18 @@ export function controlesCorps(corps, typeAnnonce, entetes, { mesurer = false } 
        laisse rien quand elle n a pas lieu d etre. */
     const zone = el('div');
     box.appendChild(zone);
-    mesurerCompression(corps, entetes).then(r => {
+    const mesure = () => mesurerCompression(corps, entetes).then(r => {
       if (!r || r.apres >= r.avant) return;
       zone.appendChild(el('p', { class: 'note', text: tp(FAITS_CORPS.compression, {
         avant: bytes(r.avant), apres: bytes(r.apres), gain: Math.round((1 - r.apres / r.avant) * 100)
       }) }));
     }, () => { /* compression indisponible : rien a dire */ });
+    /* Encoder plusieurs megaoctets avant la compression prend quelques
+       dizaines de millisecondes : un grand corps est mesure apres
+       l affichage, comme ses constats JSON. */
+    if (corps && typeof corps.text === 'string' && corps.text.length > SEUIL_JSON_DIFFERE) {
+      (globalThis.requestIdleCallback || (fn => setTimeout(fn, 0)))(mesure);
+    } else mesure();
   }
   return box;
 }

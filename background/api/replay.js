@@ -69,6 +69,10 @@ export async function replay({ id, overrides = {} }) {
   };
   if (body != null && !['GET', 'HEAD'].includes(method)) init.body = body;
 
+  /* Le corps rendu a l interface : 200 000 caracteres par defaut. Le client
+     GraphQL demande davantage — un schema obtenu par introspection pese
+     souvent plusieurs megaoctets, et coupe, il ne se lit plus. */
+  const limite = Math.min(Math.max(Number(overrides.limiteCorps) || 200000, 200000), 32 * 1024 * 1024);
   const startedAt = Date.now();
   try {
     const res = await fetch(url, init);
@@ -85,8 +89,8 @@ export async function replay({ id, overrides = {} }) {
       statusText: res.statusText,
       headers: outHeaders,
       bodySize: text.length,
-      body: text.length > 200000 ? text.slice(0, 200000) : text,
-      truncated: text.length > 200000,
+      body: text.length > limite ? text.slice(0, limite) : text,
+      truncated: text.length > limite,
       refusedHeaders: refused
     };
 

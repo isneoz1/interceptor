@@ -1,7 +1,9 @@
-/* Panneaux « Envoyer une requete » et « Resolution DNS » — SWIFT (by D4RK)
+/* Panneau « Envoyer une requete » — SWIFT (by D4RK)
  *
  * La famille « Interroger le reseau » de la boite a outils : les seuls outils
- * qui emettent quelque chose, et seulement sur un clic.
+ * qui emettent quelque chose, et seulement sur un clic. Ce module porte aussi
+ * ce que ses voisins partagent : la permission (celle du rejeu), le bouton
+ * qui la donne, la lecture d une requete dans le texte de travail.
  *
  *   Envoyer une requete  compose une requete de zero — ou la reprend d une
  *                        commande cURL, d une requete HTTP brute — et l envoie
@@ -9,8 +11,11 @@
  *                        avec l en-tete X-Swift-Replay, et seulement quand le
  *                        rejeu a ete autorise. La reponse s affiche ici, et
  *                        la requete apparait dans le tableau.
- *   Resolution DNS       demande un nom au resolveur de Firefox — DNS sur
- *                        HTTPS s il est actif — et montre ce qu il rend.
+ *
+ * Comme un client d API : des variables {{nom}} remplacees a l envoi, des
+ * requetes enregistrees sous un nom, une collection qui s exporte et
+ * s importe — une collection Postman aussi (lib/collection-requetes.js).
+ * Elles restent dans le navigateur, dans le stockage local de l extension.
  */
 import { el, frag, kv, sec, add, button } from '../lib/dom.js';
 import { t, tp, te } from '../lib/i18n.js';
@@ -18,11 +23,12 @@ import { state, cmd, toast, copy, saveConfig } from '../app.js';
 import { ms, bytes, clock, pretty } from '../lib/format.js';
 import { texteLong } from '../lib/texte-long.js';
 import { decrireStatut } from '../lib/ref-http.js';
-import { estIpv4, estIpv6, categorieIpv4, categorieIpv6 } from '../lib/net.js';
+import { lireVariables, remplacerVariables, ecrireCollection, lireCollection } from '../lib/collection-requetes.js';
 import { analyserCurl } from '../../background/ingest/curl.js';
 import { brutVersCurl } from './tools-import.js';
 
 const METHODES = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS'];
+const CLE_COLLECTION = 'swift-collection';
 
 /** Le rejeu autorise : la meme permission vaut pour toute requete envoyee d ici. */
 export function envoiPermis() { return !!(state.config && state.config.replayEnabled); }
@@ -60,7 +66,8 @@ export function requeteDepuisTexte(texte) {
   } catch { return null; }
 }
 
-function lignesVersEntetes(texte) {
+/** Les en-tetes ecrits « Nom: valeur », un par ligne. */
+export function lignesVersEntetes(texte) {
   const out = [];
   for (const ligne of String(texte || '').split('\n')) {
     const i = ligne.indexOf(':');
@@ -71,9 +78,34 @@ function lignesVersEntetes(texte) {
   return out;
 }
 
+/* --------------------------- Collection gardee --------------------------- */
+/* Les requetes enregistrees et les variables, dans le stockage local de
+   l extension : la console, le panneau lateral et la fenetre compacte les
+   partagent. Un stockage illisible ou plein n empeche jamais d envoyer. */
+function chargerCollection(etat) {
+  if (etat.reqCollection != null) return;
+  etat.reqCollection = [];
+  try {
+    const brut = globalThis.localStorage ? globalThis.localStorage.getItem(CLE_COLLECTION) : null;
+    if (brut) {
+      const lue = lireCollection(brut);
+      etat.reqCollection = lue.requetes;
+      if (etat.reqVariables == null) etat.reqVariables = lue.variables;
+    }
+  } catch { /* stockage illisible : une collection vide */ }
+  if (etat.reqVariables == null) etat.reqVariables = '';
+}
+
+function garderCollection(etat) {
+  try {
+    if (globalThis.localStorage) globalThis.localStorage.setItem(CLE_COLLECTION, ecrireCollection(etat.reqCollection, etat.reqVariables));
+  } catch { toast('Le stockage local refuse la collection : elle reste le temps de la session', false); }
+}
+
 export function panneauRequete(entree, etat, redessiner) {
   const box = frag();
   const permis = envoiPermis();
+  chargerCollection(etat);
   box.appendChild(sec('Envoyer une requete', permis ? 'le rejeu est autorise' : 'demande l autorisation du rejeu'));
   box.appendChild(el('p', { class: 'note warn', text:
     t('La requete part du navigateur avec vos cookies pour ce site, porte l en-tete X-Swift-Replay, et apparait dans le tableau comme une ligne normale. A n envoyer qu a des services dont vous avez la responsabilite.') }));
@@ -105,13 +137,19 @@ export function panneauRequete(entree, etat, redessiner) {
     placeholder: t('corps de la requete (facultatif)')
   });
   corps.value = etat.reqCorps || '';
+  const variables = el('textarea', {
+    class: 'field', spellcheck: 'false', rows: '3', dataset: { champ: 'requete-variables' },
+    placeholder: t('variables, une par ligne : base = https://api.example.com — puis {{base}} dans la requete')
+  });
+  variables.value = etat.reqVariables || '';
   const retenir = () => {
     etat.reqMethode = methode.value;
     etat.reqUrl = url.value;
     etat.reqEntetes = entetes.value;
     etat.reqCorps = corps.value;
+    if (etat.reqVariables !== variables.value) { etat.reqVariables = variables.value; garderCollection(etat); }
   };
-  for (const champ of [methode, url, entetes, corps]) champ.addEventListener('change', retenir);
+  for (const champ of [methode, url, entetes, corps, variables]) champ.addEventListener('change', retenir);
   box.appendChild(el('div', { class: 'actions' }, [methode, url]));
   box.appendChild(entetes);
   box.appendChild(corps);
@@ -122,13 +160,25 @@ export function panneauRequete(entree, etat, redessiner) {
       /* Un double clic, ou un clic pendant l envoi, n envoie pas deux fois. */
       if (etat.reqEnvoi) return;
       retenir();
-      const cible = String(etat.reqUrl || '').trim();
+      /* Les variables d abord : {{base}} devient une adresse. Une variable
+         sans valeur arrete l envoi plutot que de partir telle quelle. */
+      const vars = lireVariables(etat.reqVariables);
+      const manquantes = new Set();
+      const remplir = texte => {
+        const r = remplacerVariables(texte, vars);
+        for (const n of r.manquantes) manquantes.add(n);
+        return r.texte;
+      };
+      const cible = remplir(String(etat.reqUrl || '').trim());
+      const enTetes = remplir(etat.reqEntetes);
+      const leCorps = remplir(etat.reqCorps);
+      if (manquantes.size) return toast(tp('Variables sans valeur : {noms}', { noms: [...manquantes].join(', ') }), false);
       if (!/^https?:\/\//i.test(cible)) return toast('Adresse http ou https attendue', false);
       etat.reqEnvoi = true;
       redessiner();
       const res = await cmd('replay', { id: null, overrides: {
         method: etat.reqMethode, url: cible,
-        headers: lignesVersEntetes(etat.reqEntetes), body: etat.reqCorps ? etat.reqCorps : null
+        headers: lignesVersEntetes(enTetes), body: leCorps ? leCorps : null
       } });
       etat.reqEnvoi = false;
       if (res.error) { etat.reqErreur = res.error; toast(te(res.error), false); }
@@ -161,6 +211,74 @@ export function panneauRequete(entree, etat, redessiner) {
     box.appendChild(sec('Envois precedents', resultats.length - 1));
     for (const r of resultats.slice(1)) add(box, kv(clock(r.at), r.method + ' ' + r.url + '  →  ' + r.status, { copy: true }));
   }
+
+  /* ----------------------------- Variables ------------------------------ */
+  box.appendChild(sec('Variables', 'remplacees a l envoi, dans l adresse, les en-tetes et le corps'));
+  box.appendChild(variables);
+  const vars = lireVariables(etat.reqVariables);
+  const restantes = new Set();
+  for (const texte of [etat.reqUrl, etat.reqEntetes, etat.reqCorps]) {
+    for (const n of remplacerVariables(texte, vars).manquantes) restantes.add(n);
+  }
+  if (restantes.size) {
+    box.appendChild(el('p', { class: 'note warn', text: tp('Variables sans valeur : {noms}', { noms: [...restantes].join(', ') }) }));
+  } else if (vars.size) {
+    box.appendChild(el('p', { class: 'note', text: tp('{n} variable(s) definie(s)', { n: vars.size }) }));
+  }
+
+  /* ------------------------- Requetes enregistrees ----------------------- */
+  const collection = etat.reqCollection || [];
+  box.appendChild(sec('Requetes enregistrees', collection.length));
+  const nom = el('input', {
+    type: 'text', class: 'field', spellcheck: 'false', value: etat.reqNom || '',
+    placeholder: t('nom de la requete, par exemple Lister les comptes'), dataset: { champ: 'requete-nom' }
+  });
+  nom.addEventListener('change', () => { etat.reqNom = nom.value; });
+  box.appendChild(el('div', { class: 'actions' }, [nom, button('Enregistrer la requete', () => {
+    retenir();
+    etat.reqNom = nom.value;
+    const leNom = String(etat.reqNom || '').trim();
+    if (!leNom) return toast('Donnez un nom a la requete', false);
+    const nouvelle = { nom: leNom, methode: etat.reqMethode || 'GET', url: etat.reqUrl || '', entetes: etat.reqEntetes || '', corps: etat.reqCorps || '' };
+    const i = collection.findIndex(r => r.nom === leNom);
+    if (i >= 0) collection[i] = nouvelle; else collection.push(nouvelle);
+    etat.reqCollection = collection;
+    garderCollection(etat);
+    toast(tp('Requete enregistree : {nom}', { nom: leNom }));
+    redessiner();
+  })]));
+  for (const r of collection) {
+    const ligne = el('div', { class: 'kv' }, [el('span', { text: r.nom }), el('b', { text: r.methode + ' ' + r.url })]);
+    const charger = button('Charger', () => {
+      etat.reqMethode = r.methode; etat.reqUrl = r.url; etat.reqEntetes = r.entetes; etat.reqCorps = r.corps; etat.reqNom = r.nom;
+      redessiner();
+    });
+    const retirer = button('Supprimer', () => {
+      etat.reqCollection = collection.filter(x => x !== r);
+      garderCollection(etat);
+      redessiner();
+    }, { class: 'ghost' });
+    box.appendChild(el('div', {}, [ligne, el('div', { class: 'actions' }, [charger, retirer])]));
+  }
+  if (!collection.length) {
+    box.appendChild(el('p', { class: 'note', text:
+      t('Aucune requete enregistree. Donnez un nom a la requete du formulaire et enregistrez-la : elle restera dans ce navigateur.') }));
+  }
+  box.appendChild(el('div', { class: 'actions' }, [
+    button('Exporter la collection', () => copy(ecrireCollection(collection, etat.reqVariables), 'Collection copiee')),
+    button('Importer depuis le texte de travail', () => {
+      let lue;
+      try { lue = lireCollection(entree); }
+      catch (e) { return toast(te(e), false); }
+      const parNom = new Map(collection.map(r => [r.nom, r]));
+      for (const r of lue.requetes) parNom.set(r.nom, r);
+      etat.reqCollection = [...parNom.values()];
+      if (lue.variables && !String(etat.reqVariables || '').trim()) etat.reqVariables = lue.variables;
+      garderCollection(etat);
+      toast(tp('{n} requete(s) importee(s)', { n: lue.requetes.length }));
+      redessiner();
+    })
+  ]));
   return box;
 }
 
@@ -183,90 +301,6 @@ function reponseRecue(r) {
       : tp('{n} caracteres', { n: r.bodySize })));
     box.appendChild(texteLong(pretty(r.body, ''), { seuil: 20000 }));
     box.appendChild(el('div', { class: 'actions' }, [button('Copier la reponse', () => copy(r.body, 'Reponse copiee'))]));
-  }
-  return box;
-}
-
-/* -------------------------------- DNS ---------------------------------- */
-/* Le nom a resoudre, lu dans le texte de travail : une adresse complete, ou
-   un nom d hote seul. Un nom international passe en punycode, la forme que
-   DNS connait. */
-export function nomDepuisTexte(texte) {
-  const brut = String(texte == null ? '' : texte).trim();
-  if (!brut || /\s/.test(brut)) return '';
-  try {
-    const u = new URL(/^[a-z][a-z0-9+.-]*:\/\//i.test(brut) ? brut : 'http://' + brut);
-    const hote = u.hostname.replace(/^\[|\]$/g, '');
-    return estIpv4(hote) || estIpv6(hote) ? '' : hote;
-  } catch { return ''; }
-}
-
-function categorie(adresse) {
-  try {
-    if (estIpv4(adresse)) return t(categorieIpv4(adresse));
-    if (estIpv6(adresse)) return t(categorieIpv6(adresse));
-  } catch { /* adresse inattendue : on la montre sans categorie */ }
-  return '';
-}
-
-export function panneauDns(entree, etat, redessiner) {
-  const box = frag();
-  box.appendChild(sec('Resolution DNS', 'par le resolveur de Firefox, sur votre clic'));
-
-  if (etat.dnsNom == null) etat.dnsNom = nomDepuisTexte(entree);
-  const nom = el('input', {
-    type: 'text', class: 'field', spellcheck: 'false', value: etat.dnsNom || '',
-    placeholder: t('nom d hote, par exemple example.com'), dataset: { champ: 'dns-nom' }
-  });
-  nom.addEventListener('change', () => { etat.dnsNom = nom.value; });
-  const famille = el('select', { dataset: { champ: 'dns-famille' } });
-  for (const [valeur, libelle] of [['', 'IPv4 et IPv6'], ['ipv4', 'IPv4 seulement'], ['ipv6', 'IPv6 seulement']]) {
-    famille.appendChild(el('option', { value: valeur, text: t(libelle), selected: (etat.dnsFamille || '') === valeur }));
-  }
-  famille.addEventListener('change', () => { etat.dnsFamille = famille.value; });
-  const sansCache = el('input', { type: 'checkbox', checked: !!etat.dnsSansCache, dataset: { champ: 'dns-sans-cache' } });
-  sansCache.addEventListener('change', () => { etat.dnsSansCache = sansCache.checked; });
-
-  const resoudre = button(etat.dnsEnCours ? 'Resolution…' : 'Resoudre', async () => {
-    if (etat.dnsEnCours) return;
-    etat.dnsNom = nom.value;
-    etat.dnsFamille = famille.value;
-    etat.dnsSansCache = sansCache.checked;
-    const cible = nomDepuisTexte(etat.dnsNom);
-    if (!cible) return toast('Nom d hote attendu, par exemple example.com', false);
-    etat.dnsEnCours = true;
-    redessiner();
-    const res = await cmd('dnsResolve', { nom: cible, sansCache: etat.dnsSansCache, famille: etat.dnsFamille });
-    etat.dnsEnCours = false;
-    if (res.error) { etat.dnsErreur = res.error; toast(te(res.error), false); }
-    else { etat.dnsErreur = null; etat.dnsResultats = [res.resultat, ...(etat.dnsResultats || [])]; }
-    redessiner();
-  }, { class: 'accent' });
-  box.appendChild(el('div', { class: 'actions' }, [nom, famille, resoudre]));
-  box.appendChild(el('div', { class: 'actions' }, [
-    el('label', { class: 'inline' }, [sansCache, el('span', { text: t('Ignorer le cache de Firefox') })])
-  ]));
-
-  if (etat.dnsErreur) box.appendChild(el('p', { class: 'note warn', text: t('Echec : ') + te(etat.dnsErreur) }));
-  const resultats = etat.dnsResultats || [];
-  if (!resultats.length) {
-    box.appendChild(el('p', { class: 'note', text:
-      t('Firefox resout le nom comme pour une page : par DNS sur HTTPS si son reglage TRR est actif, sinon par le systeme. Rien ne part sans un clic sur « Resoudre ».') }));
-  }
-  for (const r of resultats) {
-    const carte = el('div', { class: 'find info' }, [el('h4', { text: r.nom })]);
-    add(carte, kv('Adresses', r.adresses.length, { always: true }));
-    for (const a of r.adresses) add(carte, kv(a, categorie(a) || '—', { copy: true }));
-    add(carte, kv('Nom canonique', r.canonique && r.canonique !== r.nom ? r.canonique : null, { copy: true }));
-    add(carte, kv('DNS sur HTTPS (TRR)', r.trr ? t('oui') : t('non')));
-    add(carte, kv('Duree mesuree', ms(r.duree)));
-    add(carte, kv('Resolu a', clock(r.a)));
-    if (r.adresses.length) {
-      carte.appendChild(el('div', { class: 'actions' }, [
-        button('Copier les adresses', () => copy(r.adresses.join('\n'), 'Adresses copiees'))
-      ]));
-    }
-    box.appendChild(carte);
   }
   return box;
 }

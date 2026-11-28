@@ -259,6 +259,22 @@ $required = @(
   'ui/console/tools-requete.js',
   'ui/console/tools-websocket.js',
   'ui/lib/dict-en-direct.js',
+  # 6.2 : enqueter sur un site — verification, DNS sur HTTPS, RDAP, GraphQL, flux
+  'background/api/enquete.js',
+  'ui/lib/flux-sse.js',
+  'ui/lib/dns-requete.js',
+  'ui/lib/dns-lectures.js',
+  'ui/lib/rdap.js',
+  'ui/lib/aiguillage.js',
+  'ui/lib/graphql-schema.js',
+  'ui/lib/collection-requetes.js',
+  'ui/lib/verification-site.js',
+  'ui/lib/dict-en-enquete.js',
+  'ui/console/tools-verifier.js',
+  'ui/console/tools-dns.js',
+  'ui/console/tools-rdap.js',
+  'ui/console/tools-sse.js',
+  'ui/console/tools-graphql.js',
   'icons/icon.svg'
 )
 $missing = $required | Where-Object { -not (Test-Path $_) }
@@ -340,7 +356,9 @@ if ($node) {
     @{ titre = 'Ce qu un navigateur annonce'; fichier = 'tests/navigateurs.test.mjs';
        echec = 'Un User-Agent est lu autrement que ua-parser-js, ou un indice client est mal interprete' },
     @{ titre = 'Interroger le reseau'; fichier = 'tests/reseau.test.mjs';
-       echec = 'Une reponse collee, une requete envoyee, une resolution DNS, une session WebSocket ou une vue en direct est fausse' }
+       echec = 'Une reponse collee, une requete envoyee, une resolution DNS, une session WebSocket ou une vue en direct est fausse' },
+    @{ titre = 'Enqueter sur un site'; fichier = 'tests/enquete.test.mjs';
+       echec = 'Un flux, une question DNS, une reponse RDAP, un schema GraphQL, une collection, le bilan d un site ou une suggestion d outil est faux' }
   )
 
   $totalAssertions = 0

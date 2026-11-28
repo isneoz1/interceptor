@@ -243,13 +243,18 @@ export function parcourirJson(texte, sur) {
       if (c === 0x20 || c === 0x09 || c === 0x0a || c === 0x0d) i++; else break;
     }
   };
+  /* Une chaine a-t-elle un echappement ? La cle qui n en a pas se lit d une
+     seule copie, sans JSON.parse. */
+  let echappee = false;
   const chaine = () => {
     i++;
+    echappee = false;
     for (;;) {
       if (i >= n) erreur('chaine non terminee');
       const c = s.charCodeAt(i);
       if (c === 0x22) { i++; return; }
       if (c === 0x5c) {
+        echappee = true;
         const e = s.charCodeAt(i + 1);
         if (e === 0x75) {
           if (!/^[0-9a-fA-F]{4}$/.test(s.slice(i + 2, i + 6))) erreur('echappement \\u incomplet');
@@ -297,10 +302,11 @@ export function parcourirJson(texte, sur) {
     const d = i;
     chaine();
     const f = i;
+    const avecEchappement = echappee;
     sauter();
     if (s.charCodeAt(i) !== 0x3a) erreur('« : » attendu');
     i++;
-    sur.cle(d, f);
+    sur.cle(d, f, avecEchappement);
   };
 
   const pile = [];                                   // vrai : un objet
@@ -410,15 +416,26 @@ export function constatsJson(texte) {
     }
     return c;
   };
+  /* Les cles deja vues d un objet : un petit tableau tant qu il en a peu —
+     presque toujours —, un Set au-dela de seize. Un Set par objet pesait sur
+     un corps de plusieurs megaoctets : des dizaines de milliers d objets, et
+     le ramasse-miettes qui suit. */
   parcourirJson(s, {
     vide: () => {},
-    ouvre: objet => { cadres.push({ objet, cle: null, cles: objet ? new Set() : null, index: 0 }); },
-    cle: (d, f) => {
-      const lexeme = s.slice(d, f);
-      const cle = lexeme.includes('\\') ? JSON.parse(lexeme) : lexeme.slice(1, -1);
+    ouvre: objet => { cadres.push({ objet, cle: null, cles: null, index: 0 }); },
+    cle: (d, f, echappement) => {
+      const cle = echappement ? JSON.parse(s.slice(d, f)) : s.slice(d + 1, f - 1);
       const cadre = cadres[cadres.length - 1];
-      if (cadre.cles.has(cle)) doubles.push({ chemin: cheminParent(), cle });
-      cadre.cles.add(cle);
+      const vues = cadre.cles;
+      let double = false;
+      if (vues === null) cadre.cles = [cle];
+      else if (Array.isArray(vues)) {
+        if (vues.includes(cle)) double = true;
+        else if (vues.length < 16) vues.push(cle);
+        else { cadre.cles = new Set(vues); cadre.cles.add(cle); }
+      } else if (vues.has(cle)) double = true;
+      else vues.add(cle);
+      if (double) doubles.push({ chemin: cheminParent(), cle });
       cadre.cle = cle;
     },
     scalaire: (d, f, genre) => {

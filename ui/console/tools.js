@@ -5,9 +5,13 @@
  * d une transformation precedente, ou d une requete capturee (menu contextuel
  * du tableau, onglets du detail).
  *
- * Tout se passe en local, sauf la famille « Interroger le reseau » — une
- * requete, une connexion WebSocket, une resolution DNS — qui n emet rien sans
- * un clic, et pour les deux premieres sans l autorisation du rejeu.
+ * Tout se passe en local, sauf la famille « Interroger le reseau » — verifier
+ * un site, une requete, une requete GraphQL, un flux, une connexion
+ * WebSocket, une resolution DNS, une question RDAP — qui n emet rien sans un
+ * clic, et, hors du resolveur de Firefox, sans l autorisation du rejeu.
+ *
+ * Sous le texte de travail, des suggestions disent quels outils sauront le
+ * lire (lib/aiguillage.js) : un clic y mene.
  */
 import { $, el, clear, sec, button } from '../lib/dom.js';
 import { redessinerEnPlace } from '../lib/redessin.js';
@@ -35,8 +39,14 @@ import { panneauChercher } from './tools-chercher.js';
 import { panneauCode } from './tools-code.js';
 import { panneauOtp } from './tools-otp.js';
 import { panneauReponse } from './tools-reponse.js';
-import { panneauRequete, panneauDns } from './tools-requete.js';
+import { panneauRequete } from './tools-requete.js';
+import { panneauDns } from './tools-dns.js';
 import { panneauWebSocket } from './tools-websocket.js';
+import { panneauVerifier } from './tools-verifier.js';
+import { panneauGraphql } from './tools-graphql.js';
+import { panneauSse } from './tools-sse.js';
+import { panneauRdap } from './tools-rdap.js';
+import { suggererOutils } from '../lib/aiguillage.js';
 
 /* Les outils, ranges par intention plutot qu en une seule rangee de trente
    boutons. On cherche « ce que je veux faire », pas le nom de l outil : les
@@ -68,9 +78,13 @@ export const FAMILLES = [
   /* Les seuls outils qui emettent : regroupes, pour qu on sache d un regard
      lesquels touchent au reseau. */
   ['Interroger le reseau', [
+    ['verifier', 'Verifier un site'],
     ['requete', 'Envoyer une requete'],
+    ['graphql', 'Client GraphQL'],
+    ['sse', 'Flux HTTP (SSE)'],
     ['websocket', 'Client WebSocket'],
-    ['dns', 'Resolution DNS']
+    ['dns', 'Resolution DNS'],
+    ['rdap', 'Whois (RDAP)']
   ]],
   ['Lire et mesurer', [
     ['analyse', 'Structures'],
@@ -129,7 +143,15 @@ const etat = {
   reponseUrl: '', reponseType: 'main_frame',
   reqMethode: null, reqUrl: null, reqEntetes: null, reqCorps: null, reqResultats: [], reqEnvoi: false, reqErreur: null,
   wsUrl: null, wsProtocoles: '', wsMessage: '', wsHex: false,
-  dnsNom: null, dnsFamille: '', dnsSansCache: false, dnsResultats: [], dnsEnCours: false, dnsErreur: null
+  dnsNom: null, dnsFamille: '', dnsSansCache: false, dnsResultats: [], dnsEnCours: false, dnsErreur: null,
+  dnsMode: 'firefox', dnsType: 'A', dnsResolveur: 'cloudflare', dnsAdresse: '', dnsDnssec: false,
+  dohResultats: [], dnsBilan: null, dnsBilanEnCours: false,
+  reqVariables: null, reqCollection: null, reqNom: '',
+  verifHote: null, verifEnCours: false, verifErreur: null, verifResultat: null,
+  gqlUrl: '', gqlEntetes: '', gqlRequete: null, gqlVariables: '', gqlOperation: '', gqlEnvoi: false,
+  gqlIntrospection: false, gqlErreur: null, gqlReponse: null, gqlSchema: null, gqlFiltre: '',
+  sseUrl: null, sseMethode: 'GET', sseEntetes: '', sseCorps: '', sseForme: 'auto', sseId: '',
+  rdapRequete: null, rdapServeur: '', rdapEnCours: false, rdapErreur: null, rdapResultats: []
 };
 
 /** Ouvre la reference sur une question deja posee : la famille et le mot
@@ -175,6 +197,10 @@ export function poser(texte, { bascule = true, vers = null, famille = null, tran
   if (!etat.reqUrl) etat.reqUrl = null;
   if (!etat.dnsNom) etat.dnsNom = null;
   if (!etat.wsUrl) etat.wsUrl = null;
+  if (!etat.verifHote) etat.verifHote = null;
+  if (!etat.gqlRequete) etat.gqlRequete = null;
+  if (!etat.sseUrl) etat.sseUrl = null;
+  if (!etat.rdapRequete) etat.rdapRequete = null;
   etat.questionRef = undefined;
   sortie = null;
   if (vers && ONGLETS.some(([id]) => id === vers)) onglet = vers;
@@ -227,6 +253,23 @@ function dessiner() {
   barre.appendChild(button('Vider', () => poser('', { bascule: false }), { class: 'ghost' }));
   box.appendChild(barre);
 
+  /* -------------------------- Outils suggeres ---------------------------- */
+  /* Ce que la forme du texte laisse deviner, et l outil qui le lit : un clic
+     y mene. L outil ouvert n est pas propose. */
+  const suggestions = entree.trim() ? suggererOutils(entree).filter(x => x.outil !== onglet) : [];
+  if (suggestions.length) {
+    const rangee = el('div', { class: 'actions suggestions' }, [el('span', { class: 'note', text: t('Ce texte ressemble a :') })]);
+    for (const x of suggestions) {
+      const outil = ONGLETS.find(([id]) => id === x.outil);
+      if (!outil) continue;
+      const btn = el('button', { class: 'chip', type: 'button', dataset: { outil: x.outil } },
+        tp('{raison} → {outil}', { raison: t(x.raison), outil: t(outil[1]) }));
+      btn.addEventListener('click', () => { onglet = x.outil; render(); });
+      rangee.appendChild(btn);
+    }
+    box.appendChild(rangee);
+  }
+
   /* ------------------------------- Onglets -------------------------------- */
   const familles = el('div', { class: 'familles' });
   for (const [nom, outils] of FAMILLES) {
@@ -276,6 +319,10 @@ function dessiner() {
   else if (onglet === 'requete') box.appendChild(panneauRequete(entree, etat, redessiner));
   else if (onglet === 'websocket') box.appendChild(panneauWebSocket(entree, etat, redessiner));
   else if (onglet === 'dns') box.appendChild(panneauDns(entree, etat, redessiner));
+  else if (onglet === 'verifier') box.appendChild(panneauVerifier(entree, etat, redessiner));
+  else if (onglet === 'graphql') box.appendChild(panneauGraphql(entree, etat, redessiner));
+  else if (onglet === 'sse') box.appendChild(panneauSse(entree, etat, redessiner));
+  else if (onglet === 'rdap') box.appendChild(panneauRdap(entree, etat, redessiner));
   else if (onglet === 'generer') box.appendChild(panneauGenerateurs(reprendre, etat, redessiner));
   else if (onglet === 'importer') box.appendChild(panneauImport(entree, etat, redessiner));
 }

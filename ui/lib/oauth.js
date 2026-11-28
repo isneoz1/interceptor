@@ -108,8 +108,14 @@ function demandeJeton(p) {
 /** Reponse de jeton : un objet JSON avec access_token et token_type (RFC 6749, 5.1). */
 function reponseJeton(corps) {
   if (!corps || typeof corps.text !== 'string') return null;
+  /* Un objet, et la cle access_token ecrite en clair — ou un echappement
+     \u qui pourrait l ecrire autrement. Sinon, analyser un corps de
+     plusieurs megaoctets pour rien coutait plus que tout le reste de
+     l onglet Reponse. */
+  const texte = corps.text;
+  if (!/^\s*\{/.test(texte) || (!texte.includes('access_token') && !texte.includes('\\u'))) return null;
   let j;
-  try { j = JSON.parse(corps.text); } catch { return null; }
+  try { j = JSON.parse(texte); } catch { return null; }
   if (!j || typeof j !== 'object' || typeof j.access_token !== 'string' || typeof j.token_type !== 'string') return null;
   const out = {
     genre: 'reponse',

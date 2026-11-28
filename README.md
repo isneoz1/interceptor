@@ -16,7 +16,7 @@ Created by **D4RK** · <sub>formerly INTERCEPTOR, renamed in 5.0</sub>
 ![Manifest V2](https://img.shields.io/badge/Manifest-V2-444?style=flat)
 [![MIT licence](https://img.shields.io/badge/Licence-MIT-00DDFF?style=flat)](LICENSE)
 ![No dependencies](https://img.shields.io/badge/Dependencies-none-2ea043?style=flat)
-![4281 assertions](https://img.shields.io/badge/Assertions-4281-2ea043?style=flat)
+![4592 assertions](https://img.shields.io/badge/Assertions-4592-2ea043?style=flat)
 ![English and French](https://img.shields.io/badge/UI-EN%20%2F%20FR-444?style=flat)
 
 [**Website**](https://isneoz1.github.io/interceptor/) · [**Try it in 60 seconds**](#try-it-in-60-seconds) · [**Download**](https://github.com/isneoz1/interceptor/releases/latest) · [**Why not the built-in panel?**](#firefox-already-has-a-network-panel-why-this) · [**Screenshots**](#2-screenshots) · [**How it works**](#4-how-it-works-the-capture-layers) · [**Changelog**](CHANGELOG.md)
@@ -36,14 +36,17 @@ Created by **D4RK** · <sub>formerly INTERCEPTOR, renamed in 5.0</sub>
 > that refuses to report anything it cannot prove.
 
 > [!NOTE]
-> **New in 6.1** — talk to a server yourself, and watch everything change live.
-> Four tools in a new toolbox family, *Query the network*, the only one that sends anything —
-> and only when you click: **Send a request** (written from scratch, or taken from a cURL
-> command or a raw request, sent like a replay and shown in the table), a **WebSocket client**
-> (text or hexadecimal bytes, every message live, close codes explained), **DNS resolution** by
-> Firefox's own resolver, DNS over HTTPS included, and **Read a response**, which reads pasted
-> `curl -I`, `-iL` or `-v` output like a captured response. And **every view is live**: Security,
-> the logs, the Summary, Sites and paths and the Comparison no longer wait for « Refresh ».
+> **New in 6.2** — investigate a site, and never wonder which tool to use.
+> **Check a site**: a domain name, one click — TLS and its certificate, http to https, the page's
+> protections, its cookies, HTTP/3 and `security.txt`, read in the capture itself. **DNS over
+> HTTPS** for every record type, read in plain words — SPF, DMARC, MTA-STS, CAA, HTTPS/ECH — and
+> a **domain summary** in twelve questions. **Whois (RDAP)**: registrar, dates, statuses explained,
+> abuse contact. A **GraphQL client** with introspection and ready-made queries, an **HTTP stream
+> client** for Server-Sent Events and JSON lines, and **saved requests with `{{variables}}`**,
+> Postman collections included. Paste anything into the toolbox: **it suggests the tool**.
+>
+> **6.1** — send a request, open a WebSocket, resolve a name and read a pasted response, all from
+> the toolbox; and every view live, from Security to the Comparison.
 >
 > **6.0** — a two-minute guided tour, a quick guide at the top of Help, twelve ready-made
 > searches, an empty table that says why it is empty, a signed test token in the JWT tool —
@@ -67,7 +70,7 @@ Created by **D4RK** · <sub>formerly INTERCEPTOR, renamed in 5.0</sub>
 
 <img src="docs/images/vitrine-securite.png" alt="Every finished request is audited on its own, and nothing is reported that cannot be proven" width="100%">
 
-<img src="docs/images/vitrine-outils.png" alt="140 transformations across 30 tools, computed locally, and the tools that query the network on your click" width="100%">
+<img src="docs/images/vitrine-outils.png" alt="140 transformations across 34 tools, computed locally, and the tools that query the network on your click" width="100%">
 
 <div align="center">
 <sub><b>Every image on this page is a screenshot of the running tool</b>, not a mockup. They are
@@ -96,7 +99,7 @@ there is nowhere for it to go.
 <sub>The extension disappears when Firefox restarts: that is what temporary loading means.
 For something lasting, see [Installation](#3-installation).</sub>
 
-### Then, five things to try
+### Then, six things to try
 
 1. **See what a photo gives away.** Open a page with photos, click an image in the table,
    open *Response*: its GPS position, its author and its camera, when the file carries them.
@@ -107,6 +110,9 @@ For something lasting, see [Installation](#3-installation).</sub>
    host in the card and tick it: the page now loads at 50 kB/s.
 5. **Clean your links.** In *Rules*, click *Remove tracking parameters* and tick it: `utm_*`,
    `fbclid` and `gclid` go from every address.
+6. **Check a site.** In the *Toolbox*, paste a domain name: the line *This text looks like*
+   offers *Check a site*. Allow replay, click *Check*: TLS, certificate, redirects, protections,
+   cookies and `security.txt`, line by line.
 
 If SWIFT saves you an hour, a ⭐ on this page is how the next person finds it.
 
@@ -163,7 +169,7 @@ its rules include Charles's everyday tools — No Caching, Block Cookies, Thrott
 8. [The detail panel: twelve tabs](#8-the-detail-panel-twelve-tabs)
 9. [Search: full syntax](#9-search-full-syntax)
 10. [The security analyser](#10-the-security-analyser)
-11. [The toolbox: 30 tools in 7 families](#11-the-toolbox-30-tools-in-7-families)
+11. [The toolbox: 34 tools in 7 families](#11-the-toolbox-34-tools-in-7-families)
 12. [Acting on traffic: rules and interception](#12-acting-on-traffic-rules-and-interception)
 13. [Replaying a request](#13-replaying-a-request)
 14. [Import and export](#14-import-and-export)
@@ -210,8 +216,8 @@ specific points:
 **What it is not**: not a proxy, not a vulnerability scanner, not an attack tool. Everything
 happens inside your Firefox, on your machine.
 
-**By the numbers**: 269 JavaScript modules, ~55,500 lines, zero external dependencies,
-4281 automated assertions, English and French interface — French on a French Firefox, English otherwise.
+**By the numbers**: 284 JavaScript modules, ~59,000 lines, zero external dependencies,
+4592 automated assertions, English and French interface — French on a French Firefox, English otherwise.
 
 ---
 
@@ -314,8 +320,8 @@ What exists on the visited sites, host by host, reconstructed from observed traf
 
 ### The toolbox
 
-140 transformations across 30 tools, grouped into seven families by intent: decode, hash, measure, inspect, query the network — everything is
-computed locally, nothing leaves the machine.
+140 transformations across 34 tools, grouped into seven families by intent: decode, hash, measure, inspect, query the network — everything is
+computed locally, except what you send yourself; paste anything, and the toolbox suggests the tool that reads it.
 
 ![Toolbox](docs/images/console-outils.png)
 
@@ -721,10 +727,12 @@ own secret and tracker patterns in the settings.
 
 ---
 
-## 11. The toolbox: 30 tools in 7 families
+## 11. The toolbox: 34 tools in 7 families
 
-140 transformations, 30 tools grouped into seven families by what you are trying to do — decode and convert, encryption and digests, network and HTTP, query the network, read and measure, search and compare, produce — **all computed locally**, except the *query the network* family, which sends nothing until you click. A row's context menu, and the
-"Toolbox" buttons in the detail panel, send a value straight into it.
+140 transformations, 34 tools grouped into seven families by what you are trying to do — decode and convert, encryption and digests, network and HTTP, query the network, read and measure, search and compare, produce — **all computed locally**, except the *query the network* family, which sends nothing until you click. A row's context menu, and the
+"Toolbox" buttons in the detail panel, send a value straight into it. Under the working text, **This text looks like** names
+what was pasted — a JWT, a cURL command, a domain, response headers, a certificate, a GraphQL query, an identifier, base64… —
+and offers the tools that read it, one click away.
 
 | Family | Contents |
 |---|---|
@@ -754,9 +762,13 @@ own secret and tracker patterns in the settings.
 | **Reference** | The complete tables, offline, with an **All** search across all 16 reference tables at once: 63 statuses, 40 methods, **229 headers (the entire IANA permanent registry)**, 70 media types, 83 ports, 31 TLS cipher suites, WebSocket close codes, HTTP/2 errors, **HTTP/3 and QPACK errors**, **QUIC transport errors**, **TLS alerts**, **DNS record types**, **DNS response codes**, Firefox network errors, the **134 link relations of the IANA registry**, and its **33 proxy error types** (`Proxy-Status`) |
 | **Generate** | UUID v3/v4/v5/v7, ULID, nanoid, passwords with strength calculation, MAC addresses, random hex and base64 |
 | **Read a response** | Paste a response — the output of `curl -I`, `curl -i`, `curl -iL` and its redirects, `curl -v`, or a block copied from elsewhere — and it is read exactly like a captured response, by the same code as the detail's Headers tab: response protections, RFC 9111 freshness, CSP — one declared in a `<meta>` tag of a pasted body included — CORS, server signals (deprecation, rate limits, `Link`, `Alt-Svc`, caches, `Proxy-Status`), report collection, tokens. Of several responses — redirects, `100 Continue`, `103 Early Hints` — the last one is read, the one the browser keeps; a status line written inside a body stays body, and a line that is neither a status line nor a header is shown, never dropped in silence. Give the address and whether it is a page, since HSTS and framing depend on it. Judge a site without capturing it |
-| **Send a request** | *Query the network.* A request written from scratch — or taken from a cURL command, a raw HTTP request or an address in the working text — sent from the browser by the same path as a replay, with the `X-Swift-Replay` header: status and its meaning, duration, size, headers and body come back here, and the request shows up in the table. Every send of the session is kept. Needs replay to be allowed |
+| **Check a site** | *Query the network.* A domain name, one click: three requests leave without your cookies — the home page over https, the same over http, `/.well-known/security.txt` — and everything is read in what the capture kept of them: the **TLS session** (version, suite and its strength, key exchange — post-quantum hybrids named —, ECH), the **certificate** (days left, issuer, the names it covers read in its own bytes, trusted by Firefox, Certificate Transparency), **http to https** (and an internal redirect of Firefox told apart from the server's own), the redirect chain, the page's **protections** read by the same code as the detail, the **cookies** set on a first visit and the attributes they lack, **HTTP/3** advertised by Alt-Svc, the advertised server software, and **`security.txt`** checked against RFC 9116. Facts, not a grade — and what the capture did not keep is said. Each request opens in the detail. Needs replay to be allowed |
+| **Send a request** | *Query the network.* A request written from scratch — or taken from a cURL command, a raw HTTP request or an address in the working text — sent from the browser by the same path as a replay, with the `X-Swift-Replay` header: status and its meaning, duration, size, headers and body come back here, and the request shows up in the table. Every send of the session is kept. **Variables** written `{{name}}` are replaced when sending, in the address, the headers and the body — a variable left without a value stops the send and is named; **saved requests** keep a name, a method, an address, headers and a body in the browser; a collection exports to JSON and imports back, and a **Postman collection** (v2.0 and v2.1, folders included) imports too. Needs replay to be allowed |
+| **GraphQL client** | *Query the network.* A query, its variables, the operation to run when the document has several, sent through replay — the row shows up in the table, read like any captured GraphQL call: the data, and the **errors a 200 status hides**, with their path and code. **Read the schema** sends the standard introspection query (bodies of several megabytes are passed on whole): every Query, Mutation and Subscription field with its signature, a search over types and fields, and **Prepare the query** writes a ready-to-send operation — variables for the required arguments, the simple fields of what it returns. Needs replay to be allowed |
+| **HTTP stream (SSE)** | *Query the network.* A streamed response read live: **Server-Sent Events** parsed as the WHATWG HTML standard says (line endings split across chunks, comments, `id`, `retry`, an unfinished last event told), **JSON lines** (NDJSON) or plain text — with GET, or POST with headers and a body, the way streaming APIs answer word by word. `Last-Event-ID` to resume. Events newest first, JSON pretty-printed, nothing cut. The stream survives a change of tool or view, and redraws only while it is on screen. Needs replay to be allowed |
 | **WebSocket client** | *Query the network.* Open a connection to the address of your choice, with subprotocols if you need them; send text, or bytes written in hexadecimal; see every message sent and received **live**, newest first, binary ones in hexadecimal, a long one with its length and « Show all ». The closing is read with the meaning of its code. The connection lives outside the view: changing tab or view does not cut it. Needs replay to be allowed |
-| **DNS resolution** | *Query the network.* A host name asked of Firefox's own resolver — DNS over HTTPS when its TRR setting is on — on your click: the addresses with their category, the canonical name, whether TRR answered, the measured duration; Firefox's cache bypassed or not, IPv4 or IPv6 only. An international name goes out in punycode |
+| **DNS resolution** | *Query the network.* A host name asked of Firefox's own resolver — DNS over HTTPS when its TRR setting is on — on your click: the addresses with their category, the canonical name, whether TRR answered, the measured duration; Firefox's cache bypassed or not, IPv4 or IPv6 only. An international name goes out in punycode. Or **DNS over HTTPS** (RFC 8484) to Cloudflare, Google, Quad9 or a resolver of your own: **every record type** — MX, TXT, CAA, HTTPS/SVCB, SOA, SRV, PTR (an IP address becomes its `in-addr.arpa` / `ip6.arpa` name), DS, DNSKEY —, DNSSEC signatures on request, the question padded to 128 bytes (RFC 8467), and the answers **read in plain words**: SPF (RFC 7208: the final policy, the ten-lookup limit, `ptr`), DMARC (RFC 7489), MTA-STS, TLS-RPT, DKIM, CAA (RFC 8659), null MX (RFC 7505), HTTPS records (RFC 9460: HTTP/3, ECH, address hints). **Domain summary**: twelve questions at once — web, mail, security, zone — line by line. DNS over HTTPS sends the name to the chosen resolver, so it needs replay to be allowed |
+| **Whois lookup (RDAP)** | *Query the network.* RDAP, the whois that answers in JSON (RFC 9082, 9083): a domain, an IP address or an AS number asked of the registry that IANA's bootstrap files designate (RFC 9224), or of a server you give. Registration, expiry (with the days left) and last-change dates, **statuses explained** (`client transfer prohibited`, `redemption period`, `server hold`…), the registrar and its IANA number, the **abuse contact**, name servers, DNSSEC; for an address, the range, its prefixes, its type and country. A thin registry's link to the registrar is followed on a click. Needs replay to be allowed |
 | **Import a request** | Paste a `curl` command and turn it back into a replayable request |
 
 ---
@@ -955,8 +967,12 @@ same table, `ui/console/raccourcis.js`.
 **Nothing.**
 
 - The extension issues no network request of its own, except the ones **you** explicitly
-  trigger: a replay, a manual probe, and in the toolbox's *query the network* family a request
-  you compose, a WebSocket you open, a DNS lookup. The first two need replay to be allowed.
+  trigger: a replay, a manual probe, and in the toolbox's *query the network* family a site you
+  check, a request you compose, a GraphQL query, a stream or a WebSocket you open, a DNS lookup —
+  by Firefox's own resolver, or over DNS over HTTPS to the resolver you choose — and an RDAP
+  question to a registry (with IANA's bootstrap files, kept for a day). All but Firefox's own DNS
+  lookup need replay to be allowed; none of the site check, DNS over HTTPS and RDAP carries your
+  cookies. Saved requests and their variables stay in the browser, in the extension's storage.
 - No telemetry, no account, no server.
 - Every reference table is bundled: the toolbox and the help work **offline**.
 - All computation (digests, encryption, decoding) happens in the browser.
@@ -1011,7 +1027,7 @@ background/                The kernel — persistent background page
 │   ├── engine.js          Rule engine
 │   └── intercept.js       Manual interception
 ├── export/                HAR, JSON, CSV, Postman, OpenAPI 3.1, report, 39 code generators
-├── api/                   Command service for the UI, live broadcast
+├── api/                   Command service for the UI, live broadcast, replay, the toolbox's network queries
 └── lib/                   Shared kernel utilities
 
 content/
@@ -1026,7 +1042,7 @@ ui/                        The interface — one page for all four surfaces
 ├── console/               One view per file, plus the detail panel and the guided tour
 └── lib/                   Codecs, digests, network, reference tables, i18n
 
-tests/                     4281 assertions, no browser required
+tests/                     4592 assertions, no browser required
 tools/sockets.mjs          Real WebSockets against a real server: page, worker, WebRTC
 tools/transparence.mjs     What a page can tell about the probes — it should be nothing
 tools/minutage.mjs         Network timing phases in a real browser: only real measurements
@@ -1110,7 +1126,7 @@ a setting, right-click menu and exported files included.
 npm test
 ```
 
-4281 assertions, with no browser and no dependencies. The kernel and interface modules are
+4592 assertions, with no browser and no dependencies. The kernel and interface modules are
 written for Firefox; `tests/harnais.mjs` supplies the minimum WebExtension API and DOM they
 need to import and run under Node. **The logic under test is exactly the logic that runs in
 the browser, with no rewriting.**
@@ -1119,10 +1135,10 @@ the browser, with no rewriting.**
 |---|---|---|
 | `core.test.mjs` | 241 | URL normalisation, correlation signatures, the store, the rule engine (both ways: what matches **and** what must not), the security analyser rule by rule, HAR export, curl import, all 39 code generators, and the settings applied to what the page probes send — a body the settings refuse is not kept |
 | `avance.test.mjs` | 469 | WebSocket and HTTP/2 frames, CSP, RFC 9111 freshness, multipart, canonical URLs and homographs, protocol tables, binary structures, rare digests, generators |
-| `ui-load.test.mjs` | 640 | Actual loading of the 220 interface modules, complete module graph (no dead import, no file outside the graph), consistency with the HTML pages and the manifest, **full translation coverage** — every displayed string must have a dictionary entry, including labels that reach the translator through a table (`allRows` labels, search help, CSP directive meanings), the labels of the rule editor, **no text written straight into the page or built by concatenation**, which no dictionary entry can match, and **every text of the HTML pages** — labels, tooltips, screen-reader names, placeholders — translated and set again by the script — and **measured contrast**: every colour pair in both themes is checked against the WCAG 2.1 thresholds. It also holds the documentation to the code: **both help pages and both tutorials must have the same sections, item for item**, every setting must be read by the code, the profiles must do what they say, and the README must name every settings group, profile, search criterion, analyser fact and kernel file, and state the right number of reference tables, link relations, proxy error types, tools, required files, test suites and lines of code — and the help and the tutorial, in both languages, the right number of transformations, analysed headers, rule templates, tools and families; every suite in `tests/` must run in both `npm test` and the build; and the website must state the same numbers as the code, run no script, and load nothing from anyone else |
+| `ui-load.test.mjs` | 654 | Actual loading of the 234 interface modules, complete module graph (no dead import, no file outside the graph), consistency with the HTML pages and the manifest, **full translation coverage** — every displayed string must have a dictionary entry, including labels that reach the translator through a table (`allRows` labels, search help, CSP directive meanings), the labels of the rule editor, **no text written straight into the page or built by concatenation**, which no dictionary entry can match, and **every text of the HTML pages** — labels, tooltips, screen-reader names, placeholders — translated and set again by the script — and **measured contrast**: every colour pair in both themes is checked against the WCAG 2.1 thresholds. It also holds the documentation to the code: **both help pages and both tutorials must have the same sections, item for item**, every setting must be read by the code, the profiles must do what they say, and the README must name every settings group, profile, search criterion, analyser fact and kernel file, and state the right number of reference tables, link relations, proxy error types, tools, required files, test suites and lines of code — and the help and the tutorial, in both languages, the right number of transformations, analysed headers, rule templates, tools and families; every suite in `tests/` must run in both `npm test` and the build; and the website must state the same numbers as the code, run no script, and load nothing from anyone else |
 | `detail-coverage.test.mjs` | 130 | Each of a record's 60 fields is displayed, each tab has a render function, each searchable field exists |
 | `outils.test.mjs` | 108 | The toolbox, against published vectors |
-| `rendu.test.mjs` | 116 | The interface **actually rendered**: nineteen views — the three logs among them — against three captures, the eleven detail tabs, the twenty-nine toolbox panels against thirty-two hostile inputs, and 264 deliberately malformed HAR files — then a fragment-by-fragment comparison of both languages, so nothing can stay in French on an English screen — every view and every tab is compared, none is skipped. It also counts the commands each view sends the kernel: **a view that re-renders itself in a loop is caught in a second instead of freezing the tab**. Finally the translator itself reports every text it could not translate while everything is rendered in English: a French sentence that arrives through a variable can no longer hide. Then the table's **Follow** mode: a request opened from elsewhere is brought into view, reading suspends Follow and closing resumes it, the setting applies when it changes and only then; and what the screen shows — no bold markers left raw, punctuation that follows the language |
+| `rendu.test.mjs` | 116 | The interface **actually rendered**: nineteen views — the three logs among them — against three captures, the eleven detail tabs, the thirty-three toolbox panels against thirty-two hostile inputs, and 264 deliberately malformed HAR files — then a fragment-by-fragment comparison of both languages, so nothing can stay in French on an English screen — every view and every tab is compared, none is skipped. It also counts the commands each view sends the kernel: **a view that re-renders itself in a loop is caught in a second instead of freezing the tab**. Finally the translator itself reports every text it could not translate while everything is rendered in English: a French sentence that arrives through a variable can no longer hide. Then the table's **Follow** mode: a request opened from elsewhere is brought into view, reading suspends Follow and closing resumes it, the setting applies when it changes and only then; and what the screen shows — no bold markers left raw, punctuation that follows the language |
 | `lectures.test.mjs` | 166 | What 4.4 reads, checked against its sources: the HAR timing rules (TLS inside `connect`, counted once), every WebSocket subprotocol **and every text that must receive no label**, MQTT packet by packet, the certificate reader **cross-checked against the OpenSSL X.509 parser built into Node**, and the Firefox search criteria |
 | `securite.test.mjs` | 141 | The security tools against independent references — gzip and DEFLATE made by `node:zlib`, digests by `node:crypto`: the analyser's facts and the reused-nonce alert, digests judged only on what the captured bytes can prove, hostile SAML input and DEFLATE bombs, every response protection, the derived CSP, OAuth 2.0 against RFC 9700, and SAML in both bindings, down to **which element is signed** |
 | `decodeurs.test.mjs` | 209 | What 4.6 reads, against independent references: every example of **RFC 9421** (Appendix B and section 2) — signature bases **identical byte for byte**, RSA-PSS, ECDSA, HMAC and Ed25519 signatures verified with the published keys, a tampered base refused — and every case where a base cannot be rebuilt; the strict **RFC 9651** serialisation; **WebAuthn** registrations and sign-ins made by Yubico's `fido2` in ES256, EdDSA and RS256, signatures verified and a tampered one refused; **DNS** messages made by `dnspython` and the RFC 8484 example, with hostile inputs (pointer loops, oversized names, truncation) |
@@ -1132,12 +1148,13 @@ the browser, with no rewriting.**
 | `patch.test.mjs` | 76 | What 5.6 reads, against its references: all 112 cases of the community **json-patch-tests** suite (RFC 6902, Appendix A included), its 4 disabled cases too — read losslessly, an `op` written twice is seen; the 15 cases of **RFC 7396** Appendix A and its §3 example, written byte for byte, member order included; the **RFC 6901** examples of §5 and §6, its syntax, the `~01` decoding order and the key written twice that makes a reference undefined; 3,000 produced patches applied back to the second document; 3,000 generated patches that give the same result, or fail at the same operation, applied at once or operation by operation; large inputs — 10,000 operations on 100,000 elements, a merge of 100,000 members — under 1.5 s; the equality of RFC 6902 §4.6, numbers included; 3,000 hostile inputs; and the Request tab, the toolbox panel and the Comparison view in both languages |
 | `jose.test.mjs` | 94 | What 5.7 reads, against vectors extracted from the texts and verified at extraction: **RFC 7515 Appendix A** — HS256 with its `oct` JWK, RS256, ES256, ES512 — and **RFC 8037 A.4** (EdDSA) verified, and refused once altered; the token 6.0 builds from the header and payload of **RFC 7515 A.1**, identical to the published one byte for byte, HS384 and HS512 built and verified, a payload encoded exactly as written, every impossible input refused with a translated message, and 400 KB signed; the unsecured example (A.5); **RFC 9864** `Ed25519`, and a key of another curve refused; `hs256`, `None` and `Rs256` refused (RFC 7515 §4.1.1); the **RFC 7517 Appendix A** sets, public and private, the private keys flagged; a symmetric key, a 1024-bit RSA key and a duplicate `kid`; the choice of a key by `kid`, type, `use`, `key_ops` and `alg`; the **RFC 8037 A.3** thumbprint; the examples of **RFC 8414 §3.2** and **OpenID Connect Discovery §4.2**, an issuer read at the wrong address, both placements for an issuer with a path, https, required members, PKCE; then the kernel finding the issuer's keys in the capture, a key of another issuer that proves nothing against a token, and the Headers tab, the Response tab and the toolbox in both languages |
 | `cles.test.mjs` | 221 | What 5.8 reads, against tools that read the **same keys**: seven keys — Ed25519, Ed448, RSA 2048 and 3072, ECDSA P-256, P-384 and P-521 — each read in every form it has (PEM, PKCS #1, JWK, OpenSSH line, certificate, base64 DER), and each form giving back all the others byte for byte: the PEM and the `pin-sha256` pin of **OpenSSL 3.5**, the JWK of **Node**, the OpenSSH line and its SHA256 and MD5 fingerprints from **OpenSSH 10.3** (`ssh-keygen`), the certificate fingerprint and key identifier of OpenSSL; a whole `authorized_keys` file with options, mixed pastes, refused private keys and lying lines; the toolbox panel in both languages |
-| `langue.test.mjs` | 132 | The language of whoever uses SWIFT: a new install follows **Firefox's language** (French for `fr`, `fr-CA`, `fr_BE`; English for `de`, `en-US`, `ja`, `es-ES`, and for `frr` or `fy-NL`, which are not French), a saved choice is never replaced; every exported file — findings report, CSV, HAR and sanitised HAR, Postman collection, generated code, Markdown sheet — **without a word of French** in English and unchanged in French; the CSV separator for ten regions, and no formula slipped into a CSV cell; the right-click menu, the alert notification and the four keyboard shortcuts (manifest and `_locales`) in both languages; a HAR exported in English, re-imported, keeps its truncated bodies; the twenty-nine toolbox panels rendered in French and in English with thirty-one real pastes — a JWT, a certificate, a URL, a cURL command, a block of headers… — and no French word, no sentence left identical; the navigation and context logs, the timestamp readings, the generator and the stream titles in English; and a guard over the whole source: no text is assembled before being translated; every one-line message, every button tooltip and every name of the response protections has its translation; and the Rules view, with a card for every action and every template, where any text the translator does not know — a single word included — fails, and a Throttle card without a value says the 50 kB/s the engine applies |
-| `saisie.test.mjs` | 490 | **No click lost, nothing typed lost**: the redraw deferred while a pointer is pressed, checked with real events — the last request per view, once, after the click; superseded by the click's own redraw; a missed release noticed at the next move; an error in one view neither blocking the others nor swallowed; a redraw asked for during a redraw of the same view run after it, not inside it. Then every field of every view that redraws itself — the toolbox and its panels under seven inputs, the Rules with every action and header operation, the Settings, the Interception queue — must carry a stable name, unique in its view and shared with no other view; and the Interception view must redraw only when its queue or its settings change |
+| `langue.test.mjs` | 132 | The language of whoever uses SWIFT: a new install follows **Firefox's language** (French for `fr`, `fr-CA`, `fr_BE`; English for `de`, `en-US`, `ja`, `es-ES`, and for `frr` or `fy-NL`, which are not French), a saved choice is never replaced; every exported file — findings report, CSV, HAR and sanitised HAR, Postman collection, generated code, Markdown sheet — **without a word of French** in English and unchanged in French; the CSV separator for ten regions, and no formula slipped into a CSV cell; the right-click menu, the alert notification and the four keyboard shortcuts (manifest and `_locales`) in both languages; a HAR exported in English, re-imported, keeps its truncated bodies; the thirty-three toolbox panels rendered in French and in English with thirty-one real pastes — a JWT, a certificate, a URL, a cURL command, a block of headers… — and no French word, no sentence left identical; the navigation and context logs, the timestamp readings, the generator and the stream titles in English; and a guard over the whole source: no text is assembled before being translated; every one-line message, every button tooltip and every name of the response protections has its translation; and the Rules view, with a card for every action and every template, where any text the translator does not know — a single word included — fails, and a Throttle card without a value says the 50 kB/s the engine applies |
+| `saisie.test.mjs` | 550 | **No click lost, nothing typed lost**: the redraw deferred while a pointer is pressed, checked with real events — the last request per view, once, after the click; superseded by the click's own redraw; a missed release noticed at the next move; an error in one view neither blocking the others nor swallowed; a redraw asked for during a redraw of the same view run after it, not inside it. Then every field of every view that redraws itself — the toolbox and its panels under seven inputs, the Rules with every action and header operation, the Settings, the Interception queue — must carry a stable name, unique in its view and shared with no other view; and the Interception view must redraw only when its queue or its settings change |
 | `parite.test.mjs` | 98 | What 5.9 takes from the best tools, against their own documentation or a reference implementation: the URL-parameter rule — added, replaced or removed without touching how the other parameters are written, and a second pass that changes nothing, so no redirect loop, even after the browser has rewritten the address by the WHATWG URL Standard (an apostrophe becomes `%27`): thirty values put through Node's `URL`, which follows the same standard; two URL-parameter rules on one request applied together — contrary ones no longer send it back and forth; Charles's **No Caching** and **Block Cookies**, header by header, against the sentences of Charles's documentation, both acting on the same request, and a header present twice removed or set entirely; a file loaded into a mock — UTF-8 text, Latin-1, a BOM, a ZIP, a PNG — served with its exact bytes; a throttle or a mock rule without a value doing what the editor shows, and a malformed rule from an imported file doing nothing rather than breaking the request; every template on `example.com` (RFC 2606), named in English on an English screen; **defang and refang**, identical to CyberChef's own expressions on its DefangIP examples and on **60,000 random texts**, and never slow — 40 KB of hostile text in under 300 ms; the **throttle** on a simulated clock — never more than the rate allows, at most one second of credit after a silence, every byte delivered in order, a page gone stops everything, an overflowing response suspends the stream and resumes it — and in the real stream filter with real timers; and, with body capture turned off, a mock or a throttle that still applies |
 | `images.test.mjs` | 106 | What an image reveals, against files that others wrote or validated: a JPEG whose EXIF tags were **written by Windows GDI+**, each value compared with what GDI+ reads back — text, dates, serial number, GPS position in degrees, minutes and seconds; the same JPEG with an XMP block; a PNG with `tEXt`, UTF-8 `iTXt`, compressed `zTXt` and XMP, and `eXIf`, reloaded by GDI+; a WebP **encoded by Chrome**, EXIF and XMP chunks added, that Chrome decodes; what the image reveals, said in one sentence, and nothing for an image without metadata; a file truncated at every byte, random bytes and an IFD that points to itself — never an exception, never a loop; **files built to stall the reader** — four 65 KB comments of NUL bytes, EXIF tags of 60 KB, a `zTXt` bomb of 20 MB, 512 KB of unclosed XMP tags, thousands of blocks of every kind — read in under a second, long values cut at 4,096 characters and said so, 200 entries, 20 errors, 16 EXIF blocks, 16 XMP packets and 50 decompressions at most, and the rest counted or said; a `UserComment` read whole in any script and in the byte order of the file, and a GPS time written as text that no longer stops the reading; every error message translated; the toolbox panel and the Response tab block in both languages, every label translated |
 | `navigateurs.test.mjs` | 67 | What a browser announces, against the 428 test strings of **ua-parser-js 1.0.41**: **no false claim** — not one browser, system or engine named wrongly — and at least 61 browsers, 22 systems and 11 engines named; what the string no longer says — Windows 10/11 behind `NT 10.0`, macOS 10.15+, no Android version behind `Android 10; K`, and since iOS 26 the iOS version taken from Safari's rather than the frozen 18.6 — never given as the real one; Safari named only on Apple's systems (not GNOME Web, BlackBerry or Tizen); browsers built on Chromium named by their own token, robots and command-line clients, crawlers that write no version (Yahoo! Slurp, Slackbot, TelegramBot), and a phone called CUBOT or the JavaFX browser never taken for one; strings of 100,000 hostile characters read in milliseconds; client hints with **Microsoft's thresholds** for Windows 11 and the decoy brand; the Headers tool and the detail block in both languages, every label translated |
 | `reseau.test.mjs` | 169 | What 6.1 adds, through the real code path — from the click in the panel to the core's own command dispatcher, with only `fetch`, `dns.resolve` and `WebSocket` imitated so that nothing leaves: **Read a response** against RFC 9112 (§2.1, §4, §5.1, §5.2) — what `curl -I`, `curl -iL` and its redirects, `curl -v` and an interim response (RFC 9110 §15.2) write, obsolete line folding, a status line written inside a body that stays body — then read by the Headers tab's own code, body included, down to a CSP declared in a `<meta>` tag; **Send a request**: an address, a cURL command or a raw HTTP request taken from the working text, then sent by the real replay all the way to `fetch` — `X-Swift-Replay`, the site's cookies, forbidden headers refused and named, no body on a GET — and nothing sent while replay is not allowed; **DNS resolution**: the name read from the text (punycode, IP addresses set aside), the flags passed to `dns.resolve`, names that RFC 1123 refuses stopped before they leave, failures translated; the **WebSocket client** driven end to end — subprotocols, text and hexadecimal bytes sent, text and binary messages received, the close code and its meaning, a burst of messages redrawing the panel once and another tool on screen not at all; a double click that sends once; Security, the logs and the Comparison **reading the core again by themselves** when it counts something new, and only then; and every state of these panels in English — which is how the IP address categories, shown in French on an English screen by the Address tool since its first day, were found |
+| `enquete.test.mjs` | 237 | What 6.2 adds, against the texts that define it, then through the real code path from the click to the core's own command dispatcher, with only `fetch` imitated: **Server-Sent Events** as the WHATWG HTML standard reads them — its own examples, CR, LF and CR LF, a BOM, comments, `id` with a NUL, `retry`, an unfinished last event — and **500 random cuttings** of one stream giving the same events; JSON lines; the **DNS question written byte for byte like RFC 8484's example**, EDNS, the DO bit, padding to 128 bytes (RFC 8467), PTR names; SPF (RFC 7208 Appendix A), DMARC (RFC 7489), CAA (RFC 8659), null MX (RFC 7505) and HTTPS records (RFC 9460) read on a **response made by dnspython**, and the domain summary; RDAP server choice from IANA-style bootstrap files (RFC 9224) and responses read per RFC 9083 and jCard (RFC 7095), a status named `constructor` included; the tool suggested for **33 kinds of pasted text**, and five megabytes read in milliseconds; the GraphQL schema read by introspection and the query it writes, parsed back; variables and collections, **Postman v2.1** included; the site summary — TLS, post-quantum exchange, the certificate's names read in its own bytes (RFC 6125 wildcards), redirects, protections, cookies, HTTP/3, `security.txt`; the three core commands, refused without replay allowed; every panel driven by its buttons, a double click sending once, a stream cut anywhere and stopped on demand; the faster reading of large bodies kept exact — an OAuth key written with an escape, a duplicate key after the sixteenth; and all of it in English |
 
 Expected values come from published sources: RFC vectors (4226, 6238, 6455, 4231, 7541, 9113,
 3986, 7578, 9111, 8187, 2231, 2047, 6266, 7638, 8941, 9421, 9651, 8484, 9745, 8594, 9110, 8288,
@@ -1163,8 +1180,8 @@ the address a browser hands back after a redirect.
 .\build.ps1            # verify, test, then write dist/swift-<version>.xpi
 ```
 
-The script checks that the 245 required files are present and that every surface declared in
-the manifest exists on disk, then runs the 21 test suites. **If a test fails, the build
+The script checks that the 260 required files are present and that every surface declared in
+the manifest exists on disk, then runs the 22 test suites. **If a test fails, the build
 stops.**
 
 Works with Windows PowerShell 5.1 as well as PowerShell 7.
@@ -1177,7 +1194,7 @@ node tools/captures.mjs
 
 ### Audits that need a real browser
 
-The 21 test suites run under Node with no browser, which is what lets them run everywhere.
+The 22 test suites run under Node with no browser, which is what lets them run everywhere.
 Two things cannot be checked that way, because they only exist once a layout engine is
 involved — so they live as tools, and each prints a verdict and an exit code:
 
@@ -1261,7 +1278,7 @@ can still quote the address of a page, and issues are public: read the file befo
 Before opening a pull request:
 
 ```bash
-npm test              # all 4281 assertions must pass
+npm test              # all 4592 assertions must pass
 .\build.ps1 -Verify   # the build must be green
 ```
 

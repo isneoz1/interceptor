@@ -263,8 +263,8 @@ setLang('en');
     }
   }
   setLang('en');
-  egal('les vingt-neuf panneaux de la boite a outils sont rendus', panneaux.length, 29);
-  verifier('aucun mot francais dans les vingt-neuf panneaux en anglais', enAnglais.size === 0,
+  egal('les trente-trois panneaux de la boite a outils sont rendus', panneaux.length, 33);
+  verifier('aucun mot francais dans les trente-trois panneaux en anglais', enAnglais.size === 0,
     [...enAnglais].slice(0, 12).map(([f, m]) => f + ' [' + m + ']').join(' || '));
   verifier('aucune phrase restee la meme en francais et en anglais', identiques.size === 0,
     [...identiques.keys()].slice(0, 12).join(' || '));

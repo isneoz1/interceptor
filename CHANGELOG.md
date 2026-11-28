@@ -6,6 +6,98 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versio
 
 ## [Unreleased]
 
+## [6.2.0] — 2026-11-28
+
+Investigate a site — its TLS, its DNS, its owner, its API — and never wonder which tool to use:
+the toolbox now says what you pasted and offers the tool that reads it.
+
+### Added
+
+- **Check a site**: a domain name, one click. Three requests leave without your cookies — the
+  home page over https, the same over http, `/.well-known/security.txt` — and everything is
+  read in what the capture kept of them: the **TLS session** (version, suite and its strength,
+  key exchange, post-quantum hybrids such as `mlkem768x25519` named, ECH), the **certificate**
+  (days left, issuer, the names it covers read in its own bytes with RFC 6125's wildcard rule,
+  trusted by Firefox or not, Certificate Transparency — and, when Firefox hands over no chain,
+  that said rather than hidden), **http to https** (an internal redirect of Firefox told apart
+  from the server's), the redirect chain, the page's **protections** by the detail's own code,
+  the **cookies** set on a first visit and the attributes they lack, **HTTP/3** advertised by
+  Alt-Svc, the advertised server software, and **`security.txt`** against RFC 9116. Facts, not a
+  grade; each request opens in the detail; the summary copies as text.
+- **DNS over HTTPS, every record type**, in the DNS resolution tool: a question written in the
+  RFC 1035 wire format — byte for byte the example of RFC 8484, padded to 128 bytes (RFC 8467),
+  the DO bit on request — sent to Cloudflare, Google, Quad9 or a resolver of your own, and the
+  answer read by the decoder SWIFT already had: MX, TXT, CAA, HTTPS/SVCB, SOA, SRV, PTR (an IP
+  address becomes its `in-addr.arpa` or `ip6.arpa` name), DS, DNSKEY. **Read in plain words**:
+  SPF (RFC 7208 — the final policy, the ten-lookup limit, `ptr`, two records), DMARC
+  (RFC 7489), MTA-STS, TLS-RPT, DKIM, BIMI, ownership proofs, CAA (RFC 8659), null MX
+  (RFC 7505), HTTPS records (RFC 9460 — HTTP/3, ECH, address hints, aliases), SOA.
+- **Domain summary**: twelve questions at once — addresses, alias, HTTPS, MX, SPF, DMARC,
+  MTA-STS, TLS-RPT, CAA, NS, SOA — summed up as web, mail, security and zone, line by line.
+- **Whois lookup (RDAP)**: a domain, an IP address or an AS number asked of the registry that
+  IANA's bootstrap files designate (RFC 9224, kept for a day), or of a server you give;
+  registration, expiry and change dates with the days left, **statuses explained** in plain
+  words, the registrar and its IANA number, the abuse contact (jCard, RFC 7095), name servers,
+  DNSSEC; for an address, its range, prefixes, type and country. A thin registry's link to the
+  registrar is one click away.
+- **GraphQL client**: query, variables, the operation to run, sent through replay and read
+  like any captured GraphQL call — the data, and the errors a 200 status hides. **Read the
+  schema** sends the standard introspection query (replay now passes on up to 32 MB for it),
+  lists every Query, Mutation and Subscription field with its signature, searches types and
+  fields, and **Prepare the query** writes a ready-to-send operation with its variables.
+- **HTTP stream (SSE)**: a streamed response read live — Server-Sent Events parsed as the
+  WHATWG HTML standard says, JSON lines, or text — with GET, or POST with headers and a body,
+  the way streaming APIs answer; `Last-Event-ID` to resume, `retry`, comments and an
+  unfinished last event shown. The stream survives a change of tool or view.
+- **Saved requests and variables** in Send a request: `{{name}}` replaced in the address, the
+  headers and the body (a variable without a value stops the send and is named), requests
+  saved under a name in the browser, a collection exported to JSON and imported back — and
+  **Postman collections** (v2.0 and v2.1, folders, disabled headers, urlencoded and GraphQL
+  bodies) imported too.
+- **The toolbox suggests the tool.** Under the working text, *This text looks like* names what
+  was pasted — a JWT, a cURL command, a raw request or response, a domain, an IP address, an AS
+  number, a certificate, a public key, JSON, a JSON Patch, a GraphQL query, XML, a serialised
+  PHP value, headers, a timestamp, an identifier, a digest, an image, base64, hexadecimal… —
+  and one click opens the tool that reads it. Five megabytes are looked at in milliseconds.
+- The Help's quick guide gains seven lines, its toolbox table four tools; the Tutorial's
+  Toolbox lesson presents them and the suggestions.
+
+### Changed
+
+- The toolbox holds **34 tools in 7 families**; *Query the network* now has seven.
+- The DNS resolution tool moves to its own module and gains its mode switch; Firefox's
+  resolver works as before.
+- The layout audit (`tools/affichage.mjs`) opens **each of the 34 toolbox panels** at every
+  width, with a working text, instead of the first one only.
+- **A large response opens ten times faster.** The Response tab of a 5 MB JSON body took
+  about 190 ms in the scrolling audit, after a busy page: the compression measurement encoded
+  the whole body before anything showed. It now runs just after the display, like the JSON
+  findings, and the tab opens in about 20 ms. The JSON scan that finds integers beyond 2^53 and
+  keys written twice allocates far less — a short list per object instead of a `Set`, one copy
+  per key — and is a third faster, with results identical on 20,000 random texts; the OAuth
+  token-response reading no longer parses a body that cannot be one.
+
+### Tests
+
+- A twenty-second suite, `tests/enquete.test.mjs` (237 assertions): Server-Sent Events against
+  the WHATWG standard's own examples and **500 random cuttings** of one stream; the DNS question
+  byte for byte like RFC 8484's example; SPF, DMARC, CAA, null MX and HTTPS records read on a
+  response made by dnspython; RDAP server choice and responses per RFC 9224, 9083 and 7095; the
+  tool suggested for 33 kinds of pasted text; the GraphQL schema and the query it writes, parsed
+  back; Postman v2.1 collections; the site summary, certificate names included; the three new
+  core commands through the real dispatcher, refused without replay allowed; every new panel
+  driven by its buttons; the faster reading of large bodies kept exact; and all of it in English.
+- `tests/rendu.test.mjs` and `tests/langue.test.mjs` render the thirty-three toolbox panels,
+  `tests/saisie.test.mjs` checks the names of their fields under seven inputs.
+- Checked outside the suites, in a real Firefox 161 with the add-on installed, against a local
+  HTTP and HTTPS server: the site check (TLS 1.3, `mlkem768x25519`, a self-signed certificate
+  reported as untrusted, HSTS, CSP, cookies, HTTP/3, `security.txt`), DNS over HTTPS and the
+  domain summary, RDAP, GraphQL introspection and a prepared query, an SSE stream read live,
+  variables and a saved request kept across a reload; no internal error was logged. The six
+  browser audits pass.
+
+4592 assertions across twenty-two suites, plus six browser audits.
+
 ## [6.1.1] — 2026-11-23
 
 Two defects in 6.1.0's new tools, found by reading them again the same day, and a continuous
@@ -2200,7 +2292,8 @@ First public release.
 - Documentation screenshots are generated by `tools/captures.mjs`, which renders the real
   console against the real kernel rather than producing mockups.
 
-[Unreleased]: https://github.com/isneoz1/interceptor/compare/v6.1.1...HEAD
+[Unreleased]: https://github.com/isneoz1/interceptor/compare/v6.2.0...HEAD
+[6.2.0]: https://github.com/isneoz1/interceptor/releases/tag/v6.2.0
 [6.1.1]: https://github.com/isneoz1/interceptor/releases/tag/v6.1.1
 [6.1.0]: https://github.com/isneoz1/interceptor/releases/tag/v6.1.0
 [6.0.0]: https://github.com/isneoz1/interceptor/releases/tag/v6.0.0

@@ -20,16 +20,16 @@ AMO's public API, and the field limits in its source, `mozilla/addons-server`.
       publish. Changing it later means publishing a different add-on and orphaning every
       existing install, so make sure it is what you want *before* the first upload.
 - [ ] **Bump the version.** AMO refuses a version number it has already seen. The repository
-      is at `6.1.1`, which has never been submitted, so it can go up as-is. Only bump again if
+      is at `6.2.0`, which has never been submitted, so it can go up as-is. Only bump again if
       a submission gets rejected and you need to resubmit.
-- [ ] **The package**: `swift-6.1.1.xpi` from the GitHub release, its SHA-256 is in the release
+- [ ] **The package**: `swift-6.2.0.xpi` from the GitHub release, its SHA-256 is in the release
       notes. `npm run build` produces a new `dist/swift-<version>.xpi` from the repository.
 - [x] **Data collection is declared**: `data_collection_permissions` is `{"required": ["none"]}`,
       which AMO requires of every new extension since 3 November 2025. Mozilla's linter
       (`npx web-ext lint` on the unpacked package) reported 0 errors and two warnings on 5.8.0:
       Firefox 115 to 139 do not know this key. That is expected — they ignore it, and since
       SWIFT collects nothing there is no consent to ask for on those versions. It has not been
-      run on 6.1.1 yet: run it before you submit, or read the report of AMO's own validator,
+      run on 6.2.0 yet: run it before you submit, or read the report of AMO's own validator,
       which checks the package when you upload it.
 - [ ] The reviewer will read the source. It is plain ES modules with no build step, no
       minification and no bundler, so no separate source upload is required — say so in the
@@ -175,7 +175,7 @@ Every finished request is audited automatically: exposed secrets, credentials se
 
 **One request is one row**
 
-Eight layers observe each request — webRequest, the response stream, page probes, PerformanceObserver, TLS, DNS, cookies, navigation — and a correlator merges them. Two identical polling GETs stay two rows, because they are two requests. Search with a real syntax: method, status, host, size, duration, content type. Export to HAR, JSON, CSV, Postman or an OpenAPI 3.1 description, or generate ready-to-run code in 39 formats. 140 local transformations across 30 tools: encodings, digests, JWT, OTP, timestamps, image metadata and more — and, only when you click, a request composer, a WebSocket client and a DNS lookup.
+Eight layers observe each request — webRequest, the response stream, page probes, PerformanceObserver, TLS, DNS, cookies, navigation — and a correlator merges them. Two identical polling GETs stay two rows, because they are two requests. Search with a real syntax: method, status, host, size, duration, content type. Export to HAR, JSON, CSV, Postman or an OpenAPI 3.1 description, or generate ready-to-run code in 39 formats. 140 local transformations across 34 tools: encodings, digests, JWT, OTP, timestamps, image metadata and more — and, only when you click, a one-click site check (TLS, certificate, headers, cookies, security.txt), a request composer with saved requests, GraphQL and streaming clients, a WebSocket client, DNS lookups of every record type and RDAP whois.
 
 **Nothing leaves your machine**
 
@@ -239,7 +239,7 @@ Chaque requête terminée est auditée automatiquement : secrets exposés, ident
 
 **Une requête, une ligne**
 
-Huit couches observent chaque requête — webRequest, le flux de la réponse, les sondes de page, PerformanceObserver, TLS, DNS, cookies, navigation — et un corrélateur les fusionne. Deux GET identiques envoyés à intervalles réguliers restent deux lignes, parce que ce sont deux requêtes. Une vraie syntaxe de recherche : méthode, statut, hôte, taille, durée, type de contenu. Export en HAR, JSON, CSV, Postman ou description OpenAPI 3.1, et code prêt à lancer dans 39 formats. 140 transformations locales dans 30 outils : encodages, empreintes, JWT, OTP, dates, métadonnées d'image et d'autres — et, seulement sur votre clic, un compositeur de requêtes, un client WebSocket et une résolution DNS.
+Huit couches observent chaque requête — webRequest, le flux de la réponse, les sondes de page, PerformanceObserver, TLS, DNS, cookies, navigation — et un corrélateur les fusionne. Deux GET identiques envoyés à intervalles réguliers restent deux lignes, parce que ce sont deux requêtes. Une vraie syntaxe de recherche : méthode, statut, hôte, taille, durée, type de contenu. Export en HAR, JSON, CSV, Postman ou description OpenAPI 3.1, et code prêt à lancer dans 39 formats. 140 transformations locales dans 34 outils : encodages, empreintes, JWT, OTP, dates, métadonnées d'image et d'autres — et, seulement sur votre clic, la vérification d'un site en un clic (TLS, certificat, en-têtes, cookies, security.txt), un compositeur de requêtes avec requêtes enregistrées, des clients GraphQL et de flux, un client WebSocket, la résolution DNS de tous les types d'enregistrements et le whois RDAP.
 
 **Rien ne quitte votre machine**
 
@@ -262,7 +262,7 @@ Reviewers ask why each permission is needed. These are the real reasons.
 | `webNavigation` | Attaches each request to the document and frame that caused it. |
 | `cookies` | The cookie journal, and the analysis of why a cookie will be rejected. |
 | `tabs` | Groups traffic per tab and lets the user filter to the active one. |
-| `dns` | Resolves canonical name and addresses per host, shown in the detail panel, and the host name the user looks up in the toolbox's DNS resolution tool. |
+| `dns` | Resolves canonical name and addresses per host, shown in the detail panel, and the host name the user looks up with Firefox's resolver in the toolbox's DNS resolution tool. |
 | `storage`, `unlimitedStorage` | Settings, rules, and optional on-disk persistence of the capture. Local only. |
 | `downloads` | Saves HAR, JSON, CSV and Postman exports the user asked for. |
 | `clipboardWrite` | "Copy as curl" and the other copy actions. |
@@ -287,9 +287,13 @@ read-only features: the Content-Security-Policy analyser, which explains what
 eval(...) wrappers TEXTUALLY, for display, without executing anything.
 
 Network access: none of its own. The only traffic it can emit is what the user explicitly
-starts: a replay of a captured request, and in the toolbox a request they compose or a
-WebSocket they open — both only once replay has been allowed in the settings, which is off
-by default — or a DNS lookup of a host name they type (browser.dns.resolve).
+starts, on a click: a replay of a captured request, and in the toolbox a site check (three
+GET requests to the host the user typed), a request or a GraphQL query they compose, a
+stream or a WebSocket they open, a DNS-over-HTTPS question to the resolver they choose and
+an RDAP question to a domain registry (found through IANA's public bootstrap files) — all
+only once replay has been allowed in the settings, which is off by default — or a DNS lookup
+of a host name they type (browser.dns.resolve). The site check, DNS-over-HTTPS and RDAP
+requests never carry the user's cookies.
 
 Data: nothing is transmitted anywhere. Captured traffic is held in memory, and written to
 IndexedDB only when the user enables persistence.

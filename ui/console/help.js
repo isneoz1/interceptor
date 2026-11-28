@@ -32,6 +32,13 @@ export const SECTIONS = [
       ['Envoyer une requete de zero', 'Boite a outils -> Envoyer une requete, une fois le rejeu permis : une adresse, une commande cURL ou une requete brute suffit.'],
       ['Essayer un serveur WebSocket', 'Boite a outils -> Client WebSocket : ouvrez la connexion, envoyez, lisez chaque message en direct.'],
       ['Savoir ou mene un nom de domaine', 'Boite a outils -> Resolution DNS : les adresses que Firefox obtient, par DNS sur HTTPS s il est actif.'],
+      ['Verifier la securite d un site', 'Boite a outils -> Verifier un site : un nom de domaine, un clic — TLS, certificat, redirections, protections, cookies, security.txt.'],
+      ['Savoir qui possede un domaine', 'Boite a outils -> Whois (RDAP) : bureau d enregistrement, dates d enregistrement et d expiration, contact abus.'],
+      ['Lire les MX, SPF ou DMARC d un domaine', 'Boite a outils -> Resolution DNS, mode DNS sur HTTPS : un type, ou « Bilan du domaine ».'],
+      ['Tester une API GraphQL', 'Boite a outils -> Client GraphQL : « Lire le schema », puis « Preparer la requete » sur un champ.'],
+      ['Suivre un flux SSE', 'Boite a outils -> Flux HTTP (SSE) : chaque evenement en direct, meme en POST.'],
+      ['Garder ses requetes', 'Boite a outils -> Envoyer une requete -> Requetes enregistrees, avec des variables {{nom}}.'],
+      ['Ne pas savoir quel outil prendre', 'Collez le texte dans la boite a outils : la ligne « Ce texte ressemble a » propose le bon outil.'],
       ['Voir les choses changer en direct', 'Rien a faire : chaque vue suit le trafic d elle-meme — tableau, flux, securite, journaux, synthese, comparaison — sans vous faire perdre votre place.'],
       ['Decoder une valeur inconnue', 'Boite a outils -> Transformer -> « Tout essayer ».'],
       ['Signer un jeton de test', 'Boite a outils -> JWT -> « Fabriquer un jeton signe », avec votre propre cle partagee.'],
@@ -96,7 +103,7 @@ export const SECTIONS = [
       ['Journal interne', 'Les erreurs de SWIFT lui-meme et ses commandes, a exporter pour un rapport de bogue.'],
       ['Regles', 'Blocage, redirection, reecriture d entetes et de parametres d URL, reponse simulee (ecrite ou chargee depuis un fichier), debit limite — avec un editeur visuel et des modeles prets a l emploi.'],
       ['Interception', 'Les requetes suspendues avant leur depart, a modifier puis relacher une par une.'],
-      ['Boite a outils', 'Trente outils en sept familles sur un seul texte de travail : encodages, chiffrement, formats binaires, certificats, empreintes, reseau, entetes, horodatages, metadonnees d image, reference HTTP — et les requetes, connexions WebSocket et resolutions DNS que vous lancez.'],
+      ['Boite a outils', 'Trente-quatre outils en sept familles sur un seul texte de travail : encodages, chiffrement, formats binaires, certificats, empreintes, reseau, entetes, horodatages, metadonnees d image, reference HTTP — et ce que vous lancez vous-meme : verifier un site, une requete, GraphQL, un flux, un WebSocket, une resolution DNS, une question RDAP.'],
       ['Reglages', 'Tout ce qui se configure, avec des profils prets a l emploi.'],
       ['Tutoriel', 'Douze lecons guidees, avec suivi de progression.'],
       ['Aide', 'Ce mode d emploi, hors ligne, qui suit exactement la version installee.']
@@ -105,7 +112,7 @@ export const SECTIONS = [
   {
     h: 'La boite a outils',
     p: [
-      'Un seul texte de travail, trente onglets qui le regardent. On colle une valeur une fois — depuis le presse-papiers, depuis le menu contextuel d une ligne, ou depuis un onglet du detail — et chaque outil travaille dessus. Tout se calcule dans la page, sauf la famille « Interroger le reseau » — une requete, un WebSocket, une resolution DNS — qui n emet rien sans votre clic.'
+      'Un seul texte de travail, trente-quatre onglets qui le regardent. On colle une valeur une fois — depuis le presse-papiers, depuis le menu contextuel d une ligne, ou depuis un onglet du detail — et chaque outil travaille dessus. Tout se calcule dans la page, sauf la famille « Interroger le reseau » — verifier un site, une requete, GraphQL, un flux, un WebSocket, une resolution DNS, une question RDAP — qui n emet rien sans votre clic. Sous le texte de travail, la ligne « Ce texte ressemble a » propose les outils qui sauront le lire : un clic y mene.'
     ],
     table: [
       ['Transformer', '140 transformations classees en dix-huit familles : base64 et base64 URL, base32, base58, base45, Ascii85, URL, entites HTML, hexadecimal, binaire, octal, echappements Unicode, punycode, adresses neutralisees pour un rapport (defang) et retablies, JSON, YAML, CSV, XML, SAML, messages DNS, WebAuthn, gzip et deflate, casse, lignes, echappements de chaine, Protocol Buffers, MessagePack, CBOR, ASN.1. « Tout essayer » applique chaque decodage — sauf DNS et WebAuthn, qui liraient n importe quels octets — et ne garde que les resultats lisibles.'],
@@ -130,9 +137,13 @@ export const SECTIONS = [
       ['URL', 'Chaque partie d une URL, le service connu derriere le port, et l avertissement quand un domaine punycode ressemble a un autre.'],
       ['Adresse IP', 'Calcul complet d un sous-reseau IPv4 ou IPv6 : masque, joker, reseau, diffusion, plage utilisable, nom inverse, categorie (RFC 1918, 6598, 4193...) et test d appartenance a un prefixe. Plus le decoupage en sous-reseaux, le resume d une liste de prefixes, la conversion d une plage en prefixes et l enumeration des adresses.'],
       ['Lire une reponse', 'Une reponse collee — la sortie de curl -I, -i, -iL ou -v, un bloc copie ailleurs — lue comme une reponse capturee : protections, fraicheur HTTP, CSP (celle d une balise meta du corps colle aussi), CORS, signaux du serveur, collecte de rapports, jetons. De plusieurs reponses, la derniere est lue ; une ligne qui n est pas un en-tete est montree. Juger un site sans l avoir capture.'],
-      ['Envoyer une requete', 'Une requete composee de zero, ou reprise d une commande cURL ou d une requete HTTP brute, envoyee depuis le navigateur avec l en-tete X-Swift-Replay : la reponse s affiche, la requete apparait dans le tableau. Demande l autorisation du rejeu.'],
+      ['Verifier un site', 'Un nom de domaine, un clic : la session TLS et le certificat (validite, noms couverts, transparence), le passage de http a https, les protections de la page, les cookies poses a la premiere visite, HTTP/3, le logiciel annonce et security.txt — trois requetes sans vos cookies, lues dans la capture. Demande l autorisation du rejeu.'],
+      ['Envoyer une requete', 'Une requete composee de zero, ou reprise d une commande cURL ou d une requete HTTP brute, envoyee depuis le navigateur avec l en-tete X-Swift-Replay : la reponse s affiche, la requete apparait dans le tableau. Des variables {{nom}} remplacees a l envoi, des requetes enregistrees sous un nom, une collection qui s exporte et s importe — Postman compris. Demande l autorisation du rejeu.'],
+      ['Client GraphQL', 'Une requete GraphQL et ses variables, envoyees par le rejeu : les donnees, et les erreurs que le statut 200 cache. L introspection lit le schema du serveur ; chaque point d entree devient une requete prete a envoyer. Demande l autorisation du rejeu.'],
+      ['Flux HTTP (SSE)', 'Une reponse diffusee, lue en direct : Server-Sent Events, lignes JSON ou texte, en GET ou en POST avec en-tetes et corps — comme les API qui repondent mot a mot. Le flux survit a un changement d outil. Demande l autorisation du rejeu.'],
       ['Client WebSocket', 'Une connexion ouverte vers l adresse de votre choix : messages envoyes en texte ou en octets hexadecimaux, messages recus en direct, les plus recents en haut, et la fermeture avec le sens de son code. Demande l autorisation du rejeu.'],
-      ['Resolution DNS', 'Un nom demande au resolveur de Firefox — DNS sur HTTPS s il est actif : adresses et leur categorie, nom canonique, duree mesuree, cache ignore ou non, IPv4 ou IPv6 seulement.'],
+      ['Resolution DNS', 'Un nom demande au resolveur de Firefox — DNS sur HTTPS s il est actif : adresses et leur categorie, nom canonique, duree mesuree, cache ignore ou non, IPv4 ou IPv6 seulement. Ou, par DNS sur HTTPS aupres du resolveur choisi, tous les types — MX, TXT, CAA, HTTPS, SOA, DNSSEC — lus en clair (SPF, DMARC, MTA-STS…), et le bilan d un domaine en douze questions.'],
+      ['Whois (RDAP)', 'Qui a enregistre un domaine et quand il expire, son bureau d enregistrement, ses statuts expliques, ses serveurs de noms, DNSSEC, le contact abus ; a qui appartient une adresse IP ou un systeme autonome — aupres du registre que designe l IANA. Demande l autorisation du rejeu.'],
       ['Reference', 'Hors ligne, des tables completes : codes de statut, methodes, en-tetes (tout le registre permanent de l IANA), types de media, ports, suites TLS, alertes TLS, fermetures WebSocket, erreurs HTTP/2, HTTP/3 et QUIC, types et codes de reponse DNS, erreurs reseau de Firefox, et relations de liens (registre IANA). « Tout » cherche dans toutes a la fois, sur le nom comme sur la description ; Ctrl+K aussi.'],
       ['Generer', 'UUID v3, v4, v5 et v7, ULID, NanoID, suites aleatoires, mots de passe avec leur entropie reelle, adresse materielle, adresse privee, port dynamique, et seize valeurs limites qui font tomber les validateurs mal ecrits.'],
       ['Importer une requete', 'Une commande cURL ou une requete HTTP brute devient une ligne du tableau, a l etat « pending ». Elle n est pas emise : l onglet « Rejouer » de son detail s en charge si vous le demandez.']
@@ -252,7 +263,7 @@ export const SECTIONS = [
   {
     h: 'Securite de l extension',
     ul: [
-      'Aucune sortie reseau, sauf des actions volontaires, toujours sur un clic : le test de couverture (vers l origine de l onglet actif), le rejeu et l envoi de requetes, le client WebSocket et la resolution DNS de la boite a outils.',
+      'Aucune sortie reseau, sauf des actions volontaires, toujours sur un clic : le test de couverture (vers l origine de l onglet actif), le rejeu et l envoi de requetes, et dans la boite a outils la verification d un site, les clients GraphQL, de flux et WebSocket, la resolution DNS (par Firefox ou par le resolveur DNS sur HTTPS choisi) et les questions RDAP.',
       'Aucun innerHTML sur des donnees capturees : un site observe ne peut rien injecter dans cette interface.',
       'Aucun eval, aucune chaine executee. CSP stricte sur les pages de l extension.',
       'Jeton aleatoire par document entre la page et l extension ; les commandes d interface exigent un expediteur interne.',

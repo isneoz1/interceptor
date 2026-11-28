@@ -179,6 +179,31 @@ for (const largeur of LARGEURS) {
       + (r.debordePage > 2 ? 1 : 0);
     console.log('  ' + vue.padEnd(10) + String(r.examines).padStart(5) + ' elements'
       + (compte ? '   ' + compte + ' anomalie(s)' : ''));
+
+    /* La boite a outils ne montre qu un panneau a la fois : chacun des
+       trente-quatre est ouvert et regarde, avec un texte de travail pour que
+       la ligne « Ce texte ressemble a » soit la aussi. */
+    if (vue === 'tools') {
+      await dans(`const z = document.querySelector('[data-champ="outils-entree"]');
+        z.value = 'https://example.com/'; z.dispatchEvent(new Event('change', { bubbles: true })); return true;`);
+      await patienter(300);
+      const nombre = await dans(`return document.querySelectorAll('#view-tools .dtab').length;`);
+      let vus = 0;
+      for (let i = 0; i < nombre; i++) {
+        const nom = await dans(`const b = document.querySelectorAll('#view-tools .dtab')[${i}]; b.click(); return b.textContent.trim();`);
+        await patienter(250);
+        const p = await dans(INSPECTION);
+        if (!p || p.absente) { noter('tools/' + nom + ' @' + largeur, 'aucun panneau visible'); continue; }
+        const lieu = 'tools/' + nom + ' @' + largeur + 'px';
+        if (p.debordePage > 2) noter(lieu, 'la page deborde de ' + p.debordePage + ' px en largeur');
+        for (const d of p.trop) noter(lieu, d);
+        for (const c of p.coupes) noter(lieu, c);
+        for (const c of p.chevauchements) noter(lieu, c);
+        vus++;
+      }
+      console.log('  ' + 'outils'.padEnd(10) + String(vus).padStart(5) + ' panneaux regardes');
+      await dans(`document.querySelectorAll('#view-tools .dtab')[0].click(); return true;`);
+    }
   }
 }
 

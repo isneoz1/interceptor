@@ -27,6 +27,7 @@ import { replay } from './replay.js';
 import { collectStats, capabilities } from './status.js';
 import { FILE_COMMANDS } from './files.js';
 import { TOOLING_COMMANDS } from './tooling.js';
+import { ENQUETE_COMMANDS } from './enquete.js';
 import { SURFACE_COMMANDS, ouvrirSurface } from './surface.js';
 import { config, DEFAULTS } from '../core/config.js';
 import { journal } from '../core/debug.js';
@@ -72,6 +73,7 @@ function broadcast(msg) {
 const COMMANDS = {
   ...FILE_COMMANDS,
   ...TOOLING_COMMANDS,
+  ...ENQUETE_COMMANDS,
   ...SURFACE_COMMANDS,
 
   snapshot: ({ tabId = null, limit = 0 }) => ({

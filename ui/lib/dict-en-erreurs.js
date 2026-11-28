@@ -404,6 +404,16 @@ export const MODELES_ERREURS = {
   'lecture interrompue : {@raison}': 'reading interrupted: {@raison}',
   /* Ce que le noyau rend aux outils qui interrogent le reseau (6.1). */
   'nom d hote invalide : {nom}': 'invalid host name: {nom}',
-  'resolution impossible : {raison}': 'resolution failed: {raison}',
-  'echec du rejeu : {raison}': 'replay failed: {raison}'
+  'resolution impossible : {@raison}': 'resolution failed: {@raison}',
+  'echec du rejeu : {raison}': 'replay failed: {raison}',
+  /* 6.2 : verifier un site, DNS sur HTTPS, RDAP, GraphQL. */
+  'adresse a verifier invalide : {x}': 'invalid address to check: {x}',
+  'type DNS inconnu : {type}': 'unknown DNS type: {type}',
+  'type DNS invalide : {type}': 'invalid DNS type: {type}',
+  'nom DNS avec une etiquette vide : {nom}': 'DNS name with an empty label: {nom}',
+  'etiquette de plus de 63 octets : {e}': 'label longer than 63 bytes: {e}',
+  'le resolveur a repondu {statut}': 'the resolver answered {statut}',
+  'requete RDAP impossible : {@raison}': 'RDAP query failed: {@raison}',
+  'pas de reponse en {n} s': 'no response in {n} s',
+  'champ inconnu : {nom}': 'unknown field: {nom}'
 };
